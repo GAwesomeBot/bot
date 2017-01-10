@@ -1,0 +1,21 @@
+<style type="text/css">
+@media screen and (max-width: 768px) {
+	#menu {
+		display: none;
+	}
+}
+@media screen and (min-width: 769px) {
+	#menu {
+		display: block;
+	}
+}
+</style>
+
+<span id="menu-toggle">
+	<a class="button <%= menuToggleButtonSize %> is-white is-outlined" onclick="$('#menu').toggle(172);">
+		<span class="icon is-small">
+	        <i class="fa fa-bars"></i>
+	    </span>
+		<span>Menu</span>
+	</a>
+</span>

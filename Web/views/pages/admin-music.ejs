@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title><%= serverData.name %> Music - AwesomeBot Admin Console</title>
+	<% include ../partials/head %>
+
+	<script src="/static/js/form-change-listener.js"></script>
+	<script>
+	function newPlaylist() {
+		var newPlaylistName = $("#new-playlist-name");
+		if(newPlaylistName.val()) {
+			newPlaylistName.removeClass("is-danger");
+		} else {
+			newPlaylistName.addClass("is-danger");
+		}
+
+		if(newPlaylistName.val()) {
+			$.ajax({
+				type: "POST",
+				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				data: {
+					"new-name": newPlaylistName.val()
+				},
+				success: function() {
+					saveFormState();
+					$("#form").submit();
+				}
+			});
+		}
+	}
+
+	function newPlaylistItem(i) {
+		var newPlayListItemName = $("#new-playlist-" + i + "-item");
+		if(newPlayListItemName.val()) {
+			newPlayListItemName.removeClass("is-danger");
+		} else {
+			newPlayListItemName.addClass("is-danger");
+		}
+
+		if(newPlayListItemName.val()) {
+			var data = {};
+			data["new-" + i + "-item"] = newPlayListItemName.val();
+			$.ajax({
+				type: "POST",
+				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				data: data,
+				success: function() {
+					saveFormState();
+					$("#form").submit();
+				}
+			});
+		}
+	}
+	</script>
+</head>
+<body onload="saveFormState();">
+	<% include ../partials/dashboard-header %>
+	<% include ../partials/dashboard-socket-updates %>
+
+	<section class="section is-white">
+		<div class="container">
+			<div class="columns">
+				<div id="menu" class="column is-one-quarter">
+					<% include ../partials/admin-menu %>
+				</div>
+				<div class="column">
+					<h1 class="title">
+						Music
+					</h1>
+					<div class="container">
+						<article class="message is-primary">
+							<div class="message-body">
+								AwesomeBot can now play <strong>audio from YouTube</strong> in Discord voice channels. This section allows you to customize permissions for the <code>music</code> command and create music <strong>playlists</strong>. Please note that music playback is not always available due to capacity constraints. Currently, AwesomeBot can be in up to <%= config.max_voice_channels %> voice channels across Discord simultaneously.
+							</div>
+						</article>
+					</div>
+					<br>
+					<div class="container">
+						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+							<h4 class="subtitle is-4">
+								General
+							</h4>
+							<% var commandData = configData.commands.music;commandData.name = "music";commandData.description = commandDescriptions.music;commandData.category = commandCategories.music; %>
+							<% include ../partials/admin-command-item %>
+							<span class="music-options<%= configData.commands.music.isEnabled ? '' : ' is-hidden' %>">
+								<p class="control">
+									Add items to queue:
+									<span class="select is-small">
+										<select name="addingQueueIsAdminOnly">
+											<option value="false" <%= configData.music_data.addingQueueIsAdminOnly ? "" : "selected" %>>@everyone</option>
+											<option value="true" <%= configData.music_data.addingQueueIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+										</select>
+									</span>
+								</p>
+								<p class="control">
+									Remove items from queue:
+									<span class="select is-small">
+										<select name="removingQueueIsAdminOnly">
+											<option value="false" <%= configData.music_data.removingQueueIsAdminOnly ? "" : "selected" %>>@everyone</option>
+											<option value="true" <%= configData.music_data.removingQueueIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+										</select>
+									</span>
+								</p>
+								<label class="label">Voice channel</label>
+								<p class="control">
+									<span class="select">
+										<select name="channel_id">
+											<% for(var i=0; i<voiceChannelData.length; i++) { %>
+												<option value="<%= voiceChannelData[i].id %>"><%= voiceChannelData[i].name %></option>
+											<% } %>
+										</select>
+									</span>
+									<span class="help">AwesomeBot will play music in this voice channel only.</span>
+								</p>
+								<br>
+								<h4 class="subtitle is-4">
+									Playlists
+								</h4>
+								<div style="overflow-x: scroll;">
+									<% if(configData.music_data.playlists.length>0) { %>
+										<table class="table">
+											<thead>
+												<tr>
+													<th>Name</th>
+													<th>Items</th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody>
+												<% for(var i=0; i<configData.music_data.playlists.length; i++) { %>
+													<tr>
+														<td>
+															<%= configData.music_data.playlists[i]._id %>
+														</td>
+														<td>
+															<%= configData.music_data.playlists[i].item_urls.length %>
+														</td>
+														<td>
+															<a class="button modal-button is-small" data-target="#playlist-<%= i %>-modal">
+																<span class="icon is-small">
+																	<i class="fa fa-pencil"></i>
+																</span>
+																<span>Edit</span>
+															</a>
+															<button class="button is-small is-danger" name="playlist-<%= i %>-removed" onclick="saveFormState();">
+																<span>Remove</span>
+																<span class="icon is-small">
+																	<i class="fa fa-times"></i>
+																</span>
+															</button>
+														</td>
+													</tr>
+													<div id="playlist-<%= i %>-modal" class="modal">
+														<div class="modal-background"></div>
+														<div class="modal-container">
+															<div class="modal-content">
+																<div class="box">
+																	<h4 class="subtitle is-4">
+																		Items in playlist <strong><%= configData.music_data.playlists[i]._id %></strong>
+																	</h4>
+																	<ul>
+																		<% for(var j=0; j<configData.music_data.playlists[i].item_urls.length; j++) { %>
+																			<li>
+																				<button class="button is-small is-white" name="playlist-<%= i %>-item-<%= j %>-removed" onclick="saveFormState();">
+																					<span class="icon is-small" style="margin-left: -2px;">
+																						<i class="fa fa-times"></i>
+																					</span>
+																				</button>
+																				<a href="<%= configData.music_data.playlists[i].item_urls[j] %>"><%= configData.music_data.playlists[i].item_urls[j] %></a>
+																			</li>
+																		<% } %>
+																		<br>
+																		<div class="control is-horizontal">
+																			<div class="control is-grouped">
+																				&nbsp;&nbsp;
+																				<p class="control">
+																					<input id="new-playlist-<%= i %>-item" class="input is-small" type="url" placeholder="New item" onkeypress="return event.keyCode != 13;">
+																				</p>
+																				<p class="control">
+																					<a class="button is-primary is-small" onclick="newPlaylistItem('<%= i %>');">
+																						<span class="icon is-small">
+																					        <i class="fa fa-plus"></i>
+																					    </span>
+																					    <span>Add</span>
+																					</a>
+																				</p>
+																			</div>
+																		</div>
+																	</ul>
+																</div>
+															</div>
+														</div>
+														<a class="modal-close"></a>
+													</div>
+												<% } %>
+											</tbody>
+										</table>
+									<% } else { %>
+										<article class="message">
+											<div class="message-header">
+												<span class="icon">
+													<i class="fa fa-meh-o"></i>
+												</span>
+												<span>Nothing to see here</span>
+											</div>
+											<div class="message-body">
+												You haven't added any music playlists yet. Create one by filling out the form below.
+											</div>
+										</article>
+										<br>
+									<% } %>
+								</div>
+								<div class="control is-horizontal">
+									<div class="control is-grouped">
+										<p class="control is-expanded">
+											<input id="new-playlist-name" class="input" type="text" placeholder="Playlist name" onkeypress="return event.keyCode != 13;">
+										</p>
+										<p class="control">
+											<a class="button is-primary" onclick="newPlaylist();">
+												<span class="icon">
+											        <i class="fa fa-plus"></i>
+											    </span>
+											    <span>Add</span>
+											</a>
+										</p>
+									</div>
+								</div>
+							</span>
+							<br>
+							<% var formButtonsUnsaved = false; %>
+							<% include ../partials/form-buttons %>
+							<% include ../partials/form-buttons-bar %>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<% include ../partials/footer %>
+	<% include ../partials/scroll-top-button %>
+</body>
+</html>
