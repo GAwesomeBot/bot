@@ -1,4 +1,5 @@
 const express = require("express");
+const https = require("https");
 const compression = require("compression");
 const sio = require("socket.io");
 const bodyParser = require("body-parser");
@@ -176,8 +177,29 @@ module.exports = (bot, db, auth, config, winston) => {
 	});
 
 	// Open web interface
-	const server = app.listen(config.server_port, config.server_ip, () => {
-		winston.info(`Opened web interface on ${config.server_ip}:${config.server_port}`);
+	function requireHTTPS(req, res, next) {
+  	if (!req.secure) {
+    	return res.redirect('https://'+ req.hostname + ":" + config.httpsPort + req.url);
+    }
+    next();
+	}
+	if (config.cert && config.privKey && config.httpsPort) {
+		if (config.httpsRedirect) {
+			app.use(requireHTTPS);	
+		}
+		const privKey = fs.readFileSync(config.privKey, "utf8", function(err) {if (err) winston.error(err)})
+		const cert = fs.readFileSync(config.cert, "utf8", function(err) {if (err) winston.error(err)})
+		const credentials = {
+			key: privKey,
+			cert: cert
+		}
+		var httpsServer = https.createServer(credentials, app)
+		httpsServer.listen(config.httpsPort, () => {
+			winston.info(`Opened https web interface on ${config.server_ip}:${config.httpsPort}`);
+		});
+	}
+	const server = app.listen(config.httpPort, config.server_ip, () => {
+		winston.info(`Opened http web interface on ${config.server_ip}:${config.httpPort}`);
 		process.setMaxListeners(0);
 	});
 
