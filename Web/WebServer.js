@@ -354,7 +354,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				break;
 			case "timer":
 				typeIcon = "clock-o";
-				typeDescription = `Interval: ${moment(galleryDocument.interval).humanize()}`;
+				typeDescription = `Interval: ${moment.duration(galleryDocument.interval).asMinutes()}`;
 				break;
 		}
 		return {
