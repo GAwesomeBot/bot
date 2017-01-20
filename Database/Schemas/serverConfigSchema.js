@@ -186,16 +186,6 @@ module.exports = {
 			max_inactivity: {type: Number, default: 172800000, min: 7200000, max: 2592000000}
 		}
 	},
-	music_data: {
-		addingQueueIsAdminOnly: {type: Boolean, default: false},
-		removingQueueIsAdminOnly: {type: Boolean, default: false},
-		playlists: [new mongoose.Schema({
-			_id: {type: String, required: true},
-			item_urls: [String]
-		})],
-		channel_id: String,
-		current_playlist: String
-	},
 	name_display: {
 		use_nick: {type: Boolean, default: true},
 		show_discriminator: {type: Boolean, default: false}
