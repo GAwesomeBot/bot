@@ -354,7 +354,11 @@ module.exports = (bot, db, auth, config, winston) => {
 				break;
 			case "timer":
 				typeIcon = "clock-o";
-				typeDescription = `Interval: ${moment(galleryDocument.interval).humanize()}`;
+				if(moment(galleryDocument.interval)) {
+					typeDescription = `Interval: ${moment(galleryDocument.interval)}`;
+				} else {
+					typeDescription = `Interval: ${galleryDocument.interval}`
+				}
 				break;
 		}
 		return {
@@ -363,7 +367,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			type: galleryDocument.type,
 			typeIcon,
 			typeDescription,
-			description: xssFilters.inHTMLData(md.makeHtml(galleryDocument.description)),
+			description: md.makeHtml(xssFilters.inHTMLData(galleryDocument.description)),
 			featured: galleryDocument.featured,
 			owner: {
 				name: owner.username || "invalid-user",
@@ -914,7 +918,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			const serverData = [];
 			const usr = bot.users.get(req.user.id);
 			const addServerData = (i, callback) => {
-				if(i<req.user.guilds.length) {
+				if(req.user.guilds && i<req.user.guilds.length) {
 					const svr = bot.guilds.get(req.user.guilds[i].id);
 					if(svr && usr) {
 						db.servers.findOne({_id: svr.id}, (err, serverDocument) => {
@@ -1690,7 +1694,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			const serverData = [];
 			const usr = bot.users.get(req.user.id);
 			const addServerData = (i, callback) => {
-				if(i<req.user.guilds.length) {
+				if(req.user.guilds && i<req.user.guilds.length) {
 					const svr = bot.guilds.get(req.user.guilds[i].id);
 					if(!svr && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
 						addServerData(++i, callback);
@@ -3823,7 +3827,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			const updateBotUser = avatar => {
 				bot.editSelf({
 					avatar: avatar ? (`data:image/jpeg;base64,${avatar}`) : null,
-					username: req.body.username!=bot.user.username ? req.body.username : null
+					username: req.body.username
 				}).then(() => {
 					let game = {
 						name: req.body.game
@@ -3838,6 +3842,8 @@ module.exports = (bot, db, auth, config, winston) => {
 					}
 					bot.editStatus(req.body.status, game);
 					saveMaintainerConsoleOptions(consolemember, req, res);
+				}, (err) => {
+					winston.error(err)
 				});
 			};
 

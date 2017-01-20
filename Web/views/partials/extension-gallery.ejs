@@ -32,7 +32,9 @@ function doAction(extid, action) {
 			window.location.reload();
 		}
 	});
-}
+};
+	<%var extensione = JSON.stringify(extensions)%>
+	var extensionss = <%=extensione%>
 </script>
 
 <% if(extensions.length>0) { %>
