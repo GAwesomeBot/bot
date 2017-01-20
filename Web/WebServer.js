@@ -3738,7 +3738,9 @@ module.exports = (bot, db, auth, config, winston) => {
 		checkAuth(req, res, () => {
 			if(req.body.message) {
 				bot.guilds.forEach(svr => {
-					svr.defaultChannel.createMessage(req.body.message);
+					svr.defaultChannel.createMessage(req.body.message).then(() => {}, (err) => {
+						winston.error(err)
+					});
 				});
 			}
 			res.redirect(req.originalUrl);
