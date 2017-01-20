@@ -18,16 +18,9 @@
 			<% } else { %>
 				<a href="/dashboard/commands/command-options?svrid=<%= serverData.id %>">Command Options</a>
 			<% } %>
-			<% if(["/dashboard/commands/command-list", "/dashboard/commands/music", "/dashboard/commands/rss-feeds", "/dashboard/commands/streamers", "/dashboard/commands/tags", "/dashboard/commands/auto-translation", "/dashboard/commands/trivia-sets"].indexOf(currentPage)>-1) { %>
+			<% if(["/dashboard/commands/command-list", "/dashboard/commands/rss-feeds", "/dashboard/commands/streamers", "/dashboard/commands/tags", "/dashboard/commands/auto-translation", "/dashboard/commands/trivia-sets"].indexOf(currentPage)>-1) { %>
 				<a class="<%= currentPage=='/dashboard/commands/command-list' ? 'is-active' : '' %>" href="<%= currentPage=='/dashboard/commands/command-list' ? '#' : ('/dashboard/commands/command-list?svrid=' + serverData.id) %>">Command List</a>
 				<ul>
-					<li>
-						<% if(currentPage=="/dashboard/commands/music") { %>
-							<a class="is-active" href="#">Music</a>
-						<% } else { %>
-							<a href="/dashboard/commands/music?svrid=<%= serverData.id %>">Music</a>
-						<% } %>
-					</li>
 					<li>
 						<% if(currentPage=="/dashboard/commands/rss-feeds") { %>
 							<a class="is-active" href="#">RSS Feeds</a>
