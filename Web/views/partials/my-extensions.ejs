@@ -37,12 +37,14 @@
 								<%= extensions[i].points %>
 							</td>
 							<td>
+								<% if (extensions[i].state !== "saved") { %>
 								<a class="button is-small" href="/extensions/<%= extensions[i].state %>?id=<%= extensions[i]._id %>">
 									<span class="icon is-small">
 										<i class="fa fa-eye"></i>
 									</span>
 									<span>View</span>
 								</a>
+								<% } %>
 								<a class="button is-small is-primary" href="/extensions/builder?extid=<%= extensions[i]._id %>">
 									<span class="icon is-small">
 										<i class="fa fa-pencil"></i>
