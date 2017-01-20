@@ -355,7 +355,8 @@ module.exports = (bot, db, auth, config, winston) => {
 			case "timer":
 				typeIcon = "clock-o";
 				if(moment(galleryDocument.interval)) {
-					typeDescription = `Interval: ${moment(galleryDocument.interval)}`;
+					let interval = moment.duration(galleryDocument.interval)
+					typeDescription = `Interval: ${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
 				} else {
 					typeDescription = `Interval: ${galleryDocument.interval}`
 				}
