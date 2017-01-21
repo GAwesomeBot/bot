@@ -2891,6 +2891,8 @@ module.exports = (bot, db, auth, config, winston) => {
 				for(const status_message in serverDocument.toObject().config.moderation.status_messages) {
 					if(["new_member_pm", "member_removed_pm"].indexOf(status_message)==-1) {
 						serverDocument.config.moderation.status_messages[status_message].channel_id = "";
+					} else {
+						serverDocument.config.moderation.status_messages[status_message].message_content = req.body[`${status_message}-message_content`];
 					}
 					for(const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
 						switch(key) {
