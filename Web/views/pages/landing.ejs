@@ -357,6 +357,7 @@
 		<div class="hero-body">
 			<div class="container has-text-centered">
 				<h2 class="title is-2">
+					<% if (roundedServerCount === 0) {roundedServerCount = "<100"} %>
 					There's a reason over <strong><%= roundedServerCount %></strong> servers trust GAwesomeBot.
 				</h2>
 				<h3 class="subtitle is-4">
