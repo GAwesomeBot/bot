@@ -11,7 +11,7 @@ module.exports = (bot, db, config, winston, userDocument, msg) => {
 			},
 			color: 0x9ECDF2,
 			title: "You can use these commands in PM with me: 🍪",
-			description: `\`\`\`${info.join("\n")}\`\`\`Learn more [here](https://bot.gilbertgobbels.xyz:8008/wiki) 📘`
+			description: `\`\`\`${info.join("\n")}\`\`\`Learn more [here](${config.hosting_url}wiki) 📘`
 		}
 	});
 };
