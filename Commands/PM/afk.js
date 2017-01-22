@@ -2,10 +2,30 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 	if(suffix) {
 		if(suffix==".") {
 			userDocument.afk_message = null;
-			msg.channel.createMessage("Welcome back! 🎊 I removed your AFK message");
+			msg.channel.createMessage({
+				embed: {
+					author: {
+						name: bot.user.username,
+						icon_url: bot.user.avatarURL,
+						url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					},
+					color: 0x9ECDF2,
+					description: "Welcome back! 🎊\nI removed your AFK message"
+				}
+			});
 		} else {
 			userDocument.afk_message = suffix;
-			msg.channel.createMessage(`Alright, I'll show that when someone mentions you on a server. 👌 Use \`${commandData.name} .\` to remove it`);
+			msg.channel.createMessage({
+				embed: {
+					author: {
+						name: bot.user.username,
+						icon_url: bot.user.avatarURL,
+						url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					},
+					color: 0x9ECDF2,
+					description: `Alright, I'll show that when someone mentions you on a server. 👌\nUse \`${commandData.name} .\` to remove it`
+				}
+			});
 		}
 		userDocument.save(err => {
 			if(err) {
@@ -14,9 +34,29 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 		});
 	} else {
 		if(userDocument.afk_message) {
-			msg.channel.createMessage(`You have the AFK message \`${userDocument.afk_message}\` set right now 💭`);
+			msg.channel.createMessage({
+				embed: {
+					author: {
+						name: bot.user.username,
+						icon_url: bot.user.avatarURL,
+						url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					},
+					color: 0x9ECDF2,
+					description: `You have the AFK message \`${userDocument.afk_message}\` set right now 💭`
+				}
+			});
 		} else {
-			msg.channel.createMessage("You don't have an AFK message set right now ⌨️");
+			msg.channel.createMessage({
+				embed: {
+					author: {
+						name: bot.user.username,
+						icon_url: bot.user.avatarURL,
+						url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					},
+					color: 0x00FF00,
+					description: "You don't have an AFK message set right now ⌨️"
+				}
+			});
 		}
 	}
 };

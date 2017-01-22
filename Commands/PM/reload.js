@@ -1,7 +1,7 @@
 const commands = require("./../../Configuration/commands.json");
 
 module.exports = (bot, db, config, winston, userDocument, msg) => {
-    // maintainers only
+    // Maintainers only
 	if(!~config.maintainers.indexOf(msg.author.id)) {
 		return;
 	}

@@ -113,6 +113,8 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 			}
 		}
 	} else {
-		msg.channel.createMessage(getUserProfile(bot, config, msg.author, userDocument, msg.author.username));
+		msg.channel.createMessage({
+			embed: getUserProfile(bot, config, msg.author, userDocument, msg.author.username)
+		});
 	}
 };
