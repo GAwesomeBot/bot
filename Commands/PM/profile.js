@@ -66,7 +66,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 							}
 						});
 					} else {
-						msg.channel.createMessage(`Couldn't save data! Make sure \`${commandData.name} ${suffix}|<value>\` has been used correctly! You need a value to the tag!`);
+						msg.channel.createMessage(`Couldn't save data! Make sure \`${commandData.name} ${suffix}|<value>\` has been used correctly! You need a value for the tag!`);
 					}
 				};
 
