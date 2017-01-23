@@ -56,14 +56,18 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				const key = args[0].trim();
 				
 				const saveUserDocument = () => {
-					userDocument.save(err => {
-						if(err) {
-							winston.error("Failed to save user data for adding profile field", {usrid: msg.author.id}, err);
-							msg.channel.createMessage("Oops, something went wrong saving that. 😾");
-						} else {
-							msg.channel.createMessage("Got it 👍");
-						}
-					});
+					if(!args[1] == "" || !args[1] == null) {
+							userDocument.save(err => {
+							if(err) {
+								winston.error("Failed to save user data for adding profile field", {usrid: msg.author.id}, err);
+								msg.channel.createMessage("Oops, something went wrong saving that. 😾");
+							} else {
+								msg.channel.createMessage("Got it 👍");
+							}
+						});
+					} else {
+						msg.channel.createMessage(`Couldn't save data! Make sure \`${commandData.name} ${suffix}|<value>\` has been used correctly! You need a value for the tag!`);
+					}
 				};
 
 				const setProfileField = remove => {
@@ -73,7 +77,9 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 						if(!userDocument.profile_fields) {
 							userDocument.profile_fields = {};
 						}
-						userDocument.profile_fields[key] = args[1].trim();
+						if(!args[1] == "" || !args[1] == null) {
+							userDocument.profile_fields[key] = args[1].trim();
+						}
 					}
 					userDocument.markModified("profile_fields");
 					saveUserDocument();
