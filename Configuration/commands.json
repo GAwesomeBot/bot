@@ -407,7 +407,7 @@
             "category": "Fun 🎪"
         },
         "kick": {
-            "usage": "<user>",
+            "usage": "<user>[|<reason>]",
             "description": "Removes a member from the server",
             "defaults": {
                 "is_enabled": true,
