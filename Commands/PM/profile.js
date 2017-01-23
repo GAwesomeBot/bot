@@ -4,7 +4,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 	if(suffix=="setup") {
 		msg.channel.createMessage(`Hey ${msg.author.mention}, let's talk about your public AwesomeBot profile, available at ${config.hosting_url}activity/users?q=${encodeURIComponent(`${msg.author.username}#${msg.author.discriminator}`)}. First of all, do you want to make data such as your mutual servers with ${bot.user.username} and profile fields public?${userDocument.isProfilePublic ? " It's already public right now, by answering yes you're keeping it that way." : ""}`).then(() => {
 			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-				userDocument.isProfilePublic = config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1;
+				userDocument.isProfilePublic = config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1;
 				userDocument.save(err => {
 					if(err) {
 						winston.error("Failed to save user data for profile setup", {usrid: msg.author.id}, err);
@@ -12,10 +12,31 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 					msg.channel.createMessage(`Cool! 😀 Next up, what's the URL of the background image you'd like to use? Currently, it's ${userDocument.profile_background_image}, answer with \`.\` to continue using this.`).then(() => {
 						bot.awaitMessage(msg.channel.id, msg.author.id, message => {
 							const askDescription = () => {
-								msg.channel.createMessage("Done, that's your new picture. 🏖 Now, please tell me a little about yourself (max 2000 characters)...").then(() => {
+								msg.channel.createMessage({
+									embed: {
+										author: {
+											name: bot.user.username,
+											icon_url: bot.user.avatarURL,
+											url: "https://github.com/GilbertGobbels/GAwesomeBot"
+										},
+										color: 0x00FF00,
+										description: "Done, that's your new picture. 🏖 Now, please tell me a little about yourself (max 2000 characters)..."
+									}
+								}).then(() => {
 									bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-										if(message.content.trim()==".") {
-											msg.channel.createMessage("I would've liked to know more about you, but your profile is all setup!");
+										if(message.content.trim() == ".") {
+											msg.channel.createMessage({
+												embed: {
+													author: {
+															name: bot.user.username,
+															icon_url: bot.user.avatarURL,
+															url: "https://github.com/GilbertGobbels/GAwesomeBot"
+													},
+													color: 0x00FF00,
+													title: "All set!",
+													description: `I would've liked to know more about you, but your profile is all setup! Click [here](${config.hosting_url}activity/users?q=${encodeURIComponent(`${msg.author.username}#${msg.author.discriminator}`)}) to see it. 👀`
+												}
+											});
 										} else {
 											if(!userDocument.profile_fields) {
 												userDocument.profile_fields = {};
@@ -26,13 +47,23 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 												if(err) {
 													winston.error("Failed to save user data for profile setup", {usrid: msg.author.id}, err);
 												}
-												msg.channel.createMessage(`Thanks! Your profile is good to go! 👤 ${config.hosting_url}activity/users?q=${encodeURIComponent(`${msg.author.username}#${msg.author.discriminator}`)}`);
+												msg.channel.createMessage({
+													embed: {
+														author: {
+															name: bot.user.username,
+															icon_url: bot.user.avatarURL,
+															url: "https://github.com/GilbertGobbels/GAwesomeBot"
+														},
+														color: 0x00FF00,
+														title: "All set!",
+														description: `Thanks! Your profile is good to go! 👤 Click [here](${config.hosting_url}activity/users?q=${encodeURIComponent(`${msg.author.username}#${msg.author.discriminator}`)}) to see it. 👀`
+													}
+												});
 											});
 										}
 									});
 								});
 							};
-
 							if(message.content.trim()==".") {
 								askDescription();
 							} else {
@@ -54,18 +85,42 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 			const args = suffix.split("|");
 			if(args.length==2 && args[0]) {
 				const key = args[0].trim();
-				
 				const saveUserDocument = () => {
-					userDocument.save(err => {
-						if(err) {
-							winston.error("Failed to save user data for adding profile field", {usrid: msg.author.id}, err);
-							msg.channel.createMessage("Oops, something went wrong saving that. 😾");
-						} else {
-							msg.channel.createMessage("Got it 👍");
-						}
-					});
+					if (!args[1] == "" || !args[1] == null) {
+						userDocument.save(err => {
+							if(err) {
+								winston.error("Failed to save user data for adding profile field", {usrid: msg.author.id}, err);
+								msg.channel.createMessage({
+									embed: {
+										author: {
+											name: bot.user.username,
+											icon_url: bot.user.avatarURL,
+											url: "https://github.com/GilbertGobbels/GAwesomeBot"
+										},
+										color: 0xFF0000,
+										title: "Error",
+										description: "Oops, something went wrong while saving that. 😾"
+									}
+								});
+							} else {
+								msg.addReaction("\uD83D\uDC4C");
+							}
+						});	
+					} else {
+						msg.channel.createMessage({
+							embed: {
+								author: {
+									name: bot.user.username,
+									icon_url: bot.user.avatarURL,
+									url: "https://github.com/GilbertGobbels/GAwesomeBot"
+								},
+								color: 0xFF0000,
+								title: "Error",
+								description: `Couldn't save data! Make sure \`${commandData.name} <tag>|<value>\` has been used correctly! You need a value to the tag!`
+							}
+						});
+					}
 				};
-
 				const setProfileField = remove => {
 					if(remove) {
 						delete userDocument.profile_fields[key];
@@ -73,27 +128,39 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 						if(!userDocument.profile_fields) {
 							userDocument.profile_fields = {};
 						}
-						userDocument.profile_fields[key] = args[1].trim();
+						if(!args[1] == "" || !args[1] == null) {
+							userDocument.profile_fields[key] = args[1].trim();
+						}
 					}
 					userDocument.markModified("profile_fields");
 					saveUserDocument();
 				};
-
 				if(key.toLowerCase()=="location") {
-					if(!args[1] || args[1].trim()==".") {
+					if(!args[1] || args[1].trim() == ".") {
 						userDocument.location = null;
 					} else {
 						userDocument.location = args[1].trim();
 					}
 					saveUserDocument();
 				} else if(userDocument.profile_fields && userDocument.profile_fields[key]) {
-					if(!args[1] || args[1].trim()==".") {
+					if(!args[1] || args[1].trim() == ".") {
 						setProfileField(true);
 					} else {
-						msg.channel.createMessage(`You've already set ${key} to \`${userDocument.profile_fields[key]}\`. Would you like to overwrite?`).then(() => {
+						msg.channel.createMessage({
+							embed: {
+								author: {
+									name: bot.user.username,
+									icon_url: bot.user.avatarURL,
+									url: "https://github.com/GilbertGobbels/GAwesomeBot"
+								},
+								color: 0x9ECDF2,
+								title: "Key already set",
+								description: `You've already set ${key} to \`${userDocument.profile_fields[key]}\`. Would you like to overwrite it?`
+							}
+						}).then(() => {
 							bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-								if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
-									setProfileField();
+								if(config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1) {
+									setProfileField()
 								}
 							});
 						});
@@ -103,13 +170,46 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				}
 			} else {
 				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {usrid: msg.author.id});
-				msg.channel.createMessage(`That's not how you set a field in your profile. Use \`${commandData.name} <key>|<value>\``);
+				msg.channel.createMessage({
+					embed: {
+						author: {
+							name: bot.user.username,
+							icon_url: bot.user.avatarURL,
+							url: "https://github.com/GilbertGobbels/GAwesomeBot"
+						},
+						color: 0xFF0000,
+						title: "Error",
+						description: `That's not how you set a field in your profile. Use \`${commandData.name} <key>|<value>\``
+					}
+				});
 			}
 		} else {
 			if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
-				msg.channel.createMessage(userDocument.profile_fields[suffix]);
+				msg.channel.createMessage({
+					embed: {
+						author: {
+							name: bot.user.username,
+							icon_url: bot.user.avatarURL,
+							url: "https://github.com/GilbertGobbels/GAwesomeBot"
+						},
+						color: 0x9ECDF2,
+						title: `Here's the field for __${suffix}__`,
+						description: userDocument.profile_fields[suffix]
+					}
+				});
 			} else {
-				msg.channel.createMessage(`Field \`${suffix}\` not found in your profile. Set it with \`${commandData.name} ${suffix}|<value>\``);
+				msg.channel.createMessage({
+					embed: {
+						author: {
+							name: bot.user.username,
+							icon_url: bot.user.avatarURL,
+							url: "https://github.com/GilbertGobbels/GAwesomeBot"
+						},
+						color: 0xFF0000,
+						title: "Warning",
+						description: `Field \`${suffix}\` not found in your profile. Set it with \`${commandData.name} ${suffix}|<value>\``
+					}
+				});
 			}
 		}
 	} else {
