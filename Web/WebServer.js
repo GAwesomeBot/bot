@@ -1,4 +1,5 @@
 const express = require("express");
+const https = require("https");
 const compression = require("compression");
 const sio = require("socket.io");
 const bodyParser = require("body-parser");
@@ -176,8 +177,29 @@ module.exports = (bot, db, auth, config, winston) => {
 	});
 
 	// Open web interface
-	const server = app.listen(config.server_port, config.server_ip, () => {
-		winston.info(`Opened web interface on ${config.server_ip}:${config.server_port}`);
+	function requireHTTPS(req, res, next) {
+  	if (!req.secure) {
+    	return res.redirect('https://'+ req.hostname + ":" + config.httpsPort + req.url);
+    }
+    next();
+	}
+	if (config.cert && config.privKey && config.httpsPort) {
+		if (config.httpsRedirect) {
+			app.use(requireHTTPS);	
+		}
+		const privKey = fs.readFileSync(config.privKey, "utf8", function(err) {if (err) winston.error(err)})
+		const cert = fs.readFileSync(config.cert, "utf8", function(err) {if (err) winston.error(err)})
+		const credentials = {
+			key: privKey,
+			cert: cert
+		}
+		var httpsServer = https.createServer(credentials, app)
+		httpsServer.listen(config.httpsPort, () => {
+			winston.info(`Opened https web interface on ${config.server_ip}:${config.httpsPort}`);
+		});
+	}
+	const server = app.listen(config.httpPort, config.server_ip, () => {
+		winston.info(`Opened http web interface on ${config.server_ip}:${config.httpPort}`);
 		process.setMaxListeners(0);
 	});
 
@@ -354,7 +376,12 @@ module.exports = (bot, db, auth, config, winston) => {
 				break;
 			case "timer":
 				typeIcon = "clock-o";
-				typeDescription = `Interval: ${moment(galleryDocument.interval).humanize()}`;
+				if(moment(galleryDocument.interval)) {
+					let interval = moment.duration(galleryDocument.interval)
+					typeDescription = `Interval: ${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
+				} else {
+					typeDescription = `Interval: ${galleryDocument.interval}`
+				}
 				break;
 		}
 		return {
@@ -363,7 +390,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			type: galleryDocument.type,
 			typeIcon,
 			typeDescription,
-			description: xssFilters.inHTMLData(md.makeHtml(galleryDocument.description)),
+			description: md.makeHtml(xssFilters.inHTMLData(galleryDocument.description)),
 			featured: galleryDocument.featured,
 			owner: {
 				name: owner.username || "invalid-user",
@@ -914,7 +941,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			const serverData = [];
 			const usr = bot.users.get(req.user.id);
 			const addServerData = (i, callback) => {
-				if(i<req.user.guilds.length) {
+				if(req.user.guilds && i<req.user.guilds.length) {
 					const svr = bot.guilds.get(req.user.guilds[i].id);
 					if(svr && usr) {
 						db.servers.findOne({_id: svr.id}, (err, serverDocument) => {
@@ -1690,7 +1717,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			const serverData = [];
 			const usr = bot.users.get(req.user.id);
 			const addServerData = (i, callback) => {
-				if(i<req.user.guilds.length) {
+				if(req.user.guilds && i<req.user.guilds.length) {
 					const svr = bot.guilds.get(req.user.guilds[i].id);
 					if(!svr && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
 						addServerData(++i, callback);
@@ -1922,79 +1949,6 @@ module.exports = (bot, db, auth, config, winston) => {
 				for(const command in serverDocument.toObject().config.commands) {
 					parseCommandOptions(svr, serverDocument, command, req.body);
 				}
-			}
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
-		});
-	});
-
-	// Admin console music
-	app.get("/dashboard/commands/music", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument) => {
-			res.render("pages/admin-music.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png"
-				},
-				channelData: getChannelData(svr),
-				voiceChannelData: getChannelData(svr, 2),
-				currentPage: req.path,
-				configData: {
-					commands: {
-						music: serverDocument.config.commands.music,
-						trivia: {
-							isEnabled: serverDocument.config.commands.trivia.isEnabled
-						}
-					},
-					music_data: serverDocument.config.music_data
-				},
-				config: {
-					max_voice_channels: config.max_voice_channels
-				},
-				commandDescriptions: {
-					music: bot.getPublicCommandMetadata("music").description
-				},
-				commandCategories: {
-					music: bot.getPublicCommandMetadata("music").category
-				}
-			});
-		});
-	});
-	io.of("/dashboard/commands/music").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/commands/music", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument) => {
-			if(Object.keys(req.body).length==1) {
-				if(req.body["new-name"] && !serverDocument.config.music_data.playlists.id(req.body["new-name"])) {
-					serverDocument.config.music_data.playlists.push({
-						_id: req.body["new-name"]
-					});
-				} else {
-					const args = Object.keys(req.body)[0].split("-");
-					if(args[0]=="new" && args[2]=="item" && args[1] && !isNaN(args[1]) && args[1]>=0 && args[1]<serverDocument.config.music_data.playlists.length) {
-						serverDocument.config.music_data.playlists[parseInt(args[1])].item_urls.push(req.body[Object.keys(req.body)[0]]);
-					}
-				}
-			} else {
-				parseCommandOptions(svr, serverDocument, "music", req.body);
-				serverDocument.config.music_data.addingQueueIsAdminOnly = req.body.addingQueueIsAdminOnly=="true";
-				serverDocument.config.music_data.removingQueueIsAdminOnly = req.body.removingQueueIsAdminOnly=="true";
-				serverDocument.config.music_data.channel_id = req.body.channel_id;
-				for(let i=0; i<serverDocument.config.music_data.playlists.length; i++) {
-					if(req.body[`playlist-${i}-removed`]!=null) {
-						serverDocument.config.music_data.playlists[i] = null;
-					} else {
-						for(let j=0; j<serverDocument.config.music_data.playlists[i].item_urls.length; j++) {
-							if(req.body[`playlist-${i}-item-${j}-removed`]!=null) {
-								serverDocument.config.music_data.playlists[i].item_urls.splice(j, 1);
-							}
-						}
-					}
-				}
-				serverDocument.config.music_data.playlists.spliceNullElements();
 			}
 
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
@@ -2937,6 +2891,8 @@ module.exports = (bot, db, auth, config, winston) => {
 				for(const status_message in serverDocument.toObject().config.moderation.status_messages) {
 					if(["new_member_pm", "member_removed_pm"].indexOf(status_message)==-1) {
 						serverDocument.config.moderation.status_messages[status_message].channel_id = "";
+					} else {
+						serverDocument.config.moderation.status_messages[status_message].message_content = req.body[`${status_message}-message_content`];
 					}
 					for(const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
 						switch(key) {
@@ -3738,7 +3694,9 @@ module.exports = (bot, db, auth, config, winston) => {
 		checkAuth(req, res, () => {
 			if(req.body.message) {
 				bot.guilds.forEach(svr => {
-					svr.defaultChannel.createMessage(req.body.message);
+					svr.defaultChannel.createMessage(req.body.message).then(() => {}, (err) => {
+						winston.error(err)
+					});
 				});
 			}
 			res.redirect(req.originalUrl);
@@ -3823,7 +3781,7 @@ module.exports = (bot, db, auth, config, winston) => {
 			const updateBotUser = avatar => {
 				bot.editSelf({
 					avatar: avatar ? (`data:image/jpeg;base64,${avatar}`) : null,
-					username: req.body.username!=bot.user.username ? req.body.username : null
+					username: req.body.username
 				}).then(() => {
 					let game = {
 						name: req.body.game
@@ -3838,6 +3796,8 @@ module.exports = (bot, db, auth, config, winston) => {
 					}
 					bot.editStatus(req.body.status, game);
 					saveMaintainerConsoleOptions(consolemember, req, res);
+				}, (err) => {
+					winston.error(err)
 				});
 			};
 

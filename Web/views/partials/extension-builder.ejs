@@ -191,7 +191,7 @@ function publishExtension() {
 			<span>Publish</span>
 		</a>
 		<br>
-    <% } else if(extensionData._id) { %>
+    <% } else if(extensionData._id && extensionData.state !== "saved") { %>
     	<a class="button is-info" href="/extensions/<%= extensionData.state %>?id=<%= extensionData._id %>" target="_blank">
 			<span class="icon is-small">
 				<i class="fa fa-info"></i>
