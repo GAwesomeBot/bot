@@ -1,5 +1,6 @@
 const memes = require("./../../Configuration/memes.json");
 const base64 = require("node-base64-image");
+const levenshtein = require("fast-levenshtein");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	this.getRandomMeme = () => {
@@ -17,30 +18,41 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		topText = topText.replace(/&/g, "").trim() || "+";
 		botText = botText.replace(/&/g, "").trim() || "+";
 
-		meme = encodeURI(meme);
 		topText = encodeURI(topText);
 		botText = encodeURI(botText);
-
-		const uri = `http://apimeme.com/meme?meme=${meme}&top=${topText}&bottom=${botText}`;
-		base64.encode(uri, { filename: "meme.jpg" }, (error, image) => {
-			if(!error) {
-				msg.channel.createMessage("", {
-					file: image,
-					name: "meme.jpg"
-				});
-			}
-			else {
-				msg.channel.createMessage(uri);
-			}
-		});
-	};
+        
+        var found = false;
+        for(var i=0; i<memes.length; i++) {
+            if(levenshtein.get(meme.toLowerCase(), memes[i].toLowerCase())<3) {
+                meme = memes[i];
+                found = true;
+                break;
+            }
+        }        
+        if(found) {
+            const uri = "http://apimeme.com/meme?meme=" + encodeURI(meme) + "&top=" + topText + "&bottom=" + botText;
+            base64.encode(uri, { filename: "meme.jpg" }, (error, image) => {
+                if(!error) {
+                    msg.channel.createMessage("", {
+                        file: image,
+                        name: "meme.jpg"
+                    });
+                }
+                else {
+                    msg.channel.createMessage(uri);
+                }
+            });
+        } else {
+            msg.channel.createMessage("http://i.imgur.com/theaeKM.png");
+        }
+    };
 
 	this.search = query => {
 		query = query || "";
 		query = query.trim().toLowerCase();
 
 		if(query.length == 0) {
-			msg.channel.createMessage("No keywords given for search");
+			msg.channel.createMessage("No keywords given for search.");
 		}
 
 		const matches = [];
