@@ -407,7 +407,7 @@
             "category": "Fun 🎪"
         },
         "kick": {
-            "usage": "<user>",
+            "usage": "<user>[|<reason>]",
             "description": "Removes a member from the server",
             "defaults": {
                 "is_enabled": true,
@@ -457,7 +457,7 @@
             "category": "Fun 🎪"
         },
         "messages": {
-            "usage": "[<user>]",
+            "usage": "[<user or \"me\">]",
             "description": "Command that shows the top members on the server by activity",
             "defaults": {
                 "is_enabled": true,
