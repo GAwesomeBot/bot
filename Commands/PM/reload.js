@@ -15,7 +15,7 @@ module.exports = (bot, db, config, winston, userDocument, msg) => {
 	}
 
 	params.forEach(command => {
-		const command_args = command.split("/");
+		const command_args = command.split(".");
 
         // assume public command by default
 		let type = "public";

@@ -2,14 +2,38 @@ const getUserProfile = require("./../../Modules/UserProfile.js");
 
 module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandData) => {
 	if(suffix=="setup") {
-		msg.channel.createMessage(`Hey ${msg.author.mention}, let's talk about your public AwesomeBot profile, available at ${config.hosting_url}activity/users?q=${encodeURIComponent(`${msg.author.username}#${msg.author.discriminator}`)}. First of all, do you want to make data such as your mutual servers with ${bot.user.username} and profile fields public?${userDocument.isProfilePublic ? " It's already public right now, by answering yes you're keeping it that way." : ""}`).then(() => {
+		msg.channel.createMessage({
+			embed: {
+				author: {
+					name: bot.user.username,
+					icon_url: bot.user.avatarURL,
+					url: "https://github.com/GilbertGobbels/GAwesomeBot"
+				},
+				color: 0x9ECDF2,
+				title: `Profile Setup for __${msg.author.username}__`,
+				description: `Hey ${msg.author.mention}, let's talk about your public AwesomeBot profile, available [here](${config.hosting_url}activity/users?q=${encodeURIComponent(`${msg.author.username}#${msg.author.discriminator}`)})\nFirst of all, do you want to make data such as your mutual servers with ${bot.user.username} and profile fields public?${userDocument.isProfilePublic ? " It's already public right now, by answering yes you're keeping it that way." : ""}`
+			}
+		}).then(() => {
 			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
 				userDocument.isProfilePublic = config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1;
 				userDocument.save(err => {
 					if(err) {
 						winston.error("Failed to save user data for profile setup", {usrid: msg.author.id}, err);
 					}
-					msg.channel.createMessage(`Cool! 😀 Next up, what's the URL of the background image you'd like to use? Currently, it's ${userDocument.profile_background_image}, answer with \`.\` to continue using this.`).then(() => {
+					msg.channel.createMessage({
+						embed: {
+							author: {
+								name: bot.user.username,
+								icon_url: bot.user.avatarURL,
+								url: "https://github.com/GilbertGobbels/GAwesomeBot"
+							},
+							color: 0x9ECDF2,
+							description: `Alright! 😀 Next up, what's the URL of the background image you'd like to use? Currently, it's the image you can see, answer with \`.\` to continue using this.`,
+							image: {
+								url: `${userDocument.profile_background_image}`
+							}
+						}
+					}).then(() => {
 						bot.awaitMessage(msg.channel.id, msg.author.id, message => {
 							const askDescription = () => {
 								msg.channel.createMessage({
@@ -19,7 +43,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 											icon_url: bot.user.avatarURL,
 											url: "https://github.com/GilbertGobbels/GAwesomeBot"
 										},
-										color: 0x00FF00,
+										color: 0x9ECDF2,
 										description: "Done, that's your new picture. 🏖 Now, please tell me a little about yourself (max 2000 characters)..."
 									}
 								}).then(() => {
@@ -116,7 +140,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 								},
 								color: 0xFF0000,
 								title: "Error",
-								description: `Couldn't save data! Make sure \`${commandData.name} <tag>|<value>\` has been used correctly! You need a value to the tag!`
+								description: `Couldn't save data! Make sure \`${commandData.name} ${suffix}|<value>\` has been used correctly! You need a value to the tag!`
 							}
 						});
 					}
