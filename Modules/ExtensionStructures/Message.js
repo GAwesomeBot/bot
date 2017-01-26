@@ -77,19 +77,16 @@ class Message {
 	}
     
     get mentions() {
-        const Member = require("./Member");
-        const list = g_erisMessage.mentions;
+        // Ignoring erisMessage.mentions as it needs resorting and there is no need to use it.
+        // It also returns only User objects, but for extensions we want to pass back Member objects.
+        const Guild = require("./Guild");
+        const Collection = require("./Collection");
+        const SrvMembers = new Guild(g_erisMessage.guild).members;
         const content = (g_erisMessage.content.match(/<@!?[0-9]+>/g) || []).map(function(uid){return uid.replace(/[^0-9.]/g, '')});
-        const musers  = content.filter(function(item, pos, self) { return self.indexOf(item) == pos });
-        const order = [];
         const mentions = [];
-        
-        for(var i=0; i<list.length; i++){
-            var ix = musers.indexOf(list[i].id);
-            if(ix > -1) order[ix] = i;
-        }
-        for(var i=0; i<order.length; i++) {
-            mentions.push(new Member(list[order[i]]));
+        for(var i=0; i<content.length; i++) {
+            const member = SrvMembers.get(content[i]);
+            if(member) mentions.push(member);
         }
         return mentions;
     }
