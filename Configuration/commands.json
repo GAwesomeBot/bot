@@ -788,7 +788,7 @@
             "category": "Utility 🔦"
         },
         "time": {
-            "usage": "<location>",
+            "usage": "<location> or <user>",
             "description": "Gets the time in a city or country",
             "defaults": {
                 "is_enabled": true,
