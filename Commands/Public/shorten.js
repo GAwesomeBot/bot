@@ -4,7 +4,7 @@ const googl = require("goo.gl");
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
 		googl.setKey(serverDocument.config.custom_api_keys.google_api_key || auth.tokens.google_api_key);
-		if(suffix.toLowerCase().indexOf("http://goo.gl/")==0 || suffix.toLowerCase().indexOf("goo.gl/")==0) {
+		if(suffix.toLowerCase().indexOf("http://goo.gl/")==0 || suffix.toLowerCase().indexOf("https://goo.gl/")==0 || suffix.toLowerCase().indexOf("goo.gl/")==0) {
 			googl.expand(suffix).then(url => {
 				msg.channel.createMessage(`<${url}>`);
 			}).catch(err => {
