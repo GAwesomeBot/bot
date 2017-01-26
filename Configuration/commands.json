@@ -869,7 +869,7 @@
         },
         "weather": {
             "usage": "<location> [<unit>]",
-            "description": "Gets th current weather and forecast for the given location from MSN Weather",
+            "description": "Gets the current weather and forecast for the given location from MSN Weather",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
