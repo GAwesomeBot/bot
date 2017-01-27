@@ -537,7 +537,7 @@
             "category": "AwesomeBot 🤖"
         },
         "points": {
-            "usage": "[<user>]",
+            "usage": "[<user> or \"me\"]",
             "description": "Records user points and displays them for individual members",
             "defaults": {
                 "is_enabled": true,
