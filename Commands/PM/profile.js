@@ -112,7 +112,8 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				msg.channel.createMessage(`That's not how you set a field in your profile. Use \`${commandData.name} <key>|<value>\``);
 			}
 		} else {
-			if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
+			if(suffix.toLowerCase() == "location" && userDocument.location) { msg.channel.createMessage(userDocument.location); }
+			else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
 				msg.channel.createMessage(userDocument.profile_fields[suffix]);
 			} else {
 				msg.channel.createMessage(`Field \`${suffix}\` not found in your profile. Set it with \`${commandData.name} ${suffix}|<value>\``);
