@@ -15,6 +15,7 @@ module.exports = new mongoose.Schema({
 		expiry_timestamp: {type: Date, required: true}
 	})],
 	location: String,
+	weatherunit: String,
 	last_seen: Date,
 	profile_fields: mongoose.Schema.Types.Mixed,
 	profile_background_image: {type: String, default: "http://i.imgur.com/8UIlbtg.jpg"},

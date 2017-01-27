@@ -92,7 +92,25 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 						userDocument.location = args[1].trim();
 					}
 					saveUserDocument();
-				} else if(userDocument.profile_fields && userDocument.profile_fields[key]) {
+				}
+				else if(key.toLowerCase()=="weatherunit") {
+					if(!args[1] || args[1].trim()==".") {
+						userDocument.weatherunit = null;
+						saveUserDocument();
+					}
+					else if(args[1].trim().toLowerCase() == "fahrenheit" || args[1].trim().toLowerCase() == "f"){
+						userDocument.weatherunit = "Fahrenheit";
+						saveUserDocument();
+					}
+					else if(args[1].trim().toLowerCase() == "celsius" || args[1].trim().toLowerCase() == "c"){
+						userDocument.weatherunit = "Celsius";
+						saveUserDocument();
+					}
+					else {
+						msg.channel.createMessage(`Invalid weather unit specified. Please specify either fahrenheit or celsius.`);
+					}
+				}
+				else if(userDocument.profile_fields && userDocument.profile_fields[key]) {
 					if(!args[1] || args[1].trim()==".") {
 						setProfileField(true);
 					} else {
@@ -113,6 +131,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 			}
 		} else {
 			if(suffix.toLowerCase() == "location" && userDocument.location) { msg.channel.createMessage(userDocument.location); }
+			else if(suffix.toLowerCase() == "weatherunit" && userDocument.weatherunit) { msg.channel.createMessage(userDocument.weatherunit); }
 			else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
 				msg.channel.createMessage(userDocument.profile_fields[suffix]);
 			} else {

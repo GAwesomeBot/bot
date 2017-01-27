@@ -1,7 +1,8 @@
 const weather = require("weather-js");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	let unit = "F";
+	let unit = "C";
+	if(userDocument.weatherunit && userDocument.weatherunit == "Fahrenheit") unit = "F";
 	if([" F", " C"].indexOf(suffix.toUpperCase().substring(suffix.length-2))>-1) {
 		unit = suffix.charAt(suffix.length-1).toUpperCase().toString();
 		suffix = suffix.substring(0, suffix.length-2);
