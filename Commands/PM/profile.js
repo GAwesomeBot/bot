@@ -208,7 +208,20 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				});
 			}
 		} else {
-			if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
+      if(suffix.toLowerCase() == "location" && userDocument.location) {
+        msg.channel.createMessage({
+          embed: {
+            author: {
+              name: bot.user.username,
+              icon_url: bot.user.avatarURL,
+              url: "https://github.com/GilbertGobbels/GAwesomeBot"
+            },
+            color: 0x9ECDF2,
+            title: "Here's the location you've set",
+            description: userDocument.location
+          }
+        });
+      } else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
 				msg.channel.createMessage({
 					embed: {
 						author: {
@@ -231,7 +244,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 						},
 						color: 0xFF0000,
 						title: "Warning",
-						description: `Field \`${suffix}\` not found in your profile. Set it with \`${commandData.name} ${suffix}|<value>\``
+						description: `Field \`${suffix}\` is not found in your profile. Set it with \`${commandData.name} ${suffix}|<value>\``
 					}
 				});
 			}
