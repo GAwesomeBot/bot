@@ -3,7 +3,7 @@ const unirest = require("unirest");
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
 		unirest.get(`http://pokeapi.co/api/v2/pokemon-species/${encodeURIComponent(suffix.toLowerCase())}`).header("Accept", "application/json").end(res => {
-			if(res.status==200 && res.body) {
+			if(res.status == 200 && res.body) {
 				let info = `__Pokemon #${res.body.id}: ${res.body.names[0].name}__\n`;
 				if(res.body.gender_rate==-1) {
 					info += "**Genderless**\n";

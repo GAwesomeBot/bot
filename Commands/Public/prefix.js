@@ -1,6 +1,6 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if(suffix) {
-		if(suffix.length>10) {
+		if(suffix.length > 10) {
 			msg.channel.createMessage(`\`${suffix}\` is too long, don't ya think? 🐳`);
 		} else {
 			serverDocument.config.command_prefix = suffix;

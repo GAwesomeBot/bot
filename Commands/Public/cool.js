@@ -5,21 +5,21 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	let timestr = "";
 	const time = parseDuration(suffix);
 	if(!suffix) {
-		if(channelDocument.command_cooldown>0) {
-			msg.channel.createMessage(`Cooldown of ${moment.duration(channelDocument.command_cooldown).humanize()} in place rn (in this channel) ⏱`);
+		if(channelDocument.command_cooldown > 0) {
+			msg.channel.createMessage(`Cooldown of ${moment.duration(channelDocument.command_cooldown).humanize()} in place right now (in this channel) ⏱`);
 		} else {
-			msg.channel.createMessage("No cmd cooldown in this channel!!!11 🎢");
+			msg.channel.createMessage("No command cooldown in this channel!!!11 🎢");
 		}
 		return;
-	} else if(suffix==".") {
+	} else if(suffix == ".") {
 		channelDocument.command_cooldown = 0;
 		channelDocument.isCommandCooldownOngoing = false;
 		msg.channel.createMessage("Vroom vroom ⏩");
 		return;
-	} else if(suffix.split("|").length==2 && parseDuration(suffix.split("|")[0])>0 && parseDuration(suffix.split("|")[1])>0) {
+	} else if(suffix.split("|").length == 2 && parseDuration(suffix.split("|")[0]) > 0 && parseDuration(suffix.split("|")[1]) > 0) {
 		const time1 = parseDuration(suffix.split("|")[0]);
 		const time2 = parseDuration(suffix.split("|")[1]);
-		if(time1>300000 || time2>3600000) {
+		if(time1 > 300000 || time2 > 3600000) {
 			winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage(`${msg.author.mention} Too big.`);
 			return;
@@ -34,8 +34,8 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			});
 		}, time2);
-	} else if(time>0) {
-		if(time>300000) {
+	} else if(time > 0) {
+		if(time > 300000) {
 			winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage(`${msg.author.mention} Too big.`);
 			return;
@@ -47,5 +47,5 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		msg.channel.createMessage(`${msg.author.mention} You seem confused 🤔`);
 		return;
 	}
-	msg.channel.createMessage(`Created command cooldown${timestr} in this channel ⏲`);
+	msg.channel.createMessage(`Created command cooldown ${timestr} in this channel ⏲`);
 };

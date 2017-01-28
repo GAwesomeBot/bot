@@ -11,7 +11,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		});
 	};
-
 	this.disable = () => {
 		if(!serverDocument.modlog.isEnabled || !serverDocument.modlog.channel_id) {
 			msg.channel.createMessage("Moderation logging is not enabled. ✋");
@@ -21,7 +20,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			msg.channel.createMessage("Moderation logging is now disabled. ❎");
 		}
 	};
-
 	this.enable = chname => {
 		if(chname) {
 			const ch = bot.channelSearch(chname, msg.guild);
@@ -36,7 +34,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			msg.channel.createMessage("A channel is required to enable moderation logging. 👐");
 		}
 	};
-
 	const args = suffix.split(" ");
 	switch(args[0].toLowerCase()) {
 		case "delete":

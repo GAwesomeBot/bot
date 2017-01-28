@@ -1,12 +1,12 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
-		if(suffix.indexOf("|")>-1) {
+		if(suffix.indexOf("|") > -1) {
 			if(msg.member.permission.has("manageNicknames")) {
 				const args = suffix.split("|");
-				if(args.length==2 && args[0].trim()) {
+				if(args.length == 2 && args[0].trim()) {
 					const member = bot.memberSearch(args[0].trim(), msg.guild);
 					if(member) {
-						if(args[1].trim()==".") {
+						if(args[1].trim() == ".") {
 							args[1] = "";
 						}
 						bot.editGuildMember(msg.guild.id, member.id, {nick: args[1].trim()}).then(() => {
@@ -21,7 +21,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 				} else {
 					winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-					msg.channel.createMessage(`${msg.author.mention} huh? use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <user>|<name>\` to change someone's nickname`);
+					msg.channel.createMessage(`${msg.author.mention} huh? Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <user>|<name>\` to change someone's nickname`);
 				}
 			} else {
 				winston.warn(`Member '${msg.author.username}' does not have permission to manage nicknames on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});

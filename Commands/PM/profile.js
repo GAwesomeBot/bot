@@ -1,7 +1,7 @@
 const getUserProfile = require("./../../Modules/UserProfile.js");
 
 module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandData) => {
-	if(suffix=="setup") {
+	if(suffix == "setup") {
 		msg.channel.createMessage({
 			embed: {
 				author: {
@@ -15,7 +15,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 			}
 		}).then(() => {
 			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-				userDocument.isProfilePublic = config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1;
+				userDocument.isProfilePublic = config.yes_strings.includes(message.content.toLowerCase().trim());
 				userDocument.save(err => {
 					if(err) {
 						winston.error("Failed to save user data for profile setup", {usrid: msg.author.id}, err);
@@ -88,7 +88,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 									});
 								});
 							};
-							if(message.content.trim()==".") {
+							if(message.content.trim() == ".") {
 								askDescription();
 							} else {
 								userDocument.profile_background_image = message.content.trim();
@@ -104,10 +104,10 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				});
 			});
 		});
-	} else if(suffix && suffix.toLowerCase()!="me") {
-		if(suffix.indexOf("|")>-1) {
+	} else if(suffix && suffix.toLowerCase() != "me") {
+		if(suffix.indexOf("|") > -1) {
 			const args = suffix.split("|");
-			if(args.length==2 && args[0]) {
+			if(args.length == 2 && args[0]) {
 				const key = args[0].trim();
 				const saveUserDocument = () => {
 					if (!args[1] == "" || !args[1] == null) {
@@ -159,7 +159,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 					userDocument.markModified("profile_fields");
 					saveUserDocument();
 				};
-				if(key.toLowerCase()=="location") {
+				if(key.toLowerCase() == "location") {
 					if(!args[1] || args[1].trim() == ".") {
 						userDocument.location = null;
 					} else {
@@ -183,7 +183,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 							}
 						}).then(() => {
 							bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-								if(config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1) {
+								if(config.yes_strings.includes(message.content.toLowerCase().trim())) {
 									setProfileField()
 								}
 							});
@@ -208,20 +208,20 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				});
 			}
 		} else {
-      if(suffix.toLowerCase() == "location" && userDocument.location) {
-        msg.channel.createMessage({
-          embed: {
-            author: {
-              name: bot.user.username,
-              icon_url: bot.user.avatarURL,
-              url: "https://github.com/GilbertGobbels/GAwesomeBot"
-            },
-            color: 0x9ECDF2,
-            title: "Here's the location you've set",
-            description: userDocument.location
-          }
-        });
-      } else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
+			if(suffix.toLowerCase() == "location" && userDocument.location) {
+				msg.channel.createMessage({
+				  embed: {
+					author: {
+					  name: bot.user.username,
+					  icon_url: bot.user.avatarURL,
+					  url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					},
+					color: 0x9ECDF2,
+					title: "Here's the location you've set",
+					description: userDocument.location
+				  }
+				});
+      		} else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
 				msg.channel.createMessage({
 					embed: {
 						author: {
