@@ -4,35 +4,17 @@ const getUserText = usr => {
 };
 
 const getEntryText = (id, type, affected_user_str, creator_str, reason) => {
-    let fields = [
-        {
-            name: `🔨 **Case ${id}**:`,
-            value: `${type}`,
-            inline: true
-        }
-    ];
+    const info = [`🔨 **Case ${id}**: ${type}`];
     if(affected_user_str) {
-        fields.push({
-            name: `👤 **User**:`,
-            value: `${affected_user_str}`,
-            inline: true
-        });
+        info.push(`👤 **User**: ${affected_user_str}`);
     }
     if(creator_str) {
-        fields.push({
-            name: `🐬 **Moderator**:`,
-            value: `${creator_str}`,
-            inline: true
-        });
+        info.push(`🐬 **Moderator**: ${creator_str}`);
     }
     if(reason) {
-        fields.push({
-            name: `❓ **Reason**:`,
-            value: `${reason}`,
-            inline: true
-        });
+        info.push(`❓ **Reason**: ${reason}`);
     }
-    return fields;
+    return info.join("\n");
 };
 
 module.exports = {
@@ -50,7 +32,7 @@ module.exports = {
                 }
                 ch.createMessage({
                     embed: {
-                        fields: getEntryText(++serverDocument.modlog.current_id, type, affected_user_str, creator_str, reason),
+                        description: getEntryText(++serverDocument.modlog.current_id, type, affected_user_str, creator_str, reason),
                         color: 0x9ECDF2
                     },
                     disableEveryone: true
@@ -95,7 +77,7 @@ module.exports = {
                     ch.getMessage(modlogEntryDocument.message_id).then(message => {
                         message.edit({
                             embed: {
-                                fields: getEntryText(modlogEntryDocument._id, modlogEntryDocument.type, modlogEntryDocument.affected_user, modlogEntryDocument.creator, modlogEntryDocument.reason),
+                                description: getEntryText(modlogEntryDocument._id, modlogEntryDocument.type, modlogEntryDocument.affected_user, modlogEntryDocument.creator, modlogEntryDocument.reason),
                                 color: 0x9ECDF2
                             }
                         }, true).then(() => {
