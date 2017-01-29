@@ -3808,7 +3808,11 @@ module.exports = (bot, db, auth, config, winston) => {
 					updateBotUser(data);
 				});
 			} else {
-				updateBotUser();
+				base64.encode(bot.user.avatarURL, {
+					string: true
+				}, (err, data) => {
+					updateBotUser(data);	
+				});
 			}
 		});
 	});
