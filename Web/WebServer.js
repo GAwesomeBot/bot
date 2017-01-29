@@ -3808,7 +3808,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					updateBotUser(data);
 				});
 			} else {
-				base64.encode(bot.user.avatarURL, {
+				base64.encode(bot.user.avatarURL.replace(".jpg",".webp"), {
 					string: true
 				}, (err, data) => {
 					updateBotUser(data);	
