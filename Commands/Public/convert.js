@@ -3,10 +3,10 @@ const fx = require("money");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	const args = suffix.split(" ");
-	if(args.length==4 && args[2].toLowerCase()=="to") {
+	if(args.length == 4 && args[2].toLowerCase() == "to") {
 		args.splice(2, 1);
 	}
-	if(args.length==3 && args[0] && !isNaN(args[0]) && args[1] && args[2]) {
+	if(args.length == 3 && args[0] && !isNaN(args[0]) && args[1] && args[2]) {
 		try {
 			msg.channel.createMessage(`${Math.round(convert(args[0]).from(args[1]).to(args[2]) * 1000) / 1000} ${args[2]}`);
 		} catch(err) {

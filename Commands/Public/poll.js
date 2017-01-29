@@ -12,14 +12,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					const i = channelDocument.poll.options.map(option => {
 						return option.toLowerCase();
 					}).indexOf(suffix);
-					if(i>-1) {
+					if(i > -1) {
 						vote = i;
 					}
-				} else if(suffix>=0 && suffix<channelDocument.poll.options.length) {
+				} else if(suffix >= 0 && suffix<channelDocument.poll.options.length) {
 					vote = parseInt(suffix);
 				}
-
-				if(vote!=null) {
+				if(vote != null) {
 					channelDocument.poll.responses.push({
 						_id: msg.author.id,
 						vote
@@ -37,7 +36,17 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}).join("\n\t")}\nSo far, the winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length==1 ? "" : "s"} ☑️`,
 				`Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}poll <no. of option>\` here or PM me \`poll ${msg.guild.name}|#${msg.channel.name}\` to vote 🗳`
 			];
-			bot.sendArray(msg.channel, info);
+			msg.channel.createMessage({
+                embed: {
+                    author: {
+                        name: bot.user.username,
+                        icon_url: bot.user.avatarURL,
+                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                    },
+                    color: 0x00FF00,
+                    description: info
+				}
+			});
 		}
 	} else {
 		msg.channel.createMessage(`There is no ongoing poll in this channel. 🛡 PM me \`${commandData.name} ${msg.guild.name}|#${msg.channel.name}\` to start one.`);

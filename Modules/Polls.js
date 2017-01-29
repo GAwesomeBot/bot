@@ -14,7 +14,15 @@ module.exports = {
 					}).join("\n\t")}`,
 					`Use \`${bot.getCommandPrefix(svr, serverDocument)}poll <no. of option>\` here or PM me \`poll ${svr.name}|#${ch.name}\` to vote.`
 				];
-				bot.sendArray(ch, info);
+				ch.createMessage({
+                    author: {
+                        name: bot.user.username,
+                        icon_url: bot.user.avatarURL,
+                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                    },
+                    color: 0x00FF00,
+                    description: info
+				});
 			});
 		}
 	},
@@ -24,12 +32,12 @@ module.exports = {
 		let winnerCount = 0;
 		pollDocument.options.forEach((option, i) => {
 			const count = pollDocument.responses.reduce((n, voteDocument) => {
-				return n + (voteDocument.vote==i);
+				return n + (voteDocument.vote == i);
 			}, 0);
-			if(count>winnerCount) {
+			if(count > winnerCount) {
 				winner = option;
 				winnerCount = count;
-			} else if(count==winnerCount) {
+			} else if(count == winnerCount) {
 				winner = null;
 			}
 			votes[option] = {
@@ -50,7 +58,12 @@ module.exports = {
 				const info = channelDocument.poll.options.map(option => {
 					return `${option}: ${results.votes[option].count} vote${results.votes[option].count==1 ? "" : "s"} (${results.votes[option].percent}%)`;
 				});
-				ch.createMessage(`The poll **${channelDocument.poll.title}** has ended. 🔔 Here are the results:\n\t${info.join("\n\t")}\nThe winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length==1 ? "" : "s"} 🎉`);
+				ch.createMessage({
+					embed: {
+                        color: 0x00FF00,
+						description: `The poll **${channelDocument.poll.title}** has ended. 🔔 Here are the results:\n\t${info.join("\n\t")}\nThe winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length==1 ? "" : "s"} 🎉`
+					}
+				});
 			});
 		}
 	}

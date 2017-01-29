@@ -1,6 +1,6 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	const choices = suffix.split("|");
-	if(suffix && choices.length>=2) {
+	if(suffix && choices.length >= 2) {
 		msg.channel.createMessage(choices.random());
 	} else {
 		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});

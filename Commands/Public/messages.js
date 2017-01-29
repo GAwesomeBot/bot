@@ -1,5 +1,5 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	if(suffix=="me") {
+	if(suffix == "me") {
 		msg.channel.createMessage(`💬 You've sent ${memberDocument.messages} message${memberDocument.messages==1 ? "" : "s"} this week`);
 	} else if(suffix) {
 		const member = bot.memberSearch(suffix, msg.guild);

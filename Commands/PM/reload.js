@@ -1,7 +1,7 @@
 const commands = require("./../../Configuration/commands.json");
 
 module.exports = (bot, db, config, winston, userDocument, msg) => {
-    // maintainers only
+    // Maintainers only
 	if(!~config.maintainers.indexOf(msg.author.id)) {
 		return;
 	}
@@ -15,7 +15,7 @@ module.exports = (bot, db, config, winston, userDocument, msg) => {
 	}
 
 	params.forEach(command => {
-		const command_args = command.split("/");
+		const command_args = command.split(".");
 
         // assume public command by default
 		let type = "public";

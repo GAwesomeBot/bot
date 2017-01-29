@@ -3,7 +3,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		const createCount = name => {
 			msg.channel.createMessage(`I can't find a count called \`${name}\`. Would you like to create it?`).then(() => {
 				bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-					if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
+					if(config.yes_strings.includes(message.content.toLowerCase().trim())) {
 						serverDocument.config.count_data.push({_id: name});
 						serverDocument.save(err => {
 							if(err) {
@@ -16,9 +16,9 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			});
 		};
 		
-		if(suffix.indexOf("|")>-1) {
+		if(suffix.indexOf("|") > -1) {
 			const args = suffix.split("|");
-			if(args.length==2 && args[0].trim() && (!args[1].trim() || [".", "+1", "-1"].indexOf(args[1].trim())>-1)) {
+			if(args.length == 2 && args[0].trim() && (!args[1].trim() || [".", "+1", "-1"].includes(args[1].trim()))) {
 				const countDocument = serverDocument.config.count_data.id(args[0].toLowerCase().trim());
 				if(countDocument) {
 					switch(args[1].trim()) {
@@ -31,7 +31,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 							countDocument.value++;
 							break;
 						case "-1":
-							if(countDocument.value>0) {
+							if(countDocument.value > 0) {
 								countDocument.value--;
 								break;
 							} else {
@@ -47,7 +47,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			} else {
 				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-				msg.channel.createMessage(`${msg.author.mention} me = confused 🕵️`);
+				msg.channel.createMessage(`${msg.author.mention} me = confused 🕵`);
 			}
 		} else {
 			const countDocument = serverDocument.config.count_data.id(suffix.toLowerCase());

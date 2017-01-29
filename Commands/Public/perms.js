@@ -48,30 +48,28 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			}
 		};
-
-		if(suffix.indexOf("|")>-1) {
+		if(suffix.indexOf("|") > -1) {
 			const args = suffix.split("|");
-			if(args.length==2 && args[0].trim() && args[1].trim()) {
+			if(args.length == 2 && args[0].trim() && args[1].trim()) {
 				findRoleOrMember(args[0].trim(), (target, type) => {
 					if(target && type) {
 						const perm = args[1].trim();
 						if(PermissionConstants.hasOwnProperty(perm)) {
 							const doOverwrite = (allow, deny) => {
 								msg.channel.editPermission(target.id, allow, deny, type).then(() => {
-									msg.channel.createMessage(`Done. **${type=="role" ? target.name : (`@${bot.getName(msg.guild, serverDocument, target)}`)}** now ${allow==null ? "doesn't have" : "has"} the \`${perm}\` permission in #${msg.channel.name}`);
+									msg.channel.createMessage(`Done. **${type == "role" ? target.name : (`@${bot.getName(msg.guild, serverDocument, target)}`)}** now ${allow == null ? "doesn't have" : "has"} the \`${perm}\` permission in #${msg.channel.name}`);
 								}).catch(err => {
 									winston.error(`Failed to edit permissions for ${type} in channel '${msg.channel.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 									msg.channel.createMessage("Discord isn't letting me change perms atm. Here's a koala to make up for it: 🐨");
 								});
 							};
-
-							if(type=="role") {
+							if(type == "role") {
 								if(target.permissions.has(perm)) {
 									doOverwrite(null, PermissionConstants[perm]);
 								} else {
 									doOverwrite(PermissionConstants[perm], null);
 								}
-							} else if(type=="member") {
+							} else if(type == "member") {
 								if(msg.channel.permissionsOf(target.id).has(perm) && (!msg.channel.permissionOverwrites.has(target.id) || msg.channel.permissionOverwrites.get(target.id).has(perm))) {
 									doOverwrite(null, PermissionConstants[perm]);
 								} else {
@@ -95,9 +93,9 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			findRoleOrMember(suffix, (target, type) => {
 				if(target && type) {
 					const overwrite = msg.channel.permissionOverwrites.find(a => {
-						return a.id==target.id && a.type==type;
+						return a.id == target.id && a.type == type;
 					});
-					const perms = type=="role" ? target.permissions.json : msg.channel.permissionsOf(target.id).json;
+					const perms = type == "role" ? target.permissions.json : msg.channel.permissionsOf(target.id).json;
 					if(overwrite) {
 						for(const perm in overwrite.json) {
 							if(overwrite.json[perm]==false) {

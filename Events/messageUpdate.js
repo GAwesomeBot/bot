@@ -2,7 +2,7 @@ const runExtension = require("./../Modules/ExtensionRunner.js");
 const checkFiltered = require("./../Modules/FilterChecker.js");
 
 // Message updated (edited, pinned, etc.)
-module.exports = (bot, db, config, winston, msg, oldmsgdata) => {
+module.exports = (bot, db, config, winston, oldmsgdata, msg) => {
 	if(msg && oldmsgdata && msg.guild && msg.author.id!=bot.user.id && !msg.author.bot) {
 		// Get server data
 		db.servers.findOne({_id: msg.guild.id}, (err, serverDocument) => {
@@ -20,7 +20,7 @@ module.exports = (bot, db, config, winston, msg, oldmsgdata) => {
 							const ch = msg.guild.channels.get(serverDocument.config.moderation.status_messages.message_edited_message.channel_id);
 							if(ch) {
 								const targetChannelDocument = serverDocument.channels.id(ch.id);
-								if(!targetChannelDocument || targetChannelDocument.bot_enabled) {
+								if(targetChannelDocument || targetChannelDocument.bot_enabled) {
 									ch.createMessage(`Message by **@${bot.getName(msg.guild, serverDocument, msg.member)}** in #${msg.channel.name} edited. Original:\n\`\`\`${oldmsgdata.cleanContent}\`\`\`Updated:\n\`\`\`${msg.cleanContent}\`\`\``, {disable_everyone: true});
 								}
 							}

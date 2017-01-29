@@ -6,7 +6,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	};
 	
 	if(suffix) {
-		if(suffix.indexOf("|")>-1) {
+		if(suffix.indexOf("|") > -1) {
 			const args = suffix.split("|");
 			if(args[0].trim() && !isNaN(args[0].trim())) {
 				const i = parseInt(args[0].trim()) - 1;

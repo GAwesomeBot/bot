@@ -1,6 +1,6 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	if(suffix=="me") {
-		msg.channel.createMessage(`⭐️ You have **${userDocument.points}** AwesomePoint${userDocument.points==1 ? "" : "s"}`);
+	if(suffix == "me") {
+		msg.channel.createMessage(`⭐ You have **${userDocument.points}** AwesomePoint${userDocument.points == 1 ? "" : "s"}`);
 	} else if(suffix) {
 		const member = bot.memberSearch(suffix, msg.guild);
 		if(member) {
@@ -12,7 +12,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					if(!err && targetUserDocument) {
 						points = targetUserDocument.points;
 					}
-					msg.channel.createMessage(`⭐️ **@${bot.getName(msg.guild, serverDocument, member)}** has ${points} AwesomePoint${points==1 ? "" : "s"}`);
+					msg.channel.createMessage(`⭐ **@${bot.getName(msg.guild, serverDocument, member)}** has ${points} AwesomePoint${points == 1 ? "" : "s"}`);
 				});
 			}
 		} else {

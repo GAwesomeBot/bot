@@ -5,8 +5,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(!num) {
 		num = 1;
 	}
-
-	if(isNaN(num) || num<1 || num>serverDocument.config.command_fetch_properties.max_count) {
+	if(isNaN(num) || num < 1 || num > serverDocument.config.command_fetch_properties.max_count) {
 		num = serverDocument.config.command_fetch_properties.default_count;
 	}
 	unirest.get(`http://catfacts-api.appspot.com/api/facts?number=${num}`).header("Accept", "application/json").end(res => {

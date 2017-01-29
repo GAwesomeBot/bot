@@ -3,13 +3,12 @@ const ModLog = require("./../../Modules/ModerationLogging.js");
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if(suffix) {
 		let member, reason;
-		if(suffix.indexOf("|")>-1 && suffix.length>3) {
+		if(suffix.indexOf("|") > -1 && suffix.length > 3) {
 			member = bot.memberSearch(suffix.substring(0, suffix.indexOf("|")).trim(), msg.guild);
-			reason = suffix.substring(suffix.indexOf("|")+1).trim();
+			reason = suffix.substring(suffix.indexOf("|") + 1).trim();
 		} else {
 			member = bot.memberSearch(suffix, msg.guild);
 		}
-
 		if(member) {
 			if(bot.isMuted(msg.channel, member)) {
 				msg.channel.createMessage(`**@${bot.getName(msg.guild, serverDocument, member)}** is already muted, so I can't mute them again! 🤓`);

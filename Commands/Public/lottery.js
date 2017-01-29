@@ -5,28 +5,28 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	const showNotStarted = () => {
 		msg.channel.createMessage(`There isn't an AwesomePoints lottery going on rn. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} start\` to start one.`);
 	};
-	
 	if(suffix) {
 		switch(suffix.toLowerCase()) {
 			case "start":
 				if(channelDocument.lottery.isOngoing) {
 					const participantCount = channelDocument.lottery.participant_ids.filter((elem, i, self) => {
-						return i==self.indexOf(elem);
+						return i == self.indexOf(elem);
 					}).length;
 					msg.channel.createMessage(`There's already a lottery going on in this channel, with ${participantCount} ${participantCount==1 ? "person" : "people"} currently enrolled. 👍 Wait for it to end before starting a new one.`);
 				} else {
 					Lotteries.start(db, msg.guild, serverDocument, msg.author, msg.channel, channelDocument);
-					msg.channel.createMessage(`AwesomePoints lottery started! 🌟 Anyone can use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} enroll\` for a chance to win! 🤑 The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}`);
+					msg.channel.createMessage(`AwesomePoints lottery started! 🌟 Anyone can use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} enroll\` or \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} join\` for a chance to win! 🤑 The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}`);
 				}
 				break;
+			case "join":
 			case "enroll":
 				if(channelDocument.lottery.isOngoing) {
 					const ticketPrice = Math.floor(channelDocument.lottery.participant_ids.length * Lotteries.multiplier);
-					if(userDocument.points>=ticketPrice) {
+					if(userDocument.points >= ticketPrice) {
 						const userTicketCount = channelDocument.lottery.participant_ids.reduce((n, usrid) => {
-							return n + (usrid==msg.author.id);
+							return n + (usrid == msg.author.id);
 						}, 0);
-						if(userTicketCount>5) {
+						if(userTicketCount > 5) {
 							msg.channel.createMessage(`You can't buy more than 5 lottery tickets ${msg.author.mention}.`);
 						} else {
 							userDocument.points -= ticketPrice;
@@ -56,7 +56,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					if(channelDocument.lottery.creator_id==msg.author.id || bot.getUserBotAdmin(msg.guild, serverDocument, msg.member)>=1) {
 						const winner = Lotteries.end(db, msg.guild, serverDocument, msg.channel, channelDocument);
 						if(!winner) {
-							msg.channel.createMessage("Lottery ended. No one won, though ");
+							msg.channel.createMessage("Lottery ended. No one won, though");
 						}
 					}
 				} else {
