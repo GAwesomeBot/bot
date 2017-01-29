@@ -4,18 +4,27 @@ const parseDuration = require("parse-duration");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
-		if(suffix.indexOf("|")>-1 && suffix.length>=3) {
+		if(suffix.indexOf("|") > -1 && suffix.length >= 3) {
 			const args = [
 				suffix.substring(0, suffix.indexOf("|")).trim(),
-				suffix.substring(suffix.indexOf("|")+1).trim()
+				suffix.substring(suffix.indexOf("|") + 1).trim()
 			];
 			let countdownDocument = serverDocument.config.countdown_data.id(args[0]);
-
 			if(countdownDocument) {
-				msg.channel.createMessage(`**${countdownDocument._id}** already exists. ⏰ Wait until it expires.`);
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0x9ECDF2,
+						description: `**${countdownDocument._id}** already exists. ⏰ Wait until it expires.`
+					}
+				});
 			} else {
 				const time = parseDuration(args[1]);
-				if(time>0) {
+				if(time > 0) {
 					const expiry = Date.now() + time;
 					serverDocument.config.countdown_data.push({
 						_id: args[0],
@@ -24,31 +33,104 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					});
 					countdownDocument = serverDocument.config.countdown_data.id(args[0]);
 					setCountdown(bot, winston, serverDocument, countdownDocument);
-					msg.channel.createMessage(`Alright, set **${args[0]}** to expire ${moment(expiry).fromNow()} 🙃`);
+					msg.channel.createMessage({
+						embed: {
+                            author: {
+                                name: bot.user.username,
+                                icon_url: bot.user.avatarURL,
+                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                            },
+                            color: 0x00FF00,
+							description: `Alright, set **${args[0]}** to expire ${moment(expiry).fromNow()} 🙃`
+						}
+					});
 				} else {
-					msg.channel.createMessage(`\`${args[1]}\` is not a valid length of time`);
+					msg.channel.createMessage({
+						embed: {
+                            author: {
+                                name: bot.user.username,
+                                icon_url: bot.user.avatarURL,
+                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                            },
+                            color: 0xFF0000,
+							description: `\`${args[1]}\` is not a valid length of time`
+						}
+					});
 				}
 			}
 		} else {
 			const countdownDocument = serverDocument.config.countdown_data.id(suffix);
 			if(countdownDocument) {
-				msg.channel.createMessage(`${countdownDocument._id} expires ${moment(countdownDocument.expiry_timestamp).fromNow()} ⌛️`);
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0x00FF00,
+						description: `${countdownDocument._id} expires ${moment(countdownDocument.expiry_timestamp).fromNow()} ⌛`
+					}
+				});
 			} else {
-				msg.channel.createMessage(`That countdown doesn't exist. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${suffix}|<time>\` to create it.`);
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0xFF0000,
+						description: `That countdown doesn't exist. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${suffix}|<time>\` to create it.`
+					}
+				});
 			}
 		}
 	} else {
-		const info = serverDocument.config.countdown_data.filter(countdownDocument => {
+		// const info = serverDocument.config.countdown_data.filter(countdownDocument => {
+		// 	return msg.guild.channels.has(countdownDocument.channel_id);
+		// }).sort((a, b) => {
+		// 	return a.expiry_timestamp - b.expiry_timestamp;
+		// }).map(countdownDocument => {
+		// 	return ``;
+		// });
+		let embed_fields = [];
+		serverDocument.config.countdown_data.filter(countdownDocument => {
 			return msg.guild.channels.has(countdownDocument.channel_id);
 		}).sort((a, b) => {
 			return a.expiry_timestamp - b.expiry_timestamp;
 		}).map(countdownDocument => {
-			return `${countdownDocument._id}: in #${msg.guild.channels.get(countdownDocument.channel_id).name} ${moment(countdownDocument.expiry_timestamp).fromNow()}`;
+			embed_fields.push({
+				name: `${countdownDocument._id}: in #${msg.guild.channels.get(countdownDocument.channel_id).name}`,
+				value: ` ${moment(countdownDocument.expiry_timestamp).fromNow()}`,
+				inline: true
+			});
 		});
-		if(info.length>0) {
-			msg.channel.createMessage(`**⏱ ${info.length} countdown${info.length==1 ? "" : "s"} on this server**\n\t${info.join("\n\t")}`);
+		if(embed_fields.length > 0) {
+			msg.channel.createMessage({
+				embed: {
+                    author: {
+                        name: bot.user.username,
+                        icon_url: bot.user.avatarURL,
+                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                    },
+                    color: 0x00FF00,
+					title: `**⏱ ${embed_fields.length} countdown${embed_fields.length==1 ? "" : "s"} on this server**`,
+					fields: embed_fields
+				}
+			});
 		} else {
-			msg.channel.createMessage(`There aren't any countdowns on this server. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <event>|<time from now>\` to create one. 🐬`);
+			msg.channel.createMessage({
+				embed: {
+                    author: {
+                        name: bot.user.username,
+                        icon_url: bot.user.avatarURL,
+                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                    },
+                    color: 0x9ECDF2,
+					description: `There aren't any countdowns on this server. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <event>|<time from now>\` to create one. 🐬`
+				}
+			});
 		}
 	}
 };

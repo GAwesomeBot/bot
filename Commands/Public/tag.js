@@ -28,7 +28,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	};
 
 	this.confirmAction = message => {
-		return ~config.yes_strings.indexOf(message.content.trim().toLowerCase());
+		return ~config.yes_strings.includes(message.content.trim().toLowerCase());
 	};
 
 	this.delete = () => {
@@ -72,7 +72,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						return;
 					}
 				}
-
 				if(this.value == "") {
 					this.show();
 				}
@@ -81,23 +80,19 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 		}
 	};
-
 	this.get = tag => {
 		tag = tag || this.tag;
 		return serverDocument.config.tags.list.id(tag);
 	};
-
 	this.loadDefaults = () => {
 		serverDocument.config.tags.list = default_tags;
 		msg.channel.createMessage("Loaded default tags 📥");
 	};
-
 	this.list = () => {
 		const tags = serverDocument.config.tags.list.map(tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			return `**${tag._id}**: ${content}`;
 		});
-
 		if(tags.length) {
 			msg.channel.createMessage(tags.join("\n"));
 		}
@@ -105,18 +100,14 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			msg.channel.createMessage("No tags 🙅‍♂️");
 		}
 	};
-
 	this.parse = () => {
 		const params = suffix.split("|");
-
 		if(params.length >= 1) {
 			this.tag = params[0].trim().toLowerCase();
 		}
-
 		if(params.length >= 2) {
 			this.value = params[1].trim();
 		}
-
 		if(params.length >= 3) {
 			const opts = params[2].trim().toLowerCase().split(/\s*,\s*/);
 			if(~opts.indexOf("command")) {
@@ -126,14 +117,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				this.isLocked = true;
 			}
 		}
-
 		const admin_user = serverDocument.config.admins.id(msg.author.id);
 		this.isAdmin = admin_user && admin_user.level;
 		this.hasArgs = params.length > 1;
-
 		return true;
 	};
-
 	this.save = () => {
 		const tag_data = this.get();
 		if(!tag_data) {
@@ -173,7 +161,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			});
 		}
 	};
-
 	this.show = tag => {
 		const tag_data = this.get(tag);
 		if(tag_data) {
@@ -183,16 +170,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			msg.channel.createMessage(`Tag \`${suffix}\` does not exist. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${suffix}|<content>\` to create it.`);
 		}
 	};
-
 	if(!suffix) {
 		this.list();
 		return;
 	}
-
 	if(this.parse()) {
 		this.execute();
 		return;
 	}
-
 	this.show();
 };

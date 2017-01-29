@@ -5,11 +5,41 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		const member = suffix.toLowerCase()=="me" ? msg.member : bot.memberSearch(suffix, msg.guild);
 		if(member) {
 			const targetMemberDocument = serverDocument.members.id(member.id);
-			const info = (targetMemberDocument ? targetMemberDocument.strikes : []).map(strikeDocument => {
+			let embed_fields = [];
+			targetMemberDocument.strikes.map(strikeDocument => {
 				const creator = msg.guild.members.get(strikeDocument._id);
-				return `${strikeDocument.reason} - ${moment(strikeDocument.timestamp).fromNow()} from @${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}`;
+				embed_fields.push({
+					name: `Warning from @${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}`,
+					value: `${strikeDocument.reason} - ${moment(strikeDocument.timestamp).fromNow()}`,
+					inline: true
+				})
 			});
-			msg.channel.createMessage(info.join("\n") || (`✅ **@${bot.getName(msg.guild, serverDocument, member)}** doesn't have any strikes`));
+			if(targetMemberDocument.strikes.length == 0) {
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0x00FF00,
+						description: `✅ **@${bot.getName(msg.guild, serverDocument, member)}** doesn't have any strikes`
+					}
+				});
+			} else {
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0x00FF00,
+						title: `Here are the strikes for ${member.username}`,
+						fields: embed_fields
+					}
+				});
+			}
 		} else {
 			winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage(`I don't know who ${suffix} is! 😦`);

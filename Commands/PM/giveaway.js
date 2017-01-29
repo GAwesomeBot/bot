@@ -2,9 +2,9 @@ const Giveaways = require("./../../Modules/Giveaways.js");
 const parseDuration = require("parse-duration");
 
 module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandData) => {
-	if(suffix && suffix.indexOf("|")>-1) {
+	if(suffix && suffix.indexOf("|") > -1) {
 		const svrname = suffix.substring(0, suffix.indexOf("|")).trim();
-		const chname = suffix.substring(suffix.indexOf("|")+1).trim();
+		const chname = suffix.substring(suffix.indexOf("|") + 1).trim();
 		if(svrname && chname) {
 			const svr = bot.serverSearch(svrname, msg.author, userDocument);
 			if(svr) {
@@ -12,54 +12,112 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				if(member) {
 					db.servers.findOne({_id: svr.id}, (err, serverDocument) => {
 						if(!err && serverDocument) {
-							if(serverDocument.config.blocked.indexOf(msg.author.id)>-1) {
+							if(serverDocument.config.blocked.indexOf(msg.author.id) > -1) {
 								return;
 							}
-
 							const ch = bot.channelSearch(chname, svr);
 							if(ch) {
-								if(ch.type==0) {
+								if(ch.type == 0) {
 									let channelDocument = serverDocument.channels.id(ch.id);
 									if(!channelDocument) {
 										serverDocument.channels.push({_id: ch.id});
 										channelDocument = serverDocument.channels.id(ch.id);
 									}
-
 									if(channelDocument.giveaway.isOngoing) {
-										if(channelDocument.giveaway.creator_id==msg.author.id) {
-											msg.channel.createMessage(`The ongoing giveaway called **${channelDocument.giveaway.title}** in #${ch.name} is yours! Would you like to end it now and let me choose a winner? 💗`).then(() => {
+										if(channelDocument.giveaway.creator_id == msg.author.id) {
+											msg.channel.createMessage({
+												embed: {
+                                                    author: {
+                                                        name: bot.user.username,
+                                                        icon_url: bot.user.avatarURL,
+                                                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                    },
+                                                    color: 0x9ECDF2,
+													description: `The ongoing giveaway called **${channelDocument.giveaway.title}** in #${ch.name} is yours! Would you like to end it now and let me choose a winner? 💗`
+												}
+											}).then(() => {
 												bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-													if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
+													if(config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1) {
 														const winner = Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
-														msg.channel.createMessage(`Alright, giveaway ended. ${winner ? (`The winner was **@${bot.getName(svr, serverDocument, winner)}**`) : "I couldn't choose a winner for some reason tho 😕"}`);
+														msg.channel.createMessage({
+															embed: {
+                                                                author: {
+                                                                    name: bot.user.username,
+                                                                    icon_url: bot.user.avatarURL,
+                                                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                                },
+                                                                color: 0x00FF00,
+																description: `Alright, giveaway ended.\n${winner ? (`The winner was **@${bot.getName(svr, serverDocument, winner)}**`) : "I couldn't choose a winner for some reason tho 😕"}`
+															}
+														});
 													}
 												});
 											});
 										} else {
-											if(channelDocument.giveaway.participant_ids.indexOf(msg.author.id)>-1) {
-												msg.channel.createMessage(`You're already enrolled in the giveaway **${channelDocument.giveaway.title}** in #${ch.name} on ${svr.name}. 👍 Do you want to disenroll?`).then(() => {
+											if(channelDocument.giveaway.participant_ids.indexOf(msg.author.id) > -1) {
+												msg.channel.createMessage({
+													embed: {
+                                                        author: {
+                                                            name: bot.user.username,
+                                                            icon_url: bot.user.avatarURL,
+                                                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                        },
+                                                        color: 0x9ECDF2,
+														description: `You're already joined the giveaway **${channelDocument.giveaway.title}** in #${ch.name} on ${svr.name}. 👍 Do you want to leave?`
+													}
+												}).then(() => {
 													bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-														if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
+														if(config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1) {
 															channelDocument.giveaway.participant_ids.splice(channelDocument.giveaway.participant_ids.indexOf(msg.author.id), 1);
 															serverDocument.save(err => {
 																if(err) {
 																	winston.warn("Failed to save server data for giveaway", {svrid: svr.id, chid: ch.id}, err);
 																}
-																msg.channel.createMessage("Done. Now you definitely won't win anything 😧");
+																msg.channel.createMessage({
+																	embed: {
+                                                                        author: {
+                                                                            name: bot.user.username,
+                                                                            icon_url: bot.user.avatarURL,
+                                                                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                                        },
+                                                                        color: 0x00FF00,
+																		description: "Done. Now you definitely won't win anything 😧"
+																	}
+																});
 															});
 														}
 													});
 												});
 											} else {
-												msg.channel.createMessage(`There's a giveaway called **${channelDocument.giveaway.title}** going on in #${ch.name}. Do you want to register for a chance to win? 🤑`).then(() => {
+												msg.channel.createMessage({
+													embed: {
+                                                        author: {
+                                                            name: bot.user.username,
+                                                            icon_url: bot.user.avatarURL,
+                                                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                        },
+                                                        color: 0x9ECDF2,
+														description: `There's a giveaway called **${channelDocument.giveaway.title}** going on in #${ch.name}. Do you want to join for a chance to win? 🤑`
+													}
+												}).then(() => {
 													bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-														if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
+														if(config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1) {
 															channelDocument.giveaway.participant_ids.push(msg.author.id);
 															serverDocument.save(err => {
 																if(err) {
 																	winston.warn("Failed to save server data for giveaway", {svrid: svr.id, chid: ch.id}, err);
 																}
-																msg.channel.createMessage("Got it! 📸 Good luck!");
+																msg.channel.createMessage({
+																	embed: {
+                                                                        author: {
+                                                                            name: bot.user.username,
+                                                                            icon_url: bot.user.avatarURL,
+                                                                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                                        },
+                                                                        color: 0x00FF00,
+																		description: "Got it! 📸 Good luck!"
+																	}
+																});
 															});
 														}
 													});
@@ -96,28 +154,99 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 												});
 											});
 										} else {
-											msg.channel.createMessage(`🔐 You don't have permission to use this command on ${svr.name}`);
+											msg.channel.createMessage({
+												embed: {
+                                                    author: {
+                                                        name: bot.user.username,
+                                                        icon_url: bot.user.avatarURL,
+                                                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                                    },
+                                                    color: 0xFF0000,
+													description: `🔐 You don't have permission to use this command on ${svr.name}`
+												}
+											});
 										}
 									}
 								} else {
-									msg.channel.createMessage("I can only give stuff away in text channels 🎤");
+									msg.channel.createMessage({
+										embed: {
+                                            author: {
+                                                name: bot.user.username,
+                                                icon_url: bot.user.avatarURL,
+                                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                            },
+                                            color: 0xFF0000,
+											description: "I can only give stuff away in text channels 🎤"
+										}
+									});
 								}
 							} else {
-								msg.channel.createMessage(`There's no channel called ${chname} on ${svr.name} AFAIK ⚠️`);
+								msg.channel.createMessage({
+									embed: {
+                                        author: {
+                                            name: bot.user.username,
+                                            icon_url: bot.user.avatarURL,
+                                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                        },
+                                        color: 0xFF0000,
+										description: `There's no channel called ${chname} on ${svr.name} AFAIK ⚠`
+									}
+								});
 							}
 						} else {
-							msg.channel.createMessage("Uh idk something went wrong. blame mongo. *always blame mongo*");
+							msg.channel.createMessage({
+								embed: {
+                                    author: {
+                                        name: bot.user.username,
+                                        icon_url: bot.user.avatarURL,
+                                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                    },
+                                    color: 0xFF0000,
+									description: "Uh idk something went wrong. Blame Mongo. *always blame mongo*"
+								}
+							});
 						}
 					});
 				} else {
-					msg.channel.createMessage("🈲 You're not on that server lol");
+					msg.channel.createMessage({
+						embed: {
+                            author: {
+                                name: bot.user.username,
+                                icon_url: bot.user.avatarURL,
+                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                            },
+                            color: 0xFF0000,
+							description: "🈲 You're not on that server lol"
+						}
+					});
 				}
 			} else {
-				msg.channel.createMessage("That server doesn't exist or I'm not on it❗️");
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0xFF0000,
+						description: "That server doesn't exist or I'm not on it❗"
+					}
+				});
 			}
 			return;
 		}
 	}
 	winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {usrid: msg.author.id});
-	msg.channel.createMessage(`🏮 \`${commandData.name} ${commandData.usage}\``);
+	msg.channel.createMessage({
+		embed: {
+            author: {
+                name: bot.user.username,
+                icon_url: bot.user.avatarURL,
+                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+            },
+            color: 0xFF0000,
+			title: "Warning! Incorrect Usage!",
+			description: `🏮 \`${commandData.name} ${commandData.usage}\``
+		}
+	});
 };

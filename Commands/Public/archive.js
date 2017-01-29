@@ -8,7 +8,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		const doArchive = (count, lastId, callback) => {
 			bot.getMessages(msg.channel.id, count, lastId).then(messages => {
 				messages.every(msg => {
-					if(archive.length<num) {
+					if(archive.length < num) {
 						archive.push({
 							timestamp: msg.timestamp,
 							id: msg.id,
@@ -28,15 +28,15 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 					return false;
 				});
-				if(archive.length>=num || messages.length<count) {
+				if(archive.length >= num || messages.length < count) {
 					callback(null, archive);
 				} else {
 					const nextCount = num - archive.length;
-					doArchive(nextCount>100 ? 100 : nextCount, archive[archive.length-1].id, callback);
+					doArchive(nextCount >100 ? 100 : nextCount, archive[archive.length-1].id, callback);
 				}
 			}).catch(callback);
 		};
-		doArchive(num>100 ? 100 : num, msg.channel.lastMessageID, (err, archive) => {
+		doArchive(num > 100 ? 100 : num, msg.channel.lastMessageID, (err, archive) => {
 			if(err) {
 				winston.error(`Failed to archive ${suffix} messages`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 				msg.channel.createMessage("🛑 Discord prevented me from completing this task, are you sure I have message history permisssions?");
