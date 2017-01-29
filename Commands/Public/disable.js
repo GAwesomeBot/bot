@@ -10,6 +10,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		if(!serverDocument.config.commands.hasOwnProperty(command)) {
 			return false;
 		}
+		
+		if(command == "disable" || command == "enable"){
+			msg.channel.createMessage("The `enable` and `disable` commands must be disabled through the Admin Console.");
+			return false;
+		}
 
 		if(!~serverDocument.config.commands[command].disabled_channel_ids.indexOf(msg.channel.id)) {
 			serverDocument.config.commands[command].disabled_channel_ids.push(msg.channel.id);

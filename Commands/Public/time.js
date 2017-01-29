@@ -7,7 +7,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			unirest.get(`http://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}`).header("Accept", "application/json").end(res => {
 				if(res.status==200 && res.body.results.length>0) {
 					location = res.body.results[0].formatted_address;
-					unirest.get(`https://maps.googleapis.com/maps/api/timezone/json?location=${res.body.results[0].geometry.location.lat},${res.body.results[0].geometry.location.lng}&timestamp=865871421&sensor=false`).header("Accept", "application/json").end(res => {
+					unirest.get(`https://maps.googleapis.com/maps/api/timezone/json?location=${res.body.results[0].geometry.location.lat},${res.body.results[0].geometry.location.lng}&timestamp=${Math.floor(Date.now() / 1000)}&sensor=false`).header("Accept", "application/json").end(res => {
 						const date = new Date(Date.now() + (parseInt(res.body.rawOffset) * 1000) + (parseInt(res.body.dstOffset) * 1000));
 						msg.channel.createMessage(`🕐 It's ${moment(date).utc().format(config.moment_date_format).replaceAll(" at ", " ")} ${member ? (`for @${bot.getName(msg.guild, serverDocument, member)}`) : (`in ${location}`)} (${res.body.timeZoneName})`);
 					});

@@ -56,14 +56,18 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				const key = args[0].trim();
 				
 				const saveUserDocument = () => {
-					userDocument.save(err => {
-						if(err) {
-							winston.error("Failed to save user data for adding profile field", {usrid: msg.author.id}, err);
-							msg.channel.createMessage("Oops, something went wrong saving that. 😾");
-						} else {
-							msg.channel.createMessage("Got it 👍");
-						}
-					});
+					if(!args[1] == "" || !args[1] == null) {
+							userDocument.save(err => {
+							if(err) {
+								winston.error("Failed to save user data for adding profile field", {usrid: msg.author.id}, err);
+								msg.channel.createMessage("Oops, something went wrong saving that. 😾");
+							} else {
+								msg.channel.createMessage("Got it 👍");
+							}
+						});
+					} else {
+						msg.channel.createMessage(`Couldn't save data! Make sure \`${commandData.name} ${suffix}|<value>\` has been used correctly! You need a value for the tag!`);
+					}
 				};
 
 				const setProfileField = remove => {
@@ -73,7 +77,9 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 						if(!userDocument.profile_fields) {
 							userDocument.profile_fields = {};
 						}
-						userDocument.profile_fields[key] = args[1].trim();
+						if(!args[1] == "" || !args[1] == null) {
+							userDocument.profile_fields[key] = args[1].trim();
+						}
 					}
 					userDocument.markModified("profile_fields");
 					saveUserDocument();
@@ -106,7 +112,8 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 				msg.channel.createMessage(`That's not how you set a field in your profile. Use \`${commandData.name} <key>|<value>\``);
 			}
 		} else {
-			if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
+			if(suffix.toLowerCase() == "location" && userDocument.location) { msg.channel.createMessage(userDocument.location); }
+			else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
 				msg.channel.createMessage(userDocument.profile_fields[suffix]);
 			} else {
 				msg.channel.createMessage(`Field \`${suffix}\` not found in your profile. Set it with \`${commandData.name} ${suffix}|<value>\``);

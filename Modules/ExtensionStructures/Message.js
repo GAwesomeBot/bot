@@ -22,17 +22,6 @@ class Message {
 		this.timestamp = erisMessage.timestamp;
 		this.tts = erisMessage.tts;
 
-		this.mentions = () => {
-			const Collection = require("./Collection");
-			const User = require("./User");
-
-			const mentions = new Collection(User);
-			mentions.forEach(user => {
-				this.mentions.add(new User(user));
-			});
-			return mentions;
-		};
-
 		this.delete = cb => {
 			erisMessage.delete().then(() => {
 				if(Util.isFunction(cb)) {
@@ -86,6 +75,22 @@ class Message {
 		const Member = require("./Member");
 		return new Member(g_erisMessage.member);
 	}
+    
+    get mentions() {
+        // Ignoring erisMessage.mentions as it needs resorting and there is no need to use it.
+        // It also returns only User objects, but for extensions we want to pass back Member objects.
+        const Guild = require("./Guild");
+        const Collection = require("./Collection");
+        const SrvMembers = new Guild(g_erisMessage.guild).members;
+        const content = (g_erisMessage.content.match(/<@!?[0-9]+>/g) || []).map(function(uid){return uid.replace(/[^0-9.]/g, '')});
+        const mentions = [];
+        for(var i=0; i<content.length; i++) {
+            const member = SrvMembers.get(content[i]);
+            if(member) mentions.push(member);
+        }
+        return mentions;
+    }
+
 }
 
 module.exports = Message;
