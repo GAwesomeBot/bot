@@ -10,12 +10,17 @@ module.exports = class Extension {
 		}
 
 		this.writeStore = (key, value, callback) => {
-			const storeClone = JSON.parse(JSON.stringify(extensionDocument.store));
-			storeClone[key] = value;
-			if(sizeof(storeClone)>25000) {
+			var Store = null;
+            if(extensionDocument.store === undefined){
+                Store = {};
+            } else {
+                Store = JSON.parse(JSON.stringify(extensionDocument.store));
+            }
+            Store[key] = value;
+            if(sizeof(Store)>25000) {
 				callback(new Error("Extension store exceeds 25 KB limit"), extensionDocument.store);
 			} else {
-				extensionDocument.store[key] = value;
+				extensionDocument.store = Store;
 				this.store = extensionDocument.store;
 				serverDocument.markModified("extensions");
 				serverDocument.save(err => {
@@ -28,15 +33,21 @@ module.exports = class Extension {
 		};
 
 		this.deleteStore = (key, callback) => {
-			delete extensionDocument.store[key];
-			this.store = extensionDocument.store;
-			serverDocument.markModified("extensions");
-			serverDocument.save(err => {
-				if(err) {
-					winston.error(`Failed to save server data for extension '${extensionDocument._id}'`, {svrid: svr.id}, err);
-				}
-				callback(err, extensionDocument.store);
-			});
-		};
-	}
+			if(extensionDocument.store === undefined){
+                callback(new Error("Store is empty."), extensionDocument.store);
+            } else {
+                var Store = JSON.parse(JSON.stringify(extensionDocument.store));
+                delete Store[key];
+                extensionDocument.store = Store;
+                this.store = extensionDocument.store;
+                serverDocument.markModified("extensions");
+                serverDocument.save(err => {
+                    if(err) {
+                        winston.error(`Failed to save server data for extension '${extensionDocument._id}'`, {svrid: svr.id}, err);
+                    }
+                    callback(err, extensionDocument.store);
+                });
+            }
+        };
+    }
 };
