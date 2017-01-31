@@ -129,7 +129,11 @@ module.exports = (bot, db, config, winston) => {
 								const ch = svr.channels.get(channelDocument._id);
 								if(ch) {
 									setTimeout(() => {
-										bot.endGiveaway(svr, serverDocument, ch, channelDocument);
+										if (bot.endGiveaway) {
+											bot.endGiveaway(svr, serverDocument, ch, channelDocument);
+										} else {
+											winston.error("Something went wrong while attempting to end a giveaway :/")
+										}
 									}, channelDocument.giveaway.expiry_timestamp - Date.now());
 								}
 							}
