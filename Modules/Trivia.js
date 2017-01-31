@@ -31,7 +31,7 @@ module.exports = {
 			const doNext = () => {
 				let set = defaultTriviaSet;
 				if(channelDocument.trivia.set_id!="default") {
-					set = serverDocument.config.trivia_sets.id(set);
+					set = serverDocument.config.trivia_sets.id(channelDocument.trivia.set_id).items;
 				}
 				if(set) {
 					const question = module.exports.question(set, channelDocument);
