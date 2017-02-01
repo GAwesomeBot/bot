@@ -24,6 +24,10 @@ module.exports = class Member {
 		this.defaultAvatarURL = erisMember.defaultAvatarURL;
 		this.discriminator = erisMember.discriminator;
 		this.username = erisMember.username;
+		
+		//pass g_erisMember.user object now
+		const User = require("./User");
+		this.user = new User(g_erisMember.user);
 
 		// functions
 		this.ban = (deleteMessageDays, cb) => {
@@ -67,11 +71,6 @@ module.exports = class Member {
 	get permission() {
 		const Permission = require("./Permission");
 		return new Permission(g_erisMember.permission);
-	}
-
-	get user() {
-		const User = require("./User");
-		return new User(g_erisMember.user);
 	}
 
 	get voiceState() {

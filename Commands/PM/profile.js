@@ -166,6 +166,29 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 						userDocument.location = args[1].trim();
 					}
 					saveUserDocument();
+				} else if(key.toLowerCase() == "weatherunit") {
+					if(!args[1] || args[1].trim() == ".") {
+						userDocument.weatherunit = null;
+						saveUserDocument();
+					} else if(args[1].trim().toLowerCase() == "fahrenheit" || args[1].trim().toLowerCase() == "f") {
+						userDocument.weatherunit = "Fahrenheit";
+						saveUserDocument();
+					} else if(args[1].trim().toLowerCase() == "celsius" || args[1].trim().toLowerCase() == "c") {
+						userDocument.weatherunit = "Celsius";
+						saveUserDocument();
+					} else {
+						msg.channel.createMessage({
+							embed: {
+								author: {
+									name: bot.user.username,
+									icon_url: bot.user.avatarURL,
+									url: "https://github.com/GilbertGobbels/GAwesomeBot"
+								},
+								color: 0xFF0000,
+								description: `Invalid weather unit specified. Please specify either fahrenheit or celsius.`
+							}
+						});
+					}
 				} else if(userDocument.profile_fields && userDocument.profile_fields[key]) {
 					if(!args[1] || args[1].trim() == ".") {
 						setProfileField(true);
@@ -219,6 +242,19 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 					color: 0x9ECDF2,
 					title: "Here's the location you've set",
 					description: userDocument.location
+				  }
+				});
+      		} else if(suffix.toLowerCase() == "weatherunit" && userDocument.weatherunit) {
+      			msg.channel.createMessage({
+				  embed: {
+					author: {
+					  name: bot.user.username,
+					  icon_url: bot.user.avatarURL,
+					  url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					},
+					color: 0x9ECDF2,
+					title: "Here's the weather unit you've set",
+					description: userDocument.weatherunit
 				  }
 				});
       		} else if(userDocument.profile_fields && userDocument.profile_fields[suffix]) {
