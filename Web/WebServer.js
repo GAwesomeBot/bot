@@ -3240,7 +3240,7 @@ module.exports = (bot, db, auth, config, winston) => {
 								name: ch.name,
 								id: ch.id
 							},
-							set: channelDocument.trivia.set,
+							set: channelDocument.trivia.set_id,
 							score: channelDocument.trivia.score,
 							max_score: channelDocument.trivia.max_score,
 							responders: channelDocument.trivia.responders.length
