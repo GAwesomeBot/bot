@@ -76,7 +76,8 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x00FF00,
-                    description: `🔮 Ongoing results for the poll **${channelDocument.poll.title}**\n\tSo far, the winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length == 1 ? "" : "s"} ☑ \nUse \`${bot.getCommandPrefix(msg.guild, serverDocument)}poll <no. of option>\` here or PM me \`poll ${msg.guild.name}|#${msg.channel.name}\` to vote 🗳`
+                    description: `🔮 Ongoing results for the poll **${channelDocument.poll.title}**\n\tSo far, the winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length == 1 ? "" : "s"} ☑ \nUse \`${bot.getCommandPrefix(msg.guild, serverDocument)}poll <no. of option>\` here or PM me \`poll ${msg.guild.name}|#${msg.channel.name}\` to vote 🗳`,
+					fields: embed_fields
 				}
 			});
 		}
