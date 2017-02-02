@@ -50,13 +50,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			const richestMembers = userDocuments ? userDocuments.map(a => {
 				return `@${bot.getName(msg.guild, serverDocument, msg.guild.members.get(a._id))}: ${a.points} AwesomePoint${a.points==1 ? "" : "s"}`;
 			}) : [];
-
-			const info = [
-				`**☢ Most active members**\n\t${mostActiveMembers.join("\n\t") || "*The server has been dead this week*"}`,
-				`**🎮 Most-played games**\n\t${mostPlayedGames.join("\n\t") || "*No one on this server plays games*"}`,
-				`**🤑 Richest members**\n\t${richestMembers.join("\n\t") || "*Everyone on this server is really poor*"}`,
-				`**ℹ Most-used commands**\n\t${mostUsedCommands.join("\n\t") || "*I haven't been used much this week*"}`
-			];
 			let embed_fields = [];
 			embed_fields.push({
 				name: "**☢ Most active members**",
