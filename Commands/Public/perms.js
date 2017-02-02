@@ -57,10 +57,30 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						if(PermissionConstants.hasOwnProperty(perm)) {
 							const doOverwrite = (allow, deny) => {
 								msg.channel.editPermission(target.id, allow, deny, type).then(() => {
-									msg.channel.createMessage(`Done. **${type == "role" ? target.name : (`@${bot.getName(msg.guild, serverDocument, target)}`)}** now ${allow == null ? "doesn't have" : "has"} the \`${perm}\` permission in #${msg.channel.name}`);
+									msg.channel.createMessage({
+										embed: {
+                                            author: {
+                                                name: bot.user.username,
+                                                icon_url: bot.user.avatarURL,
+                                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                            },
+                                            color: 0x00FF00,
+											description: `Done. **${type == "role" ? target.name : (`@${bot.getName(msg.guild, serverDocument, target)}`)}** now ${allow == null ? "doesn't have" : "has"} the \`${perm}\` permission in #${msg.channel.name}`
+										}
+									});
 								}).catch(err => {
 									winston.error(`Failed to edit permissions for ${type} in channel '${msg.channel.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
-									msg.channel.createMessage("Discord isn't letting me change perms atm. Here's a koala to make up for it: 🐨");
+									msg.channel.createMessage({
+										embed: {
+                                            author: {
+                                                name: bot.user.username,
+                                                icon_url: bot.user.avatarURL,
+                                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                            },
+                                            color: 0xFF0000,
+											description: "Discord isn't letting me change perms atm. Here's a koala to make up for it: 🐨"
+										}
+									});
 								});
 							};
 							if(type == "role") {
@@ -78,16 +98,46 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 							}
 						} else {
 							winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-							msg.channel.createMessage(`That's not an accepted permission name. Here's the list:\`\`\`${Object.keys(PermissionConstants).sort().join(", ")}\`\`\``);
+							msg.channel.createMessage({
+								embed: {
+                                    author: {
+                                        name: bot.user.username,
+                                        icon_url: bot.user.avatarURL,
+                                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                    },
+                                    color: 0xFF0000,
+									description: `That's not an accepted permission name. Here's the list:\`\`\`${Object.keys(PermissionConstants).sort().join(", ")}\`\`\``
+								}
+							});
 						}
 					} else {
 						winston.warn(`Requested role/member does not exist so ${commandData.name} cannot be set`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-						msg.channel.createMessage(`${msg.author.mention} I couldn't find a role or member called \`${args[0].trim()}\`. Please try again 🙏`);
+						msg.channel.createMessage({
+							embed: {
+                                author: {
+                                    name: bot.user.username,
+                                    icon_url: bot.user.avatarURL,
+                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                },
+                                color: 0xFF0000,
+								description: `I couldn't find a role or member called \`${args[0].trim()}\`. Please try again 🙏`
+							}
+						});
 					}
 				});
 			} else {
 				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-				msg.channel.createMessage(`${msg.author.mention} Invalid syntax - use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <user or role>|<permission name>\``);
+				msg.channel.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0xFF0000,
+						description: `Invalid syntax - use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <user or role>|<permission name>\``
+					}
+				});
 			}
 		} else {
 			findRoleOrMember(suffix, (target, type) => {
@@ -98,15 +148,35 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					const perms = type == "role" ? target.permissions.json : msg.channel.permissionsOf(target.id).json;
 					if(overwrite) {
 						for(const perm in overwrite.json) {
-							if(overwrite.json[perm]==false) {
+							if(overwrite.json[perm] == false) {
 								delete perms[perm];
 							}
 						}
 					}
-					msg.channel.createMessage(`\`\`\`${Object.keys(perms).sort().join(", ")}\`\`\``);
+					msg.channel.createMessage({
+						embed: {
+                            author: {
+                                name: bot.user.username,
+                                icon_url: bot.user.avatarURL,
+                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                            },
+                            color: 0x00FF00,
+							description: `\`\`\`${Object.keys(perms).sort().join(", ")}\`\`\``
+						}
+					});
 				} else {
 					winston.warn(`Requested role/member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-					msg.channel.createMessage(`${msg.author.mention} I couldn't find a role or member called \`${suffix}\`. Please try again 🙏`);
+					msg.channel.createMessage({
+						embed: {
+                            author: {
+                                name: bot.user.username,
+                                icon_url: bot.user.avatarURL,
+                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                            },
+                            color: 0xFF0000,
+							description: `I couldn't find a role or member called \`${suffix}\`. Please try again 🙏`
+						}
+					});
 				}
 			});
 		}

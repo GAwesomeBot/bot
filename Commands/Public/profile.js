@@ -18,7 +18,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				value: `${moment(member.joinedAt).fromNow()}`,
 				inline: true
 			}];
-			const info = [];
 			if(member.nick) {
 				embed_fields.push({
 					name: `🏷 Nickname:`,
@@ -95,6 +94,16 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		}
 	} else {
 		winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage("I don't know who that is, so I can't tell you anything about them 💤");
+		msg.channel.createMessage({
+			embed: {
+                author: {
+                    name: bot.user.username,
+                    icon_url: bot.user.avatarURL,
+                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                },
+                color: 0xFF0000,
+				description: "I don't know who that is, so I can't tell you anything about them 💤"
+			}
+		});
 	}
 };

@@ -9,7 +9,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(suffix.startsWith("/r/")) {
 		suffix = suffix.slice(3);
 	}
-
 	let query = "all";
 	let num = serverDocument.config.command_fetch_properties.default_count;
 	if(suffix) {
@@ -23,22 +22,20 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				query = suffix;
 				num = serverDocument.config.command_fetch_properties.default_count;
 			}
-			if(num<1 || num>serverDocument.config.command_fetch_properties.max_count) {
+			if(num < 1 || num > serverDocument.config.command_fetch_properties.max_count) {
 				num = serverDocument.config.command_fetch_properties.default_count;
 			} else {
 				num = parseInt(num);
 			}
 		}
 	}
-
 	unirest.get(`https://www.reddit.com/r/${encodeURIComponent(query)}/.json`).header("Accept", "application/json").end(res => {
-		if(res.status==200 && res.body && res.body.data && res.body.data.children && res.body.data.children.length>0) {
+		if(res.status == 200 && res.body && res.body.data && res.body.data.children && res.body.data.children.length > 0) {
 			const data = res.body.data.children;
 			const info = [];
-			for(let i=0; i<Math.min(num, data.length); i++) {
+			for(let i = 0; i < Math.min(num, data.length); i++) {
 				if(data && data[i].data) {
 					if(data[i].data.over_18 && bot.getUserBotAdmin(msg.guild, serverDocument, msg.member)<1 && checkFiltered(serverDocument, msg.channel, null, true, false, true)) {
-
 						// Delete offending message if necessary
 						if(serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 							msg.delete().then().catch(err => {

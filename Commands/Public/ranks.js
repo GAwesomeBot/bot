@@ -7,7 +7,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			return `@${bot.getName(msg.guild, serverDocument, member)}`;
 		}).sort().join("\n\t");
 	};
-	
 	if(suffix) {
 		const rankDocument = serverDocument.config.ranks_list.id(suffix);
 		if(rankDocument) {
@@ -17,7 +16,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			} else {
 				msg.channel.createMessage(`No one on the server has the rank \`${rankDocument._id}\`...yet 🤐`);
 			}
-		} else if(suffix.toLowerCase()=="me") {
+		} else if(suffix.toLowerCase() == "me") {
 			msg.channel.createMessage(`You have the rank \`${memberDocument.rank}\` 🏆`);
 		} else {
 			const member = bot.memberSearch(suffix, msg.guild);
@@ -40,7 +39,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		}
 	} else {
 		const info = [];
-		for(let i=serverDocument.config.ranks_list.length-1; i>=0; i--) {
+		for(let i = serverDocument.config.ranks_list.length - 1; i >= 0; i--) {
 			const rankText = getRankText(serverDocument.config.ranks_list[i]._id);
 			if(rankText) {
 				info.push(`**🏆 ${serverDocument.config.ranks_list[i]._id} (${serverDocument.config.ranks_list[i].max_score})**\n\t${rankText}`);
