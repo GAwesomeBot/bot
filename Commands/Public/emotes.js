@@ -1,16 +1,5 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg) => {
-	let embed_fields = [];
-	msg.guild.emojis.map(emoji => {
-		embed_fields.push({
-			name: `${emoji.name}`,
-			value: `<:${emoji.name}:${emoji.id}>`,
-			inline: true
-		});
-	});
-	let footer_warning = "";
-	if (embed_fields.length > 25)
-		footer_warning = "There are more than 25 custom emotes. The bot can only show the first 25.";
-	if(embed_fields.length > 0) {
+	if(msg.guild.emojis.length > 0) {
 		msg.channel.createMessage({
 			embed: {
                 author: {
@@ -19,11 +8,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                 },
                 color: 0x00FF00,
-				title: `**${embed_fields.length} custom emote${embed_fields.length == 1 ? "" : "s"} on this server:**`,
-				fields: embed_fields,
-				footer: {
-                	text: footer_warning
-				}
+				title: `**${msg.guild.emojis.length} custom emote${msg.guild.emojis.length == 1 ? "" : "s"} on this server:**`,
+				description: msg.guild.emojis.map(emoji => {
+								return `<:${emoji.name}:${emoji.id}>: ${emoji.name}`;
+							}).join(`\n`)
 			}
 		});
 	} else {
