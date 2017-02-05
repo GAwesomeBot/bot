@@ -10,7 +10,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			} else {
 				query = suffix;
 			}
-
 			const usr = users.find(usr => {
 				return usr.username==query || usr.id==query;
 			});

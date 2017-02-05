@@ -36,9 +36,19 @@ module.exports = {
 							userDocument.points += prize;
 						}
 						const participantCount = channelDocument.lottery.participant_ids.filter((elem, i, self) => {
-							return i==self.indexOf(elem);
+							return i == self.indexOf(elem);
 						}).length;
-						ch.createMessage(`Congratulations ${winner.mention}! 🎊 You won the lottery for **${prize}** AwesomePoints out of ${participantCount} participant${participantCount==1 ? "" : "s"}. Enjoy the cash 💰`);
+						ch.createMessage({
+							embed: {
+                                author: {
+                                    name: bot.user.username,
+                                    icon_url: bot.user.avatarURL,
+                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                                },
+                                color: 0x00FF00,
+								description: `Congratulations ${winner.mention}! 🎊 You won the lottery for **${prize}** AwesomePoints out of ${participantCount} participant${participantCount == 1 ? "" : "s"}. Enjoy the cash 💰`
+							}
+						});
 					});
 				}
 			});

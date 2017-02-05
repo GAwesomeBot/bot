@@ -3,57 +3,87 @@ const moment = require("moment");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	let member;
-	if(suffix && suffix.toLowerCase()!="me") {
+	if(suffix && suffix.toLowerCase() != "me") {
 		member = bot.memberSearch(suffix, msg.guild);
 	} else {
 		member = msg.member;
 	}
-
 	const showProfile = targetUserDocument => {
 		msg.channel.createMessage({
-			content: getUserProfile(bot, config, member.user, targetUserDocument, bot.getName(msg.guild, serverDocument, member)),
-			disableEveryone: true
+			embed: getUserProfile(bot, config, member.user, targetUserDocument, bot.getName(msg.guild, serverDocument, member)),
 		}).then(() => {
-			const info = [
-				`**On ${msg.guild.name}:**`,
-				`⌛️ Joined server ${moment(member.joinedAt).fromNow()}`,
-			];
+			let embed_fields = [
+			{
+				name: `⌛ Joined server `,
+				value: `${moment(member.joinedAt).fromNow()}`,
+				inline: true
+			}];
 			if(member.nick) {
-				info.push(`🏷 Nickname: ${member.nick}`);
+				embed_fields.push({
+					name: `🏷 Nickname:`,
+					value: `${member.nick}`,
+					inline: true
+				});
 			}
-			info.push(`🗣 Roles: ${member.roles.map(roleid => {
-				return msg.guild.roles.get(roleid).name;
-			}).join(", ") || "@everyone"}`);
+			embed_fields.push({
+				name: `🗣 Roles:`,
+				value:  `${member.roles.map(roleid => {
+                    return msg.guild.roles.get(roleid).name;
+                }).join(", ") || "@everyone"}`,
+				inline: true
+			});
 			if(!member.user.bot) {
 				let targetMemberDocument = serverDocument.members.id(member.id);
 				if(!targetMemberDocument) {
 					serverDocument.members.push({_id: member.id});
 					targetMemberDocument = serverDocument.members.id(member.id);
 				}
-				info.push(`💬 ${targetMemberDocument.messages} text message${targetMemberDocument.messages==1 ? "" : "s"} this week`);
-				if(targetMemberDocument.voice>0) {
+				embed_fields.push({
+					name: `💬 Message Amount`,
+					value: `${targetMemberDocument.messages} text message${targetMemberDocument.messages == 1 ? "" : "s"} this week`,
+					inline: true
+				});
+				if(targetMemberDocument.voice > 0) {
 					const voiceActivityDuration = moment.duration(targetMemberDocument.voice*6000).humanize();
-					info.push(`🎙 ${voiceActivityDuration.charAt(0).toUpperCase()}${voiceActivityDuration.slice(1)} active on voice chat this week`);
+					embed_fields.push({
+						name: "🎙 Voice Activity",
+						value: `${voiceActivityDuration.charAt(0).toUpperCase()}${voiceActivityDuration.slice(1)} active on voice chat this week`,
+						inline: true
+					});
 				}
-				info.push(
-					`🏆 Rank: ${targetMemberDocument.rank || (serverDocument.configs.ranks_list[0] || {_id: "None"})._id}`,
-					`❎ Strikes: ${targetMemberDocument.strikes.length} so far`
-				);
+				embed_fields.push({
+					name: `🏆 Rank: `,
+					value: `${targetMemberDocument.rank || (serverDocument.configs.ranks_list[0] || {_id: "None"})._id}`,
+					inline: true
+				});
+				embed_fields.push({
+					name: `❎ Strikes: `,
+					value: `${targetMemberDocument.strikes.length} so far`,
+					inline: true
+				});
 				if(targetMemberDocument.profile_fields) {
 					for(const key in targetMemberDocument.profile_fields) {
-						info.push(`ℹ️ ${key}: ${targetMemberDocument.profile_fields[key]}`);
+						embed_fields.push({
+							name: `ℹ ${key}:`,
+							value: `${targetMemberDocument.profile_fields[key]}`,
+							inline: true
+						});
 					}
 				}
 			}
 			msg.channel.createMessage({
-				content: info.join("\n"),
+				embed: {
+					title: `**On ${msg.guild.name}:**`,
+                    color: 0x9ECDF2,
+					fields: embed_fields
+				},
 				disableEveryone: true
 			});
 		});
 	};
 
 	if(member) {
-		if(member.id==msg.author.id) {
+		if(member.id == msg.author.id) {
 			showProfile(userDocument);
 		} else if(!member.user.bot) {
 			db.users.findOrCreate({_id: member.id}, (err, targetUserDocument) => {
@@ -64,6 +94,16 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		}
 	} else {
 		winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage("I don't know who that is, so I can't tell you anything about them 💤");
+		msg.channel.createMessage({
+			embed: {
+                author: {
+                    name: bot.user.username,
+                    icon_url: bot.user.avatarURL,
+                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                },
+                color: 0xFF0000,
+				description: "I don't know who that is, so I can't tell you anything about them 💤"
+			}
+		});
 	}
 };

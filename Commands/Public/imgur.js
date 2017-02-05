@@ -3,7 +3,7 @@ const imgur = require("imgur-node-api");
 imgur.setClientID(auth.tokens.imgur_client_id);
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	if(msg.attachments.length>0 || (suffix && (/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/).test(suffix))) {
+	if(msg.attachments.length > 0 || (suffix && (/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/).test(suffix))) {
 		let url = suffix;
 		if(msg.attachments.length>0) {
 			url = msg.attachments[0].url;

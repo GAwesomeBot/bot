@@ -4,7 +4,18 @@ module.exports = (bot, winston, userDocument, reminderDocument) => {
 		const usr = bot.users.get(userDocument._id);
 		if(usr) {
 			usr.getDMChannel().then(ch => {
-				ch.createMessage(`**Reminder:** ${reminderDocument.name}`);
+				ch.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+						color: 0x9ECDF2,
+						title: "**Reminder**",
+						description: `${reminderDocument.name}`
+					}
+				});
 			});
 			reminderDocument.remove();
 			userDocument.save(err => {

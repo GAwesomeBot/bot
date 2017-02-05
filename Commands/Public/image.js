@@ -8,13 +8,12 @@ const getRandomInt = (min, max) => {
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
 		let start;
-		if(suffix.substring(suffix.lastIndexOf(" ")+1).toLowerCase()=="random" && suffix.substring(0, suffix.lastIndexOf(" "))) {
+		if(suffix.substring(suffix.lastIndexOf(" ") + 1).toLowerCase() == "random" && suffix.substring(0, suffix.lastIndexOf(" "))) {
 			suffix = suffix.substring(0, suffix.lastIndexOf(" "));
 			start = getRandomInt(0, 19);
 		}
-
 		giSearch(serverDocument, suffix, serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.nsfw_filter.isEnabled && serverDocument.config.moderation.filters.nsfw_filter.disabled_channel_ids.indexOf(msg.channel.id)==-1, start, url => {
-			if(url==403) {
+			if(url == 403) {
 				msg.channel.createMessage("Looks like we've hit the daily Google Image Search API rate limit, folks! Sorry about that."); // TODO: link to wiki here
 			} else if(url) {
 				msg.channel.createMessage(url);

@@ -50,14 +50,38 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			const richestMembers = userDocuments ? userDocuments.map(a => {
 				return `@${bot.getName(msg.guild, serverDocument, msg.guild.members.get(a._id))}: ${a.points} AwesomePoint${a.points==1 ? "" : "s"}`;
 			}) : [];
-
-			const info = [
-				`**☢ Most active members**\n\t${mostActiveMembers.join("\n\t") || "*The server has been dead this week*"}`,
-				`**🎮 Most-played games**\n\t${mostPlayedGames.join("\n\t") || "*No one on this server plays games*"}`,
-				`**🤑 Richest members**\n\t${richestMembers.join("\n\t") || "*Everyone on this server is really poor*"}`,
-				`**ℹ️ Most-used commands**\n\t${mostUsedCommands.join("\n\t") || "*I haven't been used much this week*"}`
-			];
-			bot.sendArray(msg.channel, info);
+			let embed_fields = [];
+			embed_fields.push({
+				name: "**☢ Most active members**",
+				value: `${mostActiveMembers.join("\n") || "*The server has been dead this week*"}`,
+				inline: false
+			});
+            embed_fields.push({
+                name: "**🎮 Most-played games**",
+                value: `${mostPlayedGames.join("\n") || "*No one on this server plays games*"}`,
+                inline: false
+            });
+            embed_fields.push({
+                name: "**🤑 Richest members**",
+                value: `${richestMembers.join("\n") || "*Everyone on this server is really poor*"}`,
+                inline: false
+            });
+            embed_fields.push({
+                name: "**ℹ Most-used commands**",
+                value: `${mostUsedCommands.join("\n") || "*I haven't been used much this week*"}`,
+                inline: false
+            });
+			msg.channel.createMessage({
+				embed: {
+                    author: {
+                        name: bot.user.username,
+                        icon_url: bot.user.avatarURL,
+                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                    },
+                    color: 0x00FF00,
+					fields: embed_fields
+				}
+			});
 		});
 	}
 };

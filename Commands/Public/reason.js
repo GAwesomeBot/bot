@@ -2,9 +2,9 @@ const ModLog = require("./../../Modules/ModerationLogging.js");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	const args = suffix.split(" ");
-	if(suffix && args.length>=2) {
+	if(suffix && args.length >= 2) {
 		ModLog.update(msg.guild, serverDocument, args[0].trim(), {
-			reason: suffix.substring(suffix.indexOf(" ")+1).trim()
+			reason: suffix.substring(suffix.indexOf(" ") + 1).trim()
 		}, err => {
 			if(err) {
 				msg.channel.createMessage(err);

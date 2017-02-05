@@ -4,7 +4,7 @@ const getAppList = suffix => {
 	const apps = suffix.split(",");
 	let i = 0;
 	while(i<apps.length) {
-		if(!apps[i] || apps.indexOf(apps[i])!=i) {
+		if(!apps[i] || apps.indexOf(apps[i]) != i) {
 			apps.splice(i, 1);
 		} else {
 			apps[i] = apps[i].trim();
@@ -16,11 +16,10 @@ const getAppList = suffix => {
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	const apps = getAppList(suffix);
-
-	if(apps.length>0) {
+	if(apps.length > 0) {
 		const results = [];
 		const fetchApp = (i, callback) => {
-			if(i>=apps.length) {
+			if(i >= apps.length) {
 				callback();
 			} else {
 				itunes({

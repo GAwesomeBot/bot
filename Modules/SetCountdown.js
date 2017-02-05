@@ -5,7 +5,17 @@ module.exports = (bot, winston, serverDocument, countdownDocument) => {
 		if(svr) {
 			const ch = svr.channels.get(countdownDocument.channel_id);
 			if(ch) {
-				ch.createMessage(`3...2...1...**${countdownDocument._id}**`);
+				ch.createMessage({
+					embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0x00FF00,
+						description: `3...2...1...**${countdownDocument._id}**`
+					}
+				});
 				countdownDocument.remove();
 				winston.info(`Countdown '${countdownDocument._id}' expired`, {svrid: svr.id, chid: ch.id});
 				serverDocument.save(err => {
