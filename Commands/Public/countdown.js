@@ -1,4 +1,4 @@
-const setCountdown = require("./../../Modules/setCountdown.js");
+const setCountdown = require("./../../Modules/SetCountdown.js");
 const moment = require("moment");
 const parseDuration = require("parse-duration");
 
