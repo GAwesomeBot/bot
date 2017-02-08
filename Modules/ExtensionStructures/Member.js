@@ -61,6 +61,22 @@ module.exports = class Member {
 				}
 			});
 		};
+        
+        this.addRole = (roleID, cb) => {
+			erisMember.addRole(roleID).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
+        
+        this.removeRole = (roleID, cb) => {
+            erisMember.removeRole(roleID).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
 	}
 
 	get guild() {
