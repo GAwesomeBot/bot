@@ -90,19 +90,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						}
 					});
 				} else {
-					msg.channel.createMessage({
-						embed: {
-                            author: {
-                                name: bot.user.username,
-                                icon_url: bot.user.avatarURL,
-                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                            },
-                            color: 0xFF0000,
-							description: `I can't find a count called \`${args[0].toLowerCase().trim()}\`. Would you like to create it?`
-						}
-					}).then(() => {
-						createCount(args[0].toLowerCase().trim());
-					});
+					createCount(args[0].toLowerCase().trim());
 				}
 			} else {
 				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
