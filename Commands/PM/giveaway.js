@@ -38,18 +38,7 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 											}).then(() => {
 												bot.awaitMessage(msg.channel.id, msg.author.id, message => {
 													if(config.yes_strings.indexOf(message.content.toLowerCase().trim()) > -1) {
-														const winner = Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
-														msg.channel.createMessage({
-															embed: {
-                                                                author: {
-                                                                    name: bot.user.username,
-                                                                    icon_url: bot.user.avatarURL,
-                                                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                                                },
-                                                                color: 0x00FF00,
-																description: `Alright, giveaway ended.\n${winner ? (`The winner was **@${bot.getName(svr, serverDocument, winner)}**`) : "I couldn't choose a winner for some reason tho 😕"}`
-															}
-														});
+														const endgiveaway = Giveaways.end(bot, db, svr, ch);
 													}
 												});
 											});
@@ -134,10 +123,10 @@ module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandDa
 															const title = message.content.trim();
 															msg.channel.createMessage("How long do you want this giveaway to last? 🕰 Type `.` to use the default of 1 hour.").then(() => {
 																bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-																	let duration = message.content.trim()=="." ? 3600000 : parseDuration(message);
-																	
+																	let duration = message.content.trim()=="." ? 3600000 : parseDuration(message.content);
+
 																	const start = () => {
-																		Giveaways.start(bot, svr, serverDocument, msg.author, ch, channelDocument, title, secret, duration);
+																		Giveaways.start(bot, db, svr, serverDocument, msg.author, ch, channelDocument, title, secret, duration);
 																		msg.channel.createMessage("Giveaway started! 🎯 *I'm excited*");
 																	};
 
