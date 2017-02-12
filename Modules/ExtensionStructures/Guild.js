@@ -147,22 +147,6 @@ module.exports = class Guild {
 			});
 		};
 
-		this.getEmoji = (emojiID, cb) => {
-			erisGuild.getEmoji(emojiID).then(object => {
-				if(Util.isFunction(cb)) {
-					cb(object);
-				}
-			});
-		};
-
-		this.getEmojis = cb => {
-			erisGuild.getEmojis().then(objects => {
-				if(Util.isFunction(cb)) {
-					cb(objects);
-				}
-			});
-		};
-
 		this.getInvites = cb => {
 			erisGuild.getInvites().then(erisInvites => {
 				if(Util.isFunction(cb)) {
