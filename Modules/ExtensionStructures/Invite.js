@@ -16,6 +16,12 @@ module.exports = class Invite {
 		this.revoked = erisInvite.revoked;
 		this.temporary = erisInvite.temporary;
 		this.uses = erisInvite.users;
+        
+		this.inviter = null;
+		if(g_erisInvite.inviter) {
+            const User = require("./User");
+            this.inviter = new User(g_erisInvite.inviter);
+		}
 
 		this.delete = cb => {
 			erisInvite.delete().then(() => {
@@ -24,14 +30,5 @@ module.exports = class Invite {
 				}
 			});
 		};
-	}
-
-	get inviter() {
-		let inviter = null;
-		if(g_erisInvite.inviter) {
-			const User = require("./User");
-			inviter = new User(g_erisInvite.inviter);
-		}
-		return inviter;
 	}
 };
