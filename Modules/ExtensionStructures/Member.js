@@ -28,6 +28,10 @@ module.exports = class Member {
 		//pass g_erisMember.user object now
 		const User = require("./User");
 		this.user = new User(g_erisMember.user);
+        
+        //pass g_erisMember.permission object now
+        const Permission = require("./Permission");
+        this.permission = new Permission(g_erisMember.permission);
 
 		// functions
 		this.ban = (deleteMessageDays, cb) => {
@@ -66,11 +70,6 @@ module.exports = class Member {
 	get guild() {
 		const Guild = require("./Guild");
 		return new Guild(g_erisMember.guild);
-	}
-
-	get permission() {
-		const Permission = require("./Permission");
-		return new Permission(g_erisMember.permission);
 	}
 
 	get voiceState() {
