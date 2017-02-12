@@ -54,8 +54,8 @@ module.exports = class Guild {
 			});
 		};
 
-		this.createRole = cb => {
-			erisGuild.createRole().then(erisRole => {
+		this.createRole = (options, cb) => {
+			erisGuild.createRole(options).then(erisRole => {
 				if(Util.isFunction(cb)) {
 					const Role = require("./Role");
 					cb(new Role(erisRole));
