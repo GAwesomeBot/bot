@@ -165,16 +165,6 @@ module.exports = class Guild {
 			});
 		};
 
-		this.getRoles = cb => {
-			erisGuild.getRoles().then(erisRoles => {
-				if(Util.isFunction(cb)) {
-					const Role = require("./Role");
-					const Roles = erisRoles.map(erisRole => new Role(erisRole));
-					cb(Roles);
-				}
-			});
-		};
-
 		this.getVoiceRegions = cb => {
 			erisGuild.getVoiceRegions().then(objects => {
 				if(Util.isFunction(cb)) {
