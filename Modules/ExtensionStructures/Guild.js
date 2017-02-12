@@ -157,25 +157,6 @@ module.exports = class Guild {
 			});
 		};
 
-		this.getMember = (memberID, cb) => {
-			erisGuild.getMember(memberID).then(erisMember => {
-				if(Util.isFunction(cb)) {
-					const Member = require("./Member");
-					cb(new Member(erisMember));
-				}
-			});
-		};
-
-		this.getMembers = (limit, after, cb) => {
-			erisGuild.getMembers(limit, after).then(erisMembers => {
-				if(Util.isFunction(cb)) {
-					const Member = require("./Member");
-					const Members = erisMembers.map(erisMember => new Member(erisMember));
-					cb(Members);
-				}
-			});
-		};
-
 		this.getPruneCount = (days, cb) => {
 			erisGuild.getPruneCount(days).then(num => {
 				if(Util.isFunction(cb)) {
