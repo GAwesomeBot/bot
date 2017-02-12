@@ -139,16 +139,6 @@ module.exports = class Guild {
 			});
 		};
 
-		this.getChannels = cb => {
-			erisGuild.getChannels().then(erisGuildChannels => {
-				if(Util.isFunction(cb)) {
-					const GuildChannel = require("./GuildChannel");
-					const GuildChannels = erisGuildChannels.map(erisGuildChannel => new GuildChannel(erisGuildChannel));
-					cb(GuildChannels);
-				}
-			});
-		};
-
 		this.getEmbed = cb => {
 			erisGuild.getEmbed().then(object => {
 				if(Util.isFunction(cb)) {
