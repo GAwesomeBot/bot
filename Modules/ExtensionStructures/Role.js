@@ -17,7 +17,8 @@ module.exports = class Role {
 		this.name = erisRole.name;
 		this.position = erisRole.position;
 
-		this.asJSON = erisRole.asJSON;
+		const Permission = require("./Permission");
+        this.permissions = new Permission(g_erisRole.permissions);
 
 		this.delete = cb => {
 			erisRole.delete().then(() => {
@@ -48,10 +49,5 @@ module.exports = class Role {
 	get guild() {
 		const Guild = require("./Guild");
 		return new Guild(g_erisRole.guild);
-	}
-
-	get permissions() {
-		const Permission = require("./Permission");
-		return new Permission(g_erisRole.permissions);
 	}
 };
