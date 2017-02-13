@@ -21,6 +21,7 @@ class Message {
 		this.roleMentions = erisMessage.roleMentions;
 		this.timestamp = erisMessage.timestamp;
 		this.tts = erisMessage.tts;
+        this.reactions = erisMessage.reactions;
 
 		this.delete = cb => {
 			erisMessage.delete().then(() => {
@@ -54,6 +55,30 @@ class Message {
 				}
 			});
 		};
+        
+        this.addReaction = (reaction, cb) => {
+            erisMessage.addReaction(reaction).then(() => {
+                if(Util.isFunction(cb)) {
+                    cb();
+                }
+            });
+        };
+        
+        this.removeReaction = (reaction, userID, cb) => {
+            erisMessage.removeReaction(reaction, userID).then(() => {
+                if(Util.isFunction(cb)) {
+                    cb();
+                }
+            });
+        };
+        
+        this.getReaction = (reaction, limit, cb) => {
+            erisMessage.getReaction(reaction, limit).then((users) => {
+                if(Util.isFunction(cb)) {
+                    cb(users);
+                }
+            });
+        };
 	}
 
 	get author() {
