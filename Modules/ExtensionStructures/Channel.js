@@ -33,8 +33,8 @@ module.exports = class Channel {
 			});
 		};
 
-		this.editMessage = (messageID, cb) => {
-			erisChannel.editMessage(messageID).then(erisMessage => {
+		this.editMessage = (messageID, content, cb) => {
+			erisChannel.editMessage(messageID, content).then(erisMessage => {
 				if(Util.isFunction(cb)) {
 					const Message = require("./Message");
 					cb(new Message(erisMessage));
