@@ -21,6 +21,7 @@ class Message {
 		this.roleMentions = erisMessage.roleMentions;
 		this.timestamp = erisMessage.timestamp;
 		this.tts = erisMessage.tts;
+		this.reactions = erisMessage.reactions;
 
 		this.delete = cb => {
 			erisMessage.delete().then(() => {
@@ -54,6 +55,30 @@ class Message {
 				}
 			});
 		};
+
+		this.addReaction = (reaction, cb) => {
+			erisMessage.addReaction(reaction).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
+
+		this.removeReaction = (reaction, userID, cb) => {
+			erisMessage.removeReaction(reaction, userID).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
+
+		this.getReaction = (reaction, limit, cb) => {
+			erisMessage.getReaction(reaction, limit).then((users) => {
+				if(Util.isFunction(cb)) {
+					cb(users);
+				}
+			});
+		};
 	}
 
 	get author() {
@@ -75,21 +100,21 @@ class Message {
 		const Member = require("./Member");
 		return new Member(g_erisMessage.member);
 	}
-    
-    get mentions() {
-        // Ignoring erisMessage.mentions as it needs resorting and there is no need to use it.
-        // It also returns only User objects, but for extensions we want to pass back Member objects.
-        const Guild = require("./Guild");
-        const Collection = require("./Collection");
-        const SrvMembers = new Guild(g_erisMessage.guild).members;
-        const content = (g_erisMessage.content.match(/<@!?[0-9]+>/g) || []).map(function(uid){return uid.replace(/[^0-9.]/g, '')});
-        const mentions = [];
-        for(var i=0; i<content.length; i++) {
-            const member = SrvMembers.get(content[i]);
-            if(member) mentions.push(member);
-        }
-        return mentions;
-    }
+
+	get mentions() {
+		// Ignoring erisMessage.mentions as it needs resorting and there is no need to use it.
+		// It also returns only User objects, but for extensions we want to pass back Member objects.
+		const Guild = require("./Guild");
+		const Collection = require("./Collection");
+		const SrvMembers = new Guild(g_erisMessage.guild).members;
+		const content = (g_erisMessage.content.match(/<@!?[0-9]+>/g) || []).map(function(uid){return uid.replace(/[^0-9.]/g, '')});
+		const mentions = [];
+		for(var i=0; i<content.length; i++) {
+			const member = SrvMembers.get(content[i]);
+			if(member) mentions.push(member);
+		}
+		return mentions;
+	}
 
 }
 
