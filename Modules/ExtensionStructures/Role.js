@@ -18,7 +18,7 @@ module.exports = class Role {
 		this.position = erisRole.position;
 
 		const Permission = require("./Permission");
-        this.permissions = new Permission(g_erisRole.permissions);
+		this.permissions = new Permission(g_erisRole.permissions);
 
 		this.delete = cb => {
 			erisRole.delete().then(() => {
