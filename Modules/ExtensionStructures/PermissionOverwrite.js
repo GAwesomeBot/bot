@@ -7,8 +7,8 @@ module.exports = class PermissionOverwrite extends Permission {
 		super(erisPermissionOverwrite.allow, erisPermissionOverwrite.deny, erisPermissionOverwrite.has);
 		this.id = erisPermissionOverwrite.id;
 		this.type = erisPermissionOverwrite.type;
-        this.has = (perm) => {
-            return erisPermissionOverwrite.has(perm);
-        }
+		this.has = (perm) => {
+			return erisPermissionOverwrite.has(perm);
+		}
 	}
 };
