@@ -185,7 +185,7 @@ module.exports = (bot, db, auth, config, winston) => {
 	}
 	if (config.cert && config.privKey && config.httpsPort) {
 		if (config.httpsRedirect) {
-			app.use(requireHTTPS);	
+			app.use(requireHTTPS);
 		}
 		const privKey = fs.readFileSync(config.privKey, "utf8", function(err) {if (err) winston.error(err)})
 		const cert = fs.readFileSync(config.cert, "utf8", function(err) {if (err) winston.error(err)})
@@ -2833,6 +2833,12 @@ module.exports = (bot, db, auth, config, winston) => {
 							memberDocument.strikes = [];
 						}
 					}
+					else if(args[0]=="removestrike" && !isNaN(args[1]) && !isNaN(args[2])) {
+						const memberDocument = serverDocument.members.id(args[1]);
+						if(memberDocument) {
+							memberDocument.strikes.splice(args[2], 1);
+						}
+					}
 				}
 			}
 
@@ -3811,7 +3817,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				base64.encode(bot.user.avatarURL.replace(".jpg",".webp"), {
 					string: true
 				}, (err, data) => {
-					updateBotUser(data);	
+					updateBotUser(data);
 				});
 			}
 		});

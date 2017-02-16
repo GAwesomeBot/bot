@@ -40,6 +40,33 @@
 			});
 		}
 	}
+
+	var removewait = false;
+	function removeStrike(strike){
+		if(!removewait){
+			removewait = true;
+			const send = {};
+			send[strike.id] = "";
+			const parts = strike.id.split("-");
+			$.ajax({
+				type: "POST",
+				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				data: send,
+				success: function() {
+					const docs = document.getElementsByClassName('strikes-' + parts[1]);
+					if(docs.length <= 1) window.location.reload();
+					const remove = document.getElementById("removestrike-" + parts[1] + "-" + parts[2]).parentNode;
+					document.getElementById("removestrike-" + parts[1] + "-" + parts[2]).parentNode.parentNode.removeChild(remove);
+					for (i = 0; i < docs.length; i++) {
+						const bits = docs[i].id.split("-");
+						docs[i].id = bits[0] + "-" + bits[1] + "-" + i;
+					}
+					removewait = false;
+				}
+			});
+			return true;
+		}
+	}
 	</script>
 </head>
 <body onload="saveFormState();setUserAutocomplete('<%= serverData.id %>');">
