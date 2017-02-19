@@ -7,15 +7,6 @@ const default_tag_reaction_messages = require("./../Configuration/tag_reaction.j
 // Set defaults for new server document
 module.exports = (bot, svr, serverDocument) => {
 	// Default admin roles
-	const rolesOfOwner = svr.members.get(svr.ownerID).roles.sort((a, b) => {
-		return svr.roles.get(a).position - svr.roles.get(b).position;
-	});
-	if(rolesOfOwner[0] && svr.roles.get(rolesOfOwner[0]).name!="@everyone") {
-		serverDocument.config.admins.push({
-			_id: rolesOfOwner[0],
-			level: 3
-		});
-	}
 	svr.roles.forEach(role => {
 		if(role.name!="@everyone" && !role.managed && role.permissions.has("manageGuild") && !serverDocument.config.admins.id(role.id)) {
 			serverDocument.config.admins.push({
