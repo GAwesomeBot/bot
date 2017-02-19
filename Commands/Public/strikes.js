@@ -4,7 +4,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(suffix) {
 		const member = suffix.toLowerCase()=="me" ? msg.member : bot.memberSearch(suffix, msg.guild);
 		if(member) {
-			const targetMemberDocument = serverDocument.members.id(member.id);
+			var targetMemberDocument = serverDocument.members.id(member.id);
+			// Create member data if not found
+			if(!targetMemberDocument) {
+				serverDocument.members.push({_id: msg.author.id});
+				targetMemberDocument = serverDocument.members.id(msg.author.id);
+				targetMemberDocument.strikes = [];
+			}
 			let embed_fields = [];
 			targetMemberDocument.strikes.map(strikeDocument => {
 				const creator = msg.guild.members.get(strikeDocument._id);
