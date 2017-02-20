@@ -13,50 +13,45 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		} else {
 			num = parseInt(num);
 		}
-		const api_url = `http://hummingbird.me/api/v1/search/anime?query=${encodeURIComponent(query)}`;
-		unirest.get(api_url).header("Accept", "application/json").end(res => {
-			if(res.status==200 && res.body.length) {
+		const api_url = `https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(query)}`;
+		unirest.get(api_url).header("Accept", "application/vnd.api+json").end(res => {
+			if(res.status==200 && res.body.data.length) {
 				const results = [];
 				const list = [];
 				const getDisplay = data => {
 					// Title + airing time
-					let airing = data.started_airing;
-					if(data.show_type == "TV") {
-						airing += ` — ${data.finished_airing || "*ongoing*"}`;
+					let airing = data.attributes.startDate;
+					if(data.attributes.endDate !== null) {
+						airing += ` — ${data.attributes.endDate}`;
 					}
 					const info = [];
-					info.push(`__**${data.title}**__ (${airing})`);
+					info.push(`__**${data.attributes.canonicalTitle}**__ (${airing})`);
 					// Link
-					info.push(data.url);
+					info.push(`https://kitsu.io/anime/${data.attributes.slug}`);
 					// Status line
-					if(data.community_rating) {
-						info.push(`**Rating:** ${data.community_rating.toFixed(2)}/5`);
+					if(data.attributes.averageRating) {
+						info.push(`**Rating:** ${data.attributes.averageRating.toFixed(2)}/5`);
 					}
-					if(data.age_rating) {
-						info.push(`**Rated:** ${data.age_rating}`);
+					if(data.attributes.ageRating) {
+						info.push(`**Rated:** ${data.attributes.ageRating}`);
 					}
-					if(!data.episode_count) {
-						data.episode_count = "N/A";
+					if(!data.attributes.episodeCount) {
+						data.attributes.episodeCount = "N/A";
 					}
-					if(data.episode_length) {
-						info.push(`**Episodes:** ${data.episode_count} @ ${data.episode_length} mins`);
+					if(data.attributes.episodeLength) {
+						info.push(`**Episodes:** ${data.attributes.episodeCount} @ ${data.attributes.episodeLength} mins`);
 					} else {
-						info.push(`**Episodes:** ${data.episode_count}`);
-					}
-					// Genres
-					const genres = data.genres.map(genre => genre.name);
-					if(genres.length) {
-						info.push(`**Genre:** ${genres.join(", ")}`);
+						info.push(`**Episodes:** ${data.attributes.episodeCount}`);
 					}
 					info.push("");
-					info.push(data.synopsis);
+					info.push(data.attributes.synopsis);
 					return info.join("\n");
 				};
 				for(let i=0; i < num; i++) {
-					const entry = res.body[i];
+					const entry = res.body.data[i];
 					if(entry) {
 						results.push(getDisplay(entry));
-						list.push(`${i}) ${entry.title}`);
+						list.push(`${i}) ${entry.attributes.canonicalTitle}`);
 					}
 				}
 				if(list.length == 1) {
