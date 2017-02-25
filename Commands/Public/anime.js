@@ -66,12 +66,12 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					});
 				}
 			} else {
-				winston.warn(`No anime found for '${query}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`No anime found for '${query}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage("No anime found (˃̥̥ω˂̥̥̥)");
 			}
 		});
 	} else {
-		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage(`${msg.author.mention} You gotta give me somethin' to search for!`);
 	}
 };

@@ -4,13 +4,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(suffix) {
 		let member, reason;
 		if(suffix.indexOf("|") > -1 && suffix.length > 3) {
-			member = bot.memberSearch(suffix.substring(0, suffix.indexOf("|")).trim(), msg.guild);
+			member = bot.memberSearch(suffix.substring(0, suffix.indexOf("|")).trim(), msg.channel.guild);
 			reason = suffix.substring(suffix.indexOf("|") + 1).trim();
 		} else {
-			member = bot.memberSearch(suffix, msg.guild);
+			member = bot.memberSearch(suffix, msg.channel.guild);
 		}
 		if(member) {
-			if(member.user.bot || [msg.author.id, bot.user.id].indexOf(member.id) > -1 || bot.getUserBotAdmin(msg.guild, serverDocument, member) > 0) {
+			if(member.user.bot || [msg.author.id, bot.user.id].indexOf(member.id) > -1 || bot.getUserBotAdmin(msg.channel.guild, serverDocument, member) > 0) {
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -19,7 +19,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                             url: "https://github.com/GilbertGobbels/GAwesomeBot"
                         },
                         color: 0xFF0000,
-						description: `Sorry, I can't warn / strike **@${bot.getName(msg.guild, serverDocument, member)}** for some reason ✋`
+						description: `Sorry, I can't warn / strike **@${bot.getName(msg.channel.guild, serverDocument, member)}** for some reason ✋`
 					}
 				});
 			} else {
@@ -41,7 +41,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                 url: "https://github.com/GilbertGobbels/GAwesomeBot"
                             },
                             color: 0xFF0000,
-							title: `You just got a warning / strike from **@${bot.getName(msg.guild, serverDocument, msg.guild.members.get(msg.author.id), true)}** on **${msg.guild.name}**${reason ? ":" : ""}`,
+							title: `You just got a warning / strike from **@${bot.getName(msg.channel.guild, serverDocument, msg.channel.guild.members.get(msg.author.id), true)}** on **${msg.channel.guild.name}**${reason ? ":" : ""}`,
 							description: `${reason ? (`\`\`\`${reason}\`\`\``) : ""}`
 						}
 					});
@@ -53,10 +53,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                 url: "https://github.com/GilbertGobbels/GAwesomeBot"
                             },
                             color: 0x00FF00,
-							description: `Ok, **@${bot.getName(msg.guild, serverDocument, member)}** now has ${targetMemberDocument.strikes.length} strike${targetMemberDocument.strikes.length == 1 ? "" : "s"} 🚦 I warned them via PM ⚠`
+							description: `Ok, **@${bot.getName(msg.channel.guild, serverDocument, member)}** now has ${targetMemberDocument.strikes.length} strike${targetMemberDocument.strikes.length == 1 ? "" : "s"} 🚦 I warned them via PM ⚠`
 						}
 					});
-					ModLog.create(msg.guild, serverDocument, "Warning", member, msg.member, reason);
+					ModLog.create(msg.channel.guild, serverDocument, "Warning", member, msg.member, reason);
 				}).catch();
 			}
 		} else {

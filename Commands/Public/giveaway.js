@@ -60,7 +60,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 				}
 			} else {
-				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -74,7 +74,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				});
 			}
 		} else {
-			const creator = msg.guild.members.get(channelDocument.giveaway.creator_id);
+			const creator = msg.channel.guild.members.get(channelDocument.giveaway.creator_id);
 			msg.channel.createMessage({
 				embed: {
                     author: {
@@ -83,7 +83,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x9ECDF2,
-					description: `**${channelDocument.giveaway.title}** 🍰\nStarted by @${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}\t${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length==1 ? "person" : "people"} joined currently`
+					description: `**${channelDocument.giveaway.title}** 🍰\nStarted by @${creator ? bot.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}\t${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length==1 ? "person" : "people"} joined currently`
 				}
 			});
 		}
@@ -96,7 +96,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                 },
                 color: 0x9ECDF2,
-				description: `There's isn't a giveaway going on in this channel. 👻 PM me \`${commandData.name} ${msg.guild.name}|#${msg.channel.name}\` to start one.`
+				description: `There's isn't a giveaway going on in this channel. 👻 PM me \`${commandData.name} ${msg.channel.guild.name}|#${msg.channel.name}\` to start one.`
 			}
 		});
 	}

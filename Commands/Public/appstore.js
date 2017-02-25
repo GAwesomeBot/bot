@@ -29,7 +29,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					limit: 1
 				}, (err, data) => {
 					if(err) {
-						winston.warn(`Apple app '${apps[i]}' not found to link`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+						winston.warn(`Apple app '${apps[i]}' not found to link`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 						results.push(`❌ No results found for \`${apps[i]}\``);
 					} else {
 						results.push(`**${data.results[0].trackCensoredName}** by ${data.results[0].artistName}, ${data.results[0].formattedPrice} and rated ${data.results[0].averageUserRating} stars: <${data.results[0].trackViewUrl}>`);

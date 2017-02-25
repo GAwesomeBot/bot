@@ -11,7 +11,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                 },
                 color: 0xFF0000,
-				description: `There isn't an AwesomePoints lottery going on right now. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} start\` to start one.`
+				description: `There isn't an AwesomePoints lottery going on right now. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} start\` to start one.`
 			}
 		});
 	};
@@ -28,7 +28,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						}
 					});
 				} else {
-					Lotteries.start(db, msg.guild, serverDocument, msg.author, msg.channel, channelDocument);
+					Lotteries.start(db, msg.channel.guild, serverDocument, msg.author, msg.channel, channelDocument);
 					msg.channel.createMessage({
 						embed: {
                             author: {
@@ -37,7 +37,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                 url: "https://github.com/GilbertGobbels/GAwesomeBot"
                             },
                             color: 0x00FF00,
-							description: `AwesomePoints lottery started! 🌟 Anyone can use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} enroll\` or \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} join\` for a chance to win! 🤑 The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}`
+							description: `AwesomePoints lottery started! 🌟 Anyone can use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} enroll\` or \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} join\` for a chance to win! 🤑 The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}`
 						}
 					});
 				}
@@ -71,7 +71,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 								channelDocument.lottery.participant_ids.push(msg.author.id);
 								serverDocument.save(err => {
 									if(err) {
-										winston.error("Failed to save server data for points lottery", {svrid: msg.guild.id}, err);
+										winston.error("Failed to save server data for points lottery", {svrid: msg.channel.guild.id}, err);
 									}
 									msg.channel.createMessage({
 										embed: {
@@ -107,8 +107,8 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			case "end":
 			case ".":
 				if(channelDocument.lottery.isOngoing) {
-					if(channelDocument.lottery.creator_id == msg.author.id || bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) >= 1) {
-						const winner = Lotteries.end(db, msg.guild, serverDocument, msg.channel, channelDocument);
+					if(channelDocument.lottery.creator_id == msg.author.id || bot.getUserBotAdmin(msg.channel.guild, serverDocument, msg.member) >= 1) {
+						const winner = Lotteries.end(db, msg.channel.guild, serverDocument, msg.channel, channelDocument);
 						if(!winner) {
 							msg.channel.createMessage({
 								embed: {
@@ -128,17 +128,17 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 				break;
 			default:
-				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage({
 					embed: {
-						description: `Wut. 😱 The syntax for this command is \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${commandData.usage}\``
+						description: `Wut. 😱 The syntax for this command is \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}\``
 					}
 				});
 				break;
 		}
 	} else {
 		if(channelDocument.lottery.isOngoing) {
-			const creator = msg.guild.members.get(channelDocument.lottery.creator_id);
+			const creator = msg.channel.guild.members.get(channelDocument.lottery.creator_id);
 			const participantCount = channelDocument.lottery.participant_ids.filter((elem, i, self) => {
 				return i==self.indexOf(elem);
 			}).length;

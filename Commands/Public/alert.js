@@ -11,10 +11,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                 url: "https://github.com/GilbertGobbels/GAwesomeBot"
             },
             color: 0x00FF00,
-			title: `**@${msg.author.username}** send an alert in #${msg.channel.name} on ${msg.guild.name}${(suffix != "" ? ":" : "")}`,
+			title: `**@${msg.author.username}** send an alert in #${msg.channel.name} on ${msg.channel.guild.name}${(suffix != "" ? ":" : "")}`,
 			description: description
 		}
 	};
-	bot.messageBotAdmins(msg.guild, serverDocument, embed);
+	bot.messageBotAdmins(msg.channel.guild, serverDocument, embed);
 	msg.channel.createMessage("The admins have been alerted! ⚠");
 };

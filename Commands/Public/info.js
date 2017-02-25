@@ -4,38 +4,38 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	let embed_fields = [
 		{
 			name: `Guild Name`,
-			value: `__**${msg.guild.name}**__`,
+			value: `__**${msg.channel.guild.name}**__`,
 			inline: true
 		},
 		{
 			name: `🆔`,
-			value: `${msg.guild.id}`,
+			value: `${msg.channel.guild.id}`,
 			inline: true
 		},
 		{
 			name: `🗓 Created`,
-			value: `${moment(msg.guild.createdAt).fromNow()}`,
+			value: `${moment(msg.channel.guild.createdAt).fromNow()}`,
 			inline: true
 		},
 		{
 			name: `👑 Owned by`,
-			value: `<@${msg.guild.ownerID}>`,
+			value: `<@${msg.channel.guild.ownerID}>`,
 			inline: true
 		},
 		{
 			name: "👥",
-			value: `${msg.guild.members.size} members`,
+			value: `${msg.channel.guild.members.size} members`,
 			inline: true
 		}
 	];
 	let image_url = "";
-	if(msg.guild.iconURL) {
-		image_url = msg.guild.iconURL;
+	if(msg.channel.guild.iconURL) {
+		image_url = msg.channel.guild.iconURL;
 	}
 	embed_fields.push(
 		{
 			name: `🕯 Command Prefix:`,
-			value: `\`${bot.getCommandPrefix(msg.guild, serverDocument)}\``,
+			value: `\`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}\``,
 			inline: true
 		},
 		{
@@ -50,7 +50,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		},
 		{
 			name: `🌎`,
-			value: `Click [here](${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.guild.name)})`,
+			value: `Click [here](${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.channel.guild.name)})`,
 			inline: true
 		},
 		{

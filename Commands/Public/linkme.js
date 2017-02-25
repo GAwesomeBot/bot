@@ -36,7 +36,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						info += ` and rated ${data[0].score} stars: <${data[0].url}>`;
 						results.push(info);
 					} else {
-						winston.warn(`Google Play app '${apps[i]}' not found to link`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+						winston.warn(`Google Play app '${apps[i]}' not found to link`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 						results.push(`❌ No results found for \`${apps[i]}\``);
 					}
 					fetchApp(++i, callback);

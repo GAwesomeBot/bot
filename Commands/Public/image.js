@@ -18,12 +18,12 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			} else if(url) {
 				msg.channel.createMessage(url);
 			} else {
-				winston.warn(`No images found for '${suffix}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`No images found for '${suffix}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage("Couldn't find anything, sorry 😧");
 			}
 		});
 	} else {
-		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage(`${msg.author.mention} I don't know what image to get... 😯`);
 	}
 };

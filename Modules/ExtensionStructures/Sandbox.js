@@ -84,7 +84,7 @@ module.exports = (bot, db, winston, extensionDocument, svr, serverDocument, ch, 
 
 	if(msg && ["keyword", "command"].indexOf(extensionDocument.type)>-1) {
 		params.message = new Message(msg);
-		params.guild = new Guild(msg.guild);
+		params.guild = new Guild(msg.channel.guild);
 		params.channel = new GuildChannel(msg.channel);
 	} else {
 		params.guild = new Guild(svr);

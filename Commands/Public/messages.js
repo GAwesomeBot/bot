@@ -12,7 +12,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		});
 	} else if(suffix) {
-		const member = bot.memberSearch(suffix, msg.guild);
+		const member = bot.memberSearch(suffix, msg.channel.guild);
 		if(member) {
 			if(member.user.bot) {
 				msg.channel.createMessage({
@@ -40,12 +40,12 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                             url: "https://github.com/GilbertGobbels/GAwesomeBot"
                         },
                         color: 0x00FF00,
-						description: `💬 **@${bot.getName(msg.guild, serverDocument, member)}** has sent ${targetMemberDocument.messages} message${targetMemberDocument.messages == 1 ? "" : "s"} this week`
+						description: `💬 **@${bot.getName(msg.channel.guild, serverDocument, member)}** has sent ${targetMemberDocument.messages} message${targetMemberDocument.messages == 1 ? "" : "s"} this week`
 					}
 				});
 			}
 		} else {
-			winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage({
 				embed: {
                     author: {
@@ -63,10 +63,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		serverDocument.members.sort((a, b) => {
 			return b.messages - a.messages;
 		}).filter(a => {
-			return msg.guild.members.has(a._id);
+			return msg.channel.guild.members.has(a._id);
 		}).slice(0, 10).map(a => {
 			embed_fields.push({
-				name: `**@${bot.getName(msg.guild, serverDocument, msg.guild.members.get(a._id))}:**`,
+				name: `**@${bot.getName(msg.channel.guild, serverDocument, msg.channel.guild.members.get(a._id))}:**`,
 				value: `${a.messages} message${a.messages==1 ? "" : "s"} this week`,
 				inline: true
 			});

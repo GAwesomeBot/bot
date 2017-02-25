@@ -10,7 +10,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					return;
 				}
 			}
-			winston.warn(`DuckDuckGo instant answer for '${suffix}' not found`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn(`DuckDuckGo instant answer for '${suffix}' not found`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage({
 				embed: {
                     author: {
@@ -24,7 +24,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			});
 		});
 	} else {
-		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage({
 			embed: {
                 author: {

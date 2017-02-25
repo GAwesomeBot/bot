@@ -12,7 +12,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	this.clear = () => {
         // requires admin
 		if(!this.isAdmin) {
-			winston.warn("Issued tag clear command without admin rights", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn("Issued tag clear command without admin rights", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			return;
 		}
 
@@ -20,7 +20,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
 				if(this.confirmAction(message)) {
 					serverDocument.config.tags.list = [];
-					winston.info("Cleared all tags", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+					winston.info("Cleared all tags", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 					msg.channel.createMessage("All tags cleared 🗑");
 				}
 			});
@@ -46,7 +46,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 
 		tag_data.remove(err => {
 			if(err) {
-				winston.error(`Failed to delete tag '${this.tag}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.error(`Failed to delete tag '${this.tag}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			}
 		});
 		msg.channel.createMessage(`Tag \`${this.tag}\` deleted (✖╭╮✖)`);
@@ -148,11 +148,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						tag_data.isLocked = this.isLocked;
 						serverDocument.save(err => {
 							if(err) {
-								winston.error(`Failed to update tag \`${this.tag}\``, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, tag_content: this.value });
+								winston.error(`Failed to update tag \`${this.tag}\``, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id, tag_content: this.value });
 								msg.channel.createMessage(`Failed to update tag \`${this.tag}\``);
 							}
 							else {
-								winston.info(`Updated tag \`${this.tag}\``, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, tag_content: this.value });
+								winston.info(`Updated tag \`${this.tag}\``, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id, tag_content: this.value });
 								msg.channel.createMessage(`Tag \`${this.tag}\` updated ✏️`);
 							}
 						});
@@ -167,7 +167,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			msg.channel.createMessage(tag_data.content);
 		}
 		else {
-			msg.channel.createMessage(`Tag \`${suffix}\` does not exist. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${suffix}|<content>\` to create it.`);
+			msg.channel.createMessage(`Tag \`${suffix}\` does not exist. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${suffix}|<content>\` to create it.`);
 		}
 	};
 	if(!suffix) {

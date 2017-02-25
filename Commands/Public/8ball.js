@@ -17,7 +17,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 				});
 			} else {
-				winston.error("Failed to fetch 8ball answer", {svrid: msg.guild.id, chid: msg.channel.id});
+				winston.error("Failed to fetch 8ball answer", {svrid: msg.channel.guild.id, chid: msg.channel.id});
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -32,7 +32,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		});
 	} else {
-		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage(`${msg.author.mention} You tell me... 😜`);
 	}
 };

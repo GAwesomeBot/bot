@@ -17,7 +17,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						serverDocument.config.count_data.push({_id: name});
 						serverDocument.save(err => {
 							if(err) {
-								winston.error("Failed to save server data for creating count", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+								winston.error("Failed to save server data for creating count", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 							}
 							msg.channel.createMessage({
 								embed: {
@@ -27,7 +27,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                                     },
                                     color: 0x00FF00,
-									description: `Initialized count **${name}** with value \`0\`. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${name}|+1\` to increment it.`
+									description: `Initialized count **${name}** with value \`0\`. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${name}|+1\` to increment it.`
 								}
 							});
 						});
@@ -93,7 +93,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					createCount(args[0].toLowerCase().trim());
 				}
 			} else {
-				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -159,7 +159,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x9ECDF2,
-					description: `No one on this server is counting anything. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <name>\` to start tallying something. 🐶`
+					description: `No one on this server is counting anything. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <name>\` to start tallying something. 🐶`
 				}
 			});
 		}

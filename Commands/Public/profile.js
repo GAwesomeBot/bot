@@ -4,13 +4,13 @@ const moment = require("moment");
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	let member;
 	if(suffix && suffix.toLowerCase() != "me") {
-		member = bot.memberSearch(suffix, msg.guild);
+		member = bot.memberSearch(suffix, msg.channel.guild);
 	} else {
 		member = msg.member;
 	}
 	const showProfile = targetUserDocument => {
 		msg.channel.createMessage({
-			embed: getUserProfile(bot, config, member.user, targetUserDocument, bot.getName(msg.guild, serverDocument, member)),
+			embed: getUserProfile(bot, config, member.user, targetUserDocument, bot.getName(msg.channel.guild, serverDocument, member)),
 		}).then(() => {
 			let embed_fields = [
 			{
@@ -28,7 +28,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			embed_fields.push({
 				name: `🗣 Roles:`,
 				value:  `${member.roles.map(roleid => {
-                    return msg.guild.roles.get(roleid).name;
+                    return msg.channel.guild.roles.get(roleid).name;
                 }).join(", ") || "@everyone"}`,
 				inline: true
 			});
@@ -73,7 +73,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 			msg.channel.createMessage({
 				embed: {
-					title: `**On ${msg.guild.name}:**`,
+					title: `**On ${msg.channel.guild.name}:**`,
                     color: 0x9ECDF2,
 					fields: embed_fields
 				},
@@ -93,7 +93,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			showProfile();
 		}
 	} else {
-		winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage({
 			embed: {
                 author: {

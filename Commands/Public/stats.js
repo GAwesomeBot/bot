@@ -4,22 +4,22 @@ const moment = require("moment");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if(suffix=="clear") {
-		if(bot.getUserBotAdmin(msg.guild, serverDocument, msg.member)>=1) {
-			clearStats(bot, db, winston, msg.guild, serverDocument, () => {
+		if(bot.getUserBotAdmin(msg.channel.guild, serverDocument, msg.member)>=1) {
+			clearStats(bot, db, winston, msg.channel.guild, serverDocument, () => {
 				msg.channel.createMessage("All done! 🐬 Server stats cleared");
 			});
 		} else {
-			winston.warn(`Member '${msg.author.username}' is not an admin and cannot clear stats for server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn(`Member '${msg.author.username}' is not an admin and cannot clear stats for server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage("Insufficient permissions to clear all stats 💪");
 		}
 	} else {
 		const mostActiveMembers = serverDocument.members.sort((a, b) => {
 			return computeRankScore(b.messages, b.voice) - computeRankScore(a.messages, a.voice);
 		}).filter(a => {
-			return msg.guild.members.has(a._id);
+			return msg.channel.guild.members.has(a._id);
 		}).slice(0, 5).map(a => {
 			const score = computeRankScore(a.messages, a.voice);
-			return `@${bot.getName(msg.guild, serverDocument, msg.guild.members.get(a._id))}: ${score} activity point${score==1 ? "" : "s"} (${a.messages} message${a.messages==1 ? "" : "s"}${a.voice>0 ? (`, ${moment.duration(a.voice*6000).humanize()} active on voice chat`) : ""})`;
+			return `@${bot.getName(msg.channel.guild, serverDocument, msg.channel.guild.members.get(a._id))}: ${score} activity point${score==1 ? "" : "s"} (${a.messages} message${a.messages==1 ? "" : "s"}${a.voice>0 ? (`, ${moment.duration(a.voice*6000).humanize()} active on voice chat`) : ""})`;
 		});
 		const mostPlayedGames = serverDocument.games.sort((a, b) => {
 			return b.time_played - a.time_played;
@@ -39,7 +39,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		}) : [];
 		db.users.find({
 			_id: {
-				$in: Array.from(msg.guild.members.keys())
+				$in: Array.from(msg.channel.guild.members.keys())
 			},
 			points: {
 				$gt: 0
@@ -48,7 +48,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			points: -1
 		}).limit(5).exec((err, userDocuments) => {
 			const richestMembers = userDocuments ? userDocuments.map(a => {
-				return `@${bot.getName(msg.guild, serverDocument, msg.guild.members.get(a._id))}: ${a.points} AwesomePoint${a.points==1 ? "" : "s"}`;
+				return `@${bot.getName(msg.channel.guild, serverDocument, msg.channel.guild.members.get(a._id))}: ${a.points} AwesomePoint${a.points==1 ? "" : "s"}`;
 			}) : [];
 			let embed_fields = [];
 			embed_fields.push({

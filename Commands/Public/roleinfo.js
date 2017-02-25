@@ -2,12 +2,12 @@ const moment = require("moment");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
-		const role = msg.guild.roles.find(a => {
+		const role = msg.channel.guild.roles.find(a => {
 			return a.name == suffix;
 		});
 		if(role) {
 			const color = role.color.toString(16);
-			const memberCount = msg.guild.members.filter(member => {
+			const memberCount = msg.channel.guild.members.filter(member => {
 				return member.roles.includes(role.id);
 			}).length;
 			let embed_fields = [
@@ -80,15 +80,15 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			});
 		} else {
-			winston.warn(`Requested role does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn(`Requested role does not exist so ${commandData.name} cannot be shown`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage({
 				content: "That role doesn't exist 🚽",
 			});
 		}
 	} else {
-		const memberArray = Array.from(msg.guild.members);
+		const memberArray = Array.from(msg.channel.guild.members);
 		const info = [];
-		Array.from(msg.guild.roles).sort((a, b) => {
+		Array.from(msg.channel.guild.roles).sort((a, b) => {
 			return b[1].position - a[1].position;
 		}).slice(0, -1).forEach(role => {
 			let name = role[1].name;
@@ -98,7 +98,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			const members = memberArray.filter(member => {
 				return member[1].roles.includes(role[1].id);
 			}).map(member => {
-				return `@${bot.getName(msg.guild, serverDocument, member[1])}`;
+				return `@${bot.getName(msg.channel.guild, serverDocument, member[1])}`;
 			});
 			if(members.length>0) {
 				info.push(`**${name}**\n\t${members.join("\n\t")}`);

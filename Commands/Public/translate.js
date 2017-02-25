@@ -12,13 +12,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(target && source && text) {
 		translate(text, source, target, (err, res) => {
 			if(err) {
-				winston.error(`Failed to translate '${text}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+				winston.error(`Failed to translate '${text}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 			} else {
 				msg.channel.createMessage(`\`\`\`${res.translated_text}\`\`\``);
 			}
 		});
 	} else {
-		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage(`${msg.author.mention} Um i'm v confused. pls use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${commandData.usage}\``);
+		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		msg.channel.createMessage(`${msg.author.mention} Um i'm v confused. pls use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}\``);
 	}
 };
