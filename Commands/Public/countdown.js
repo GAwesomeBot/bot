@@ -87,13 +87,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		}
 	} else {
-		// const info = serverDocument.config.countdown_data.filter(countdownDocument => {
-		// 	return msg.channel.guild.channels.has(countdownDocument.channel_id);
-		// }).sort((a, b) => {
-		// 	return a.expiry_timestamp - b.expiry_timestamp;
-		// }).map(countdownDocument => {
-		// 	return ``;
-		// });
 		let embed_fields = [];
 		serverDocument.config.countdown_data.filter(countdownDocument => {
 			return msg.channel.guild.channels.has(countdownDocument.channel_id);
