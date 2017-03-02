@@ -13,7 +13,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                             url: "https://github.com/GilbertGobbels/GAwesomeBot"
                         },
                         color: 0xFF0000,
-						description: `You've already voted in this poll. PM me \`${commandData.name} ${msg.guild.name}|#${msg.channel.name}\` to erase your vote.`
+						description: `You've already voted in this poll. PM me \`${commandData.name} ${msg.channel.guild.name}|#${msg.channel.name}\` to erase your vote.`
 					}
 				});
 			} else {
@@ -76,7 +76,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x00FF00,
-                    description: `🔮 Ongoing results for the poll **${channelDocument.poll.title}**\n\tSo far, the winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length == 1 ? "" : "s"} ☑ \nUse \`${bot.getCommandPrefix(msg.guild, serverDocument)}poll <no. of option>\` here or PM me \`poll ${msg.guild.name}|#${msg.channel.name}\` to vote 🗳`,
+                    description: `🔮 Ongoing results for the poll **${channelDocument.poll.title}**\n\tSo far, the winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length == 1 ? "" : "s"} ☑ \nUse \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}poll <no. of option>\` here or PM me \`poll ${msg.channel.guild.name}|#${msg.channel.name}\` to vote 🗳`,
 					fields: embed_fields
 				}
 			});
@@ -90,7 +90,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                 },
                 color: 0xFF0000,
-				description: `There is no ongoing poll in this channel. 🛡 PM me \`${commandData.name} ${msg.guild.name}|#${msg.channel.name}\` to start one.`
+				description: `There is no ongoing poll in this channel. 🛡 PM me \`${commandData.name} ${msg.channel.guild.name}|#${msg.channel.name}\` to start one.`
 			}
 		});
 	}

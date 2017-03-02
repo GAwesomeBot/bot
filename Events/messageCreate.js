@@ -42,7 +42,7 @@ module.exports = (bot, db, config, winston, msg) => {
 	};
 
 	// Handle private messages
-	if(!msg.guild) {
+	if(!msg.channel.guild) {
 		// Forward PM to maintainer(s) if enabled
 		if(config.maintainers.indexOf(msg.author.id)==-1 && config.pm_forward) {
 			for(let i=0; i<config.maintainers.length; i++) {
@@ -95,7 +95,7 @@ module.exports = (bot, db, config, winston, msg) => {
 	// Handle public messages
 	} else {
 		// Get server data
-		db.servers.findOne({_id: msg.guild.id}, (err, serverDocument) => {
+		db.servers.findOne({_id: msg.channel.guild.id}, (err, serverDocument) => {
 			if(!err && serverDocument) {
 				// Get channel data
 				let channelDocument = serverDocument.channels.id(msg.channel.id);
@@ -112,7 +112,7 @@ module.exports = (bot, db, config, winston, msg) => {
 					serverDocument.members.push({_id: msg.author.id});
 					memberDocument = serverDocument.members.id(msg.author.id);
 				}
-				const memberBotAdmin = bot.getUserBotAdmin(msg.guild, serverDocument, msg.member);
+				const memberBotAdmin = bot.getUserBotAdmin(msg.channel.guild, serverDocument, msg.member);
 
 				// Increment today's message count for server
 				serverDocument.messages_today++;
@@ -123,7 +123,7 @@ module.exports = (bot, db, config, winston, msg) => {
 					// Set now as the last active time for member
 					memberDocument.last_active = Date.now();
 					// Check if the user has leveled up a rank
-					bot.checkRank(winston, msg.guild, serverDocument, msg.member, memberDocument);
+					bot.checkRank(winston, msg.channel.guild, serverDocument, msg.member, memberDocument);
 				}
 
 				// Check for start command from server admin
@@ -140,7 +140,7 @@ module.exports = (bot, db, config, winston, msg) => {
 						}
 						serverDocument.save(err => {
 							if(err) {
-								winston.error("Failed to save server data for bot enabled", {svrid: msg.guild._id}, err);
+								winston.error("Failed to save server data for bot enabled", {svrid: msg.channel.guild._id}, err);
 							}
 						});
 						msg.channel.createMessage(`Hello! 🐬 I'm back${str}`);
@@ -153,7 +153,7 @@ module.exports = (bot, db, config, winston, msg) => {
 					// Delete offending message if necessary
 					if(serverDocument.config.moderation.filters.custom_filter.delete_message) {
 						msg.delete().then().catch(err => {
-							winston.error(`Failed to delete filtered message from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+							winston.error(`Failed to delete filtered message from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 						});
 					}
 
@@ -161,7 +161,7 @@ module.exports = (bot, db, config, winston, msg) => {
 					db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
 						if(!err && userDocument) {
 							// Handle this as a violation
-							bot.handleViolation(winston, msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} on ${msg.guild.name}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.guild.name}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.custom_filter.action, serverDocument.config.moderation.filters.custom_filter.violator_role_id);
+							bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.custom_filter.action, serverDocument.config.moderation.filters.custom_filter.violator_role_id);
 						} else {
 							winston.error("Failed to find or create user data for message filter violation", {usrid: msg.author.id}, err);
 						}
@@ -182,7 +182,7 @@ module.exports = (bot, db, config, winston, msg) => {
 							if(spamDocument) {
 								spamDocument.remove();
 								serverDocument.save(err => {
-									winston.error("Failed to save server data for spam filter", {svrid: msg.guild.id}, err);
+									winston.error("Failed to save server data for spam filter", {svrid: msg.channel.guild.id}, err);
 								});
 							}
 						}, 45000);
@@ -193,13 +193,13 @@ module.exports = (bot, db, config, winston, msg) => {
 
 						// First-time spam filter violation
 						if(spamDocument.message_count==serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
-							winston.info(`Handling first-time spam from member '${msg.author.username}' on server '${msg.guild.name}' in channel '${msg.channel.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+							winston.info(`Handling first-time spam from member '${msg.author.username}' on server '${msg.channel.guild.name}' in channel '${msg.channel.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 
 							// Message user and tell them to stop
-							msg.author.getDMChannel().createMessage(`Stop spamming in #${msg.channel.name} on ${msg.guild.name}. The chat moderators have been notified about this.`);
+							msg.author.getDMChannel().createMessage(`Stop spamming in #${msg.channel.name} on ${msg.channel.guild.name}. The chat moderators have been notified about this.`);
 
 							// Message bot admins about user spamming
-							bot.messageBotAdmins(msg.guild, serverDocument, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} on ${msg.guild.name}`);
+							bot.messageBotAdmins(msg.channel.guild, serverDocument, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} on ${msg.channel.guild.name}`);
 
 							// Deduct 25 AwesomePoints if necessary
 							if(serverDocument.config.commands.points.isEnabled) {
@@ -223,14 +223,14 @@ module.exports = (bot, db, config, winston, msg) => {
 							});
 						// Second-time spam filter violation
 						} else if(spamDocument.message_count==serverDocument.config.moderation.filters.spam_filter.message_sensitivity*2) {
-							winston.info(`Handling second-time spam from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+							winston.info(`Handling second-time spam from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 
 							// Delete spam messages if necessary
 							if(serverDocument.config.moderation.filters.spam_filter.delete_messages) {
 								bot.purgeChannel(msg.channel.id, 50, targetMessage => {
 									return targetMessage.author.id==msg.author.id && levenshtein.get(spamDocument.last_message_content, targetMessage.cleanContent)<3;
 								}).then().catch(err => {
-									winston.error(`Failed to delete spam messages from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+									winston.error(`Failed to delete spam messages from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 								});
 							}
 
@@ -238,7 +238,7 @@ module.exports = (bot, db, config, winston, msg) => {
 							db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
 								if(!err && userDocument) {
 									// Handle this as a violation
-									bot.handleViolation(winston, msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} on ${msg.guild.name}`, `**@${bot.getName(msg.guild, serverDocument, msg.author, true)}** continues to spam in #${msg.channel.name} on ${msg.guild.name}`, `Second-time spam violation in #${msg.channel.name}`, serverDocument.config.moderation.filters.spam_filter.action, serverDocument.config.moderation.filters.spam_filter.violator_role_id);
+									bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.author, true)}** continues to spam in #${msg.channel.name} on ${msg.channel.guild.name}`, `Second-time spam violation in #${msg.channel.name}`, serverDocument.config.moderation.filters.spam_filter.action, serverDocument.config.moderation.filters.spam_filter.violator_role_id);
 								} else {
 									winston.error("Failed to find or create user data for message spam filter violation", {usrid: msg.author.id}, err);
 								}
@@ -256,12 +256,12 @@ module.exports = (bot, db, config, winston, msg) => {
 
 					// Check if mention count is higher than threshold
 					if(totalMentions>serverDocument.config.moderation.filters.mention_filter.mention_sensitivity) {
-						winston.info(`Handling mention spam from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+						winston.info(`Handling mention spam from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 
 						// Delete message if necessary
 						if(serverDocument.config.moderation.filters.mention_filter.delete_message) {
 							msg.delete().then().catch(err => {
-								winston.error(`Failed to delete filtered mention spam message from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+								winston.error(`Failed to delete filtered mention spam message from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 							});
 						}
 
@@ -269,7 +269,7 @@ module.exports = (bot, db, config, winston, msg) => {
 						db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
 							if(!err && userDocument) {
 								// Handle this as a violation
-								bot.handleViolation(winston, msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} on ${msg.guild.name}`, `**@${bot.getName(msg.guild, serverDocument, msg.author, true)}** mentioned ${totalMentions} members/roles in a message in #${msg.channel.name} on ${msg.guild.name}`, `Mention spam (${totalMentions} members/roles) in #${msg.channel.name}`, serverDocument.config.moderation.filters.mention_filter.action, serverDocument.config.moderation.filters.mention_filter.violator_role_id);
+								bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.author, true)}** mentioned ${totalMentions} members/roles in a message in #${msg.channel.name} on ${msg.channel.guild.name}`, `Mention spam (${totalMentions} members/roles) in #${msg.channel.name}`, serverDocument.config.moderation.filters.mention_filter.action, serverDocument.config.moderation.filters.mention_filter.violator_role_id);
 							} else {
 								winston.error("Failed to find or create user data for message mention filter violation", {usrid: msg.author.id}, err);
 							}
@@ -284,16 +284,16 @@ module.exports = (bot, db, config, winston, msg) => {
 					if(translatedDocument) {
 						translate(msg.cleanContent, translatedDocument.source_language, "EN", (err, res) => {
 							if(err) {
-								winston.error(`Failed to translate message '${msg.cleanContent}' from member '${msg.author.username}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, usrid: msg.author.id}, err);
+								winston.error(`Failed to translate message '${msg.cleanContent}' from member '${msg.author.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: msg.author.id}, err);
 							} else {
-								msg.channel.createMessage(`**@${bot.getName(msg.guild, serverDocument, msg.member)}** said:\`\`\`${res.translated_text}\`\`\``, {disable_everyone: true});
+								msg.channel.createMessage(`**@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:\`\`\`${res.translated_text}\`\`\``, {disable_everyone: true});
 							}
 						});
 					}
 
 					// Vote by mention
-					if(serverDocument.config.commands.points.isEnabled && msg.guild.members.size>2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(msg.channel.id) && msg.content.indexOf("<@")==0 && msg.content.indexOf(">")<msg.content.indexOf(" ") && msg.content.indexOf(" ")>-1 && msg.content.indexOf(" ")<msg.content.length-1) {
-						const member = bot.memberSearch(msg.content.substring(0, msg.content.indexOf(" ")), msg.guild);
+					if(serverDocument.config.commands.points.isEnabled && msg.channel.guild.members.size>2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(msg.channel.id) && msg.content.indexOf("<@")==0 && msg.content.indexOf(">")<msg.content.indexOf(" ") && msg.content.indexOf(" ")>-1 && msg.content.indexOf(" ")<msg.content.length-1) {
+						const member = bot.memberSearch(msg.content.substring(0, msg.content.indexOf(" ")), msg.channel.guild);
 						const voteStr = msg.content.substring(msg.content.indexOf(" "));
 						if(member && [bot.user.id, msg.author.id].indexOf(member.id)==-1 && !member.user.bot) {
 							// Get target user data
@@ -325,7 +325,7 @@ module.exports = (bot, db, config, winston, msg) => {
 													winston.error("Failed to save user data for points", {usrid: member.id}, err);
 												}
 											});
-											winston.info(`User '${member.user.username}' ${voteAction} by user '${msg.author.username} on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+											winston.info(`User '${member.user.username}' ${voteAction} by user '${msg.author.username} on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 										};
 
 										if(voteAction=="gilded") {
@@ -343,7 +343,7 @@ module.exports = (bot, db, config, winston, msg) => {
 															saveTargetUserDocumentPoints();
 														});
 													} else {
-														winston.warn(`User '${msg.author.username}' does not have enough points to gild '${member.user.username}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+														winston.warn(`User '${msg.author.username}' does not have enough points to gild '${member.user.username}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 														msg.channel.createMessage(`${msg.author.mention} You don't have enough AwesomePoints to gild ${member}`);
 													}
 												}
@@ -366,7 +366,7 @@ module.exports = (bot, db, config, winston, msg) => {
 									// Get target user data
 									db.users.findOrCreate({_id: messages[0].author.id}, (err, targetUserDocument) => {
 										if(!err && targetUserDocument) {
-											winston.info(`User '${messages[0].author.username}' upvoted by user '${msg.author.username} on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+											winston.info(`User '${messages[0].author.username}' upvoted by user '${msg.author.username} on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 
 											// Increment points
 											targetUserDocument.points++;
@@ -388,13 +388,13 @@ module.exports = (bot, db, config, winston, msg) => {
 					// Check if message mentions AFK user (server and global)
 					if(msg.mentions.length) {
 						msg.mentions.forEach(usr => {
-							const member = msg.guild.members.get(usr.id);
+							const member = msg.channel.guild.members.get(usr.id);
 							if([bot.user.id, msg.author.id].indexOf(usr.id)==-1 && !usr.bot) {
 								// Server AFK message
 								const targetMemberDocument = serverDocument.members.id(usr.id);
 								if(targetMemberDocument && targetMemberDocument.afk_message) {
 									msg.channel.createMessage({
-										content: `**@${bot.getName(msg.guild, serverDocument, member)}** is currently AFK: ${targetMemberDocument.afk_message}`,
+										content: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** is currently AFK: ${targetMemberDocument.afk_message}`,
 										disableEveryone: true
 									});
 								// Global AFK message
@@ -402,7 +402,7 @@ module.exports = (bot, db, config, winston, msg) => {
 									db.users.findOne({_id: usr.id}, (err, targetUserDocument) => {
 										if(!err && targetUserDocument && targetUserDocument.afk_message) {
 											msg.channel.createMessage({
-												content: `**@${bot.getName(msg.guild, serverDocument, member)}** is currently AFK: ${targetUserDocument.afk_message}`,
+												content: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** is currently AFK: ${targetUserDocument.afk_message}`,
 												disableEveryone: true
 											});
 										}
@@ -456,7 +456,7 @@ module.exports = (bot, db, config, winston, msg) => {
 					const saveServerDocument = () => {
 						serverDocument.save(err => {
 							if(err) {
-								winston.error("Failed to save server data for message", {svrid: msg.guild.id}, err);
+								winston.error("Failed to save server data for message", {svrid: msg.channel.guild.id}, err);
 							}
 						});
 					};
@@ -478,15 +478,15 @@ module.exports = (bot, db, config, winston, msg) => {
 										// Delete offending message if necessary
 										if(serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 											msg.delete().then().catch(err => {
-												winston.error(`Failed to delete NSFW command message from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+												winston.error(`Failed to delete NSFW command message from member '${msg.author.username}' in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 											});
 										}
 
 										// Handle this as a violation
-										bot.handleViolation(winston, msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You tried to fetch NSFW content in #${msg.channel} on ${msg.guild.name}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** is trying to fetch NSFW content (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.guild.name}`, `NSFW filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.nsfw_filter.action, serverDocument.config.moderation.filters.nsfw_filter.violator_role_id);
+										bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You tried to fetch NSFW content in #${msg.channel} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** is trying to fetch NSFW content (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `NSFW filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.nsfw_filter.action, serverDocument.config.moderation.filters.nsfw_filter.violator_role_id);
 									// Run the command
 									} else {
-										winston.info(`Treating '${msg.cleanContent}' as a command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+										winston.info(`Treating '${msg.cleanContent}' as a command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 
 										deleteCommandMessage(serverDocument, channelDocument, msg);
 
@@ -497,7 +497,7 @@ module.exports = (bot, db, config, winston, msg) => {
 												description: bot.getPublicCommandMetadata(command.command).description
 											});
 										} catch(err) {
-											winston.error(`Failed to process command '${command.command}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+											winston.error(`Failed to process command '${command.command}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 											msg.channel.createMessage("Something went wrong 😱");
 										}
 										setCooldown(winston, serverDocument, channelDocument);
@@ -509,7 +509,7 @@ module.exports = (bot, db, config, winston, msg) => {
 							});
 						// Check if it's a trigger for a tag command
 						} else if(command && serverDocument.config.tags.list.id(command.command) && serverDocument.config.tags.list.id(command.command).isCommand) {
-							winston.info(`Treating '${msg.cleanContent}' as a tag command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+							winston.info(`Treating '${msg.cleanContent}' as a tag command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 							msg.channel.createMessage({
 								content: serverDocument.config.tags.list.id(command.command).content,
 								disableEveryone: true
@@ -523,7 +523,7 @@ module.exports = (bot, db, config, winston, msg) => {
 								if(memberBotAdmin>=serverDocument.extensions[i].admin_level && serverDocument.extensions[i].enabled_channel_ids.indexOf(msg.channel.id)>-1) {
 									// Command extensions
 									if(serverDocument.extensions[i].type=="command" && command && command.command==serverDocument.extensions[i].key) {
-										winston.info(`Treating '${msg.cleanContent}' as a trigger for command extension '${serverDocument.extensions[i].name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+										winston.info(`Treating '${msg.cleanContent}' as a trigger for command extension '${serverDocument.extensions[i].name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 										extensionApplied = true;
 
 										// Do the normal things for commands
@@ -531,13 +531,13 @@ module.exports = (bot, db, config, winston, msg) => {
 										deleteCommandMessage(serverDocument, channelDocument, msg);
 										setCooldown(winston, serverDocument, channelDocument);
 
-										runExtension(bot, db, winston, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, command.suffix, null);
+										runExtension(bot, db, winston, msg.channel.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, command.suffix, null);
 									// Keyword extensions
 									} else if(serverDocument.extensions[i].type=="keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
 										if(((serverDocument.extensions[i].keywords.length>1 || serverDocument.extensions[i].keywords[0]!="*") && keywordMatch.selectedKeyword>-1) || (serverDocument.extensions[i].keywords.length==1 && serverDocument.extensions[i].keywords[0]=="*")) {
-											winston.info(`Treating '${msg.cleanContent}' as a trigger for keyword extension '${serverDocument.extensions[i].name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-											runExtension(bot, db, winston, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, null, keywordMatch);
+											winston.info(`Treating '${msg.cleanContent}' as a trigger for keyword extension '${serverDocument.extensions[i].name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+											runExtension(bot, db, winston, msg.channel.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, null, keywordMatch);
 										}
 									}
 								}
@@ -548,17 +548,17 @@ module.exports = (bot, db, config, winston, msg) => {
 
 							// Check if it's a chatterbot prompt
 							if(!extensionApplied && serverDocument.config.chatterbot && msg.content.indexOf(bot.user.mention)==0 || msg.content.indexOf(`<@!${bot.user.id}>`)==0 && msg.content.indexOf(" ")>-1 && msg.content.length>msg.content.indexOf(" ")) {
-								const prompt = msg.cleanContent.substring((msg.guild.members.get(bot.user.id).nick || bot.user.username).length+2).trim();
+								const prompt = msg.cleanContent.substring((msg.channel.guild.members.get(bot.user.id).nick || bot.user.username).length+2).trim();
 								setCooldown(winston, serverDocument, channelDocument);
 								saveServerDocument();
 
 								// Default help response
 								if(prompt.toLowerCase().indexOf("help")==0) {
-									msg.channel.createMessage(`Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}help\` for info about how to use me on this server :smiley:`);
+									msg.channel.createMessage(`Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}help\` for info about how to use me on this server :smiley:`);
 								// Process chatterbot prompt
 								} else {
-									winston.info(`Treating '${msg.cleanContent}' as a chatterbot prompt`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-									chatterbotPrompt(msg.author.id, prompt, msg.guild.members.get(bot.user.id).nick || bot.user.username, res => {
+									winston.info(`Treating '${msg.cleanContent}' as a chatterbot prompt`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+									chatterbotPrompt(msg.author.id, prompt, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, res => {
 										msg.channel.createMessage({
 											content: `${msg.author.mention} ${res}`,
 											disableEveryone: true
@@ -569,7 +569,7 @@ module.exports = (bot, db, config, winston, msg) => {
 							} else if(!extensionApplied && msg.mentions.find(usr => {
 								return usr.id==bot.user.id;
 							}) && serverDocument.config.tag_reaction.isEnabled) {
-								msg.channel.createMessage(serverDocument.config.tag_reaction.messages.random().replaceAll("@user", `**@${bot.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", msg.author.mention));
+								msg.channel.createMessage(serverDocument.config.tag_reaction.messages.random().replaceAll("@user", `**@${bot.getName(msg.channel.guild, serverDocument, msg.member)}**`).replaceAll("@mention", msg.author.mention));
 							}
 						}
 					} else {
@@ -577,7 +577,7 @@ module.exports = (bot, db, config, winston, msg) => {
 					}
 				}
 			} else {
-				winston.error("Failed to find server data for message", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+				winston.error("Failed to find server data for message", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 			}
 		});
 	}

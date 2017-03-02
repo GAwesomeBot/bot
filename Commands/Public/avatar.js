@@ -3,7 +3,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(!suffix || suffix.toLowerCase()=="me") {
 		member = msg.member;
 	} else {
-		member = bot.memberSearch(suffix, msg.guild);
+		member = bot.memberSearch(suffix, msg.channel.guild);
 	}
 	if(member) {
 		msg.channel.createMessage({
@@ -21,7 +21,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		});
 	} else {
-		winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Requested member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage({
 			embed: {
                 author: {

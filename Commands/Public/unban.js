@@ -2,7 +2,7 @@ const ModLog = require("./../../Modules/ModerationLogging.js");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if(suffix) {
-		msg.guild.getBans().then(users => {
+		msg.channel.guild.getBans().then(users => {
 			let query, reason;
 			if(suffix.indexOf("|")>-1 && suffix.length>3) {
 				query = suffix.substring(0, suffix.indexOf("|")).trim();
@@ -14,12 +14,12 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				return usr.username==query || usr.id==query;
 			});
 			if(usr) {
-				msg.guild.unbanMember(usr.id).then(() => {
-					msg.channel.createMessage(`**@${bot.getName(msg.guild, serverDocument, {user: usr}, true)}** is no longer banned 🚪`);
-					ModLog.create(msg.guild, serverDocument, "Unban", {user: usr}, msg.member, reason);
+				msg.channel.guild.unbanMember(usr.id).then(() => {
+					msg.channel.createMessage(`**@${bot.getName(msg.channel.guild, serverDocument, {user: usr}, true)}** is no longer banned 🚪`);
+					ModLog.create(msg.channel.guild, serverDocument, "Unban", {user: usr}, msg.member, reason);
 				}).catch(err => {
-					winston.error(`Failed to unban user '${usr.username}' from server '${msg.guild.name}'`, {svrid: msg.guild.name, usrid: usr.id}, err);
-					msg.channel.createMessage(`I couldn't unban **@${bot.getName(msg.guild, serverDocument, {user: usr}, true)}** 😩`);
+					winston.error(`Failed to unban user '${usr.username}' from server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.name, usrid: usr.id}, err);
+					msg.channel.createMessage(`I couldn't unban **@${bot.getName(msg.channel.guild, serverDocument, {user: usr}, true)}** 😩`);
 				});
 			} else {
 				msg.channel.createMessage("I couldn't find a matching banned user on this server.");

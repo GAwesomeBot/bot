@@ -24,7 +24,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 
 		getRSS(winston, url, num, (err, articles) => {
 			if(err || articles.length==0) {
-				winston.warn(`No RSS articles found at '${url}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`No RSS articles found at '${url}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage("I looked everywhere but I couldn't find anything 🏳️");
 			} else {
 				bot.sendArray(msg.channel, articles.reverse().map(a => {

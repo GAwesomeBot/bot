@@ -4,10 +4,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	if(suffix) {
 		let member, reason;
 		if(suffix.indexOf("|") > -1 && suffix.length > 3) {
-			member = bot.memberSearch(suffix.substring(0, suffix.indexOf("|")).trim(), msg.guild);
+			member = bot.memberSearch(suffix.substring(0, suffix.indexOf("|")).trim(), msg.channel.guild);
 			reason = suffix.substring(suffix.indexOf("|") + 1).trim();
 		} else {
-			member = bot.memberSearch(suffix, msg.guild);
+			member = bot.memberSearch(suffix, msg.channel.guild);
 		}
 		if(member) {
 			if(bot.isMuted(msg.channel, member)) {
@@ -19,13 +19,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                             url: "https://github.com/GilbertGobbels/GAwesomeBot"
                         },
                         color: 0xFF0000,
-						description: `**@${bot.getName(msg.guild, serverDocument, member)}** is already muted, so I can't mute them again! 🤓`
+						description: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** is already muted, so I can't mute them again! 🤓`
 					}
 				});
 			} else {
 				bot.muteMember(msg.channel, member, err => {
 					if(err) {
-						winston.error(`Failed to mute member '${member.user.username}' in channel '${msg.channel.name}' from server '${msg.guild.name}'`, {svrid: msg.guild.name, usrid: member.id}, err);
+						winston.error(`Failed to mute member '${member.user.username}' in channel '${msg.channel.name}' from server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.name, usrid: member.id}, err);
 						msg.channel.createMessage({
 							embed: {
                                 author: {
@@ -34,7 +34,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                                 },
                                 color: 0xFF0000,
-								description: `I couldn't mute **@${bot.getName(msg.guild, serverDocument, member)}** in this channel 😴 *Thanks Discord*`,
+								description: `I couldn't mute **@${bot.getName(msg.channel.guild, serverDocument, member)}** in this channel 😴 *Thanks Discord*`,
 								footer: {
                                 	text: "Make sure I have permission to edit this channels settings!"
 								}
@@ -49,10 +49,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                                 },
                                 color: 0x00FF00,
-								description: `**@${bot.getName(msg.guild, serverDocument, member)}** can't speak in #${msg.channel.name} anymore 🔇`
+								description: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** can't speak in #${msg.channel.name} anymore 🔇`
 							}
 						});
-						ModLog.create(msg.guild, serverDocument, "Mute", member, msg.member, reason);
+						ModLog.create(msg.channel.guild, serverDocument, "Mute", member, msg.member, reason);
 					}
 				});
 			}

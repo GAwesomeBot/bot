@@ -81,27 +81,20 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                             url: "https://github.com/GilbertGobbels/GAwesomeBot"
                         },
                         color: 0xFF0000,
-						description: `That countdown doesn't exist. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${suffix}|<time>\` to create it.`
+						description: `That countdown doesn't exist. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${suffix}|<time>\` to create it.`
 					}
 				});
 			}
 		}
 	} else {
-		// const info = serverDocument.config.countdown_data.filter(countdownDocument => {
-		// 	return msg.guild.channels.has(countdownDocument.channel_id);
-		// }).sort((a, b) => {
-		// 	return a.expiry_timestamp - b.expiry_timestamp;
-		// }).map(countdownDocument => {
-		// 	return ``;
-		// });
 		let embed_fields = [];
 		serverDocument.config.countdown_data.filter(countdownDocument => {
-			return msg.guild.channels.has(countdownDocument.channel_id);
+			return msg.channel.guild.channels.has(countdownDocument.channel_id);
 		}).sort((a, b) => {
 			return a.expiry_timestamp - b.expiry_timestamp;
 		}).map(countdownDocument => {
 			embed_fields.push({
-				name: `${countdownDocument._id}: in #${msg.guild.channels.get(countdownDocument.channel_id).name}`,
+				name: `${countdownDocument._id}: in #${msg.channel.guild.channels.get(countdownDocument.channel_id).name}`,
 				value: ` ${moment(countdownDocument.expiry_timestamp).fromNow()}`,
 				inline: true
 			});
@@ -128,7 +121,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x9ECDF2,
-					description: `There aren't any countdowns on this server. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <event>|<time from now>\` to create one. 🐬`
+					description: `There aren't any countdowns on this server. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <event>|<time from now>\` to create one. 🐬`
 				}
 			});
 		}

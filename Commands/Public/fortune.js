@@ -20,7 +20,7 @@ module.exports = function fortune(bot, db, config, winston, userDocument, server
                         }
                     });
                 } else {
-                    winston.warn("Failed to fetch fortune", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+                    winston.warn("Failed to fetch fortune", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
                     msg.channel.createMessage({
                     	embed: {
                             author: {
@@ -65,7 +65,7 @@ module.exports = function fortune(bot, db, config, winston, userDocument, server
 					}
 				});
 			} else {
-				winston.warn("Failed to fetch fortune", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn("Failed to fetch fortune", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
                 msg.channel.createMessage({
                     embed: {
                         author: {

@@ -23,7 +23,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x9ECDF2,
-                    description: `Alright, I'll show that when someone mentions you on this server. 👌\nUse \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} .\` to remove it`
+                    description: `Alright, I'll show that when someone mentions you on this server. 👌\nUse \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} .\` to remove it`
                 }
             });
 		}

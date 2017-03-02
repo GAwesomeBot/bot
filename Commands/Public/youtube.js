@@ -20,7 +20,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		yt.setKey(serverDocument.config.custom_api_keys.google_api_key || auth.tokens.google_api_key);
 		yt.search(query, num, (err, res) => {
 			if(err) {
-				winston.warn(`No YouTube results found for '${query}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`No YouTube results found for '${query}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage("📺 Nothing found on YouTube");
 			} else {
 				bot.sendArray(msg.channel, res.items.map(item => {
@@ -36,7 +36,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		});
 	} else {
-		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage(`${msg.author.mention} Please include a query and (optional) number of results to show 💁‍♂`);
 	}
 };

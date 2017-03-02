@@ -3,7 +3,7 @@ const unirest = require("unirest");
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	const number = suffix || "random";
 	if(suffix && isNaN(suffix)) {
-		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage({
 			embed: {
                 author: {
@@ -30,7 +30,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 				});
 			} else {
-				winston.warn(`Failed to fetch number fact for '${number}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Failed to fetch number fact for '${number}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage({
 					embed: {
                         author: {

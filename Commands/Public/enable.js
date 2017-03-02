@@ -29,7 +29,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		});
 		// Nothing Happend => Considering no commands entered
 		if(!enables.length && !errors.length) {
-			winston.warn(`No parameters provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn(`No parameters provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage({
 				embed: {
                     author: {

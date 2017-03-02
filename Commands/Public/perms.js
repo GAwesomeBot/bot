@@ -34,13 +34,13 @@ const PermissionConstants = {
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
 		const findRoleOrMember = (str, callback) => {
-			const role = msg.guild.roles.find(a => {
+			const role = msg.channel.guild.roles.find(a => {
 				return a.name == str;
 			});
 			if(role) {
 				callback(role, "role");
 			} else {
-				const member = bot.memberSearch(str, msg.guild);
+				const member = bot.memberSearch(str, msg.channel.guild);
 				if(member) {
 					callback(member, "member");
 				} else {
@@ -65,11 +65,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                                 url: "https://github.com/GilbertGobbels/GAwesomeBot"
                                             },
                                             color: 0x00FF00,
-											description: `Done. **${type == "role" ? target.name : (`@${bot.getName(msg.guild, serverDocument, target)}`)}** now ${allow == null ? "doesn't have" : "has"} the \`${perm}\` permission in #${msg.channel.name}`
+											description: `Done. **${type == "role" ? target.name : (`@${bot.getName(msg.channel.guild, serverDocument, target)}`)}** now ${allow == null ? "doesn't have" : "has"} the \`${perm}\` permission in #${msg.channel.name}`
 										}
 									});
 								}).catch(err => {
-									winston.error(`Failed to edit permissions for ${type} in channel '${msg.channel.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+									winston.error(`Failed to edit permissions for ${type} in channel '${msg.channel.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 									msg.channel.createMessage({
 										embed: {
                                             author: {
@@ -97,7 +97,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 								}
 							}
 						} else {
-							winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+							winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 							msg.channel.createMessage({
 								embed: {
                                     author: {
@@ -111,7 +111,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 							});
 						}
 					} else {
-						winston.warn(`Requested role/member does not exist so ${commandData.name} cannot be set`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+						winston.warn(`Requested role/member does not exist so ${commandData.name} cannot be set`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 						msg.channel.createMessage({
 							embed: {
                                 author: {
@@ -126,7 +126,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 				});
 			} else {
-				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -135,7 +135,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                             url: "https://github.com/GilbertGobbels/GAwesomeBot"
                         },
                         color: 0xFF0000,
-						description: `Invalid syntax - use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <user or role>|<permission name>\``
+						description: `Invalid syntax - use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <user or role>|<permission name>\``
 					}
 				});
 			}
@@ -165,7 +165,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						}
 					});
 				} else {
-					winston.warn(`Requested role/member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+					winston.warn(`Requested role/member does not exist so ${commandData.name} cannot be shown`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 					msg.channel.createMessage({
 						embed: {
                             author: {

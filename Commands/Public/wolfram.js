@@ -6,7 +6,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		const wolfram = wolfram_node.init(auth.tokens.wolfram_app_id);
 		wolfram.ask({query: suffix}, (err, res) => {
 			if(err) {
-				winston.error("Failed to connect to Wolfram|Alpha", {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+				winston.error("Failed to connect to Wolfram|Alpha", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 				msg.channel.createMessage("Unfortunately, I didn't get anything back from Wolfram|Alpha 😔");
 			} else {
 				try {
@@ -15,13 +15,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					});
 					bot.sendArray(msg.channel, info);
 				} catch(err) {
-					winston.warn(`No Wolfram|Alpha data found for '${suffix}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+					winston.warn(`No Wolfram|Alpha data found for '${suffix}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 					msg.channel.createMessage("💡 Wolfram|Alpha has nothing");
 				}
 			}
 		});
 	} else {
-		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage(`${msg.author.mention} i gotta have somethin to search for bruh`);
 	}
 };

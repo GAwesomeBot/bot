@@ -8,7 +8,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			num = suffix;
 		}
 		if(!num || isNaN(num) || (num != -1 && num < 2)) {
-			winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage({
 				embed: {
                     author: {
@@ -39,7 +39,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				} else {
 					let member;
 					if(query.startsWith("<@") && query.indexOf(">") > -1) {
-						member = bot.memberSearch(query, msg.guild);
+						member = bot.memberSearch(query, msg.channel.guild);
 					}
 					if(member) {
 						filter = message => {
@@ -66,7 +66,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					}
 				});
 			}).catch(err => {
-				winston.error(`Failed to ${commandData.name} in channel '${msg.channel.name}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+				winston.error(`Failed to ${commandData.name} in channel '${msg.channel.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -81,7 +81,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			});
 		}
 	} else {
-		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage({
 			embed: {
                 author: {
@@ -90,7 +90,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                     url: "https://github.com/GilbertGobbels/GAwesomeBot"
                 },
                 color: 0xFF0000,
-				description: `Hmmm? \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} ${commandData.usage}\``
+				description: `Hmmm? \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}\``
 			}
 		});
 	}

@@ -4,12 +4,12 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			if(msg.member.permission.has("manageNicknames")) {
 				const args = suffix.split("|");
 				if(args.length == 2 && args[0].trim()) {
-					const member = bot.memberSearch(args[0].trim(), msg.guild);
+					const member = bot.memberSearch(args[0].trim(), msg.channel.guild);
 					if(member) {
 						if(args[1].trim() == ".") {
 							args[1] = "";
 						}
-						bot.editGuildMember(msg.guild.id, member.id, {nick: args[1].trim()}).then(() => {
+						bot.editGuildMember(msg.channel.guild.id, member.id, {nick: args[1].trim()}).then(() => {
 							msg.channel.createMessage({
 								embed: {
                                     author: {
@@ -18,7 +18,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                                     },
                                     color: 0x00FF00,
-									description: `**@${bot.getName(msg.guild, serverDocument, member, true)}** now has the nickname \`${member.nick}\``
+									description: `**@${bot.getName(msg.channel.guild, serverDocument, member, true)}** now has the nickname \`${member.nick}\``
 								}
 							});
 						}).catch(err => {
@@ -33,10 +33,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 									description: "I guess Discord hates me or something 😰"
 								}
 							});
-							winston.error(`Failed to change nickname for member '${member.user.username}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+							winston.error(`Failed to change nickname for member '${member.user.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 						});
 					} else {
-						winston.warn(`Requested member does not exist so ${commandData.name} cannot be changed`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+						winston.warn(`Requested member does not exist so ${commandData.name} cannot be changed`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 						msg.channel.createMessage({
 							embed: {
                                 author: {
@@ -50,15 +50,15 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						});
 					}
 				} else {
-					winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+					winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 					msg.channel.createMessage({
 						embed: {
-							description: `Huh? Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <user>|<name>\` to change someone's nickname`
+							description: `Huh? Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <user>|<name>\` to change someone's nickname`
 						}
 					});
 				}
 			} else {
-				winston.warn(`Member '${msg.author.username}' does not have permission to manage nicknames on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Member '${msg.author.username}' does not have permission to manage nicknames on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage({
 					embed: {
 						description: `You don't have permission to edit other people's nicks on this server 🔨`
@@ -69,7 +69,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			if(suffix == ".") {
 				suffix = "";
 			}
-			bot.editGuildMember(msg.guild.id, msg.author.id, {nick: suffix}).then(() => {
+			bot.editGuildMember(msg.channel.guild.id, msg.author.id, {nick: suffix}).then(() => {
 				msg.channel.createMessage({
 					embed: {
                         author: {
@@ -93,7 +93,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						description: "I guess Discord hates me or something 😰"
 					}
 				});
-				winston.error(`Failed to change nickname for member '${msg.author.username}' on server '${msg.guild.name}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+				winston.error(`Failed to change nickname for member '${msg.author.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 			});
 		}
 	} else {
@@ -118,7 +118,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                         url: "https://github.com/GilbertGobbels/GAwesomeBot"
                     },
                     color: 0x9ECDF2,
-					description: `You don't have a nick on this server. Use \`${bot.getCommandPrefix(msg.guild, serverDocument)}${commandData.name} <name>\` to set one`
+					description: `You don't have a nick on this server. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <name>\` to set one`
 				}
 			});
 		}
