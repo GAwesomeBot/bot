@@ -185,7 +185,7 @@ module.exports = (bot, db, config, winston) => {
 						const svr = bot.guilds.get(serverDocument._id);
 						if(svr) {
 							const checkIfStreaming = j => {
-								if(j < serverDocuments.config.streamers_data.length) {
+								if(j < serverDocument.config.streamers_data.length) {
 									sendStreamerMessage(winston, svr, serverDocument, serverDocument.config.streamers_data[j], () => {
 										checkIfStreaming(++j);
 									});
