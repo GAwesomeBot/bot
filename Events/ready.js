@@ -145,17 +145,19 @@ module.exports = (bot, db, config, winston) => {
 		db.servers.find({}, (err, serverDocuments) => {
 			if(!err && serverDocuments) {
 				const sendStreamingRSSToServer = i => {
-					if(i<serverDocuments.length) {
+					if(i < serverDocuments.length) {
 						const serverDocument = serverDocuments[i];
 						const svr = bot.guilds.get(serverDocument._id);
 						if(svr) {
 							const sendStreamingRSSFeed = j => {
-								if(j<serverDocument.config.rss_feeds.length) {
+								if(j < serverDocument.config.rss_feeds.length) {
 									if(serverDocument.config.rss_feeds[j].streaming.isEnabled) {
-										sendStreamingRSSUpdates(bot, winston, svr, serverDocuments[i].config.rss_feeds[j], () => {
+										sendStreamingRSSUpdates(bot, winston, svr, serverDocument, serverDocument.config.rss_feeds[j], () => {
 											sendStreamingRSSFeed(++j);
 										});
-									}
+									} else {
+                    sendStreamingRSSFeed(++j);
+                  }
 								} else {
 									sendStreamingRSSToServer(++i);
 								}
@@ -164,11 +166,12 @@ module.exports = (bot, db, config, winston) => {
 						}
 					} else {
 						setTimeout(() => {
-							sendStreamingRSSToServer(0);
+							startStreamingRSS();
 						}, 600000);
 					}
 				};
-			}
+        sendStreamingRSSToServer(0);
+      }
 		});
 	};
 
@@ -177,26 +180,28 @@ module.exports = (bot, db, config, winston) => {
 		db.servers.find({}, (err, serverDocuments) => {
 			if(!err && serverDocuments) {
 				const checkStreamersForServer = i => {
-					if(i<serverDocuments.length) {
+					if(i < serverDocuments.length) {
 						const serverDocument = serverDocuments[i];
 						const svr = bot.guilds.get(serverDocument._id);
 						if(svr) {
 							const checkIfStreaming = j => {
-								if(j<serverDocuments.config.streamers_data.length) {
-									sendStreamerMessage(winston, svr, serverDocuments[i], serverDocuments.config.streamers_data[j], () => {
+								if(j < serverDocument.config.streamers_data.length) {
+									sendStreamerMessage(winston, svr, serverDocument, serverDocument.config.streamers_data[j], () => {
 										checkIfStreaming(++j);
 									});
 								} else {
 									checkStreamersForServer(++i);
 								}
 							};
+              checkIfStreaming(0);
 						}
 					} else {
 						setTimeout(() => {
-							checkStreamersForServer(0);
+							checkStreamers();
 						}, 600000);
 					}
 				};
+        checkStreamersForServer(0);
 			}
 		});
 	};
