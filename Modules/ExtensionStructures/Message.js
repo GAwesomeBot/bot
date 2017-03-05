@@ -93,7 +93,7 @@ class Message {
 
 	get guild() {
 		const Guild = require("./Guild");
-		return new Guild(g_erisMessage.guild);
+		return new Guild(g_erisMessage.channel.guild);
 	}
 
 	get member() {
@@ -106,7 +106,7 @@ class Message {
 		// It also returns only User objects, but for extensions we want to pass back Member objects.
 		const Guild = require("./Guild");
 		const Collection = require("./Collection");
-		const SrvMembers = new Guild(g_erisMessage.guild).members;
+		const SrvMembers = new Guild(g_erisMessage.channel.guild).members;
 		const content = (g_erisMessage.content.match(/<@!?[0-9]+>/g) || []).map(function(uid){return uid.replace(/[^0-9.]/g, '')});
 		const mentions = [];
 		for(var i=0; i<content.length; i++) {
