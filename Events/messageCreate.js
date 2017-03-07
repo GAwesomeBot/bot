@@ -124,6 +124,13 @@ module.exports = (bot, db, config, winston, msg) => {
 					memberDocument.last_active = Date.now();
 					// Check if the user has leveled up a rank
 					bot.checkRank(winston, msg.channel.guild, serverDocument, msg.member, memberDocument);
+
+          // Save changes to serverDocument
+          serverDocument.save(err => {
+            if(err) {
+              winston.error("Failed to save server data for messageCreated", {svrid: msg.channel.guild.id}, err);
+            }
+          });
 				}
 
 				// Check for start command from server admin
