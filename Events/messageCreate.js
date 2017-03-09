@@ -280,7 +280,8 @@ module.exports = (bot, db, config, winston, msg) => {
 
 				// Mention filter
 				if(serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.mention_filter.isEnabled && serverDocument.config.moderation.filters.mention_filter.disabled_channel_ids.indexOf(msg.channel.id)==-1 && memberBotAdmin<1) {
-					const totalMentions = msg.mentions.length + msg.roleMentions.length;
+					let totalMentions = msg.mentions.length + msg.roleMentions.length;
+					if(serverDocument.config.moderation.filters.mention_filter.include_everyone && msg.mentionEveryone) totalMentions++;
 
 					// Check if mention count is higher than threshold
 					if(totalMentions>serverDocument.config.moderation.filters.mention_filter.mention_sensitivity) {
