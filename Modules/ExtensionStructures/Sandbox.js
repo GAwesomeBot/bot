@@ -95,6 +95,8 @@ module.exports = (bot, db, winston, extensionDocument, svr, serverDocument, ch, 
 	}
 	if(extensionDocument.type=="command") {
 		params.commandSuffix = suffix.trim();
+		params.commandPrefix = bot.getCommandPrefix(msg.channel.guild, serverDocument);
+		params.commandKey = extensionDocument.key;
 	}
 	return params;
 };
