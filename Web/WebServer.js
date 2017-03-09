@@ -2978,9 +2978,6 @@ module.exports = (bot, db, auth, config, winston) => {
 	app.post("/dashboard/management/filters", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			for(const filter in serverDocument.toObject().config.moderation.filters) {
-				if(!serverDocument.config.moderation.filters[filter]['violator_role_id']){
-					serverDocument.config.moderation.filters[filter]['violator_role_id'] = "";
-				}
 				for(const key in serverDocument.toObject().config.moderation.filters[filter]) {
 					switch(key) {
 						case "isEnabled":
