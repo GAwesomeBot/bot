@@ -1,5 +1,5 @@
 const checkFiltered = require("./../Modules/FilterChecker.js");
-const translate = require("./../Modules/MicrosoftTranslate.js");
+const mstranslate = require("./../Modules/MicrosoftTranslate.js");
 const runExtension = require("./../Modules/ExtensionRunner.js");
 
 const levenshtein = require("fast-levenshtein");
@@ -286,14 +286,14 @@ module.exports = (bot, db, config, winston, msg) => {
 
 				// Only keep responding if the bot is on in the channel and author isn't blocked on the server
 				if(channelDocument.bot_enabled && serverDocument.config.blocked.indexOf(msg.author.id)==-1) {
-					// Translate message if neccesary
+					// Translate message if necessary
 					const translatedDocument = serverDocument.config.translated_messages.id(msg.author.id);
 					if(translatedDocument) {
-						translate(msg.cleanContent, translatedDocument.source_language, "EN", (err, res) => {
+						mstranslate.translate({text: msg.cleanContent, from: translatedDocument.source_language, to: "EN"}, (err, res) => {
 							if(err) {
 								winston.error(`Failed to translate message '${msg.cleanContent}' from member '${msg.author.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: msg.author.id}, err);
 							} else {
-								msg.channel.createMessage(`**@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:\`\`\`${res.translated_text}\`\`\``, {disable_everyone: true});
+								msg.channel.createMessage(`**@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:\`\`\`${res}\`\`\``, {disable_everyone: true});
 							}
 						});
 					}
