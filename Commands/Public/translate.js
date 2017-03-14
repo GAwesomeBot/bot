@@ -9,7 +9,22 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	const source = suffix.substring(suffix.lastIndexOf(" ")+1);
 	const data = suffix.substring(0, suffix.lastIndexOf(" "));
 
-	if(target && source && data) {
+	if(target && data && source == "?") {
+		mstranslate.detect({text: data}, (err, res) => {
+			if(err) {
+				winston.error(`Failed to detect language for '${data}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+			} else {
+				mstranslate.translate({text: data, from: res, to: target}, (err, res) => {
+					if(err) {
+						winston.error(`Failed to translate '${data}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+					} else {
+						msg.channel.createMessage(`\`\`\`${res}\`\`\``);
+					}
+				});
+			}
+		});
+	}
+	else if(target && source && data) {
 		mstranslate.translate({text: data, from: source, to: target}, (err, res) => {
 			if(err) {
 				winston.error(`Failed to translate '${data}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);

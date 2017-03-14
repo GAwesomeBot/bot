@@ -798,7 +798,7 @@
             "category": "Utility 🔦"
         },
         "translate": {
-            "usage": "<text> <source lang> to <target lang>",
+            "usage": "<text> <\"?\" or source lang> to <target lang>",
             "description": "Uses Microsoft Translate to translate a word/phrase into another language",
             "defaults": {
                 "is_enabled": true,
