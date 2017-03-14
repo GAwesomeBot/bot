@@ -289,11 +289,21 @@ module.exports = (bot, db, config, winston, msg) => {
 					// Translate message if necessary
 					const translatedDocument = serverDocument.config.translated_messages.id(msg.author.id);
 					if(translatedDocument) {
-						mstranslate.translate({text: msg.cleanContent, from: translatedDocument.source_language, to: "EN"}, (err, res) => {
+						// Detect the language (not always accurate; used only to exclude English messages from being translated to English)
+						mstranslate.detect({text: msg.cleanContent}, (err, res) => {
 							if(err) {
-								winston.error(`Failed to translate message '${msg.cleanContent}' from member '${msg.author.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: msg.author.id}, err);
+								winston.error(`Failed to auto-detect language for message '${msg.cleanContent}' from member '${msg.author.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: msg.author.id}, err);
 							} else {
-								msg.channel.createMessage(`**@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:\`\`\`${res}\`\`\``, {disable_everyone: true});
+								// If the message is not in English, attempt to translate it from the language defined for the user
+								if(res.toLowerCase() != 'en'){
+									mstranslate.translate({text: msg.cleanContent, from: translatedDocument.source_language, to: "EN"}, (err, res) => {
+										if(err) {
+											winston.error(`Failed to translate message '${msg.cleanContent}' from member '${msg.author.username}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: msg.author.id}, err);
+										} else {
+											msg.channel.createMessage(`**@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:\`\`\`${res}\`\`\``, {disable_everyone: true});
+										}
+									});
+								}
 							}
 						});
 					}
