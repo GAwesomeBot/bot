@@ -9,6 +9,5 @@ module.exports = (bot, db, config, winston) => {
 	bot.shards.forEach(shard => {
 		winston.info(`Shard ${shard.id + 1}/${config.shard_count || 1} connected: ${guilds[shard.id]} guilds, ${users[shard.id]} users`);
 	});
-
 	winston.info("All shards connected");
 };
