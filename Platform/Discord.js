@@ -17,8 +17,7 @@ module.exports = (db, auth, config) => {
 			TYPING_START: true
 		},
 		getAllUsers: true,
-		maxShards: config.shard_count || 1,
-		messageLimit: 50
+		maxShards: config.shard_count || 1
 	});
 	bot.isReady = false;
 
