@@ -1,4 +1,4 @@
-// A shard receives the ready packet
+// All shards are ready
 module.exports = (bot, db, config, winston) => {
 	winston.info(`Shards: ${config.shard_count}`);
 	let users = new Array(bot.shards.size).fill(0), guilds = new Array(bot.shards.size).fill(0);
