@@ -1,7 +1,6 @@
 // Import and setup files and modules
 const eventHandlers = {
 	ready: require("./Events/ready.js"),
-	shardReady: require("./Events/shardReady.js"),
 	guildCreate: require("./Events/guildCreate.js"),
 	guildUpdate: require("./Events/guildUpdate.js"),
 	guildDelete: require("./Events/guildDelete.js"),
@@ -46,14 +45,11 @@ database.initialize(config.db_url, err => {
 			winston.info("Started bot application");
 		});
 
-		// After guilds and users have been created (first-time only)
+		/* After guilds and users have been created (first-time only)
+		 * Will also trigger the shard message information
+		 */
 		bot.once("ready", () => {
 			eventHandlers.ready(bot, db, config, winston);
-		});
-
-		// A shard receives the ready packet
-		bot.on("shardReady", id => {
-			eventHandlers.shardReady(bot, db, config, winston, id);
 		});
 
 		// Server joined by bot
@@ -199,16 +195,16 @@ database.initialize(config.db_url, err => {
 			}
 		});
 
-		// Message updated (edited, functionpinned, etc.)
+		// Message edited
 		bot.on("messageUpdate", (msg, oldmsgdata) => {
 			if(bot.isReady) {
-				const messageUpdateDomain = domain.create();
-				messageUpdateDomain.run(() => {
-					eventHandlers.messageUpdate(bot, db, config, winston, msg, oldmsgdata);
-				});
-				messageUpdateDomain.on("error", err => {
-					winston.error(err);
-				});
+					const messageUpdateDomain = domain.create();
+					messageUpdateDomain.run(() => {
+						eventHandlers.messageUpdate(bot, db, config, winston, msg, oldmsgdata);
+					});
+					messageUpdateDomain.on("error", err => {
+						winston.error(err);
+					});
 			}
 		});
 

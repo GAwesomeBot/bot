@@ -1,3 +1,4 @@
+const shardInfo = require("./shardsReady.js");
 const auth = require("./../Configuration/auth.json");
 const getNewServerData = require("./../Modules/NewServer.js");
 const clearStats = require("./../Modules/ClearServerStats.js");
@@ -11,7 +12,8 @@ const postData = require("./../Modules/PostData.js");
 const startWebServer = require("./../Web/WebServer.js");
 
 module.exports = (bot, db, config, winston) => {
-	winston.info("All shards connected");
+	
+	shardInfo(bot, db, config, winston);
 
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = () => {
