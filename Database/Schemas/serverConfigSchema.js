@@ -64,22 +64,23 @@ module.exports = {
 				message_sensitivity: {type: Number, default: 5, enum: [3, 5, 10]},
 				action: {type: String, default: "mute", enum: ["none", "block", "mute", "kick", "ban"]},
 				delete_messages: {type: Boolean, default: true},
-				violator_role_id: String
+				violator_role_id: {type: String, default: ""}
 			},
 			mention_filter: {
 				isEnabled: {type: Boolean, default: false},
 				disabled_channel_ids: [String],
 				mention_sensitivity: {type: Number, default: 3, min: 1, max: 25},
+				include_everyone: {type: Boolean, default: false},
 				action: {type: String, default: "mute", enum: ["none", "block", "mute", "kick", "ban"]},
 				delete_message: {type: Boolean, default: true},
-				violator_role_id: String
+				violator_role_id: {type: String, default: ""}
 			},
 			nsfw_filter: {
 				isEnabled: {type: Boolean, default: true},
 				disabled_channel_ids: [String],
 				action: {type: String, default: "block", enum: ["none", "block", "mute", "kick", "ban"]},
 				delete_message: {type: Boolean, default: true},
-				violator_role_id: String
+				violator_role_id: {type: String, default: ""}
 			},
 			custom_filter: {
 				isEnabled: {type: Boolean, default: false},
@@ -87,7 +88,7 @@ module.exports = {
 				disabled_channel_ids: [String],
 				action: {type: String, default: "mute", enum: ["none", "block", "mute", "kick", "ban"]},
 				delete_message: {type: Boolean, default: true},
-				violator_role_id: String
+				violator_role_id: {type: String, default: ""}
 			}
 		},
 		status_messages: {

@@ -130,6 +130,12 @@
 								</p>
 								<p class="control">
 									<label class="checkbox">
+									<input name="mention_filter-include_everyone" type="checkbox" <%= configData.moderation.filters.mention_filter.include_everyone ? "checked" : "" %>>
+										Include @everyone and @here in the mention count
+									</label>
+								</p>
+								<p class="control">
+									<label class="checkbox">
 									<input name="mention_filter-delete_message" type="checkbox" <%= configData.moderation.filters.mention_filter.delete_message ? "checked" : "" %>>
 										Delete filtered mention-spam messages
 									</label>

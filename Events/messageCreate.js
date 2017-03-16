@@ -168,7 +168,11 @@ module.exports = (bot, db, config, winston, msg) => {
 					db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
 						if(!err && userDocument) {
 							// Handle this as a violation
-							bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.custom_filter.action, serverDocument.config.moderation.filters.custom_filter.violator_role_id);
+							let violatorRoleID = null;
+							if(!isNaN(serverDocument.config.moderation.filters.custom_filter.violator_role_id) && msg.member.roles.indexOf(serverDocument.config.moderation.filters.custom_filter.violator_role_id) ==-1){
+								violatorRoleID = serverDocument.config.moderation.filters.custom_filter.violator_role_id;
+							}
+							bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 						} else {
 							winston.error("Failed to find or create user data for message filter violation", {usrid: msg.author.id}, err);
 						}
@@ -185,13 +189,18 @@ module.exports = (bot, db, config, winston, msg) => {
 						spamDocument.message_count++;
 						spamDocument.last_message_content = msg.cleanContent;
 						setTimeout(() => {
-							spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
-							if(spamDocument) {
-								spamDocument.remove();
-								serverDocument.save(err => {
-									winston.error("Failed to save server data for spam filter", {svrid: msg.channel.guild.id}, err);
-								});
-							}
+							db.servers.findOne({_id: msg.channel.guild.id}, (err, serverDocument) => {
+								channelDocument = serverDocument.channels.id(msg.channel.id);
+								spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
+								if(spamDocument) {
+									spamDocument.remove();
+									serverDocument.save(err => {
+										if(err){
+											winston.error("Failed to save server data for spam filter", {svrid: msg.channel.guild.id}, err);
+										}
+									});
+								}
+							});
 						}, 45000);
 					// Add this message to spamDocument if similar to the last one
 					} else if(levenshtein.get(spamDocument.last_message_content, msg.cleanContent)<3) {
@@ -203,7 +212,9 @@ module.exports = (bot, db, config, winston, msg) => {
 							winston.info(`Handling first-time spam from member '${msg.author.username}' on server '${msg.channel.guild.name}' in channel '${msg.channel.name}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 
 							// Message user and tell them to stop
-							msg.author.getDMChannel().createMessage(`Stop spamming in #${msg.channel.name} on ${msg.channel.guild.name}. The chat moderators have been notified about this.`);
+							msg.author.getDMChannel().then(ch => {
+								ch.createMessage(`Stop spamming in #${msg.channel.name} on ${msg.channel.guild.name}. The chat moderators have been notified about this.`);
+							});
 
 							// Message bot admins about user spamming
 							bot.messageBotAdmins(msg.channel.guild, serverDocument, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} on ${msg.channel.guild.name}`);
@@ -245,7 +256,11 @@ module.exports = (bot, db, config, winston, msg) => {
 							db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
 								if(!err && userDocument) {
 									// Handle this as a violation
-									bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.author, true)}** continues to spam in #${msg.channel.name} on ${msg.channel.guild.name}`, `Second-time spam violation in #${msg.channel.name}`, serverDocument.config.moderation.filters.spam_filter.action, serverDocument.config.moderation.filters.spam_filter.violator_role_id);
+									let violatorRoleID = null;
+									if(!isNaN(serverDocument.config.moderation.filters.spam_filter.violator_role_id) && msg.member.roles.indexOf(serverDocument.config.moderation.filters.spam_filter.violator_role_id) ==-1){
+										violatorRoleID = serverDocument.config.moderation.filters.spam_filter.violator_role_id;
+									}
+									bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** continues to spam in #${msg.channel.name} on ${msg.channel.guild.name}`, `Second-time spam violation in #${msg.channel.name}`, serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
 								} else {
 									winston.error("Failed to find or create user data for message spam filter violation", {usrid: msg.author.id}, err);
 								}
@@ -255,11 +270,18 @@ module.exports = (bot, db, config, winston, msg) => {
 							spamDocument.remove();
 						}
 					}
+					// Save spamDocument
+					serverDocument.save(err => {
+						if(err){
+							winston.error("Failed to save server data for spam filter", {svrid: msg.channel.guild.id}, err);
+						}
+					});
 				}
 
 				// Mention filter
 				if(serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.mention_filter.isEnabled && serverDocument.config.moderation.filters.mention_filter.disabled_channel_ids.indexOf(msg.channel.id)==-1 && memberBotAdmin<1) {
-					const totalMentions = msg.mentions.length + msg.roleMentions.length;
+					let totalMentions = msg.mentions.length + msg.roleMentions.length;
+					if(serverDocument.config.moderation.filters.mention_filter.include_everyone && msg.mentionEveryone) totalMentions++;
 
 					// Check if mention count is higher than threshold
 					if(totalMentions>serverDocument.config.moderation.filters.mention_filter.mention_sensitivity) {
@@ -276,7 +298,11 @@ module.exports = (bot, db, config, winston, msg) => {
 						db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
 							if(!err && userDocument) {
 								// Handle this as a violation
-								bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.author, true)}** mentioned ${totalMentions} members/roles in a message in #${msg.channel.name} on ${msg.channel.guild.name}`, `Mention spam (${totalMentions} members/roles) in #${msg.channel.name}`, serverDocument.config.moderation.filters.mention_filter.action, serverDocument.config.moderation.filters.mention_filter.violator_role_id);
+								let violatorRoleID = null;
+								if(!isNaN(serverDocument.config.moderation.filters.mention_filter.violator_role_id) && msg.member.roles.indexOf(serverDocument.config.moderation.filters.mention_filter.violator_role_id) ==-1){
+									violatorRoleID = serverDocument.config.moderation.filters.mention_filter.violator_role_id;
+								}
+								bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** mentioned ${totalMentions} members/roles in a message in #${msg.channel.name} on ${msg.channel.guild.name}`, `Mention spam (${totalMentions} members/roles) in #${msg.channel.name}`, serverDocument.config.moderation.filters.mention_filter.action, violatorRoleID);
 							} else {
 								winston.error("Failed to find or create user data for message mention filter violation", {usrid: msg.author.id}, err);
 							}
@@ -490,7 +516,11 @@ module.exports = (bot, db, config, winston, msg) => {
 										}
 
 										// Handle this as a violation
-										bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You tried to fetch NSFW content in #${msg.channel} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** is trying to fetch NSFW content (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `NSFW filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.nsfw_filter.action, serverDocument.config.moderation.filters.nsfw_filter.violator_role_id);
+										let violatorRoleID = null;
+										if(!isNaN(serverDocument.config.moderation.filters.nsfw_filter.violator_role_id) && msg.member.roles.indexOf(serverDocument.config.moderation.filters.nsfw_filter.violator_role_id) ==-1){
+											violatorRoleID = serverDocument.config.moderation.filters.nsfw_filter.violator_role_id;
+										}
+										bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You tried to fetch NSFW content in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** is trying to fetch NSFW content (\`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `NSFW filter violation ("${msg.cleanContent}") in #${msg.channel.name}`, serverDocument.config.moderation.filters.nsfw_filter.action, violatorRoleID);
 									// Run the command
 									} else {
 										winston.info(`Treating '${msg.cleanContent}' as a command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
