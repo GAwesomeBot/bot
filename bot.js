@@ -43,6 +43,8 @@ database.initialize(config.db_url, err => {
 		const bot = require("./Platform/Platform.js")(db, auth, config);
 		bot.connect().then(() => {
 			winston.info("Started bot application");
+		}, (err) => {
+			winston.error("Failed to connect to discord", err)
 		});
 
 		/* After guilds and users have been created (first-time only)
