@@ -1,4 +1,4 @@
-const translate = require("./../../Modules/MicrosoftTranslate.js");
+const mstranslate = require("./../../Modules/MicrosoftTranslate.js");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	const target = suffix.substring(suffix.lastIndexOf(" ")+1);
@@ -7,14 +7,29 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		suffix = suffix.substring(0, suffix.lastIndexOf(" to"));
 	}
 	const source = suffix.substring(suffix.lastIndexOf(" ")+1);
-	const text = suffix.substring(0, suffix.lastIndexOf(" "));
+	const data = suffix.substring(0, suffix.lastIndexOf(" "));
 
-	if(target && source && text) {
-		translate(text, source, target, (err, res) => {
+	if(target && data && source == "?") {
+		mstranslate.detect({text: data}, (err, res) => {
 			if(err) {
-				winston.error(`Failed to translate '${text}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+				winston.error(`Failed to detect language for '${data}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
 			} else {
-				msg.channel.createMessage(`\`\`\`${res.translated_text}\`\`\``);
+				mstranslate.translate({text: data, from: res, to: target}, (err, res) => {
+					if(err) {
+						winston.error(`Failed to translate '${data}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+					} else {
+						msg.channel.createMessage(`\`\`\`${res}\`\`\``);
+					}
+				});
+			}
+		});
+	}
+	else if(target && source && data) {
+		mstranslate.translate({text: data, from: source, to: target}, (err, res) => {
+			if(err) {
+				winston.error(`Failed to translate '${data}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id}, err);
+			} else {
+				msg.channel.createMessage(`\`\`\`${res}\`\`\``);
 			}
 		});
 	} else {

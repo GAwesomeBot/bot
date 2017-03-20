@@ -1,6 +1,6 @@
 const auth = require("./../Configuration/auth.json");
+const MsTranslator = require('mstranslator');
 
-module.exports = require("bing-translate").init({
-	client_id: auth.tokens.microsoft_client_id,
-	client_secret: auth.tokens.microsoft_client_secret
-}).translate;
+module.exports = new MsTranslator({
+	api_key: auth.tokens.microsoft_cs_key
+}, true);
