@@ -198,15 +198,15 @@ database.initialize(config.db_url, err => {
 		});
 
 		// Message edited
-		bot.on("messageUpdate", (msg, oldmsgdata) => {
+		bot.on("messageUpdate", (newMsg, oldMsg) => {
 			if(bot.isReady) {
-					const messageUpdateDomain = domain.create();
-					messageUpdateDomain.run(() => {
-						eventHandlers.messageUpdate(bot, db, config, winston, msg, oldmsgdata);
-					});
-					messageUpdateDomain.on("error", err => {
-						winston.error(err);
-					});
+				const messageUpdateDomain = domain.create();
+				messageUpdateDomain.run(() => {
+					eventHandlers.messageUpdate(bot, db, winston, newMsg, oldMsg);
+				});
+				messageUpdateDomain.on("error", err => {
+					winston.error(err);
+				});
 			}
 		});
 
