@@ -1,7 +1,7 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if(suffix) {
-		if(suffix == ".") {
-			userDocument.afk_message = null;
+		if(suffix === ".") {
+			memberDocument.afk_message = null;
 			msg.channel.createMessage({
 				embed: {
 					author: {
@@ -14,7 +14,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			});
 		} else {
-			userDocument.afk_message = suffix;
+			memberDocument.afk_message = suffix;
 			msg.channel.createMessage({
 				embed: {
 					author: {
@@ -27,13 +27,8 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			});
 		}
-		userDocument.save(err => {
-			if(err) {
-				winston.error("Failed to save user data for AFK message", {usrid: msg.author.id}, err);
-			}
-		});
 	} else {
-		if(userDocument.afk_message) {
+		if(memberDocument.afk_message) {
 			msg.channel.createMessage({
 				embed: {
 					author: {
@@ -42,7 +37,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						url: "https://github.com/GilbertGobbels/GAwesomeBot"
 					},
 					color: 0x9ECDF2,
-					description: `You have the AFK message \`${userDocument.afk_message}\` set on this server 💭`
+					description: `You have the AFK message \`${memberDocument.afk_message}\` set on this server 💭`
 				}
 			});
 		} else {
