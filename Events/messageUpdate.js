@@ -46,7 +46,7 @@ let runExtension = require("./../Modules/ExtensionRunner.js"), checkFiltered = r
                })
              }
              //Get user data
-             db.users.findOrCreate({_id: msg.author.id}, (err, userdocument) => {
+             db.users.findOrCreate({_id: msg.author.id}, (err, userDocument) => {
                if(!err && userDocument) {
                  // Handle this as a violation
                  bot.handleViolation(winston, msg.channel.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} on ${msg.channel.guild.name}`, `**@${bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** used a filtered word (edited: \`${msg.cleanContent}\`) in #${msg.channel.name} on ${msg.channel.guild.name}`, `Word filter violation (edited: "${msg.cleanContent}") in #{msg.channel.name}`, serverDocument.config.moderation.filters.custom_filter.action, serverDocument.config.moderation.filters.custom_filter.violator_role_id);
