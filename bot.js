@@ -101,7 +101,7 @@ database.initialize(config.db_url, err => {
 		// User joined server
 		bot.on("guildMemberAdd", (svr, member) => {
 			if(bot.isReady) {
-				eventHandlers.guildMemberAdd(bot, db, config, winston, svr, memeber).catch(err => {
+				eventHandlers.guildMemberAdd(bot, db, config, winston, svr, member).catch(err => {
 					winston.error(err);
 				});
 			}
