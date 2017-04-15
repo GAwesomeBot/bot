@@ -209,7 +209,7 @@ database.initialize(config.db_url, err => {
 		// User left server voice channel
 		bot.on("voiceChannelLeave", (member, ch) => {
 			if(bot.isReady) {
-				eventHandlers.voiceChannelLeave(bot, db, config, winston, memeber, ch).catch(err => {
+				eventHandlers.voiceChannelLeave(bot, db, config, winston, member, ch).catch(err => {
 					winston.error(err);
 				});
 			}
