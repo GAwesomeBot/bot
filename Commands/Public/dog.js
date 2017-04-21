@@ -1,7 +1,7 @@
-const randomPuppy = require("random-puppy");
+const random = require("random-animal");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg) => {
-	randomPuppy().then(url => {
+    random.dog().then(url => {
         msg.channel.createMessage({
             embed: {
                 author: {
@@ -15,5 +15,5 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
                 }
             }
         });
-	});
+    });
 };
