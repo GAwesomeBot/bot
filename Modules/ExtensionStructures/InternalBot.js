@@ -105,6 +105,7 @@ module.exports = class Bot {
 					memberDocument.profile_fields = {};
 				}
 				delete memberDocument.profile_fields[key];
+				serverDocument.markModified("members");
 				serverDocument.save(err => {
 					callback(err, memberDocument);
 				});
