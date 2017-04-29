@@ -30,7 +30,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					info.push(`https://kitsu.io/anime/${data.attributes.slug}`);
 					// Status line
 					if(data.attributes.averageRating) {
-						info.push(`**Rating:** ${Number(data.attributes.averageRating).toFixed(2)}/5`);
+						info.push(`**Rating:** ${data.attributes.averageRating}%`);
 					}
 					if(data.attributes.ageRating) {
 						info.push(`**Rated:** ${data.attributes.ageRating}`);
