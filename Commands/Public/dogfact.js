@@ -24,7 +24,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			msg.channel.createMessage({
 				embed: {
                     color: 0x9ECDF2,
-					description: "Cats exist and are cute af. 😻"
+					description: "Dogs exist and are cute af. 😻"
 				}
 			});
 		}
