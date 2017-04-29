@@ -245,7 +245,7 @@
             },
             "category": "Fun 🎪"
         },
-		"dogfact": {
+        "dogfact": {
             "usage": "",
             "description": "Random fact about dogs",
             "defaults": {
