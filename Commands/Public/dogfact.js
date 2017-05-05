@@ -20,7 +20,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				});
 			}
 		} else {
-			winston.error("Failed to fetch cat fact(s)", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+			winston.error("Failed to fetch dog fact(s)", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 			msg.channel.createMessage({
 				embed: {
 					color: 0x9ECDF2,
