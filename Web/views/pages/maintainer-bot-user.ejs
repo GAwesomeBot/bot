@@ -53,6 +53,7 @@
 											<select name="status">
 												<option value="online"<%= bot_user.status=="online" ? " selected" : "" %>>Online</option>
 												<option value="idle"<%= bot_user.status=="idle" ? " selected" : "" %>>Idle</option>
+												<option value="dnd"<%= bot.user.status=="dnd" ? " selected" : ""%>>Do Not Disturb</option>
 												<option value="offline"<%= bot_user.status=="offline" ? " selected" : "" %>>Invisible</option>
 											</select>
 										</span>
