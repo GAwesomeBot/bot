@@ -1,6 +1,6 @@
 # GAwesomeBot
 
-*Welcome to GAwesomeBot, the community revival of AwesomeBot! This repo will be mostly focused on bug fixes rather than any sort of new features (especially music, get out if you're searching for that).*
+*Welcome to GAwesomeBot, the community revival of AwesomeBot!*
 The official GAwesomeBot instance, [GAwesomeBot](https://bot.gilbertgobbels.xyz), will always run the latest code from this repo.
 
 ## Contributing
