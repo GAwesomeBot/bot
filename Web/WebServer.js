@@ -264,7 +264,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				relativeCreated: Math.ceil((Date.now() - svr.createdAt)/86400000),
 				command_prefix: bot.getCommandPrefix(svr, serverDocument),
 				category: serverDocument.config.public_data.server_listing.category,
-				description: serverDocument.config.public_data.server_listing.isEnabled ? (xssFilters.inHTMLData(md.makeHtml(serverDocument.config.public_data.server_listing.description || "No description provided."))) : null,
+				description: serverDocument.config.public_data.server_listing.isEnabled ? (md.makeHtml(xssFilters.inHTMLData(serverDocument.config.public_data.server_listing.description || "No description provided."))) : null,
 				invite_link: serverDocument.config.public_data.server_listing.isEnabled ? (serverDocument.config.public_data.server_listing.invite_link || "javascript:alert('Invite link not available');") : null
 			};
 		}
