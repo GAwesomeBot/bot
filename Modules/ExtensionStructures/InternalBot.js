@@ -1,9 +1,9 @@
 "use strict";
-
+const User = require("./User")
 // Bot object for extensions
 module.exports = class Bot {
 	constructor(bot, db, winston, svr, serverDocument) {
-		this.user = bot.user;
+		this.user = new User(bot.user);
 		this.guilds = bot.guilds.length;
 		this.users = bot.users.length;
 		this.uptime = process.uptime();
