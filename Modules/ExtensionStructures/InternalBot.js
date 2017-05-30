@@ -1,5 +1,6 @@
 "use strict";
 const User = require("./User")
+const Message = require("./Message")
 // Bot object for extensions
 module.exports = class Bot {
 	constructor(bot, db, winston, svr, serverDocument) {
@@ -11,7 +12,7 @@ module.exports = class Bot {
 
 		this.awaitMessage = (chid, usrid, filter, callback) => {
 			if(svr.channels.get(chid) && svr.members.get(usrid)) {
-				bot.awaitMessage(chid, usrid, filter, callback);
+				bot.awaitMessage(chid, usrid, m => filter(new Message(m)), m => callback(new Message(m)));
 			}
 		};
 		this.sendArray = bot.sendArray;
