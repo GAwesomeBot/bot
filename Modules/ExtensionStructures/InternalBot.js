@@ -1,6 +1,7 @@
 "use strict";
 const User = require("./User")
 const Message = require("./Message")
+const Member = require("./Member")
 // Bot object for extensions
 module.exports = class Bot {
 	constructor(bot, db, winston, svr, serverDocument) {
@@ -23,7 +24,9 @@ module.exports = class Bot {
 		this.muteMember = bot.muteMember;
 		this.unmuteMember = bot.unmuteMember;
 		this.getMember = str => {
-			return bot.memberSearch(str, svr);
+			let m = bot.memberSearch(str, svr);
+			if (!m) return undefined;
+			else return new Member(m);
 		};
 		this.getMemberName = (usrid, ignoreNick) => {
 			const member = svr.members.get(usrid);
