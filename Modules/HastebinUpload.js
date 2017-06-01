@@ -1,8 +1,8 @@
 const unirest = require("unirest");
 
 /* Uploads text to Hastebin
- * Callback will return the normal URL, optionally the RAW url as the second parameter
- * of the callback
+ * type Optional parameter, can choose betweeen "r", "raw", "n" and "normal"
+ * Decides what to return in the .then()
  */
 /* eslint-disable indent */
 module.exports = (type, query) => {
