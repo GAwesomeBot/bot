@@ -4,19 +4,30 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
         const getCommandHelp = (name, type, usage, description) => {
         	return {
         		name: `__Help for ${type} command **${name}**__`,
-				value: `${description ? (`Description: ${description}\n`) : ""}${usage ? (`Usage: \`${usage}\`\n`) : ""}Click [here](https://github.com/GilbertGobbels/GAwesomeBot/wiki/Commands#${name}) for more info`,
+				value: `${description ? (`Description: ${description}\n`) : ""}${usage ? (`Usage: \`${usage}\`\n`) : ""}` + (type == "extension" ? '' : "Click [here](https://github.com/GilbertGobbels/GAwesomeBot/wiki/Commands#${name}) for more info"),
 				inline: true
 			};
 		};
         let pmCommand = bot.getPMCommandMetadata(suffix);
         if(pmCommand) {
-        	embed_fields.push(getCommandHelp(suffix, "PM", pmCommand.usage))
+        	embed_fields.push(getCommandHelp(suffix, "PM", pmCommand.usage, (pmCommand.description ? pmCommand.description : null)))
 		}
 		let publicCommand = bot.getPublicCommandMetadata(suffix);
         if(publicCommand) {
         	embed_fields.push(getCommandHelp(suffix, "public", publicCommand.usage, publicCommand.description));
 		}
-		if(embed_fields.length == 0) {
+
+		for (let i = 0; i < serverDocument.extensions.length; i++) {
+			if (serverDocument.extensions[i].type == "command" && suffix.toLowerCase() == serverDocument.extensions[i].key) {
+				embed_fields.push(getCommandHelp(suffix, "extension", serverDocument.extensions[i].usage_help, serverDocument.extensions[i].extended_help));
+			}
+		}
+
+		if(embed_fields.length == 2){
+			embed_fields[0].inline = false;
+			embed_fields[1].inline = false;
+		}
+		else if(embed_fields.length == 0) {
         	embed_fields.push({
         		name: `Error`,
 				value: `No such command \`${suffix}\``,
@@ -58,6 +69,16 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				commands[commandData.category].push(`${command} ${commandData.usage}`);
 			}
 		});
+
+		commands.Extensions = [];
+		for (let i = 0; i < serverDocument.extensions.length; i++) {
+			if (memberBotAdmin >= serverDocument.extensions[i].admin_level) {
+				if (serverDocument.extensions[i].type == "command") {
+					commands.Extensions.push(`${serverDocument.extensions[i].key} ${serverDocument.extensions[i].usage_help}`);
+				}
+			}
+		}
+
         msg.author.getDMChannel().then(ch => {
             ch.createMessage({
                 embed: {
