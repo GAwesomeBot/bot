@@ -1,10 +1,18 @@
 <aside class="menu">
+		<p class="menu-label">
+		Bot Options
+	</p>
 	<ul class="menu-list">
 		<li>
 			<% if(currentPage=="/dashboard/maintainer") { %>
 				<a class="is-active" href="#">Overview</a>
 			<% } else { %>
 				<a href="/dashboard/maintainer?svrid=maintainer">Overview</a>
+			<% } %>
+			<% if(currentPage=="/dashboard/updates") { %>
+				<a class="is-active" href="#">Bot Version</a>
+			<% } else { %>
+				<a href="/dashboard/maintainer/version?svrid=maintainer">Bot Version</a>
 			<% } %>
 		</li>
 	</ul>

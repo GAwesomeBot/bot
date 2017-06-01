@@ -16,10 +16,10 @@
 				<div class="column">
 					<article class="message is-primary">
 						<div class="message-header">
-							Welcome to the AwesomeBot <strong>maintainer console</strong>!
+							Welcome to the GAwesomeBot <strong>maintainer console</strong>!
 						</div>
 						<div class="message-body">
-							Maintainers can configure AwesomeBot across <strong>all servers</strong> from here, including the message in the homepage banner, commands disabled by default, and the global blocklist. The list of options is shown in the menu on the left. This page shows an <strong>overview</strong> of the bot's activity.
+							Maintainers can configure GAwesomeBot across <strong>all servers</strong> from here, including the message in the homepage banner, commands disabled by default, and the global blocklist. The list of options is shown in the menu on the left. This page shows an <strong>overview</strong> of the bot's activity.
 						</div>
 					</article>
 					<section class="hero is-light is-bold" style="border-radius: 3px;">
@@ -94,6 +94,11 @@
 					                </span>
 									bot version
 								</h2>
+								<% if (!utd && !disabled) { %>
+								<a href="/dashboard/maintainer/version?svrid=maintainer" class="button is-medium is-warning is-outlined">An update is available.</a>
+								<% } else if (disabled) { %>
+								<a href="/dashboard/maintainer/version?svrid=maintainer" class="button is-medium is-dark is-outlined">Updating is disabled.</a>
+								<% } %>
 							</div>
 						</div>
 					</section>
