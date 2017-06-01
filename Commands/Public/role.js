@@ -24,6 +24,26 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			});
 		};
 
+		const manageRole = role => {
+			if (msg.channel.guild.ownerID == msg.author.id) {
+        return true;
+      }
+      let highest = 0;
+      msg.member.roles.forEach(roleID => {
+        let urole = msg.channel.guild.roles.get(roleID);
+        if (urole) {
+          if (urole.position > highest) {
+            highest = urole.position;
+          }
+        }
+      });
+      if (role.position < highest) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
 		if(suffix.indexOf("|")>-1) {
 			const args = [
 				suffix.substring(0, suffix.lastIndexOf("|")).trim(),
@@ -33,75 +53,80 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				const role = bot.roleSearch(args[0], msg.channel.guild);
 				if(role && role.id!=msg.channel.guild.id) {
 					if(msg.member.permission.has("manageRoles")) {
-						if(!args[1] || args[1]==".") {
-							msg.channel.createMessage(`Are you sure you want to delete the role **${role.name}**? ✌️`).then(() => {
-								bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-									if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
-										role.delete().then(() => {
-											msg.channel.createMessage("Done, role deleted. 🚮");
+						const hascontrol = manageRole(role);
+						if (hascontrol) {
+							if(!args[1] || args[1]==".") {
+								msg.channel.createMessage(`Are you sure you want to delete the role **${role.name}**? ✌️`).then(() => {
+									bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+										if(config.yes_strings.indexOf(message.content.toLowerCase().trim())>-1) {
+											role.delete().then(() => {
+												msg.channel.createMessage("Done, role deleted. 🚮");
+											}).catch(err => {
+												msg.channel.createMessage("Uh-oh, something went wrong. 👎");
+												winston.error(`Failed to delete role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
+											});
+										}
+									});
+								});
+							} else if(args[1].startsWith("#") && args[1].length==7) {
+								role.edit({
+									color: parseInt(`0x${args[1].slice(1)}`)
+								}).then(() => {
+									msg.channel.createMessage(`🎨 ${role.name} now has the color ${args[1]}`);
+								}).catch(err => {
+									msg.channel.createMessage("Uh-oh, something went wrong. 🖍");
+									winston.error(`Failed to change color of role '${role.name}' to '${args[1]}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
+								});
+							} else if(args[1].toLowerCase()=="hoist") {
+								role.edit({
+									hoist: !role.hoist
+								}).then(role => {
+									msg.channel.createMessage(`${role.name} is now ${role.hoist ? "displayed separately in the member list" : "__not__ displayed separately in the member list"} ☄️`);
+								}).catch(err => {
+									msg.channel.createMessage("Uh-oh, something went wrong. ☹️");
+									winston.error(`Failed to change hoist of role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
+								});
+							} else if(args[1].startsWith("<@") && args[1].length>3) {
+								const member = bot.memberSearch(args[1], msg.channel.guild);
+								if(member) {
+									if(member.roles.includes(role.id)) {
+										member.roles.splice(member.roles.indexOf(role.id), 1);
+										member.edit({
+											roles: member.roles
+										}).then(() => {
+											msg.channel.createMessage(`@${bot.getName(msg.channel.guild, serverDocument, member)} no longer has the role ${role.name} 🐙`);
+											ModLog.create(msg.channel.guild, serverDocument, "Remove Role", member, msg.member);
 										}).catch(err => {
-											msg.channel.createMessage("Uh-oh, something went wrong. 👎");
-											winston.error(`Failed to delete role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
+											msg.channel.createMessage(`Uh-oh, I couldn't remove @${bot.getName(msg.channel.guild, serverDocument, member)} from ${role.name}`);
+											winston.error(`Failed to remove member '${member.user.username}' from role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: member.id}, err);
+										});
+									} else {
+										member.roles.push(role.id);
+										member.edit({
+											roles: member.roles
+										}).then(() => {
+											msg.channel.createMessage(`@${bot.getName(msg.channel.guild, serverDocument, member)} now has the role ${role.name} 🎓`);
+											ModLog.create(msg.channel.guild, serverDocument, "Add Role", member, msg.member);
+										}).catch(err => {
+											msg.channel.createMessage(`Uh-oh, I couldn't add @${bot.getName(msg.channel.guild, serverDocument, member)} to ${role.name}`);
+											winston.error(`Failed to add member '${member.user.username}' to role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: member.id}, err);
 										});
 									}
-								});
-							});
-						} else if(args[1].startsWith("#") && args[1].length==7) {
-							role.edit({
-								color: parseInt(`0x${args[1].slice(1)}`)
-							}).then(() => {
-								msg.channel.createMessage(`🎨 ${role.name} now has the color ${args[1]}`);
-							}).catch(err => {
-								msg.channel.createMessage("Uh-oh, something went wrong. 🖍");
-								winston.error(`Failed to change color of role '${role.name}' to '${args[1]}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
-							});
-						} else if(args[1].toLowerCase()=="hoist") {
-							role.edit({
-								hoist: !role.hoist
-							}).then(role => {
-								msg.channel.createMessage(`${role.name} is now ${role.hoist ? "displayed separately in the member list" : "__not__ displayed separately in the member list"} ☄️`);
-							}).catch(err => {
-								msg.channel.createMessage("Uh-oh, something went wrong. ☹️");
-								winston.error(`Failed to change hoist of role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
-							});
-						} else if(args[1].startsWith("<@") && args[1].length>3) {
-							const member = bot.memberSearch(args[1], msg.channel.guild);
-							if(member) {
-								if(member.roles.includes(role.id)) {
-									member.roles.splice(member.roles.indexOf(role.id), 1);
-									member.edit({
-										roles: member.roles
-									}).then(() => {
-										msg.channel.createMessage(`@${bot.getName(msg.channel.guild, serverDocument, member)} no longer has the role ${role.name} 🐙`);
-										ModLog.create(msg.channel.guild, serverDocument, "Remove Role", member, msg.member);
-									}).catch(err => {
-										msg.channel.createMessage(`Uh-oh, I couldn't remove @${bot.getName(msg.channel.guild, serverDocument, member)} from ${role.name}`);
-										winston.error(`Failed to remove member '${member.user.username}' from role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: member.id}, err);
-									});
 								} else {
-									member.roles.push(role.id);
-									member.edit({
-										roles: member.roles
-									}).then(() => {
-										msg.channel.createMessage(`@${bot.getName(msg.channel.guild, serverDocument, member)} now has the role ${role.name} 🎓`);
-										ModLog.create(msg.channel.guild, serverDocument, "Add Role", member, msg.member);
-									}).catch(err => {
-										msg.channel.createMessage(`Uh-oh, I couldn't add @${bot.getName(msg.channel.guild, serverDocument, member)} to ${role.name}`);
-										winston.error(`Failed to add member '${member.user.username}' to role '${role.name}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id, usrid: member.id}, err);
-									});
+									msg.channel.createMessage(`I can't find someone named \`${args[1]}\` to add to the role **${role.name}**. Please try again.`);
 								}
 							} else {
-								msg.channel.createMessage(`I can't find someone named \`${args[1]}\` to add to the role **${role.name}**. Please try again.`);
+								role.edit({
+									name: args[1]
+								}).then(newrole => {
+									msg.channel.createMessage(`${role.name} is now called \`${newrole.name}\` 🦄`);
+								}).catch(err => {
+									msg.channel.createMessage("Uh-oh, something went wrong. 🤒");
+									winston.error(`Failed to change name of role '${role.name}' to '${args[1]}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
+								});
 							}
 						} else {
-							role.edit({
-								name: args[1]
-							}).then(newrole => {
-								msg.channel.createMessage(`${role.name} is now called \`${newrole.name}\` 🦄`);
-							}).catch(err => {
-								msg.channel.createMessage("Uh-oh, something went wrong. 🤒");
-								winston.error(`Failed to change name of role '${role.name}' to '${args[1]}' on server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.id}, err);
-							});
+							msg.channel.createMessage(`${msg.author.mention} You don't have permission to manage this role. It looks as though it is above your pay grade.`);
 						}
 					} else {
 						msg.channel.createMessage(`${msg.author.mention} You don't have permission to manage roles on this server. 🚧`);
