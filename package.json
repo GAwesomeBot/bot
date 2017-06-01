@@ -1,8 +1,8 @@
 {
   "name": "GAwesomeBot",
   "description": "(still) The best Discord bot!",
-  "version": "4.1.0",
-  "author": "GilbertGobbels",
+  "version": "4.0.2",
+  "author": "BitQuote, maintained by GG142",
   "repository": {
     "type": "git",
     "url": "https://github.com/GilbertGobbels/GAwesomeBot.git"
@@ -48,6 +48,7 @@
     "showdown": "*",
     "socket.io": "*",
     "string": "*",
+    "superagent": "*",
     "text-diff": "*",
     "unirest": "*",
     "urban": "*",
@@ -62,7 +63,8 @@
     "youtube-node": "*"
   },
   "scripts": {
-    "start": "node bot.js",
+    "start": "npm update && node bot.js",
+    "first-time": "npm install && node bot.js"
   },
   "main": "bot.js"
 }
