@@ -38,6 +38,15 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			if (typeof result !== "string") {
 				result = util.inspect(result, false, 0);
 			}
+      if (result === bot.token) {
+				return m.edit({
+					embed: {
+						color: 0xFF0000,
+						title: `Uh-oh.. Thats not allowed..`,
+						description: `You tried to evaluate something that isn't allowed! Sorry! 😝`,
+					},
+				});
+			}
 			m.edit({
 				embed: {
 					color: 0x00FF00,
