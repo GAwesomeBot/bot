@@ -245,6 +245,16 @@
             },
             "category": "Fun 🎪"
         },
+        "dogfact": {
+            "usage": "",
+            "description": "Random fact about dogs",
+            "defaults": {
+                "is_enabled": true,
+                "is_nsfw_filtered": false,
+                "admin_level": 0
+            },
+            "category": "Fun 🎪"
+        },
         "e621": {
             "usage": "<query> [<limit>]",
             "description": "Searches by tag on e621.net",
