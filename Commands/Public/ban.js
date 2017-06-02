@@ -1,8 +1,10 @@
 const ModLog = require("./../../Modules/ModerationLogging.js");
+const getUser = require("./../../Modules/GetUserWithoutREST.js");
 
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
-	const hierarchy = member => {
-		if (msg.channel.guild.ownerID == msg.author.id) {
+/* eslint-disable max-len */
+module.exports = async (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
+	const canBan = member => {
+		if (msg.channel.guild.ownerID === msg.author.id) {
 			return true;
 		}
 		let admin = 0;
@@ -28,75 +30,147 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		} else {
 			return false;
 		}
-	}
-
-	if(suffix) {
+	};
+	if (suffix) {
 		let member, reason;
-		if(suffix.indexOf("|" )> -1 && suffix.length > 3) {
-			member = bot.memberSearch(suffix.substring(0, suffix.indexOf("|")).trim(), msg.channel.guild);
-			reason = suffix.substring(suffix.indexOf("|") + 1).trim();
+		const split = suffix.split("|");
+		const isUserID = new RegExp(/^\d+$/).test(split[0].trim());
+		if (isUserID && split.length === 2) {
+			member = await getUser(bot, split[0].trim());
+			reason = split[1];
+		} else if (split.length === 2) {
+			member = bot.memberSearch(split[0], msg.channel.guild);
+			reason = split[1];
+		} else if (isUserID) {
+			member = await getUser(bot, split[0].trim());
+			reason = "unspecified reason..";
 		} else {
 			member = bot.memberSearch(suffix, msg.channel.guild);
+			reason = "unspecified reason..";
 		}
-		if(member) {
-			const hascontrol = hierarchy(member);
-			if (hascontrol){
-				member.ban(1).then(() => {
-					msg.channel.createMessage({
-						embed: {
-							author: {
-								name: bot.user.username,
-                icon_url: bot.user.avatarURL,
-                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-							},
-							color: 0x00FF00,
-							title: `Bye-bye **@${bot.getName(msg.channel.guild, serverDocument, member)}** 🔨`,
-							image: {
-								url: "http://media-kingdgrizzle.tk/2017/01/62ac6016dc438a1fe4926ed43d3fe280.gif"
+		if (member) {
+			if (canBan(member)) {
+				let m = await msg.channel.createMessage({
+					embed: {
+						color: 0x9ECDF2,
+						author: {
+							name: `Waiting on @${bot.getName(msg.channel.guild, serverDocument, msg.member)}'s imput..`,
+						},
+						description: isUserID ? `Are you sure you want to ban **${member.username}**?` : `Are you sure you want to ban **@${bot.getName(msg.channel.guild, serverDocument, member)}**?`,
+						footer: {
+							text: `They won't be able to join again unless they get unbanned!`,
+						},
+					},
+				});
+				bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+					try {
+						message.delete();
+					} catch (err) {
+						// Ignore error
+					}
+					if (config.yes_strings.includes(message.content.trim())) {
+						try {
+							if (isUserID) {
+								msg.channel.guild.banMember(member, 1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
+								m.edit({
+									embed: {
+										color: 0x00FF00,
+										description: `Bye-bye **${member.username}** 🔨`,
+										image: {
+											url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
+										},
+										footer: {
+											text: `You banned someone via a user ID (${member.id})!`,
+										},
+									},
+								});
+								ModLog.create(msg.channel.guild, serverDocument, "Ban", { user: member }, msg.member, reason);
+							} else {
+								member.ban(1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
+								m.edit({
+									embed: {
+										color: 0x00FF00,
+										description: `Bye-bye **@${bot.getName(msg.channel.guild, serverDocument, member)}** 🔨`,
+										image: {
+											url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
+										},
+									},
+								});
+								ModLog.create(msg.channel.guild, serverDocument, "Ban", member, msg.member, reason);
 							}
+						} catch (err) {
+							if (isUserID) {
+								winston.error(`Failed to ban member "${member.username}" from server "${msg.channel.guild.name}"`, { svrid: msg.channel.guild.id, usrid: member }, err.message);
+							} else {
+								winston.error(`Failed to ban member "${member.user.username}" from server "${msg.channel.guild.name}"`, { svrid: msg.channel.guild.id, usrid: member.id }, err.message);
+							}
+							m.edit({
+								embed: {
+									color: 0xFF0000,
+									description: isUserID ? `I couldn't ban **${member.username}**! 🍇` : `I couldn't ban **@${bot.getName(msg.channel.guild, serverDocument, member)}**! 🍇`,
+									footer: {
+										text: `Either I don't have the "Ban Members" permission, the user was already banned, or the user isn't in this server!`,
+									},
+								},
+							});
 						}
-					});
-					ModLog.create(msg.channel.guild, serverDocument, "Ban", member, msg.member, reason);
-				}).catch(err => {
-					winston.error(`Failed to ban member '${member.user.username}' from server '${msg.channel.guild.name}'`, {svrid: msg.channel.guild.name, usrid: member.id}, err);
-					msg.channel.createMessage({
-						embed: {
-							author: {
-								name: bot.user.username,
-                icon_url: bot.user.avatarURL,
-                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					} else {
+						m.edit({
+							embed: {
+								color: 0x00FF00,
+								description: `Ban canceled! 😓`,
 							},
-							color: 0xFF0000,
-							description: `I couldn't ban **@${bot.getName(msg.channel.guild, serverDocument, member)}** 🍇`
-						}
-					});
+						});
+					}
 				});
 			} else {
-				msg.channel.createMessage(`${msg.author.mention} You don't have permission to manage this user.`);
+				msg.channel.createMessage({
+					embed: {
+						color: 0x00FF00,
+						description: `You don't have permission to ban this user...`,
+						footer: {
+							text: `You should ask someone who is higher than you to run this!`,
+						},
+					},
+				});
 			}
 		} else {
 			msg.channel.createMessage({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0xFF0000,
-					description: "I couldn't find a matching member on this server."
-				}
+					color: 0xFF0000,
+					description: `I couldn't find a matching member on this server...`,
+					footer: {
+						text: `If you have a User ID, you can run "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}ban ID" to ban the user.`,
+					},
+				},
 			});
 		}
 	} else {
-		msg.channel.createMessage({
+		let m = await msg.channel.createMessage({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0xFF0000,
-				description: "Do you want me to ban you? 😮"
+				color: 0xFF0000,
+				description: `Do you want me to ban you? 😮`,
+				footer: {
+					text: `That means you should mention who you want to ban and give an optional reason...`,
+				},
+			},
+		});
+		bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+			if (config.yes_strings.includes(message.content.trim())) {
+				try {
+					message.delete();
+				} catch (err) {
+					// Ignore error
+				}
+				m.edit({
+					embed: {
+						color: 0xFF0000,
+						description: `Ok! Bye-Bye!`,
+						footer: {
+							text: `Its just a prank bro! I guess you could say.. you found an Easter Egg...`,
+						},
+					},
+				});
 			}
 		});
 	}
