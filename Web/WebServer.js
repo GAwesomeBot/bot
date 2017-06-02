@@ -3634,6 +3634,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				if (version === 404) {
 					res.render("pages/maintainer-version.ejs", {
 						disabled: true,
+						utd: false,
 						version: config.version,
 						branch: config.branch,
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
