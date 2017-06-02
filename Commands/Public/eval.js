@@ -7,6 +7,24 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			if(typeof(result) == "object") {
 				result = util.inspect(result);
 			}
+			
+			if(result === bot.token) {
+				msg.channel.createMessage({
+					embed: {
+			    author: {
+				name: bot.user.username,
+				icon_url: bot.user.avatarURL,
+				url: "https://github.com/GilbertGobbels/GAwesomeBot"
+			    },
+			    color: 0xFF0000,
+						title: "Tee hee! :stuck_out_tongue:",
+						description: "No token for you!"
+					}
+				});
+				
+				return;
+			}
+			
 			msg.channel.createMessage({
 				embed: {
                     author: {
