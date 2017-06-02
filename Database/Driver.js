@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+mongoose.Promise = global.Promise;
 const findOrCreate = require("mongoose-findorcreate");
 const serverSchema = require("./Schemas/serverSchema.js");
 const userSchema = require("./Schemas/userSchema.js");

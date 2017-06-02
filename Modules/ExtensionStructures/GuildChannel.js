@@ -98,6 +98,30 @@ module.exports = class GuildChannel extends Channel {
 		this.permissionsOf = memberID => {
 			return new Permission(erisGuildChannel.permissionsOf(memberID));
 		};
+
+		this.addMessageReaction = (messageID, reaction, cb) => {
+			erisGuildChannel.addMessageReaction(messageID, reaction).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
+
+		this.removeMessageReaction = (messageID, reaction, userID, cb) => {
+			erisGuildChannel.removeMessageReaction(messageID, reaction, userID).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
+
+		this.getMessageReaction = (messageID, reaction, limit, cb) => {
+			erisGuildChannel.getMessageReaction(messageID, reaction, limit).then((users) => {
+				if(Util.isFunction(cb)) {
+					cb(users);
+				}
+			});
+		};
 	}
 
 	get guild() {

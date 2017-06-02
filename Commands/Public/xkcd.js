@@ -50,15 +50,15 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 
 				this.fetch(suffix, comic_data => {
-					winston.info(`Successfully fetched xkcd ID: ${suffix}`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+					winston.info(`Successfully fetched xkcd ID: ${suffix}`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 					this.show(comic_data);
 				}, () => {
-					winston.info(`Invalid xkcd ID: ${suffix}`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+					winston.info(`Invalid xkcd ID: ${suffix}`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 					msg.channel.createMessage(`Sorry; I cannot find an xkcd comic for the ID: ${suffix}`);
 				});
 			}
 			else {
-				winston.info(`Invalid xkcd ID: ${suffix}`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+				winston.info(`Invalid xkcd ID: ${suffix}`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				msg.channel.createMessage(`Sorry; I cannot find an xkcd comic for the ID: ${suffix}`);
 			}
 		}

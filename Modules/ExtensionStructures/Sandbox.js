@@ -63,6 +63,7 @@ module.exports = (bot, db, winston, extensionDocument, svr, serverDocument, ch, 
 		Array,
 		Number,
 		Object,
+		setTimeout,
 		encodeURI,
 		encodeURIComponent,
 		decodeURI,
@@ -83,7 +84,7 @@ module.exports = (bot, db, winston, extensionDocument, svr, serverDocument, ch, 
 
 	if(msg && ["keyword", "command"].indexOf(extensionDocument.type)>-1) {
 		params.message = new Message(msg);
-		params.guild = new Guild(msg.guild);
+		params.guild = new Guild(msg.channel.guild);
 		params.channel = new GuildChannel(msg.channel);
 	} else {
 		params.guild = new Guild(svr);
@@ -94,6 +95,8 @@ module.exports = (bot, db, winston, extensionDocument, svr, serverDocument, ch, 
 	}
 	if(extensionDocument.type=="command") {
 		params.commandSuffix = suffix.trim();
+		params.commandPrefix = bot.getCommandPrefix(msg.channel.guild, serverDocument);
+		params.commandKey = extensionDocument.key;
 	}
 	return params;
 };

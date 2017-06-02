@@ -10,7 +10,7 @@ const mongooseSessionStore = require("connect-mongo")(session);
 const passport = require("passport");
 const passportSocketIo = require("passport.socketio");
 const discordStrategy = require("passport-discord").Strategy;
-const discordOAuthScopes = ["identify", "email", "guilds"];
+const discordOAuthScopes = ["identify", "guilds"];
 const path = require("path");
 const fs = require("fs");
 const writeFile = require("write-file-atomic");
@@ -19,6 +19,7 @@ const sizeof = require("object-sizeof");
 const moment = require("moment");
 const textDiff = require("text-diff");
 const diff = new textDiff();
+const unirest = require("unirest");
 
 const showdown = require("showdown");
 const md = new showdown.Converter({
@@ -38,6 +39,7 @@ const Giveaways = require("./../Modules/Giveaways.js");
 const Lotteries = require("./../Modules/Lotteries.js");
 const Polls = require("./../Modules/Polls.js");
 const Trivia = require("./../Modules/Trivia.js");
+const Updater = require("./../Modules/Updater.js")
 
 const app = express();
 app.use(compression());
@@ -163,6 +165,14 @@ module.exports = (bot, db, auth, config, winston) => {
 		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 		next();
 	});
+	
+	app.use("/", (req, res, next) => {
+		if (config.isUpdating) {
+			res.status(503).render('pages/503.ejs', {})
+		}	else {
+			next()
+		}
+	});
 
 	// Server public dir if necessary
 	if(config.serve_static) {
@@ -185,7 +195,7 @@ module.exports = (bot, db, auth, config, winston) => {
 	}
 	if (config.cert && config.privKey && config.httpsPort) {
 		if (config.httpsRedirect) {
-			app.use(requireHTTPS);	
+			app.use(requireHTTPS);
 		}
 		const privKey = fs.readFileSync(config.privKey, "utf8", function(err) {if (err) winston.error(err)})
 		const cert = fs.readFileSync(config.cert, "utf8", function(err) {if (err) winston.error(err)})
@@ -264,7 +274,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				relativeCreated: Math.ceil((Date.now() - svr.createdAt)/86400000),
 				command_prefix: bot.getCommandPrefix(svr, serverDocument),
 				category: serverDocument.config.public_data.server_listing.category,
-				description: serverDocument.config.public_data.server_listing.isEnabled ? (xssFilters.inHTMLData(md.makeHtml(serverDocument.config.public_data.server_listing.description || "No description provided."))) : null,
+				description: serverDocument.config.public_data.server_listing.isEnabled ? (md.makeHtml(xssFilters.inHTMLData(serverDocument.config.public_data.server_listing.description || "No description provided."))) : null,
 				invite_link: serverDocument.config.public_data.server_listing.isEnabled ? (serverDocument.config.public_data.server_listing.invite_link || "javascript:alert('Invite link not available');") : null
 			};
 		}
@@ -2833,6 +2843,12 @@ module.exports = (bot, db, auth, config, winston) => {
 							memberDocument.strikes = [];
 						}
 					}
+					else if(args[0]=="removestrike" && !isNaN(args[1]) && !isNaN(args[2])) {
+						const memberDocument = serverDocument.members.id(args[1]);
+						if(memberDocument) {
+							memberDocument.strikes.splice(args[2], 1);
+						}
+					}
 				}
 			}
 
@@ -3240,7 +3256,7 @@ module.exports = (bot, db, auth, config, winston) => {
 								name: ch.name,
 								id: ch.id
 							},
-							set: channelDocument.trivia.set,
+							set: channelDocument.trivia.set_id,
 							score: channelDocument.trivia.score,
 							max_score: channelDocument.trivia.max_score,
 							responders: channelDocument.trivia.responders.length
@@ -3587,26 +3603,100 @@ module.exports = (bot, db, auth, config, winston) => {
 				if(!err && result) {
 					messageCount = result[0].total;
 				}
-				res.render("pages/maintainer.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					serverData: {
-						name: bot.user.username,
-						id: bot.user.id,
-						icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-						isMaintainer: true
-					},
-					currentPage: req.path,
-					serverCount: bot.guilds.size,
-					userCount: bot.users.size,
-					totalMessageCount: messageCount,
-					roundedUptime: getRoundedUptime(process.uptime()),
-					shardCount: bot.shards.size,
-					version: config.version
-				});
+				Updater.check(config, version => {
+					res.render("pages/maintainer.ejs", {
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true
+						},
+						currentPage: req.path,
+						serverCount: bot.guilds.size,
+						userCount: bot.users.size,
+						totalMessageCount: messageCount,
+						roundedUptime: getRoundedUptime(process.uptime()),
+						shardCount: bot.shards.size,
+						version: config.version,
+						utd: version["up-to-date"],
+						disabled: version==404
+					});
+				})
 			});
 		});
 	});
 
+	// Maintainer console bot version
+	app.get("/dashboard/maintainer/version", (req, res) => {
+		checkAuth(req, res, () => {
+			Updater.check(config, version => {
+				if (version === 404) {
+					res.render("pages/maintainer-version.ejs", {
+						disabled: true,
+						version: config.version,
+						branch: config.branch,
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true
+						},
+						currentPage: req.path
+					})
+				} else if (!version["up-to-date"]) {
+					version.latest.config.changelog = md.makeHtml(version.latest.config.changelog)
+					res.render("pages/maintainer-version.ejs", {
+						disabled: false,
+						version: config.version,
+						branch: config.branch,
+						versionn: JSON.stringify(version.latest),
+						utd: false,
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true
+						},
+						currentPage: req.path
+					})
+				} else {
+					res.render("pages/maintainer-version.ejs", {
+						disabled: false,
+						version: config.version,
+						branch: config.branch,
+						versionn: JSON.stringify(version.latest),
+						utd: true,
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true
+						},
+						currentPage: req.path
+					});
+				}
+			});
+		});
+	});
+	app.post("/dashboard/maintainer/version", (req, res) => {
+		checkAuth(req, res, () => {
+			io.of("/dashboard/maintainer/version").on("connection", socket => {
+				socket.on("update", (data) => {
+					if (data == "start") {
+						socket.emit("update", "prepair")
+						Updater.update(bot, config, socket, winston)
+					}
+				})
+			});
+			//unirest.post("https://status.gilbertgobbels.xyz/updates/stats").send(bot.user).end(() => {});
+			res.send("OK")
+		})
+	})
+	
 	// Maintainer console server list
 	app.get("/dashboard/servers/server-list", (req, res) => {
 		checkAuth(req, res, () => {
@@ -3808,7 +3898,11 @@ module.exports = (bot, db, auth, config, winston) => {
 					updateBotUser(data);
 				});
 			} else {
-				updateBotUser();
+				base64.encode(bot.user.avatarURL.replace(".jpg",".webp"), {
+					string: true
+				}, (err, data) => {
+					updateBotUser(data);
+				});
 			}
 		});
 	});
@@ -3980,6 +4074,11 @@ module.exports = (bot, db, auth, config, winston) => {
 	app.get("/error", (req, res) => {
 		res.status(500).render("pages/error.ejs");
 	});
+		
+	// 404 page
+	app.use(function(req, res, next){
+		res.status(404).render("pages/404.ejs");
+	})
 };
 
 Object.assign(Array.prototype, {

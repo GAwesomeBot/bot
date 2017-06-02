@@ -3,7 +3,7 @@ const wikipedia = new wiki.default();
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	const showNoResults = title => {
-		winston.warn(`No Wikipedia results found for '${title}'`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`No Wikipedia results found for '${title}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage("Wikipedia has nothing 📚🤓");
 	};
 

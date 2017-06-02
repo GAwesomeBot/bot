@@ -1,4 +1,3 @@
-const domain = require("domain");
 const getRSS = require("feed-read");
 
 // Fetch n entries from an RSS feed
@@ -9,17 +8,13 @@ module.exports = (winston, url, num, callback) => {
 			callback(err);
 		};
 		try {
-			const rssDomain = domain.create();
-			rssDomain.run(() => {
-				getRSS(url, (err, articles) => {
-					if(err) {
-						handleError(err);
-					} else {
-						callback(err, articles.slice(0, num));
-					}
-				});
-			});
-			rssDomain.on("error", handleError);
+			getRSS(url, (err, articles) => {
+				if(err) {
+					handleError(err);
+				} else {
+					callback(err, articles.slice(0, num));
+				}
+			})
 		} catch(err) {
 			handleError(err);
 		}

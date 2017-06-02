@@ -54,8 +54,8 @@ module.exports = class Guild {
 			});
 		};
 
-		this.createRole = cb => {
-			erisGuild.createRole().then(erisRole => {
+		this.createRole = (options, cb) => {
+			erisGuild.createRole(options).then(erisRole => {
 				if(Util.isFunction(cb)) {
 					const Role = require("./Role");
 					cb(new Role(erisRole));
@@ -139,36 +139,10 @@ module.exports = class Guild {
 			});
 		};
 
-		this.getChannels = cb => {
-			erisGuild.getChannels().then(erisGuildChannels => {
-				if(Util.isFunction(cb)) {
-					const GuildChannel = require("./GuildChannel");
-					const GuildChannels = erisGuildChannels.map(erisGuildChannel => new GuildChannel(erisGuildChannel));
-					cb(GuildChannels);
-				}
-			});
-		};
-
 		this.getEmbed = cb => {
 			erisGuild.getEmbed().then(object => {
 				if(Util.isFunction(cb)) {
 					cb(object);
-				}
-			});
-		};
-
-		this.getEmoji = (emojiID, cb) => {
-			erisGuild.getEmoji(emojiID).then(object => {
-				if(Util.isFunction(cb)) {
-					cb(object);
-				}
-			});
-		};
-
-		this.getEmojis = cb => {
-			erisGuild.getEmojis().then(objects => {
-				if(Util.isFunction(cb)) {
-					cb(objects);
 				}
 			});
 		};
@@ -183,39 +157,10 @@ module.exports = class Guild {
 			});
 		};
 
-		this.getMember = (memberID, cb) => {
-			erisGuild.getMember(memberID).then(erisMember => {
-				if(Util.isFunction(cb)) {
-					const Member = require("./Member");
-					cb(new Member(erisMember));
-				}
-			});
-		};
-
-		this.getMembers = (limit, after, cb) => {
-			erisGuild.getMembers(limit, after).then(erisMembers => {
-				if(Util.isFunction(cb)) {
-					const Member = require("./Member");
-					const Members = erisMembers.map(erisMember => new Member(erisMember));
-					cb(Members);
-				}
-			});
-		};
-
 		this.getPruneCount = (days, cb) => {
 			erisGuild.getPruneCount(days).then(num => {
 				if(Util.isFunction(cb)) {
 					cb(num);
-				}
-			});
-		};
-
-		this.getRoles = cb => {
-			erisGuild.getRoles().then(erisRoles => {
-				if(Util.isFunction(cb)) {
-					const Role = require("./Role");
-					const Roles = erisRoles.map(erisRole => new Role(erisRole));
-					cb(Roles);
 				}
 			});
 		};

@@ -407,7 +407,7 @@
             "category": "Fun 🎪"
         },
         "kick": {
-            "usage": "<user>",
+            "usage": "<user>[|<reason>]",
             "description": "Removes a member from the server",
             "defaults": {
                 "is_enabled": true,
@@ -457,7 +457,7 @@
             "category": "Fun 🎪"
         },
         "messages": {
-            "usage": "[<user>]",
+            "usage": "[<user or \"me\">]",
             "description": "Command that shows the top members on the server by activity",
             "defaults": {
                 "is_enabled": true,
@@ -537,7 +537,7 @@
             "category": "AwesomeBot 🤖"
         },
         "points": {
-            "usage": "[<user>]",
+            "usage": "[<user> or \"me\"]",
             "description": "Records user points and displays them for individual members",
             "defaults": {
                 "is_enabled": true,
@@ -788,7 +788,7 @@
             "category": "Utility 🔦"
         },
         "time": {
-            "usage": "<location>",
+            "usage": "<location> or <user>",
             "description": "Gets the time in a city or country",
             "defaults": {
                 "is_enabled": true,
@@ -798,7 +798,7 @@
             "category": "Utility 🔦"
         },
         "translate": {
-            "usage": "<text> <source lang> to <target lang>",
+            "usage": "<text> <\"?\" or source lang> to <target lang>",
             "description": "Uses Microsoft Translate to translate a word/phrase into another language",
             "defaults": {
                 "is_enabled": true,
@@ -869,7 +869,7 @@
         },
         "weather": {
             "usage": "<location> [<unit>]",
-            "description": "Gets th current weather and forecast for the given location from MSN Weather",
+            "description": "Gets the current weather and forecast for the given location from MSN Weather",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,

@@ -1,21 +1,76 @@
 const moment = require("moment");
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg) => {
-	const info = [
-		`__**${msg.guild.name}**__`,
-		`🆔 ${msg.guild.id}`,
-		`🗓 Created ${moment(msg.guild.createdAt).fromNow()}`,
-		`👑 Owned by @${bot.getName(msg.guild, serverDocument, msg.guild.members.get(msg.guild.ownerID))}`,
-		`👥 ${msg.guild.members.size} members`
+	let embed_fields = [
+		{
+			name: `Guild Name`,
+			value: `__**${msg.channel.guild.name}**__`,
+			inline: true
+		},
+		{
+			name: `🆔`,
+			value: `${msg.channel.guild.id}`,
+			inline: true
+		},
+		{
+			name: `🗓 Created`,
+			value: `${moment(msg.channel.guild.createdAt).fromNow()}`,
+			inline: true
+		},
+		{
+			name: `👑 Owned by`,
+			value: `<@${msg.channel.guild.ownerID}>`,
+			inline: true
+		},
+		{
+			name: "👥",
+			value: `${msg.channel.guild.members.size} members`,
+			inline: true
+		}
 	];
-	if(msg.guild.iconURL) {
-		info.push(`🖼 Icon: ${msg.guild.iconURL}`);
+	let image_url = "";
+	if(msg.channel.guild.iconURL) {
+		image_url = msg.channel.guild.iconURL;
 	}
-	info.push(
-		`🕯 Command Prefix: \`${bot.getCommandPrefix(msg.guild, serverDocument)}\``,
-		`💬 ${serverDocument.messages_today} message${serverDocument.messages_today==1 ? "" : "s"} today`,
-		`🗄 Category: ${serverDocument.config.public_data.server_listing.category}`,
-		`🌎 <${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.guild.name)}>`
-    );
-	msg.channel.createMessage(info.join("\n"));
+	embed_fields.push(
+		{
+			name: `🕯 Command Prefix:`,
+			value: `\`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}\``,
+			inline: true
+		},
+		{
+			name: `💬`,
+			value: `${serverDocument.messages_today} message${serverDocument.messages_today == 1 ? "" : "s"} today`,
+			inline: true
+		},
+		{
+			name: `🗄 Category:`,
+			value: `${serverDocument.config.public_data.server_listing.category}`,
+			inline: true
+		},
+		{
+			name: `🌎`,
+			value: `Click [here](${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.channel.guild.name)})`,
+			inline: true
+		},
+		{
+			name: "🖼",
+			value: `Icon:`,
+			inline: true
+		}
+	);
+	msg.channel.createMessage({
+		embed: {
+            author: {
+                name: bot.user.username,
+                icon_url: bot.user.avatarURL,
+                url: "https://github.com/GilbertGobbels/GAwesomeBot"
+            },
+            color: 0x00FF00,
+			fields: embed_fields,
+			image: {
+				url: image_url
+			}
+		}
+	});
 };
