@@ -1,8 +1,11 @@
 "use strict";
-const User = require("./User")
-const Message = require("./Message")
-const Member = require("./Member")
+
+const User = require("./User");
+const Message = require("./Message");
+const Member = require("./Member");
+
 // Bot object for extensions
+
 module.exports = class Bot {
 	constructor(bot, db, winston, svr, serverDocument) {
 		this.user = new User(bot.user);

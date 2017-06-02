@@ -1,6 +1,5 @@
 const unirest = require("unirest");
 
-/* eslint-disable max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	let num = suffix;
 	if (!num) {
@@ -15,27 +14,28 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	} else {
 		num = parseInt(num);
 	}
-	unirest.get(`http://catfacts-api.appspot.com/api/facts?number=${num}`).header("Accept", "application/json").end(res => {
+	unirest.get(`https://dog-api.kinduff.com/api/facts?number=${num}`).header("Accept", "application/json").end(res => {
 		if (res.status === 200) {
-			for (let i = 0; i < num; i++) {
+			let arrayFacts = res.body.facts;
+			for (let i = 0; i < arrayFacts.length; i++) {
 				msg.channel.createMessage({
 					embed: {
 						color: 0x00FF00,
-						description: JSON.parse(res.body).facts[i],
+						description: arrayFacts[i],
 						footer: {
-							text: `Cat fact #${(i + 1)}`,
+							text: `Dog fact #${(i + 1)}`,
 						},
 					},
 				});
 			}
 		} else {
-			winston.error("Failed to fetch cat fact(s)", { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+			winston.error("Failed to fetch dog fact(s)", { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.channel.createMessage({
 				embed: {
 					color: 0x9ECDF2,
-					description: "Cats exist and are cute af. 😻",
+					description: "Dogs exist and are cute af. 🐶",
 					footer: {
-						text: `That means there was an error, try again! Cat facts are there somewhere, waiting to be found!`,
+						text: `That means there was an error, try again! Dog facts are there somewhere, waiting to be found!`,
 					},
 				},
 			});
