@@ -49,29 +49,29 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			reason = "unspecified reason..";
 		}
 		if (member) {
-			if (canBan(member)) {
-				let m = await msg.channel.createMessage({
-					embed: {
-						color: 0x9ECDF2,
-						author: {
-							name: `Waiting on @${bot.getName(msg.channel.guild, serverDocument, msg.member)}'s imput..`,
-						},
-						description: isUserID ? `Are you sure you want to ban **${member.username}**?` : `Are you sure you want to ban **@${bot.getName(msg.channel.guild, serverDocument, member)}**?`,
-						footer: {
-							text: `They won't be able to join again unless they get unbanned!`,
-						},
+			let m = await msg.channel.createMessage({
+				embed: {
+					color: 0x9ECDF2,
+					author: {
+						name: `Waiting on @${bot.getName(msg.channel.guild, serverDocument, msg.member)}'s imput..`,
 					},
-				});
-				bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+					description: isUserID ? `Are you sure you want to ban **${member.username}**?` : `Are you sure you want to ban **@${bot.getName(msg.channel.guild, serverDocument, member)}**?`,
+					footer: {
+						text: `They won't be able to join again unless they get unbanned!`,
+					},
+				},
+			});
+			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+				try {
+					message.delete();
+				} catch (err) {
+					// Ignore error
+				}
+				if (config.yes_strings.includes(message.content.trim())) {
 					try {
-						message.delete();
-					} catch (err) {
-						// Ignore error
-					}
-					if (config.yes_strings.includes(message.content.trim())) {
-						try {
-							if (isUserID) {
-								msg.channel.guild.banMember(member, 1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
+						if (isUserID) {
+							if (msg.channel.guild.members.get(member.id) !== undefined && canBan(msg.channel.guild.members.get(member.id))) {
+								msg.channel.guild.banMember(member.id, 1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
 								m.edit({
 									embed: {
 										color: 0x00FF00,
@@ -85,55 +85,80 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 									},
 								});
 								ModLog.create(msg.channel.guild, serverDocument, "Ban", { user: member }, msg.member, reason);
-							} else {
-								member.ban(1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
+							} else if (msg.channel.guild.members.get(member.id) !== undefined && !canBan(msg.channel.guild.members.get(member.id))) {
 								m.edit({
 									embed: {
-										color: 0x00FF00,
-										description: `Bye-bye **@${bot.getName(msg.channel.guild, serverDocument, member)}** 🔨`,
-										image: {
-											url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
+										color: 0xFF0000,
+										description: `You don't have permission to ban this user...`,
+										footer: {
+											text: `You should ask someone who is higher than you to run this!`,
 										},
 									},
 								});
-								ModLog.create(msg.channel.guild, serverDocument, "Ban", member, msg.member, reason);
-							}
-						} catch (err) {
-							if (isUserID) {
-								winston.error(`Failed to ban member "${member.username}" from server "${msg.channel.guild.name}"`, { svrid: msg.channel.guild.id, usrid: member }, err.message);
 							} else {
-								winston.error(`Failed to ban member "${member.user.username}" from server "${msg.channel.guild.name}"`, { svrid: msg.channel.guild.id, usrid: member.id }, err.message);
+								msg.channel.guild.banMember(member.id, 1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
+								m.edit({
+									embed: {
+										color: 0x00FF00,
+										description: `Bye-bye **${member.username}** 🔨`,
+										image: {
+											url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
+										},
+										footer: {
+											text: `You banned someone via a user ID (${member.id})!`,
+										},
+									},
+								});
+								ModLog.create(msg.channel.guild, serverDocument, "Ban", { user: member }, msg.member, reason);
 							}
+						} else if (canBan(member)) {
+							member.ban(1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
+							m.edit({
+								embed: {
+									color: 0x00FF00,
+									description: `Bye-bye **@${bot.getName(msg.channel.guild, serverDocument, member)}** 🔨`,
+									image: {
+										url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
+									},
+								},
+							});
+							ModLog.create(msg.channel.guild, serverDocument, "Ban", member, msg.member, reason);
+						} else {
 							m.edit({
 								embed: {
 									color: 0xFF0000,
-									description: isUserID ? `I couldn't ban **${member.username}**! 🍇` : `I couldn't ban **@${bot.getName(msg.channel.guild, serverDocument, member)}**! 🍇`,
+									description: `You don't have permission to ban this user...`,
 									footer: {
-										text: `Either I don't have the "Ban Members" permission, the user was already banned, or the user isn't in this server!`,
+										text: `You should ask someone who is higher than you to run this!`,
 									},
 								},
 							});
 						}
-					} else {
+					} catch (err) {
+						if (isUserID) {
+							winston.error(`Failed to ban member "${member.username}" from server "${msg.channel.guild.name}"`, { svrid: msg.channel.guild.id, usrid: member }, err.message);
+						} else {
+							winston.error(`Failed to ban member "${member.user.username}" from server "${msg.channel.guild.name}"`, { svrid: msg.channel.guild.id, usrid: member.id }, err.message);
+						}
 						m.edit({
 							embed: {
-								color: 0x00FF00,
-								description: `Ban canceled! 😓`,
+								color: 0xFF0000,
+								description: isUserID ? `I couldn't ban **${member.username}**! 🍇` : `I couldn't ban **@${bot.getName(msg.channel.guild, serverDocument, member)}**! 🍇`,
+								footer: {
+									text: `Either I don't have the "Ban Members" permission, the user was already banned, or the user isn't in this server!`,
+								},
 							},
 						});
 					}
-				});
-			} else {
-				msg.channel.createMessage({
-					embed: {
-						color: 0x00FF00,
-						description: `You don't have permission to ban this user...`,
-						footer: {
-							text: `You should ask someone who is higher than you to run this!`,
+				} else {
+					m.edit({
+						embed: {
+							color: 0x00FF00,
+							description: `Ban canceled! 😓`,
 						},
-					},
-				});
-			}
+					});
+				}
+			});
 		} else {
 			msg.channel.createMessage({
 				embed: {
