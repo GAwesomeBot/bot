@@ -22,7 +22,7 @@
             "usage": "[\"setup\" or <field>][|\".\" or <value>]"
         },
         "reload": {
-            "usage": "\"pm\" or \"public\"/<command>"
+            "usage": "\"pm\" or \"public\".<command>"
         },
         "remindme": {
             "usage": "<time from now>|<reminder>"
@@ -36,7 +36,7 @@
     },
     "public": {
         "8ball": {
-            "usage": "",
+            "usage": "<question>",
             "description": "Predicts the answer to a question",
             "defaults": {
                 "is_enabled": true,
@@ -46,14 +46,14 @@
             "category": "Fun 🎪"
         },
         "about": {
-            "usage": "",
-            "description": "Information about AwesomeBot",
+            "usage": "[<bug> or <request> or <issue>]",
+            "description": "Information about GAwesomeBot",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
                 "admin_level": 0
             },
-            "category": "AwesomeBot 🤖"
+            "category": "GAwesomeBot 🤖"
         },
         "afk": {
             "usage": "\".\" or <message>",
@@ -77,7 +77,7 @@
         },
         "anime": {
             "usage": "<query> [<limit>]",
-            "description": "Searches anime shows using Hummingbird",
+            "description": "Searches anime shows using Kitsu.io",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
@@ -97,7 +97,7 @@
         },
         "archive": {
             "usage": "<count>",
-            "description": "Provides a JSON file with the last <i>n</i> messages in chat",
+            "description": "Provides a JSON file with the last *n* messages in chat",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
@@ -147,7 +147,7 @@
         },
         "catfact": {
             "usage": "",
-            "description": "Random fact about cats",
+            "description": "Random fact(s) about cats",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
@@ -216,14 +216,14 @@
             "category": "Search & Media 🎬"
         },
         "debug": {
-            "usage": "",
-            "description": "Provides system architecture information",
+            "usage": "[<-v>]",
+            "description": "Provides bot information and optionally system information",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
                 "admin_level": 0
             },
-            "category": "AwesomeBot 🤖"
+            "category": "GAwesomeBot 🤖"
         },
         "disable": {
             "usage": "[<command>]",
@@ -244,6 +244,16 @@
                 "admin_level": 0
             },
             "category": "Fun 🎪"
+        },
+        "dogfact": {
+          "usage": "",
+          "description": "Random fact(s) about dogs",
+          "defaults": {
+              "is_enabled": true,
+              "is_nsfw_filtered": false,
+              "admin_level": 0
+          },
+          "category": "Fun 🎪"
         },
         "e621": {
             "usage": "<query> [<limit>]",
@@ -283,7 +293,7 @@
                 "is_nsfw_filtered": false,
                 "admin_level": 4
             },
-            "category": "AwesomeBot 🤖"
+            "category": "GAwesomeBot 🤖"
         },
         "fortune": {
             "usage": "[<category>]",
@@ -316,7 +326,7 @@
             "category": "Search & Media 🎬"
         },
         "giveaway": {
-            "usage": "[\"enroll\"]",
+            "usage": "[\"enroll\" or \"join\"]",
             "description": "Easy way to randomly give away a secret of some sort",
             "defaults": {
                 "is_enabled": true,
@@ -344,7 +354,7 @@
                 "is_nsfw_filtered": false,
                 "admin_level": 0
             },
-            "category": "AwesomeBot 🤖"
+            "category": "GAwesomeBot 🤖"
         },
         "image": {
             "usage": "<query> [\"random\"]",
@@ -394,7 +404,7 @@
                 "is_nsfw_filtered": false,
                 "admin_level": 0
             },
-            "category": "AwesomeBot 🤖"
+            "category": "GAwesomeBot 🤖"
         },
         "joke": {
             "usage": "",
@@ -528,13 +538,13 @@
         },
         "ping": {
             "usage": "",
-            "description": "",
+            "description": "Pings the bot",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
                 "admin_level": 0
             },
-            "category": "AwesomeBot 🤖"
+            "category": "GAwesomeBot 🤖"
         },
         "points": {
             "usage": "[<user> or \"me\"]",
@@ -569,7 +579,7 @@
         },
         "prefix": {
             "usage": "[<new command prefix>]",
-            "description": "",
+            "description": "Sets the new prefix for the server",
             "defaults": {
                 "is_enabled": true,
                 "is_nsfw_filtered": false,
@@ -767,6 +777,16 @@
             },
             "category": "Search & Media 🎬"
         },
+        "strike": {
+            "usage": "<user>[|<reason>]",
+            "description": "Add a modlog entry (if enabled)",
+            "defaults": {
+                "is_enabled": true,
+                "is_nsfw_filtered": false,
+                "admin_level": 1
+            },
+            "category": "Moderation ⚒"
+        },
         "strikes": {
             "usage": "[<user>]",
             "description": "Shows strikes for a user",
@@ -808,7 +828,7 @@
             "category": "Utility 🔦"
         },
         "trivia": {
-            "usage": "",
+            "usage": "[<start>]",
             "description": "A fun question-and-answer group quiz game",
             "defaults": {
                 "is_enabled": true,
@@ -856,16 +876,6 @@
                 "admin_level": 0
             },
             "category": "Search & Media 🎬"
-        },
-        "warn": {
-            "usage": "<user>[|<reason>]",
-            "description": "Add a modlog entry (if enabled)",
-            "defaults": {
-                "is_enabled": true,
-                "is_nsfw_filtered": false,
-                "admin_level": 1
-            },
-            "category": "Moderation ⚒"
         },
         "weather": {
             "usage": "<location> [<unit>]",

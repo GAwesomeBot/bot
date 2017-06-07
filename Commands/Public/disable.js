@@ -1,111 +1,124 @@
+/* eslint-disable max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	this.disablePublicCommand = command => {
+	const disablePublicCommand = command => {
 		command = command || "";
 		command = command.trim().toLowerCase();
-		if(!command.length) {
+		if (!command.length) {
+			return false;
+		} else if (!serverDocument.config.commands.hasOwnProperty(command)) {
+			return false;
+		} else if (["disable", "enable"].includes(command)) {
 			return false;
 		}
-		if(!serverDocument.config.commands.hasOwnProperty(command)) {
-			return false;
-		}
-		if(command == "disable" || command == "enable"){
-			return false;
-		}
-		if(!~serverDocument.config.commands[command].disabled_channel_ids.indexOf(msg.channel.id)) {
+		if (!serverDocument.config.commands[command].disabled_channel_ids.includes(msg.channel.id)) {
 			serverDocument.config.commands[command].disabled_channel_ids.push(msg.channel.id);
 		}
 		return true;
 	};
-	this.disablePublicCommands = () => {
-		// Handle disabling of commands
-		const disables = [];
-		const errors = [];
-		const params = suffix.split(" ");
+	const disablePublicCommands = (params = suffix.split(" ")) => {
+		let disables = [], errors = [];
 		params.forEach(param => {
-			if(this.disablePublicCommand(param)) {
+			if (disablePublicCommand(param)) {
 				disables.push(param);
-			}
-			else {
+			} else {
 				errors.push(param);
 			}
 		});
-		// Nothing Happend => Considering no commands entered
-		if(!disables.length && !errors.length) {
-			winston.warn(`No parameters provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		if (!disables.length && !errors.length) {
+			winston.warn(`No parameters or invalid parameters provided for "${commandData.name}" command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.channel.createMessage({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0xFF0000,
-					description: `Missing command or commands to disable.`
-				}
+					color: 0xFF0000,
+					description: `I can't disable nothing-ness!`,
+					footer: {
+						text: `Please tell me what command or commands I should disable in this channel, and make sure they are valid!`,
+					},
+				},
 			});
-			return;
 		}
-		if(disables.length) {
-            msg.channel.createMessage({
-                embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0x9ECDF2,
-                    description: `The following commands have been disabled in this channel: 💫\`\`\`${disables.join(", ")}\`\`\``
-                }
-            });
+		if (disables.length && errors.length) {
+			return msg.channel.createMessage({
+				embed: {
+					color: 0xFFFF00,
+					fields: [
+						{
+							name: `The following commands have been disabled in this channel: 💫`,
+							value: `\`\`\`css\n${disables.join(", ")}\`\`\``,
+							inline: false,
+						},
+						{
+							name: `The following commands couldn't be disabled in this channel: 😿`,
+							value: `\`\`\`css\n${errors.join(", ")}\`\`\``,
+							inline: false,
+						},
+					],
+					footer: {
+						text: `You can't disable the "disable" or the "enable" commands! Also, you can use "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}enable ${disables.join(" ")}" to re-enable the command or commands.`,
+					},
+				},
+			});
 		}
-		if(errors.length) {
-            msg.channel.createMessage({
-                embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0xFF0000,
-                    description: `Unable to disable the following commands in this channel: 😿\`\`\`${errors.join(", ")}\`\`\``
-                }
-            });
+		if (disables.length) {
+			msg.channel.createMessage({
+				embed: {
+					color: 0x00FF00,
+					title: `The following commands have been disabled in this channel: 💫`,
+					description: `\`\`\`css\n${disables.join(", ")}\`\`\``,
+					footer: {
+						text: `You can re-enable them by using "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}enable ${disables.join(" ")}".`,
+					},
+				},
+			});
+		}
+		if (errors.length) {
+			msg.channel.createMessage({
+				embed: {
+					color: 0xFF0000,
+					title: `The following commands couldn't be disabled in this channel: 😿`,
+					description: `\`\`\`css\n${errors.join(", ")}\`\`\``,
+					footer: {
+						text: `You can't disable the "disable" or the "enable" commands! Also, make sure the command is valid!`,
+					},
+				},
+			});
 		}
 	};
-	this.listDisabledCommands = () => {
-		const command_keys = Object.keys(serverDocument.config.commands.toJSON());
-		const disabled = [];
+	const listDisabledCommands = (command_keys = Object.keys(serverDocument.config.commands.toJSON())) => {
+		let disabled = [];
 		command_keys.forEach(command_key => {
-			if(~serverDocument.config.commands[command_key].disabled_channel_ids.indexOf(msg.channel.id)) {
+			if (serverDocument.config.commands[command_key].disabled_channel_ids.includes(msg.channel.id)) {
 				disabled.push(command_key);
 			}
 		});
-		if(disabled.length) {
-			msg.channel.createMessage({
+		if (disabled.length) {
+			return msg.channel.createMessage({
 				embed: {
-					description: `The following commands are disabled in this channel: 💫\`\`\`${disabled.join(", ")}\`\`\``
-				}
+					color: 0x00FF00,
+					title: `The following commands are disabled in this channel: 💫`,
+					description: `\`\`\`css\n${disabled.join(", ")}\`\`\``,
+					footer: {
+						text: `You can re-enable them by using "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}enable ${disabled.join(" ")}".`,
+					},
+				},
 			});
-			return;
 		}
 		msg.channel.createMessage({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0xFF0000,
-				description: "There are no commands disabled in this channel. 💖"
-			}
+				color: 0x00FF00,
+				description: `There are no commands disabled in this channel. 💖`,
+				footer: {
+					text: `You can disable some by using "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <command>", but why would you do that..?`,
+				},
+			},
 		});
 	};
-	// Handle Command Options
-	switch(suffix.toLowerCase()) {
+	// Handle command options
+	/* eslint-disable indent */
+	switch (suffix.toLowerCase()) {
 		case "":
-			this.listDisabledCommands();
-			return;
+			listDisabledCommands();
+			break;
 		default:
-			this.disablePublicCommands();
+			disablePublicCommands();
 	}
 };

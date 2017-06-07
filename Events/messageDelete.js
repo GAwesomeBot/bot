@@ -66,13 +66,13 @@ module.exports = (bot, db, config, winston, msg) => {
 						if(ch) {
 							const targetChannelDocument = serverDocument.channels.id(ch.id);
 							if(!targetChannelDocument || targetChannelDocument.bot_enabled) {
-								ch.createMessage(`Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** in #${msg.channel.name} deleted:\n\`\`\`${msg.cleanContent}\`\`\``, {disable_everyone: true});
+								ch.createMessage({content: `Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** in #${msg.channel.name} deleted:\n\`\`\`${msg.cleanContent}\`\`\``, disableEveryone: true});
 							}
 						}
 					// Send message in same channel
 					} else if(serverDocument.config.moderation.status_messages.message_deleted_message.type=="msg") {
 						if(!channelDocument || channelDocument.bot_enabled) {
-							msg.channel.createMessage(`Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** deleted:\n\`\`\`${msg.cleanContent}\`\`\``, {disable_everyone: true});
+							msg.channel.createMessage({content: `Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** deleted:\n\`\`\`${msg.cleanContent}\`\`\``, disableEveryone: true});
 						}
 					}
 				}

@@ -1,36 +1,51 @@
 const mathjs = require("mathjs");
+const TimeTaken = require("./../../Modules/TimeTaken.js");
 
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	if(suffix) {
+/* eslint-disable max-len */
+module.exports = async (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
+	if (suffix) {
+		let m = await msg.channel.createMessage({
+			embed: {
+				color: 0x9ECDF2,
+				description: "Calculating...",
+				footer: {
+					text: `This shouldn't take long!`,
+				},
+			},
+		});
 		try {
-			msg.channel.createMessage({
+			let result = mathjs.eval(suffix);
+			let timeTaken = TimeTaken(m, msg);
+			m.edit({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0x00FF00,
-					title: "Result:",
-					description: `\`\`\`${mathjs.eval(suffix)}\`\`\``
-				}
+					color: 0x00FF00,
+					description: `\`\`\`${result}\`\`\``,
+					footer: {
+						text: `It took ${timeTaken}ms for the math equation to evaluate!`,
+					},
+				},
 			});
-		} catch(err) {
-			msg.channel.createMessage({
+		} catch (err) {
+			m.edit({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0xFF0000,
-					title: "Result:",
-					description: `\`\`\`${err}\`\`\``
-				}
+					color: 0xFF0000,
+					description: `\`\`\`${err}\`\`\``,
+					footer: {
+						text: `You definitely did something wrong here!`,
+					},
+				},
 			});
 		}
 	} else {
-		winston.warn(`Parameters not provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage(`${msg.author.mention} I need something to calculate 🙄`);
+		winston.warn(`Parameters not provided for ${commandData.name} command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		msg.channel.createMessage({
+			embed: {
+				color: 0xFF0000,
+				description: `I need something to calculate 🙄`,
+				footer: {
+					text: `Mathematical expressions are hard without a calculator! Use me instead!`,
+				},
+			},
+		});
 	}
 };
