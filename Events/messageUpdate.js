@@ -20,13 +20,13 @@ let runExtension = require("./../Modules/ExtensionRunner.js"), checkFiltered = r
                if(ch) {
                  let targetChannelDocument = serverDocument.channels.id(ch.id);
                  if(!targetChannelDocument || targetChannelDocument.bot_enabled) {
-                   ch.createMessage(`Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** in #${msg.channel.name} edited. Original:\n\`\`\`${oldMsg.content}\`\`\`Updated:\n\`\`\`${msg.cleanContent}\`\`\``, {disable_everyone: true});
+                   ch.createMessage({content: `Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** in #${msg.channel.name} edited. Original:\n\`\`\`${oldMsg.content}\`\`\`Updated:\n\`\`\`${msg.cleanContent}\`\`\``, disableEveryone: true});
                  }
                }
              } else if(serverDocument.config.moderation.status_messages.message_edited_message.type == "msg") {
                let channelDocument = serverDocument.channels.id(msg.channel.id);
                if(!channelDocument || channelDocument.bot_enabled) {
-                 msg.channel.createMessage(`Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** edited. Original:\n\`\`\`${oldMsg.content}\`\`\`Updated:\n\`\`\`${msg.cleanContent}\`\`\``, {disable_everyone: true});
+                 msg.channel.createMessage({content: `Message by **@${bot.getName(msg.channel.guild, serverDocument, msg.member)}** edited. Original:\n\`\`\`${oldMsg.content}\`\`\`Updated:\n\`\`\`${msg.cleanContent}\`\`\``, disableEveryone: true});
                }
              }
            }
