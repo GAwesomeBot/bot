@@ -51,7 +51,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 				m.edit({
 					embed: {
 						color: 0xFFFF00,
-						description: `The result is larger than 6000 characters.. You can see the full result [here](${await hastebin(result.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "Nein."))})`,
+						description: `The result is larger than 6000 characters.. You can see the full result [here](${await hastebin(result.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"))})`,
 					},
 				});
 			} else {
