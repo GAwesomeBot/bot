@@ -1,76 +1,59 @@
 const moment = require("moment");
 
+/* eslint-disable max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg) => {
-	let embed_fields = [
-		{
-			name: `Guild Name`,
-			value: `__**${msg.channel.guild.name}**__`,
-			inline: true
-		},
-		{
-			name: `🆔`,
-			value: `${msg.channel.guild.id}`,
-			inline: true
-		},
-		{
-			name: `🗓 Created`,
-			value: `${moment(msg.channel.guild.createdAt).fromNow()}`,
-			inline: true
-		},
-		{
-			name: `👑 Owned by`,
-			value: `<@${msg.channel.guild.ownerID}>`,
-			inline: true
-		},
-		{
-			name: "👥",
-			value: `${msg.channel.guild.members.size} members`,
-			inline: true
-		}
-	];
-	let image_url = "";
-	if(msg.channel.guild.iconURL) {
-		image_url = msg.channel.guild.iconURL;
-	}
-	embed_fields.push(
-		{
-			name: `🕯 Command Prefix:`,
-			value: `\`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}\``,
-			inline: true
-		},
-		{
-			name: `💬`,
-			value: `${serverDocument.messages_today} message${serverDocument.messages_today == 1 ? "" : "s"} today`,
-			inline: true
-		},
-		{
-			name: `🗄 Category:`,
-			value: `${serverDocument.config.public_data.server_listing.category}`,
-			inline: true
-		},
-		{
-			name: `🌎`,
-			value: `Click [here](${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.channel.guild.name)})`,
-			inline: true
-		},
-		{
-			name: "🖼",
-			value: `Icon:`,
-			inline: true
-		}
-	);
+	const prefix = bot.getCommandPrefix(msg.channel.guild, serverDocument);
 	msg.channel.createMessage({
 		embed: {
-            author: {
-                name: bot.user.username,
-                icon_url: bot.user.avatarURL,
-                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-            },
-            color: 0x00FF00,
-			fields: embed_fields,
-			image: {
-				url: image_url
-			}
-		}
+			color: 0x00FF00,
+			author: {
+				name: `${msg.channel.guild.name} (${msg.channel.guild.id})`,
+				url: `${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.channel.guild.name)}`,
+			},
+			footer: {
+				text: `The command prefix here is "${prefix}", use "${prefix}help" to see what commands you can use.`,
+			},
+			thumbnail: {
+				url: msg.channel.guild.iconURL ? msg.channel.guild.iconURL : "",
+			},
+			description: `**Shard:** ${msg.channel.guild.shard.id + 1}`,
+			fields: [
+				{
+					name: `\u200B`,
+					value: `Created ${moment(msg.channel.guild.createdAt).fromNow()}`,
+					inline: true,
+				},
+				{
+					name: `\u200B`,
+					value: `Owned by ${msg.channel.guild.members.get(msg.channel.guild.ownerID).tag}`,
+					inline: true,
+				},
+				{
+					name: `\u200B`,
+					value: `With ${msg.channel.guild.members.size} members`,
+					inline: true,
+				},
+				{
+					name: `\u200B`,
+					value: `There have been ${serverDocument.messages_today} message${serverDocument.messages_today > 1 ? "s" : ""} today`,
+					inline: true,
+				},
+				{
+					name: `\u200B`,
+					value: `This servers category is \`${serverDocument.config.public_data.server_listing.category}\``,
+					inline: true,
+				},
+				{
+					name: `\u200B`,
+					value: serverDocument.config.public_data.server_listing.isEnabled ? `Click [here](${serverDocument.config.public_data.server_listing.invite_link}) to join this server` : "There isn't a public invite to this place..",
+					inline: true,
+				},
+				{
+					name: `\u200B`,
+					value: `Click on the title to see the guilds webpage`,
+					inline: true,
+				},
+			],
+		},
 	});
 };

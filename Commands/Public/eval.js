@@ -1,37 +1,80 @@
 const util = require("util");
+const TimeTaken = require("./../../Modules/TimeTaken.js");
+const hastebin = require("./../../Modules/HastebinUpload.js");
 
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
-	if(suffix) {
+/* eslint-disable max-len */
+module.exports = async (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
+	if (!config.maintainers.includes(msg.author.id)) {
+		return msg.channel.createMessage({
+			embed: {
+				color: 0xFF0000,
+				title: `Well well, what do we have here?`,
+				description: `Somehow, someway, you managed to run the Maintainer-Only Command while you aren't a maintainer..`,
+				footer: {
+					text: `If you think you know how you managed it, report it on the GitHub 😃`,
+				},
+			},
+		});
+	} else if (suffix) {
+		const m = await msg.channel.createMessage({
+			embed: {
+				color: 0x9ECDF2,
+				title: `Evaluating...`,
+				footer: {
+					text: `This shouldn't take long unless you killed me.. In which case.. ¯\\_(ツ)_/¯`,
+				},
+			},
+		});
+		const timeTaken = TimeTaken(m, msg);
 		try {
-			let result = eval(suffix);
-			if(typeof(result) == "object") {
-				result = util.inspect(result);
+			if (suffix.startsWith("```js") && suffix.endsWith("```")) {
+				suffix = suffix.substring(5, suffix.length - 3);
 			}
-			msg.channel.createMessage({
+			// eslint-disable-next-line
+			const toEval = evalCode => {
+				return `(async () => {${evalCode}})()`;
+			};
+			let result = await eval(toEval(suffix));
+			if (typeof result !== "string") {
+				result = util.inspect(result, false, 0);
+			}
+			if (result === bot.token || result === require("./../../Configuration/auth.json").platform.login_token) {
+				return m.edit({
+					embed: {
+						color: 0xFF0000,
+						title: `Uh-oh.. Thats not allowed..`,
+						description: `You tried to evaluate something that isn't allowed! Sorry! 😝`,
+					},
+				});
+			}
+			m.edit({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0x00FF00,
-					title: "Eval Result",
-					description: `\`\`\`${result}\`\`\``
-				}
+					color: 0x00FF00,
+					title: `OUTPUT`,
+					description: `\`\`\`js\n${result}\`\`\``,
+					footer: {
+						text: `Time taken: ${timeTaken}ms`,
+					},
+				},
 			});
-		} catch(err) {
-			msg.channel.createMessage({
+		} catch (err) {
+			m.edit({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0xFF0000,
-					title: "Eval Result",
-					description: `\`\`\`${err}\`\`\``
-				}
+					color: 0xFF0000,
+					title: `ERROR`,
+					description: `\`\`\`js\n${err}\`\`\`\n[Full Stacktrace](${await hastebin(err.stack)})`,
+					footer: {
+						text: `Time taken: ${timeTaken}ms`,
+					},
+				},
 			});
 		}
+	} else {
+		msg.channel.createMessage({
+			embed: {
+				color: 0xFF0000,
+				description: `As a Maintainer, you should know I need a thing to evaluate 😉\nUnless you're a fake... 😱`,
+			},
+		});
 	}
 };

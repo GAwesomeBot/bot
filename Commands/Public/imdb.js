@@ -1,23 +1,129 @@
 const unirest = require("unirest");
+const S = require("string");
+const auth = require("./../../Configuration/auth.json");
 
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	let query = suffix;
+/* eslint-disable max-len */
+module.exports = async (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	let type = "";
-	if(query.toLowerCase().indexOf("series ")==0 || query.toLowerCase().indexOf("episode ")==0 || query.toLowerCase().indexOf("movie ")==0) {
-		type = `&type=${query.substring(0, query.indexOf(" ")).toLowerCase()}`;
-		query = query.substring(query.indexOf(" ")+1);
+	if (suffix.toLowerCase().indexOf("series ") === 0 || suffix.toLowerCase().indexOf("episode ") === 0 || suffix.toLowerCase().indexOf("movie ") === 0) {
+		type = `&type=${suffix.substring(0, suffix.indexOf(" ")).toLowerCase()}`;
+		suffix = suffix.substring(suffix.indexOf(" ") + 1);
 	}
-	if(query) {
-		unirest.get(`http://www.omdbapi.com/?t=${encodeURIComponent(query)}&r=json${type}`).header("Accept", "application/json").end(res => {
-			if(res.status==200 && res.body.Response=="True") {
-				msg.channel.createMessage(`__**${res.body.Title}${type ? "" : (` (${res.body.Type.charAt(0).toUpperCase()}${res.body.Type.slice(1)})`)}**__\`\`\`${res.body.Plot}\`\`\`**Year:** ${res.body.Year}\n**Rated:** ${res.body.Rated}\n**Runtime:** ${res.body.Runtime}\n**Actors:**\n\t${res.body.Actors.replaceAll(", ", "\n\t")}\n**Director:** ${res.body.Director}\n**Writer:** ${res.body.Writer}\n**Genre(s):**\n\t${res.body.Genre.replaceAll(", ", "\n\t")}\n**Rating:** ${res.body.imdbRating} out of ${res.body.imdbVotes} votes\n**Awards:** ${res.body.Awards}\n**Country:** ${res.body.Country}\nhttp://www.imdb.com/title/${res.body.imdbID}/`);
-			} else {
-				winston.warn(`No IMDB entries found for '${query}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-				msg.channel.createMessage("Nothing found in IMDB 😶🚫");
-			}
-		});
+	const m = await msg.channel.createMessage({
+		embed: {
+			color: 0x9ECDF2,
+			description: `Please stand by.. We're searching your requested movie on IMDB`,
+			footer: {
+				text: `If this doesn't update.. Its probably broken..`,
+			},
+		},
+	});
+	if (auth.tokens.omdb_api) {
+		if (suffix) {
+			const api = `http://www.omdbapi.com/?apikey=${auth.tokens.omdb_api}&t=${encodeURIComponent(suffix)}&r=json${type}`;
+			unirest.get(api).header("Accept", "application/json").end(res => {
+				if (res.status === 200 && res.body.Response === "True") {
+					let fields = [
+						{
+							name: `Year:`,
+							value: `${res.body.Year}`,
+							inline: true,
+						},
+					];
+					for (let i = 0; i < res.body.Ratings.length; i++) {
+						fields.push({
+							name: `"${res.body.Ratings[i].Source}":`,
+							value: `Rated ${res.body.Ratings[i].Value}`,
+							inline: true,
+						});
+					}
+					fields.push(
+						{
+							name: `Runtime:`,
+							value: `${res.body.Runtime}`,
+							inline: true,
+						},
+						{
+							name: `Actors:`,
+							value: `\`\`\`css\n${res.body.Actors.replaceAll(", ", "\n")}\`\`\``,
+							inline: true,
+						},
+						{
+							name: `Director:`,
+							value: `${res.body.Director}`,
+							inline: true,
+						},
+						{
+							name: `Writer:`,
+							value: `${res.body.Writer}`,
+							inline: true,
+						},
+						{
+							name: `Genre(s):`,
+							value: `\`\`\`css\n${res.body.Genre.replaceAll(", ", "\n")}\`\`\``,
+							inline: true,
+						},
+						{
+							name: `Awards:`,
+							value: `${res.body.Awards}`,
+							inline: true,
+						},
+						{
+							name: `Country:`,
+							value: `${res.body.Country}`,
+							inline: true,
+						}
+					);
+					return m.edit({
+						embed: {
+							color: 0x00FF00,
+							author: {
+								name: `${res.body.Title}${type ? "" : ` (${S(res.body.Type).capitalize().s})`}`,
+								url: `http://www.imdb.com/title/${res.body.imdbID}/`,
+							},
+							description: `\`\`\`css\n${res.body.Plot}\`\`\``,
+							footer: {
+								text: `Rating: ${res.body.imdbRating} out of ${res.body.imdbVotes} votes`,
+							},
+							fields: fields,
+							image: {
+								url: res.body.Poster !== "N/A" ? res.body.Poster : "",
+							},
+						},
+					});
+				} else {
+					winston.warn(`No IMDB entries found for "${suffix}"`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+					return m.edit({
+						embed: {
+							color: 0xFF0000,
+							description: `Nothing found in IMDB.. 😶🚫`,
+							footer: {
+								text: `You can try again with a different movie title!`,
+							},
+						},
+					});
+				}
+			});
+		} else {
+			return m.edit({
+				embed: {
+					color: 0xFF0000,
+					description: `You need to tell me what movie I should look for!`,
+					footer: {
+						text: `Remember, the command usage is "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}"`,
+					},
+				},
+			});
+		}
 	} else {
-		winston.warn(`Parameters not provided or invalid for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage(`${msg.author.mention} U WOT M8... you need to use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}\``);
+		return m.edit({
+			embed: {
+				color: 0xFF0000,
+				description: `I'm sorry but I am not able to search your movie on IMDB...`,
+				footer: {
+					text: `Please tell the bot owner that the IMDB key is missing.. Without that, I cannot do my magic!`,
+				},
+			},
+		});
 	}
 };
