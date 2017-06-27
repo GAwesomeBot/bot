@@ -71,7 +71,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					try {
 						if (isUserID) {
 							if (msg.channel.guild.members.get(member.id) !== undefined && canBan(msg.channel.guild.members.get(member.id))) {
-								await msg.channel.guild.banMember(member.id, 1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
+								await msg.channel.guild.banMember(member.id, 1, `${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
 									throw err;
 								});
 								m.edit({
@@ -98,7 +98,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 									},
 								});
 							} else {
-								await msg.channel.guild.banMember(member.id, 1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
+								await msg.channel.guild.banMember(member.id, 1, `${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
 									throw err;
 								});
 								m.edit({
@@ -116,7 +116,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 								ModLog.create(msg.channel.guild, serverDocument, "Ban", { user: member }, msg.member, reason);
 							}
 						} else if (canBan(member)) {
-							await member.ban(1, `${reason} | Command issues by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
+							await member.ban(1, `${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
 								throw err;
 							});
 							m.edit({
