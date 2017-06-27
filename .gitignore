@@ -1,3 +1,5 @@
 Configuration/config.json
 Configuration/auth.json
 Extensions/
+node_modules/
+package-lock.json
