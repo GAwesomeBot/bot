@@ -39,13 +39,13 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			member = await getUser(bot, split[0].trim());
 			reason = split[1].trim();
 		} else if (split.length === 2) {
-			member = bot.memberSearch(split[0], msg.channel.guild);
+			member = bot.memberSearch(split[0].trim(), msg.channel.guild);
 			reason = split[1].trim();
 		} else if (isUserID) {
 			member = await getUser(bot, split[0].trim());
 			reason = "unspecified reason..";
 		} else {
-			member = bot.memberSearch(suffix, msg.channel.guild);
+			member = bot.memberSearch(suffix.trim(), msg.channel.guild);
 			reason = "unspecified reason..";
 		}
 		if (member) {
@@ -77,7 +77,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 								m.edit({
 									embed: {
 										color: 0x00FF00,
-										description: `Bye-bye **${member.username}** 🔨`,
+										description: `Bye-bye **${bot.getName(msg.channel.guild, serverDocument, { user: member })}** 🔨`,
 										image: {
 											url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
 										},
@@ -104,7 +104,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 								m.edit({
 									embed: {
 										color: 0x00FF00,
-										description: `Bye-bye **${member.username}** 🔨`,
+										description: `Bye-bye **${bot.getName(msg.channel.guild, serverDocument, { user: member })}** 🔨`,
 										image: {
 											url: `https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif`,
 										},
