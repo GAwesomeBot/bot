@@ -20,7 +20,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						color: 0x00FF00,
 						description: `${joke}`,
 						footer: {
-							text: `The joke is gotten through the "ICNDB", otherwise known as "The Internet Chuck Norris Database", with Chuck Norris's name replaced with your name.`,
+							text: `The joke is gotten through the "ICNDB", otherwise known as "The Internet Chuck Norris Database", with Chuck Norris's name replaced with your name / nickname.`,
 						},
 					},
 				});
