@@ -18,7 +18,7 @@ const eventHandlers = {
 	userUpdate: require("./Events/userUpdate.js"),
 	voiceChannelJoin: require("./Events/voiceChannelJoin.js"),
 	voiceStateUpdate: require("./Events/voiceStateUpdate.js"),
-	voiceChannelLeave: require("./Events/voiceChannelLeave.js")
+	voiceChannelLeave: require("./Events/voiceChannelLeave.js"),
 };
 const database = require("./Database/Driver.js");
 
@@ -26,14 +26,18 @@ const auth = require("./Configuration/auth.json");
 const config = require("./Configuration/config.json");
 const winston = require("winston");
 
+const hastebin = require("./Modules/HastebinUpload.js");
+const util = require("util");
+
 // Set up default winston logger
 winston.add(winston.transports.File, {
-	filename: "bot-out.log"
+	filename: "bot-out.log",
 });
 
+/* eslint-disable no-shadow */
 // Connect to and initialize database
 database.initialize(config.db_url, err => {
-	if(err) {
+	if (err) {
 		winston.error("Failed to connect to database", err);
 	} else {
 		const db = database.get();
@@ -42,9 +46,12 @@ database.initialize(config.db_url, err => {
 		const bot = require("./Platform/Platform.js")(db, auth, config);
 		bot.connect().then(() => {
 			winston.info("Started bot application");
-		}, (err) => {
-			winston.error("Failed to connect to discord", err)
+		}).catch(err => {
+			winston.error("Failed to connect to Discord :/", err);
 		});
+
+		// Initialise all the Object.assigns
+		require("./Modules/ObjectDefines.js")(winston);
 
 		/* After guilds and users have been created (first-time only)
 		 * Will also trigger the shard message information
@@ -55,7 +62,7 @@ database.initialize(config.db_url, err => {
 
 		// Server joined by bot
 		bot.on("guildCreate", svr => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildCreate(bot, db, config, winston, svr).catch(err => {
 					winston.error(err);
 				});
@@ -64,7 +71,7 @@ database.initialize(config.db_url, err => {
 
 		// Server details updated (name, icon, etc.)
 		bot.on("guildUpdate", (svr, oldsvrdata) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildUpdate(bot, db, config, winston, svr, oldsvrdata).catch(err => {
 					winston.error(err);
 				});
@@ -73,16 +80,18 @@ database.initialize(config.db_url, err => {
 
 		// Server left by bot or deleted
 		bot.on("guildDelete", (svr, unavailable) => {
-			if(bot.isReady && !unavailable) {
+			if (bot.isReady && !unavailable) {
 				eventHandlers.guildDelete(bot, db, config, winston, svr).catch(err => {
 					winston.error(err);
 				});
+			} else if (unavailable) {
+				winston.error("Server returned unavailable, possible Discord Outage", { svrid: svr.id });
 			}
 		});
 
 		// Server channel deleted
 		bot.on("channelDelete", ch => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.channelDelete(bot, db, config, winston, ch).catch(err => {
 					winston.error(err);
 				});
@@ -91,7 +100,7 @@ database.initialize(config.db_url, err => {
 
 		// Server role deleted
 		bot.on("guildRoleDelete", (svr, role) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildRoleDelete(bot, db, config, winston, svr, role).catch(err => {
 					winston.error(err);
 				});
@@ -100,7 +109,7 @@ database.initialize(config.db_url, err => {
 
 		// User joined server
 		bot.on("guildMemberAdd", (svr, member) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildMemberAdd(bot, db, config, winston, svr, member).catch(err => {
 					winston.error(err);
 				});
@@ -109,7 +118,7 @@ database.initialize(config.db_url, err => {
 
 		// User details updated on server (role, nickname, etc.)
 		bot.on("guildMemberUpdate", (svr, member, oldmemberdata) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildMemberUpdate(bot, db, config, winston, svr, member, oldmemberdata).catch(err => {
 					winston.error(err);
 				});
@@ -118,7 +127,7 @@ database.initialize(config.db_url, err => {
 
 		// User left or kicked from server
 		bot.on("guildMemberRemove", (svr, member) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildMemberRemove(bot, db, config, winston, svr, member).catch(err => {
 					winston.error(err);
 				});
@@ -127,7 +136,7 @@ database.initialize(config.db_url, err => {
 
 		// User banned from server
 		bot.on("guildBanAdd", (svr, usr) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildBanAdd(bot, db, config, winston, svr, usr).catch(err => {
 					winston.error(err);
 				});
@@ -136,7 +145,7 @@ database.initialize(config.db_url, err => {
 
 		// User unbanned from server
 		bot.on("guildBanRemove", (svr, usr) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.guildBanRemove(bot, db, config, winston, svr, usr).catch(err => {
 					winston.error(err);
 				});
@@ -145,16 +154,16 @@ database.initialize(config.db_url, err => {
 
 		// Message sent on server
 		bot.on("messageCreate", msg => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.messageCreate(bot, db, config, winston, msg).catch(err => {
-						winston.error(err);
+					winston.error(err);
 				});
 			}
 		});
 
 		// Message edited
 		bot.on("messageUpdate", (newMsg, oldMsg) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.messageUpdate(bot, db, winston, newMsg, oldMsg).catch(err => {
 					winston.error(err);
 				});
@@ -163,7 +172,7 @@ database.initialize(config.db_url, err => {
 
 		// Message deleted
 		bot.on("messageDelete", msg => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.messageDelete(bot, db, config, winston, msg).catch(err => {
 					winston.error(err);
 				});
@@ -172,7 +181,7 @@ database.initialize(config.db_url, err => {
 
 		// User status changed (afk, new game, etc.)
 		bot.on("presenceUpdate", (member, oldpresence) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.presenceUpdate(bot, db, config, winston, member, oldpresence).catch(err => {
 					winston.error(err);
 				});
@@ -181,7 +190,7 @@ database.initialize(config.db_url, err => {
 
 		// User updated (name, avatar, etc.)
 		bot.on("userUpdate", (usr, oldusrdata) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.userUpdate(bot, db, config, winston, usr, oldusrdata).catch(err => {
 					winston.error(err);
 				});
@@ -190,7 +199,7 @@ database.initialize(config.db_url, err => {
 
 		// User joined server voice channel
 		bot.on("voiceChannelJoin", (member, ch) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.voiceChannelJoin(bot, db, config, winston, member, ch).catch(err => {
 					winston.error(err);
 				});
@@ -199,7 +208,7 @@ database.initialize(config.db_url, err => {
 
 		// User voice connection details updated on server (muted, deafened, etc.)
 		bot.on("voiceStateUpdate", (member, oldvoice) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.voiceStateUpdate(bot, db, config, winston, member, oldvoice).catch(err => {
 					winston.error(err);
 				});
@@ -208,10 +217,65 @@ database.initialize(config.db_url, err => {
 
 		// User left server voice channel
 		bot.on("voiceChannelLeave", (member, ch) => {
-			if(bot.isReady) {
+			if (bot.isReady) {
 				eventHandlers.voiceChannelLeave(bot, db, config, winston, member, ch).catch(err => {
 					winston.error(err);
 				});
+			}
+		});
+
+		process.on("uncaughtException", async err => {
+			if (bot.isReady) {
+				const hastelink = await hastebin(err);
+				if (config.discordErrorGuild && config.discordErrorChannel) {
+					try {
+						bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
+							embed: {
+								author: {
+									name: "Oh no, this is bad..!",
+								},
+								color: 0xFF0000,
+								title: "Uncaught Exception, please alert us about this ASAP.",
+								description: `Click [here](${hastelink}) to see the Hastebin URL`,
+								footer: {
+									text: `Unless you know what you're doing, I'd recommend sending this Hastebin URL to the GitHub page!`,
+								},
+							},
+						});
+					} catch (err) {
+						winston.error(`Couldn't find Channel / Guild combo, so I'll place the Hastebin URL here`, { hastebin_url: hastelink });
+					}
+				} else {
+					winston.error("There wasn't any guild to output the uncaughtException, placing link in here.", { hastebin_url: hastelink });
+				}
+			}
+		});
+
+		process.on("unhandledRejection", async (reason, p) => {
+			p = util.inspect(p, false, 0);
+			if (bot.isReady) {
+				const hastelink = await hastebin(`Reason: ${reason}\n${p}`);
+				if (config.discordErrorGuild && config.discordErrorChannel) {
+					try {
+						bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
+							embed: {
+								color: 0xFF0000,
+								author: {
+									name: "Oh no, this is bad..!",
+								},
+								title: `Uncaught Promise Rejection, you should report this..`,
+								description: `Click [here](${hastelink}) to see the Hastebin URL`,
+								footer: {
+									text: `Unless you know what you're doing, I'd recommend sending this Hastebin URL to the GitHub page!`,
+								},
+							},
+						});
+					} catch (err) {
+						winston.error(`Couldn't find Channel / Guild combo, so I'll place the Hastebin URL here`, { hastebin_url: hastelink });
+					}
+				} else {
+					winston.error("There wasn't any guild to output the unhandledRejection, placing link in here.", { hastebin_url: hastelink });
+				}
 			}
 		});
 	}
