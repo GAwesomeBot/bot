@@ -36,7 +36,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			};
 			let result = await eval(toEval(suffix));
 			if (typeof result !== "string") {
-				result = util.inspect(result, false, 0);
+				result = util.inspect(result, false, 2);
 			}
 			if (result === bot.token || result === require("./../../Configuration/auth.json").platform.login_token) {
 				return m.edit({
@@ -47,16 +47,25 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					},
 				});
 			}
-			m.edit({
-				embed: {
-					color: 0x00FF00,
-					title: `OUTPUT`,
-					description: `\`\`\`js\n${result}\`\`\``,
-					footer: {
-						text: `Time taken: ${timeTaken}ms`,
+			if (result.length > 5900) {
+				m.edit({
+					embed: {
+						color: 0xFFFF00,
+						description: `The result is larger than 6000 characters.. You can see the full result [here](${await hastebin(result.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "Baka!"))})`,
 					},
-				},
-			});
+				});
+			} else {
+				m.edit({
+					embed: {
+						color: 0x00FF00,
+						title: `OUTPUT`,
+						description: `\`\`\`js\n${result}\`\`\``,
+						footer: {
+							text: `Time taken: ${timeTaken}ms`,
+						},
+					},
+				});
+			}
 		} catch (err) {
 			m.edit({
 				embed: {
