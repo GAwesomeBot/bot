@@ -13,9 +13,7 @@
     },
     "rules": {
         "no-await-in-loop": "warn",
-        "no-extra-parens": ["warn", "all", {
-          "nestedBinaryExpressions": false
-        }],
+        "no-extra-parens": ["warn", "all", { "nestedBinaryExpressions": false }],
         "no-template-curly-in-string": "error",
         "no-unsafe-negation": "error",
         "curly": ["error", "multi-line", "consistent"],
@@ -68,7 +66,7 @@
         "func-style": ["error", "declaration", { "allowArrowFunctions": true }],
         "key-spacing": "error",
         "keyword-spacing": "error",
-        "max-depth": "error",
+        "max-depth": ["error", 6],
         "max-len": ["error", 150, 2],
         "max-nested-callbacks": ["error", { "max": 4 }],
         "max-statements-per-line": ["error", { "max": 2 }],
@@ -113,16 +111,8 @@
         "prefer-template": "error",
         "rest-spread-spacing": "error",
         "template-curly-spacing": "error",
-
         "no-console": "off",
         "indent": ["error", "tab"],
-        "no-irregular-whitespace": [
-          "error",
-          {
-            "skipStrings": true,
-            "skipComments": true,
-            "skipTemplates": true
-          }
-        ]
+        "no-irregular-whitespace": ["error", { "skipStrings": true, "skipComments": true, "skipTemplates": true }]
     }
 }
