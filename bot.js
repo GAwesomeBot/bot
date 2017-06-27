@@ -252,7 +252,7 @@ database.initialize(config.db_url, err => {
 		});
 
 		process.on("unhandledRejection", async (reason, p) => {
-			p = util.inspect(p, false, 0);
+			p = util.inspect(p, false, 2);
 			if (bot.isReady) {
 				const hastelink = await hastebin(`Reason: ${reason}\n${p}`);
 				if (config.discordErrorGuild && config.discordErrorChannel) {

@@ -12,19 +12,19 @@ module.exports = (type, query) => {
   }
   return new Promise((resolve, reject) => {
     if (["r", "raw", "n", "normal"].includes(type.toLowerCase())) {
-      unirest.post("https://hastebin.com/documents").send(query).end(res => {
+      unirest.post("https://www.hastebin.com/documents").send(query).end(res => {
         if (res.status === 200 && res.body.key) {
           switch (type.toLowerCase()) {
             case "r":
             case "raw":
-              resolve(`https://hastebin.com/raw/${res.body.key}`);
+              resolve(`https://www.hastebin.com/raw/${res.body.key}`);
               break;
             case "n":
             case "normal":
-              resolve(`https://hastebin.com/${res.body.key}`);
+              resolve(`https://www.hastebin.com/${res.body.key}`);
               break;
             default:
-              resolve(`https://hastebin.com/${res.body.key}`);
+              resolve(`https://www.hastebin.com/${res.body.key}`);
           }
         } else {
           reject(new Error("Couldn't upload to hastebin, try again later!"));
