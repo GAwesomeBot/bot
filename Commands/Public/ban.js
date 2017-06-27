@@ -37,10 +37,10 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 		const isUserID = new RegExp(/^\d+$/).test(split[0].trim());
 		if (isUserID && split.length === 2) {
 			member = await getUser(bot, split[0].trim());
-			reason = split[1];
+			reason = split[1].trim();
 		} else if (split.length === 2) {
 			member = bot.memberSearch(split[0], msg.channel.guild);
-			reason = split[1];
+			reason = split[1].trim();
 		} else if (isUserID) {
 			member = await getUser(bot, split[0].trim());
 			reason = "unspecified reason..";
