@@ -71,6 +71,23 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					try {
 						if (isUserID) {
 							if (msg.channel.guild.members.get(member.id) !== undefined && canBan(msg.channel.guild.members.get(member.id))) {
+								try {
+									const dm = await bot.users.get(member.id).getDMChannel();
+									dm.createMessage({
+										embed: {
+											color: 0xFF0000,
+											description: `Oh no, you just got banned from ${msg.channel.guild.name}!`,
+											thumbnail: {
+												url: `${msg.channel.guild.iconURL}`
+											},
+											footer: {
+												text: `You were banned for: "${reason}"`,
+											},
+										},
+									});
+								} catch (err) {
+									// Ignore error
+								}
 								await msg.channel.guild.banMember(member.id, 1, `${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
 									throw err;
 								});
@@ -98,6 +115,23 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 									},
 								});
 							} else {
+								try {
+									const dm = await bot.users.get(member.id).getDMChannel();
+									dm.createMessage({
+										embed: {
+											color: 0xFF0000,
+											description: `Oh no, you just got "hack" banned from ${msg.channel.guild.name}!\n("hack" banning means getting banned from a guild without you being in there)`,
+											thumbnail: {
+												url: `${msg.channel.guild.iconURL}`
+											},
+											footer: {
+												text: `You were banned for: "${reason}"`,
+											},
+										},
+									});
+								} catch (err) {
+									// Ignore error
+								}
 								await msg.channel.guild.banMember(member.id, 1, `${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
 									throw err;
 								});
@@ -116,6 +150,23 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 								ModLog.create(msg.channel.guild, serverDocument, "Ban", { user: member }, msg.member, reason);
 							}
 						} else if (canBan(member)) {
+							try {
+								const dm = await bot.users.get(member.user.id).getDMChannel();
+								dm.createMessage({
+									embed: {
+										color: 0xFF0000,
+										description: `Oh no, you just got banned from ${msg.channel.guild.name}!`,
+										thumbnail: {
+											url: `${msg.channel.guild.iconURL}`
+										},
+										footer: {
+											text: `You were banned for: "${reason}"`,
+										},
+									},
+								});
+							} catch (err) {
+								// Ignore error
+							}
 							await member.ban(1, `${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
 								throw err;
 							});
