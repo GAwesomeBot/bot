@@ -76,12 +76,21 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 									dm.createMessage({
 										embed: {
 											color: 0xFF0000,
-											description: `Oh no, you just got banned from ${msg.channel.guild.name}!`,
+											description: `Oh no, you just got banned from \`${msg.channel.guild.name}\`!\n`,
+											fields: [
+												{
+													name: `Banned by`,
+													value: `${msg.author.tag}`,
+													inline: true,
+												},
+												{
+													name: `Reason`,
+													value: `${reason}`,
+													inline: true,
+												},
+											],
 											thumbnail: {
-												url: `${msg.channel.guild.iconURL}`
-											},
-											footer: {
-												text: `You were banned for: "${reason}"`,
+												url: `${msg.channel.guild.iconURL}`,
 											},
 										},
 									});
@@ -120,12 +129,24 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 									dm.createMessage({
 										embed: {
 											color: 0xFF0000,
-											description: `Oh no, you just got "hack" banned from ${msg.channel.guild.name}!\n("hack" banning means getting banned from a guild without you being in there)`,
+											description: `Oh no, you just got "hack" banned from \`${msg.channel.guild.name}\`!\n`,
+											fields: [
+												{
+													name: `Banned by`,
+													value: `${msg.author.tag}`,
+													inline: true,
+												},
+												{
+													name: `Reason`,
+													value: `${reason}`,
+													inline: true,
+												},
+											],
 											thumbnail: {
-												url: `${msg.channel.guild.iconURL}`
+												url: `${msg.channel.guild.iconURL}`,
 											},
 											footer: {
-												text: `You were banned for: "${reason}"`,
+												text: `Don't know what "hack banning" means? It means that you got banned from a server via your user ID.`,
 											},
 										},
 									});
@@ -155,12 +176,21 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 								dm.createMessage({
 									embed: {
 										color: 0xFF0000,
-										description: `Oh no, you just got banned from ${msg.channel.guild.name}!`,
+										description: `Oh no, you just got banned from \`${msg.channel.guild.name}\`!\n`,
+										fields: [
+											{
+												name: `Banned by`,
+												value: `${msg.author.tag}`,
+												inline: true,
+											},
+											{
+												name: `Reason`,
+												value: `${reason}`,
+												inline: true,
+											},
+										],
 										thumbnail: {
-											url: `${msg.channel.guild.iconURL}`
-										},
-										footer: {
-											text: `You were banned for: "${reason}"`,
+											url: `${msg.channel.guild.iconURL}`,
 										},
 									},
 								});
