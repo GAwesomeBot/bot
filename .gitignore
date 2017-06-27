@@ -3,3 +3,4 @@ Configuration/auth.json
 Extensions/
 node_modules/
 package-lock.json
+bot-out.log

@@ -23,7 +23,7 @@ module.exports = (db, auth, config) => {
 
 	// Sequentially send an array
 	bot.sendArray = (ch, arr, i, options, callback) => {
-		if(i==null) {
+		if (i === null) {
 			i = 0;
 		}
 		if(i>=arr.length) {
@@ -310,7 +310,7 @@ module.exports = (db, auth, config) => {
 	};
 
 	// Check if a user has leveled up a rank
-	bot.checkRank = (winston, svr, serverDocument, member, memberDocument, override) => {
+	bot.checkRank = async (winston, svr, serverDocument, member, memberDocument, override) => {
 		if(member && member.id!=bot.user.id && !member.user.bot && svr) {
 			const currentRankscore = memberDocument.rank_score + (override ? 0 : computeRankScore(memberDocument.messages, memberDocument.voice));
 			for(let i=0; i<serverDocument.config.ranks_list.length; i++) {
@@ -330,8 +330,7 @@ module.exports = (db, auth, config) => {
 									}
 								} else if(serverDocument.config.moderation.status_messages.member_rank_updated_message.type=="pm") {
 									member.user.getDMChannel().then(ch => {
-										ch.createMessage(`Congratulations, you've leveled up to **${memberDocument.rank}** on ${svr.name} 🏆`
-											);
+										ch.createMessage(`Congratulations, you've leveled up to **${memberDocument.rank}** on ${svr.name} 🏆`);
 									});
 								}
 							}
@@ -356,11 +355,8 @@ module.exports = (db, auth, config) => {
 							if(serverDocument.config.ranks_list[i].role_id) {
 								const role = svr.roles.get(serverDocument.config.ranks_list[i].role_id);
 								if(role) {
-									member.roles.push(role.id);
-									member.edit({
-										roles: member.roles
-									}).then().catch(err => {
-										winston.error(`Failed to add member '${member.user.username} to role '${role.name}' on server '${svr.name}' for rank level up`, {svrid: svr.id, usrid: member.id, roleid: role.id}, err);
+									await member.addRole(role.id).catch(err => {
+										winston.error(`Failed to add member '${member.user.username}' to role '${role.name}' on server '${svr.name}' for rank level up`, {svrid: svr.id, usrid: member.id, roleid: role.id}, err);
 									});
 								}
 							}
@@ -374,7 +370,7 @@ module.exports = (db, auth, config) => {
 	};
 
 	// Handle a spam or filter violation on a server
-	bot.handleViolation = (winston, svr, serverDocument, ch, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleid) => {
+	bot.handleViolation = async (winston, svr, serverDocument, ch, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleid) => {
 		// Deduct 50 AwesomePoints if necessary
 		if(serverDocument.config.commands.points.isEnabled) {
 			userDocument.points -= 50;
@@ -395,11 +391,8 @@ module.exports = (db, auth, config) => {
 		if(roleid) {
 			const role = svr.roles.get(roleid);
 			if(role) {
-				member.roles.push(role.id);
-				member.edit({
-					roles: member.roles
-				}).then().catch(err => {
-					winston.error(`Failed to add member '${member.user.username}'' to role '${role.name}'' on server '${svr.name}'`, {svrid: svr.id, usrid: member.id, roleid: role.id}, err);
+				await member.addRole(role.id).catch(err => {
+					winston.error(`Failed to add member '${member.user.username}' to role '${role.name}' on server '${svr.name}'`, {svrid: svr.id, usrid: member.id, roleid: role.id}, err);
 				});
 			}
 		}
@@ -417,6 +410,7 @@ module.exports = (db, auth, config) => {
 		};
 
 		// Perform action, message admins, and message user
+		/* eslint-disable */ // (╯°□°）╯︵ ┻━┻
 		switch(action) {
 			case "block":
 				blockMember();
@@ -461,6 +455,7 @@ module.exports = (db, auth, config) => {
 				ModLog.create(svr, serverDocument, "Warning", member, null, strikeMessage);
 				break;
 		}
+		/* eslint-enable */ // ┬─┬﻿ ノ( ゜-゜ノ)
 
 		// Save serverDocument
 		serverDocument.save(err => {
@@ -526,15 +521,3 @@ module.exports = (db, auth, config) => {
 
 	return bot;
 };
-
-Object.assign(String.prototype, {
-	replaceAll(target, replacement) {
-		return this.split(target).join(replacement);
-	}
-});
-
-Object.assign(Array.prototype, {
-	random() {
-		return this[Math.floor(Math.random() * this.length)];
-	}
-});

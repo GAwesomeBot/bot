@@ -1,28 +1,23 @@
+/* eslint-disable max-len */
+/* eslint-disable prefer-template */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
-	if(suffix && ["bug", "suggestion", "feature", "issue", "request"].indexOf(suffix.toLowerCase())>-1) {
+	if (suffix && ["bug", "suggestion", "feature", "issue", "request", "report"].includes(suffix.toLowerCase())) {
 		msg.channel.createMessage({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0x9ECDF2,
-				description: `🐜 Please file your ${suffix.toLowerCase()} [here](https://github.com/GilbertGobbels/GAwesomeBot/issues)`
-			}
+				color: 0x9ECDF2,
+				description: `Please file your \`${suffix.toLowerCase()}\` [here](https://github.com/GilbertGobbels/GAwesomeBot/issues) ${(["bug", "issue", "report"].contains(suffix.toLowerCase()) ? "🐜" : "")}`,
+			},
 		});
 	} else {
 		msg.channel.createMessage({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0x9ECDF2,
-				description: `Hello! I'm ${bot.user.username}, the best discord bot! 🐬 Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}help\` to list all the commands.\n
-				Created by GG142, aka Gilbert. Built on NodeJS and Eris. Go [here](${config.hosting_url}) to learn more, or join our Discord server [here](${config.discord_link})`
-			}
+				color: 0x00FF00,
+				title: `Hello! I'm __${bot.user.username}__, the best Discord Bot! 🐬`,
+				description: `Created by GG142, King - Vlad, HilbertGilbertson, and the community ❤.\nBuilt on NodeJS and Eris\nGo [here](${config.hosting_url}) to learn more${(config.discord_link ? ", or join our Discord server [here](" + config.discord_link + ")" : ".")}\nYou can go [here](https://github.com/GilbertGobbels/GAwesomeBot/) to check out the code, make suggestions or report bugs!`,
+				footer: {
+					text: `Use "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}help" to list all the commands that you can use on this server.`,
+				},
+			},
 		});
 	}
 };
