@@ -11,7 +11,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			},
 		});
 	} else {
-		const api = `http://api.icndb.com/jokes/random?escape=javascript&firstName=${encodeURIComponent(msg.author.username)}&lastName=`;
+		const api = `http://api.icndb.com/jokes/random?escape=javascript&firstName=${encodeURIComponent(msg.member.nick ? msg.member.nick : msg.author.username)}&lastName=`;
 		unirest.get(api).header("Accept", "application/json").end(res => {
 			if (res.status === 200 && res.body.type === "success") {
 				const joke = res.body.value.joke.replace(/ {2}/g, " ").replace(/&quot;/gi, `"`);
