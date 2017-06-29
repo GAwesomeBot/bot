@@ -5,6 +5,9 @@ module.exports = winston => {
   const property_count = 6;
   winston.info(`Initializing Object.defineProperties`, { property_count: property_count });
 
+  /*
+   * Removes null objects from an array
+   */
   Object.assign(Array.prototype, {
     spliceNullElements() {
       for (let i = 0; i < this.length; i++) {
@@ -64,6 +67,10 @@ module.exports = winston => {
     },
   });
 
+  /*
+   * The following define the "tag" property of Eris.User and Eris.Member respectively
+   * Example: "msg.member.tag" | "msg.author.tag"
+   */
   Object.defineProperty(Eris.Member.prototype, "tag", {
     get: function() { return `${this.username}#${this.discriminator}`; },
   });
