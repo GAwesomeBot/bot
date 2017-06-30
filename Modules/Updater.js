@@ -27,7 +27,7 @@ module.exports = {
     
     unirest.get(`https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`).end(response => {
         io.emit("update", "downloading")
-        winston.info("Downloading newest version from github")
+        winston.info("Downloading newest version from GitHub")
         
         if (!fs.existsSync("./Temp")) fs.mkdirSync("./Temp");
         var tpath = fs.mkdtempSync("./Temp/v-");
