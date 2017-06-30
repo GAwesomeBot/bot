@@ -35,6 +35,7 @@ winston.add(winston.transports.File, {
 });
 
 /* eslint-disable no-shadow */
+/* eslint-disable max-len */
 // Connect to and initialize database
 database.initialize(config.db_url, err => {
 	if (err) {
@@ -226,7 +227,7 @@ database.initialize(config.db_url, err => {
 
 		process.on("uncaughtException", async err => {
 			if (bot.isReady) {
-				const hastelink = await hastebin(err);
+				const hastelink = await hastebin(err.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"));
 				if (config.discordErrorGuild && config.discordErrorChannel) {
 					try {
 						bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
@@ -254,7 +255,7 @@ database.initialize(config.db_url, err => {
 		process.on("unhandledRejection", async (reason, p) => {
 			p = util.inspect(p, false, 2);
 			if (bot.isReady) {
-				const hastelink = await hastebin(`Reason: ${reason}\n${p}`);
+				const hastelink = await hastebin(`Reason: ${reason}\n${p.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻")}`);
 				if (config.discordErrorGuild && config.discordErrorChannel) {
 					try {
 						bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
