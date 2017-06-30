@@ -76,20 +76,30 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 							color: 0x9ECDF2,
 							title: `Select one of the following:`,
 							description: `${list.join("\n")}`,
+							footer: {
+								text: `Type "exit" to exit this selection menu.`,
+							},
 						},
 					});
-					bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-						message.content = message.content.trim();
-						return message.content && !isNaN(message.content) && message.content >= 0 && message.content < results.length;
-					}, message => {
+					bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
 						try {
-							message.delete();
+							await message.delete();
 						} catch (err) {
 							// Ignore error
 						}
-						m.edit({
-							embed: results[+message.content],
-						});
+						message.content = message.content.trim();
+						if (message.content && !isNaN(message.content) && message.content >= 0 && message.content < results.length) {
+							m.edit({
+								embed: results[+message.content],
+							});
+						} else {
+							m.edit({
+								embed: {
+									color: 0xFF0000,
+									description: `You exited the anime selection menu... (˃̥̥ω˂̥̥̥)`,
+								},
+							});
+						}
 					});
 				}
 			} else {
@@ -110,7 +120,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		msg.channel.createMessage({
 			embed: {
 				color: 0xFF0000,
-				description: `${msg.author.username}-chan, you must give me an anime to search for!`,
+				description: `Senpai ${msg.author.username}, you must give me an anime to search for!`,
 			},
 		});
 	}
