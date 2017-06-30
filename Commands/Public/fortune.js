@@ -24,9 +24,6 @@ module.exports = function fortune(bot, db, config, winston, userDocument, server
 					msg.channel.createMessage({
 						embed: {
 							color: 0xFF0000,
-							author: {
-								name: `Our Fortune Machine says:`,
-							},
 							description: `I honestly don't know.. 😐`,
 							footer: {
 								text: `Try again, maybe I forgot those fresh fortunes!`,
@@ -39,9 +36,6 @@ module.exports = function fortune(bot, db, config, winston, userDocument, server
 			msg.channel.createMessage({
 				embed: {
 					color: 0xFF0000,
-					author: {
-						name: `Our Fortune Machine says:`,
-					},
 					title: `"${category_suffix}" isn't part of the available categories.`,
 					description: `Please use one of these categories: \`\`\`css\n${categories.join(", ")}\`\`\``,
 				},
@@ -57,8 +51,8 @@ module.exports = function fortune(bot, db, config, winston, userDocument, server
 						color: 0x00FF00,
 						author: {
 							name: `Our Fortune Machine says:`,
-							description: res.body.fortune,
 						},
+						description: res.body.fortune,
 					},
 				});
 			} else {
@@ -66,9 +60,6 @@ module.exports = function fortune(bot, db, config, winston, userDocument, server
 				msg.channel.createMessage({
 					embed: {
 						color: 0xFF0000,
-						author: {
-							name: `Our Fortune Machine says:`,
-						},
 						description: `I honestly don't know 😐`,
 						footer: {
 							text: `Try again, maybe I forgot those fresh fortunes!`,

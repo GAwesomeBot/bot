@@ -33,6 +33,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 								bot: msg.author.bot,
 								avatar: msg.author.avatar,
 							},
+							embed: msg.embeds,
 						});
 						return true;
 					}
@@ -52,14 +53,19 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				msg.channel.createMessage({
 					embed: {
 						color: 0xFF0000,
-						description: "🛑 Discord prevented me from completing this task!",
+						description: "Discord prevented me from completing this task! 🛑",
 						footer: {
 							text: "Are you sure I have read message history permisssions?",
 						},
 					},
 				});
 			} else {
-				msg.channel.createMessage("Here you go! ✅", {
+				msg.channel.createMessage({
+					embed: {
+						color: 0x00FF00,
+						description: "Here you go! ✅",
+					},
+				}, {
 					file: JSON.stringify(archive, null, 4),
 					name: `${msg.channel.guild.name}-${msg.channel.name}-${Date.now()}.json`,
 				}).catch(err => {

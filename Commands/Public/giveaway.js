@@ -38,15 +38,15 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					},
 				},
 			});
-			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+			bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
 				try {
-					message.delete();
+					await message.delete();
 				} catch (err) {
 					// Ignore error
 				}
 				if (config.yes_strings.includes(message.content.toLowerCase().trim())) {
 					if (channelDocument.giveaway.participant_ids.length === 1) {
-						delete channelDocument.giveaway.participant_ids[0];
+						channelDocument.giveaway.participant_ids = [];
 					} else {
 						channelDocument.giveaway.participant_ids.splice(channelDocument.giveaway.participant_ids.indexOf(msg.author.id), 1);
 					}
@@ -83,7 +83,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			msg.channel.createMessage({
 				embed: {
 					color: 0xFF0000,
-					description: `Huh? This command only takes \`enroll\`, \`join\` or \`leave\` as a parameter!`,
+					description: `Huh? This command only takes \`enroll\`, \`join\` or \`leave\` as a parameter.. 🤔`,
 					footer: {
 						text: `If you want to leave the giveaway, run "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} leave", and you'll be asked if you want to leave.`,
 					},
@@ -99,7 +99,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 						text: `Use "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} enroll or join" to join this giveaway! We wish you luck!`,
 					},
 					author: {
-						name: `Started by @${creator ? bot.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}`,
+						name: `Giveaway started by @${creator ? bot.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}`,
 						icon_url: creator ? creator.user.avatarURL : "https://discordapp.com/assets/0e291f67c9274a1abdddeb3fd919cbaa.png",
 					},
 					description: `${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "person" : "people"} joined currently`,

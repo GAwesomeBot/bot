@@ -55,7 +55,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			});
 			bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
 				try {
-					message.delete();
+					await message.delete();
 				} catch (err) {
 					// Ignore Error
 				}
@@ -88,9 +88,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 							} catch (err) {
 								// Ignore error
 							}
-							await member.kick(`${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`).catch(err => {
-								throw err;
-							});
+							await member.kick(`${reason} | Command issued by @${bot.getName(msg.channel.guild, serverDocument, msg.member)}`);
 							m.edit({
 								embed: {
 									color: 0x00FF00,
@@ -151,10 +149,10 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 				},
 			},
 		});
-		bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+		bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
 			if (config.yes_strings.includes(message.content.trim())) {
 				try {
-					message.delete();
+					await message.delete();
 				} catch (err) {
 					// Ignore Error
 				}

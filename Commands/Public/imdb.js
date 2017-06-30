@@ -55,7 +55,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 						},
 						{
 							name: `Writer:`,
-							value: `${res.body.Writer}`,
+							value: `\`\`\`css\n${res.body.Writer.replaceAll(", ", "\n")}\`\`\``,
 							inline: true,
 						},
 						{

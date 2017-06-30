@@ -1,4 +1,4 @@
-module.exports = async (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
+module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if (suffix) {
 		let createCount = async name => {
 			let m = await msg.channel.createMessage({

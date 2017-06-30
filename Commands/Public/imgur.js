@@ -49,7 +49,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 						color: 0xFF0000,
 						description: `There was an error while uploading to imgur!`,
 						footer: {
-							text: `"Imgur is probably down, again!" -- A very good quote`,
+							text: `"Imgur is probably down, again!" ~ A very good quote`,
 						},
 					},
 				});
@@ -77,9 +77,9 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 				},
 			},
 		});
-		bot.awaitMessage(msg.channel.id, msg.author.id, message => {
+		bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
 			try {
-				message.delete();
+				await message.delete();
 			} catch (err) {
 				// Ignore error
 			}
@@ -158,7 +158,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 								color: 0xFF0000,
 								description: `There was an error while uploading to imgur!`,
 								footer: {
-									text: `"Imgur is probably down, again!" -- A very good quote`,
+									text: `"Imgur is probably down, again!" ~ A very good quote`,
 								},
 							},
 						});
