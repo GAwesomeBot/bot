@@ -35,13 +35,17 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						results.push({
 							color: 0x00FF00,
 							author: {
-								name: `By ${data.results[0].artistName} ${data.results[0].sellerUrl ? "(Click here to see the sellers site)" : ""}`,
+								name: `By ${data.results[0].artistName}`,
 								url: data.results[0].sellerUrl ? data.results[0].sellerUrl : "",
 							},
+							thumbnail: {
+								url: data.results[0].artworkUrl100 ? data.results[0].artworkUrl100 : "",
+							},
 							title: `__${data.results[0].trackCensoredName}__`,
-							description: `Rated ${data.results[0].averageUserRating} ⭐\nMore info [here](${data.results[0].trackViewUrl})`,
+							description: `A quick summary: \`\`\`\n${data.results[0].description.split("\n")[0]}\`\`\``,
+							url: `${data.results[0].trackViewUrl}`,
 							footer: {
-								text: data.results[0].formattedPrice.toLowerCase() === "free" ? "This app is free" : `The price of the app is ${data.results[0].formattedPrice}`,
+								text: `Rated ${data.results[0].averageUserRating} ⭐ | ${data.results[0].formattedPrice.toLowerCase() === "free" ? "This app is free" : `The price of the app is ${data.results[0].formattedPrice}`}`,
 							},
 						});
 					}
