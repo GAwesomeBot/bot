@@ -5,9 +5,9 @@
 If you wish to contribute to the GAwesomeBot codebase, feel free to fork the repository and submit a pull request. We generally use ESLint to enforce a consistent coding style, so having that setup in your editor of choice is a great boon to your development process. Of course, this is optional.
 
 ## Setup
-To get ready to gode on the codebase, please do the following:
+To get ready to code on GAwesomeBot, please do the following:
 
-1. Fork & clone the repository, and make sure you're on the **development** branch
+1. Fork & clone the repository, and make sure you're on the **experimental** branch
 2. Run `npm install`
 3. Code your heart out!
 4. Run the bot, and test that your changes work.
