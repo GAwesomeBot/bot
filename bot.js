@@ -34,21 +34,21 @@ winston.add(winston.transports.File, {
 	filename: "bot-out.log",
 });
 
-/* eslint-disable no-shadow */
 /* eslint-disable max-len */
 // Connect to and initialize database
-database.initialize(config.db_url, err => {
-	if (err) {
-		winston.error("Failed to connect to database", err);
+database.initialize(config.db_url, dbError => {
+	if (dbError) {
+		winston.error("Failed to connect to database, maybe its off?\n", dbError);
 	} else {
 		const db = database.get();
 
 		// Get bot client from platform and login
 		const bot = require("./Platform/Platform.js")(db, auth, config);
+
 		bot.connect().then(() => {
 			winston.info("Started bot application");
-		}).catch(err => {
-			winston.error("Failed to connect to Discord :/", err);
+		}).catch(discordError => {
+			winston.error("Failed to connect to Discord :/", discordError);
 		});
 
 		// Initialise all the Object.assigns
@@ -226,11 +226,11 @@ database.initialize(config.db_url, err => {
 		});
 
 		process.on("uncaughtException", async err => {
+			const hastelink = await hastebin(err.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"));
 			if (bot.isReady) {
-				const hastelink = await hastebin(err.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"));
 				if (config.discordErrorGuild && config.discordErrorChannel) {
 					try {
-						bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
+						await bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
 							embed: {
 								author: {
 									name: "Oh no, this is bad..!",
@@ -243,22 +243,24 @@ database.initialize(config.db_url, err => {
 								},
 							},
 						});
-					} catch (err) {
+					} catch (discordErr) {
 						winston.error(`Couldn't find Channel / Guild combo, so I'll place the Hastebin URL here`, { hastebin_url: hastelink });
 					}
 				} else {
 					winston.error("There wasn't any guild to output the uncaughtException, placing link in here.", { hastebin_url: hastelink });
 				}
+			} else {
+				winston.error(`The bot isn't ready yet, but there was an unhandled Promise Rejection`, { hastebin: hastelink });
 			}
 		});
 
 		process.on("unhandledRejection", async (reason, p) => {
 			p = util.inspect(p, false, 2);
+			const hastelink = await hastebin(`Reason: ${reason}\n${p.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻")}`);
 			if (bot.isReady) {
-				const hastelink = await hastebin(`Reason: ${reason}\n${p.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻")}`);
 				if (config.discordErrorGuild && config.discordErrorChannel) {
 					try {
-						bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
+						await bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
 							embed: {
 								color: 0xFF0000,
 								author: {
@@ -277,6 +279,8 @@ database.initialize(config.db_url, err => {
 				} else {
 					winston.error("There wasn't any guild to output the unhandledRejection, placing link in here.", { hastebin_url: hastelink });
 				}
+			} else {
+				winston.error(`The bot isn't ready yet, but there was an unhandled Promise Rejection`, { hastebin: hastelink });
 			}
 		});
 	}
