@@ -31,7 +31,7 @@
     "imgur-node-api": "*",
     "mathjs": "*",
     "moment": "*",
-    "mongoose": "*",
+    "mongoose": "4.10.0",
     "mongoose-findorcreate": "*",
     "mstranslator": "*",
     "murmurhash": "0.0.2",
