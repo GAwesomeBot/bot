@@ -228,9 +228,9 @@ database.initialize(config.db_url, dbError => {
 		process.on("uncaughtException", async err => {
 			const hastelink = await hastebin(err.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"));
 			if (bot.isReady) {
-				if (config.discordErrorGuild && config.discordErrorChannel) {
+				if (config.discordInfoGuild && config.discordInfoChannel) {
 					try {
-						await bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
+						await bot.guilds.get(config.discordInfoGuild).channels.get(config.discordInfoChannel).createMessage({
 							embed: {
 								author: {
 									name: "Oh no, this is bad..!",
@@ -258,9 +258,9 @@ database.initialize(config.db_url, dbError => {
 			p = util.inspect(p, false, 2);
 			const hastelink = await hastebin(`Reason: ${reason}\n${p.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻")}`);
 			if (bot.isReady) {
-				if (config.discordErrorGuild && config.discordErrorChannel) {
+				if (config.discordInfoGuild && config.discordInfoChannel) {
 					try {
-						await bot.guilds.get(config.discordErrorGuild).channels.get(config.discordErrorChannel).createMessage({
+						await bot.guilds.get(config.discordInfoGuild).channels.get(config.discordInfoChannel).createMessage({
 							embed: {
 								color: 0xFF0000,
 								author: {
