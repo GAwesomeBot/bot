@@ -34,7 +34,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					} else {
 						results.push({
 							color: 0x00FF00,
-							title: `__${data.results[0].trackCensoredName}__ by ${data.results[0].artistName}`,
+							author: {
+								name: `By ${data.results[0].artistName} ${data.results[0].sellerUrl ? "(Click here to see the sellers site)" : ""}`,
+								url: data.results[0].sellerUrl ? data.results[0].sellerUrl : "",
+							},
+							title: `__${data.results[0].trackCensoredName}__`,
 							description: `Rated ${data.results[0].averageUserRating} ⭐\nMore info [here](${data.results[0].trackViewUrl})`,
 							footer: {
 								text: data.results[0].formattedPrice.toLowerCase() === "free" ? "This app is free" : `The price of the app is ${data.results[0].formattedPrice}`,
@@ -53,6 +57,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		});
 	} else {
-		msg.channel.createMessage("http://www.apple.com/itunes/charts/free-apps/");
+		msg.channel.createMessage({
+			embed: {
+				color: 0xFF0000,
+				description: `[What app would you like to find today..? 🤔](https://www.apple.com/itunes/charts/free-apps/)`,
+			},
+		});
 	}
 };

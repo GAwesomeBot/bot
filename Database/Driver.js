@@ -7,7 +7,7 @@ userSchema.plugin(findOrCreate);
 const modulesSchema = require("./Schemas/modulesSchema.js");
 modulesSchema.index({
 	name: "text",
-	description: "text"
+	description: "text",
 });
 const blogSchema = require("./Schemas/blogSchema.js");
 const wikiSchema = require("./Schemas/wikiSchema");
@@ -20,7 +20,7 @@ module.exports = {
 			connectTimeoutMS: 30000,
 			socketTimeoutMS: 30000,
 			keepAlive: 120,
-			poolSize: 100
+			poolSize: 100,
 		});
 
 		mongoose.model("servers", serverSchema);
@@ -37,5 +37,5 @@ module.exports = {
 	},
 	getConnection: () => {
 		return mongoose.connection;
-	}
+	},
 };
