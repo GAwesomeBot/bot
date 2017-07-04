@@ -148,7 +148,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					msg.channel.createMessage({
 						embed: {
 							color: 0xFF0000,
-							description: `The number must be between 1 and ${serverDocument.config.list_data.length} inclusive..`,
+							description: serverDocument.config.list_data.length === 0 ? `There are no To-Do Lists to modify..\nUse \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} <content>\` to add some.` : `The number must be between 1 and ${serverDocument.config.list_data.length} inclusive..`,
 						},
 					});
 				}
