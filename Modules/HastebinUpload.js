@@ -27,7 +27,7 @@ module.exports = (type, query) => {
               resolve(`https://www.hastebin.com/${res.body.key}`);
           }
         } else {
-          reject(new Error("Couldn't upload to hastebin, try again later!"));
+          reject(new Error("Couldn't upload to Hastebin, try again later!"));
         }
       });
     } else {
