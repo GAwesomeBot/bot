@@ -1,8 +1,9 @@
 /*
  * Uploads text to GitHub Gist
  * Upload for uploads
- * Delete for deletes
  * @returns Object with the Gist ID and the direct HTML URL
+ * Delete for deletes
+ * @returns Object with boolean `deleted` which is true if the deletion succedded, or false if it didn't
  */
 
 /* eslint-disable max-len, indent, arrow-body-style */
