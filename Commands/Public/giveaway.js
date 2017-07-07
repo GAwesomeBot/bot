@@ -100,7 +100,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					},
 					author: {
 						name: `Giveaway started by @${creator ? bot.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}`,
-						icon_url: creator ? creator.user.avatarURL : "https://discordapp.com/assets/0e291f67c9274a1abdddeb3fd919cbaa.png",
+						icon_url: creator ? creator.user.avatarURL : "https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png",
 					},
 					description: `${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "person" : "people"} joined currently`,
 				},

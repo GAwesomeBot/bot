@@ -133,7 +133,11 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		msg.channel.createMessage({
 			embed: {
 				color: 0x00FF00,
-				description: `Theres a GAwesomePoints lottery started by ${creator ? `<@${creator.id}>` : "invalid-user"}. 💸\nThere are ${participantCount} ${participantCount === 1 ? "person" : "people"} currently in.`,
+				author: {
+					name: `Theres a GAwesomePoints lottery started by ${creator ? `<@${creator.id}>` : "invalid-user"}`,
+					icon_url: creator ? bot.users.get(creator.id).avatarURL : "https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png",
+				},
+				description: `There are ${participantCount} ${participantCount === 1 ? "person" : "people"} currently in. 💸`,
 				footer: {
 					text: `The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}.`,
 				},
