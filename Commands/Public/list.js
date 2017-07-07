@@ -5,7 +5,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 	const showList = async (edit = false, _msg) => {
 		let _lists = [];
 		const template = (completed = false, number, content) => {
-			const string = `• **${++number}** | ${completed ? "✅" : "📝"}\n**»** ${content}`;
+			const string = `• **${++number} |** ${completed ? "✅" : "📝"}\n**»** ${content}`;
 			return string;
 		};
 		serverDocument.config.list_data.map((listDocument, i) => {
