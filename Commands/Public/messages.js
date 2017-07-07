@@ -30,7 +30,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 					msg.channel.createMessage({
 						embed: {
 							color: 0x00FF00,
-							description: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** has sent ${targetMemberDocument.messages} message${targetMemberDocument.messages == 1 ? "" : "s"} this week! 💬`,
+							description: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** has sent ${targetMemberDocument.messages} message${targetMemberDocument.messages === 1 ? "" : "s"} this week! 💬`,
 						},
 					});
 				}
@@ -49,7 +49,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		const template = a => {
 			const string = `• **@${bot.getName(msg.channel.guild, serverDocument, msg.channel.guild.members.get(a._id))}**\n**»** Sent ${a.messages} message${a.messages === 1 ? "" : "s"} this week`;
 			return string;
-		}
+		};
 		serverDocument.members.sort((a, b) => {
 			return b.messages - a.messages;
 		})
