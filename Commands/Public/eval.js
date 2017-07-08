@@ -30,10 +30,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 			if (suffix.startsWith("```js") && suffix.endsWith("```")) {
 				suffix = suffix.substring(5, suffix.length - 3);
 			}
-			// eslint-disable-next-line
-			const toEval = evalCode => {
-				return `(async () => {${evalCode}})()`;
-			};
+			const toEval = evalCode => `(async () => {${evalCode}})()`;
 			let result = await eval(toEval(suffix));
 			if (typeof result !== "string") {
 				result = util.inspect(result, false, 2);
@@ -47,11 +44,11 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 					},
 				});
 			}
-			if (result.length > 5900) {
+			if (result.length > 2040) {
 				m.edit({
 					embed: {
 						color: 0xFFFF00,
-						description: `The result is larger than 6000 characters.. You can see the full result [here](${await hastebin(result.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"))})`,
+						description: `The result is larger than 2048 characters.. You can see the full result [here](${await hastebin(result.replace(new RegExp(`${bot.token}|${require("./../../Configuration/auth.json").platform.login_token}`, "g"), "(╯°□°）╯︵ ┻━┻"))})`,
 					},
 				});
 			} else {

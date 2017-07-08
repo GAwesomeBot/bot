@@ -1,6 +1,7 @@
 const moment = require("moment");
 const parseDuration = require("parse-duration");
 
+/* eslint-disable max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	let timestr = "";
 	const time = parseDuration(suffix);
@@ -34,7 +35,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			embed: {
 				color: 0x00FF00,
 				description: "Vroom vroom ⏩",
-				footer: { //eslint-disable-next-line
+				footer: {
 					text: `Cooldown removed! "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}" to bring it back!`,
 				},
 			},
@@ -43,7 +44,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	} else if (suffix.split("|").length === 2 && parseDuration(suffix.split("|")[0]) > 0 && parseDuration(suffix.split("|")[1]) > 0) {
 		const time1 = parseDuration(suffix.split("|")[0]);
 		const time2 = parseDuration(suffix.split("|")[1]);
-		if (time1 > 300000 || time2 > 3600000) { //eslint-disable-next-line
+		if (time1 > 300000 || time2 > 3600000) {
 			winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.channel.createMessage({
 				embed: {
@@ -67,7 +68,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			});
 		}, time2);
 	} else if (time > 0) {
-		if (time > 300000) { //eslint-disable-next-line
+		if (time > 300000) {
 			winston.warn(`Invalid parameters "${suffix}" provided for "${commandData.name}" command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.channel.createMessage({
 				embed: {
@@ -82,13 +83,13 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		}
 		timestr = ` of ${moment.duration(time).humanize()}`;
 		channelDocument.command_cooldown = time;
-	} else { //eslint-disable-next-line
-		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+	} else {
+		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.channel.createMessage({
 			embed: {
 				color: 0xFF0000,
 				description: "You seem confused 🤔",
-				footer: { //eslint-disable-next-line
+				footer: {
 					text: `Did you forget you need to specify time for cool? "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}" should help!`,
 				},
 			},

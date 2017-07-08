@@ -46,8 +46,7 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 						},
 					},
 				});
-				// eslint-disable-next-line
-			} catch (err) {
+			} catch (secondErr) {
 				winston.warn(`Unsupported conversion units "${args[1]}" and "${args[2]}" provided for "${commandData.name}" command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				msg.channel.createMessage({
 					embed: {

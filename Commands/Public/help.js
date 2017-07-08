@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable arrow-body-style */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if (suffix) {
 		let fields = [];

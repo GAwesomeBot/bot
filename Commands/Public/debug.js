@@ -41,20 +41,14 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			inline: true,
 		}
 	);
-	//eslint-disable-next-line
-	let maintainers = config.maintainers.map(maintainer => {
-		return `${bot.users.get(maintainer).username}#${bot.users.get(maintainer).discriminator} ( ${maintainer} )`;
-	});
+	let maintainers = config.maintainers.map(maintainer => `${bot.users.get(maintainer).username}#${bot.users.get(maintainer).discriminator} ( ${maintainer} )`);
 	let shard_users = new Array(bot.shards.size).fill(0), shard_guilds = new Array(bot.shards.size).fill(0), shard_channels = new Array(bot.shards.size).fill(0);
 	bot.guilds.forEach(guild => {
 		shard_users[guild.shard.id] += guild.members.size;
 		shard_channels[guild.shard.id] += guild.channels.size;
 		shard_guilds[guild.shard.id] += 1;
 	});
-	// eslint-disable-next-line
-	let shard_info = bot.shards.map(shard => {
-		return `Shard ${shard.id + 1} / ${bot.shards.size} has ${shard_guilds[shard.id]} guild(s), ${shard_channels[shard.id]} channel(s) and ${shard_users[shard.id]} user(s)`;
-	});
+	let shard_info = bot.shards.map(shard => `Shard ${shard.id + 1} / ${bot.shards.size} has ${shard_guilds[shard.id]} guild(s), ${shard_channels[shard.id]} channel(s) and ${shard_users[shard.id]} user(s)`);
 	const channels = () => {
 		let i = 0;
 		bot.shards.map(shard => {

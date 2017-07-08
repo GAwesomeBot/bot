@@ -75,29 +75,29 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	};
 	const args = suffix.split(" ");
 	switch (args[0].trim().toLowerCase()) {
-	case "delete":
-	case "remove": {
-		deleteModLog(args[1].trim());
-		break;
-	}
-	case "disable": {
-		disable();
-		break;
-	}
-	case "enable": {
-		enable(args[1]);
-		break;
-	}
-	default: {
-		msg.channel.createMessage({
-			embed: {
-				color: serverDocument.modlog.isEnabled ? 0x00FF00 : 0xFF0000,
-				description: `The moderation logging in this server is currently ${serverDocument.modlog.isEnabled ? "enabled. 👍" : "disabled.. 😞"}`,
-				footer: {
-					text: `The commands that work with my wonderful modlog feature are: "ban", "softban", "unban", "kick", "mute", "unmute", "reason" and "strike".`,
+		case "delete":
+		case "remove": {
+			deleteModLog(args[1].trim());
+			break;
+		}
+		case "disable": {
+			disable();
+			break;
+		}
+		case "enable": {
+			enable(args[1]);
+			break;
+		}
+		default: {
+			msg.channel.createMessage({
+				embed: {
+					color: serverDocument.modlog.isEnabled ? 0x00FF00 : 0xFF0000,
+					description: `The moderation logging in this server is currently ${serverDocument.modlog.isEnabled ? "enabled. 👍" : "disabled.. 😞"}`,
+					footer: {
+						text: `The commands that work with my wonderful modlog feature are: "ban", "softban", "unban", "kick", "mute", "unmute", "reason" and "strike".`,
+					},
 				},
-			},
-		});
-	}
+			});
+		}
 	}
 };

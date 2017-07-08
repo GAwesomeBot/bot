@@ -1,7 +1,5 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg) => {
-	const emojis = msg.channel.guild.emojis.map(emoji => { //eslint-disable-line
-		return `<:${emoji.name}:${emoji.id}>: ${emoji.name}`;
-	});
+	const emojis = msg.channel.guild.emojis.map(emoji => `<:${emoji.name}:${emoji.id}>: ${emoji.name}`);
 	if (msg.channel.guild.emojis.length > 0) {
 		msg.channel.createMessage({
 			embed: {

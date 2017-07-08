@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if (suffix) {
 		let createCount = async name => {
@@ -14,7 +15,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				if (config.yes_strings.includes(message.content.toLowerCase().trim())) {
 					serverDocument.config.count_data.push({ _id: name });
 					serverDocument.save(err => {
-						if (err) { //eslint-disable-next-line
+						if (err) {
 							winston.error("Failed to save server data for creating count", { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err.message);
 							m.edit({
 								embed: {
@@ -30,7 +31,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 								embed: {
 									color: 0x00FF00,
 									description: `Initialized count**${name}** with value \`0\``,
-									footer: { //eslint-disable-next-line
+									footer: {
 										text: `Use "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${name}|+1" to increment it or "${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${name}|." to remove it.`,
 									},
 								},
@@ -44,8 +45,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			let args = suffix.split("|");
 			if (args.length === 2 && args[0].trim() && (!args[1].trim() || [".", "+1", "-1"].includes(args[1].trim()))) {
 				let countDocument = serverDocument.config.count_data.id(args[0].toLowerCase().trim());
-				/* eslint-disable indent */
-				/* eslint-disable max-len */
 				if (countDocument) {
 					switch (args[1].trim()) {
 						case "":

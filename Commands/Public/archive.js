@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable no-shadow */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if (!suffix || isNaN(suffix)) {
 		winston.warn(`Parameters not provided for ${commandData.name} command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
@@ -17,23 +16,23 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		const archive = [];
 		const doArchive = (count, lastId, callback) => {
 			bot.getMessages(msg.channel.id, count, lastId).then(messages => {
-				messages.every(msg => {
+				messages.every(message => {
 					if (archive.length < num) {
 						archive.push({
-							timestamp: msg.timestamp,
-							id: msg.id,
-							edited: msg.editedTimestamp,
-							content: msg.content,
-							clean_content: msg.cleanContent,
-							attachments: msg.attachments,
+							timestamp: message.timestamp,
+							id: message.id,
+							edited: message.editedTimestamp,
+							content: message.content,
+							clean_content: message.cleanContent,
+							attachments: message.attachments,
 							author: {
-								username: msg.author.username,
-								id: msg.author.id,
-								discriminator: msg.author.discriminator,
-								bot: msg.author.bot,
-								avatar: msg.author.avatar,
+								username: message.author.username,
+								id: message.author.id,
+								discriminator: message.author.discriminator,
+								bot: message.author.bot,
+								avatar: message.author.avatar,
 							},
-							embed: msg.embeds,
+							embed: message.embeds,
 						});
 						return true;
 					}
@@ -47,7 +46,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				}
 			}).catch(callback);
 		};
-		doArchive(num > 100 ? 100 : num, msg.channel.lastMessageID, (err, archive) => {
+		doArchive(num > 100 ? 100 : num, msg.channel.lastMessageID, (err, archiveRes) => {
 			if (err) {
 				winston.error(`Failed to archive ${suffix} messages`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 				msg.channel.createMessage({
@@ -66,10 +65,10 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 						description: "Here you go! ✅",
 					},
 				}, {
-					file: JSON.stringify(archive, null, 4),
+					file: JSON.stringify(archiveRes, null, 4),
 					name: `${msg.channel.guild.name}-${msg.channel.name}-${Date.now()}.json`,
-				}).catch(err => {
-					winston.error("Failed to send archive", { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+				}).catch(discordErr => {
+					winston.error("Failed to send archive", { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id }, discordErr);
 					msg.channel.createMessage({
 						embed: {
 							color: 0xFF0000,

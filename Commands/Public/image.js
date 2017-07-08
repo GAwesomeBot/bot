@@ -1,10 +1,8 @@
 const giSearch = require("./../../Modules/GoogleImageSearch.js");
 
 // Get a random integer in specified range, inclusive
-/* eslint-disable arrow-body-style, max-len */
-const getRandomInt = (min, max) => {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+/* eslint-disable max-len */
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if (suffix) {

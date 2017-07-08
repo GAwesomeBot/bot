@@ -113,7 +113,6 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 		});
 	};
 	// Handle command options
-	/* eslint-disable indent */
 	switch (suffix.toLowerCase()) {
 		case "":
 			listDisabledCommands();

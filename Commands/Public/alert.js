@@ -1,5 +1,4 @@
-/* eslint-disable indent */
-/* eslint-disable max-len */
+/* eslint-disable indent, max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
   let embed = {
     embed: {

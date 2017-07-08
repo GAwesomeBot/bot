@@ -2,6 +2,7 @@ const setCountdown = require("./../../Modules/SetCountdown.js");
 const moment = require("moment");
 const parseDuration = require("parse-duration");
 
+/* eslint-disable max-len */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if (suffix) {
 		if (suffix.indexOf("|") > -1 && suffix.length >= 3) {
@@ -71,14 +72,9 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			}
 		}
 	} else {
-		/* eslint-disable arrow-body-style */
-		let countdowns = serverDocument.config.countdown_data.filter(countdownDocument => {
-			return msg.channel.guild.channels.has(countdownDocument.channel_id);
-		}).sort((a, b) => {
-			return a.expiry_timestamp - b.expiry_timestamp;
-		}).map(countdownDocument => { //eslint-disable-next-line
-			return `\`${countdownDocument._id}\` in ${msg.channel.guild.channels.get(countdownDocument.channel_id).mention} expires **${moment(countdownDocument.expiry_timestamp).fromNow()}**`;
-		});
+		let countdowns = serverDocument.config.countdown_data.filter(countdownDocument => msg.channel.guild.channels.has(countdownDocument.channel_id))
+		.sort((a, b) => a.expiry_timestamp - b.expiry_timestamp)
+		.map(countdownDocument => `\`${countdownDocument._id}\` in ${msg.channel.guild.channels.get(countdownDocument.channel_id).mention} expires **${moment(countdownDocument.expiry_timestamp).fromNow()}**`);
 		if (countdowns.length > 0) {
 			msg.channel.createMessage({
 				embed: {

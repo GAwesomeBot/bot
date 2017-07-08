@@ -1,5 +1,4 @@
-/* eslint-disable max-len */
-/* eslint-disable prefer-template */
+/* eslint-disable max-len, prefer-template */
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if (suffix && ["bug", "suggestion", "feature", "issue", "request", "report"].includes(suffix.toLowerCase())) {
 		msg.channel.createMessage({

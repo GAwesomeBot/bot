@@ -87,56 +87,56 @@ module.exports = async (bot, db, config, winston, userDocument, serverDocument, 
 				if (i >= 0 && i < serverDocument.config.list_data.length) {
 					let id = i;
 					switch (action.toLowerCase()) {
-					case "":
-					case ".": {
-						serverDocument.config.list_data.splice(i, 1);
-						let m = await msg.channel.createMessage({
-							embed: {
-								color: 0x00FF00,
-								description: `Alright, I've removed item **${++id}** from the list. ❌`,
-								footer: {
-									text: `Do you want to see the full To-Do List again?`,
+						case "":
+						case ".": {
+							serverDocument.config.list_data.splice(i, 1);
+							let m = await msg.channel.createMessage({
+								embed: {
+									color: 0x00FF00,
+									description: `Alright, I've removed item **${++id}** from the list. ❌`,
+									footer: {
+										text: `Do you want to see the full To-Do List again?`,
+									},
 								},
-							},
-						});
-						return bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
-							if (config.yes_strings.includes(message.content.toLowerCase())) {
-								try {
-									await message.delete();
-								} catch (err) {
-									// Ignore Error
+							});
+							return bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
+								if (config.yes_strings.includes(message.content.toLowerCase())) {
+									try {
+										await message.delete();
+									} catch (err) {
+										// Ignore Error
+									}
+									showList(true, m);
 								}
-								showList(true, m);
-							}
-						});
-					}
-					case "done":
-					case "complete": {
-						serverDocument.config.list_data[i].isCompleted = !serverDocument.config.list_data[i].isCompleted;
-						let m = await msg.channel.createMessage({
-							embed: {
-								color: 0x00FF00,
-								description: `Alright, I've marked **${++id}** as ${serverDocument.config.list_data[i].isCompleted ? "completed" : "incompleted"}!`,
-								footer: {
-									text: `Do you want to see the full To-Do List again?`,
+							});
+						}
+						case "done":
+						case "complete": {
+							serverDocument.config.list_data[i].isCompleted = !serverDocument.config.list_data[i].isCompleted;
+							let m = await msg.channel.createMessage({
+								embed: {
+									color: 0x00FF00,
+									description: `Alright, I've marked **${++id}** as ${serverDocument.config.list_data[i].isCompleted ? "completed" : "incompleted"}!`,
+									footer: {
+										text: `Do you want to see the full To-Do List again?`,
+									},
 								},
-							},
-						});
-						return bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
-							if (config.yes_strings.includes(message.content.toLowerCase())) {
-								try {
-									await message.delete();
-								} catch (err) {
-									// Ignore error
+							});
+							return bot.awaitMessage(msg.channel.id, msg.author.id, async message => {
+								if (config.yes_strings.includes(message.content.toLowerCase())) {
+									try {
+										await message.delete();
+									} catch (err) {
+										// Ignore error
+									}
+									showList(true, m);
 								}
-								showList(true, m);
-							}
-						});
-					}
-					default: {
-						serverDocument.config.list_data[i].content = action;
-						break;
-					}
+							});
+						}
+						default: {
+							serverDocument.config.list_data[i].content = action;
+							break;
+						}
 					}
 					msg.channel.createMessage({
 						embed: {

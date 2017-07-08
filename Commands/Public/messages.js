@@ -1,4 +1,4 @@
-/* eslint-disable max-len, arrow-body-style */
+/* eslint-disable max-len*/
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
 	if (suffix) {
 		if (suffix.toLowerCase().trim() === "me") {
@@ -50,11 +50,9 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 			const string = `• **@${bot.getName(msg.channel.guild, serverDocument, msg.channel.guild.members.get(a._id))}**\n**»** Sent ${a.messages} message${a.messages === 1 ? "" : "s"} this week`;
 			return string;
 		};
-		serverDocument.members.sort((a, b) => {
-			return b.messages - a.messages;
-		})
+		serverDocument.members.sort((a, b) =>	b.messages - a.messages)
 		.filter(a => {
-			return msg.channel.guild.members.has(a._id);
+			msg.channel.guild.members.has(a._id);
 		})
 		.slice(0, 10)
 		.map(a => {
