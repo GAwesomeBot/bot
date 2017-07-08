@@ -18,17 +18,15 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	msg.channel.createMessage({
 		embed: {
 			color: 0x00FF00,
-			author: {
-				name: `${msg.channel.guild.name} (${msg.channel.guild.id})`,
-				url: `${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.channel.guild.name)}`,
-			},
+			title: `${msg.channel.guild.name} (${msg.channel.guild.id})`,
+			url: `${config.hosting_url}activity/servers?q=${encodeURIComponent(msg.channel.guild.name)}`,
 			footer: {
 				text: `The command prefix here is "${prefix}", use "${prefix}help" to see what commands you can use.`,
 			},
 			thumbnail: {
-				url: msg.channel.guild.iconURL ? msg.channel.guild.iconURL : "",
+				url: msg.channel.guild.iconURL || "",
 			},
-			description: `${template()}`,
+			description: template(),
 		},
 	});
 };
