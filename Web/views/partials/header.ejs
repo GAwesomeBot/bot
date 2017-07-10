@@ -8,13 +8,7 @@
                     GAwesomeBot
                 </a>
             </div>
-            <a class="nav-item is-active" href="http://status.gilbertgobbels.xyz:8080" title="Status">
-              <span class="icon is-small">
-                <i class="fa fa-check"></i>
-              </span>
-               &nbsp;
-              <span>Status</span>
-            </a>
+
             <span id="nav-toggle" class="nav-toggle">
                 <span></span>
                 <span></span>
@@ -22,6 +16,13 @@
             </span>
 
             <div id="nav-menu" class="nav-right nav-menu">
+                <a class="nav-item is-active" href="http://status.gilbertgobbels.xyz:8080" title="Status">
+                  <span class="icon is-small">
+                    <i class="fa fa-check"></i>
+                  </span>
+                    &nbsp;
+                    <span>Status</span>
+                </a>
                 <a id="nav-" class="nav-item is-active" href="/">
                     <span class="icon is-small">
                         <i class="fa fa-home"></i>
@@ -65,40 +66,40 @@
                     <span>Donate</span>
                 </a>
                 <script>
-                if(localStorage.getItem("donate")=="hide") {
-                    $("#nav-donate").toggle();
-                }
+                    if(localStorage.getItem("donate")=="hide") {
+                        $("#nav-donate").toggle();
+                    }
                 </script>
 
                 <% if(authUser) { %>
-                    <a id="nav-dashboard" class="nav-item is-active" href="/dashboard" title="Go to dashboard">
-                        <img class="image is-16x16" src="<%= authUser.avatar %>" style="border-radius: 100%;" alt="<%= authUser.id %>">
-                        &nbsp;
-                        <span><%= authUser.username %></span>
-                    </a>
+                <a id="nav-dashboard" class="nav-item is-active" href="/dashboard" title="Go to dashboard">
+                    <img class="image is-16x16" src="<%= authUser.avatar %>" style="border-radius: 100%;" alt="<%= authUser.id %>">
+                    &nbsp;
+                    <span><%= authUser.username %></span>
+                </a>
                 <% } else { %>
-                    <p class="nav-item control has-addons">
-                        <a class="button is-white is-outlined" href="/add">
+                <p class="nav-item control has-addons">
+                    <a class="button is-white is-outlined" href="/add">
                             <span class="icon is-small">
                                 <i class="fa fa-plus"></i>
                             </span>
-                            <span>Add</span>
-                        </a>
-                        <a class="button is-white is-outlined" href="/login" style="margin-left: 0px;">
+                        <span>Add</span>
+                    </a>
+                    <a class="button is-white is-outlined" href="/login" style="margin-left: 0px;">
                             <span class="icon is-small">
                                 <i class="fa fa-sign-in"></i>
                             </span>
-                            <span>Login</span>
-                        </a>
-                    </p>
+                        <span>Login</span>
+                    </a>
+                </p>
                 <% } %>
             </div>
             <script>
-            var currentPage = window.location.pathname.split("/")[1];
-            var currentNavItem = $("#nav-" + currentPage);
-            if(currentNavItem) {
-                currentNavItem.addClass("is-tab");
-            }
+                var currentPage = window.location.pathname.split("/")[1];
+                var currentNavItem = $("#nav-" + currentPage);
+                if(currentNavItem) {
+                    currentNavItem.addClass("is-tab");
+                }
             </script>
         </div>
     </nav>

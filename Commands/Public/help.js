@@ -1,30 +1,56 @@
 module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
 	if(suffix) {
-		const getCommandHelp = (name, type, usage, description) => {
-			return `__Help for ${type} command **${name}**__\n${description ? (`Description: ${description}\n`) : ""}${usage ? (`Usage: \`${usage}\`\n`) : ""}<https://awesomebot.xyz/wiki/Commands#${name}>`;
+        let embed_fields = [];
+        const getCommandHelp = (name, type, usage, description) => {
+        	return {
+        		name: `__Help for ${type} command **${name}**__`,
+				value: `${description ? (`Description: ${description}\n`) : ""}${usage ? (`Usage: \`${usage}\`\n`) : ""}Click [here](https://github.com/GilbertGobbels/GAwesomeBot/wiki/Commands#${name}) for more info`,
+				inline: true
+			};
 		};
-
-		const info = [];
-		const pmcommand = bot.getPMCommandMetadata(suffix);
-		if(pmcommand) {
-			info.push(getCommandHelp(suffix, "PM", pmcommand.usage));
+        let pmCommand = bot.getPMCommandMetadata(suffix);
+        if(pmCommand) {
+        	embed_fields.push(getCommandHelp(suffix, "PM", pmCommand.usage))
 		}
-		const publiccommand = bot.getPublicCommandMetadata(suffix);
-		if(publiccommand) {
-			info.push(getCommandHelp(suffix, "public", publiccommand.usage, publiccommand.description));
+		let publicCommand = bot.getPublicCommandMetadata(suffix);
+        if(publicCommand) {
+        	embed_fields.push(getCommandHelp(suffix, "public", publicCommand.usage, publicCommand.description));
 		}
-		if(info.length==0) {
-			info.push(`No such command \`${suffix}\``);
+		if(embed_fields.length == 0) {
+        	embed_fields.push({
+        		name: `Error`,
+				value: `No such command \`${suffix}\``,
+				inline: true
+			});
 		}
-		bot.sendArray(msg.channel, info);
+		msg.channel.createMessage({
+			embed: {
+                author: {
+                    name: bot.user.username,
+                    icon_url: bot.user.avatarURL,
+                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                },
+                color: 0x00FF00,
+				fields: embed_fields
+			}
+		});
 	} else {
-		msg.channel.createMessage(`${msg.author.mention} Check your PMs.`);
-
-		const info = [`You can use the following commands in public chat on ${msg.guild.name} with the prefix \`${bot.getCommandPrefix(msg.guild, serverDocument)}\`. Some commands might not be shown because you don't have permission to use them or they've been disabled by a server admin. For a list of commands you can use in private messages with me, respond to this message with \`help\`. 👌`];
+		msg.channel.createMessage({
+			embed: {
+                author: {
+                    name: bot.user.username,
+                    icon_url: bot.user.avatarURL,
+                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                },
+                color: 0x00FF00,
+				description: `${msg.author.mention} Check your PMs.`
+			}
+		});
+		let description = `You can use the following commands in public chat on ${msg.channel.guild.name} with the prefix \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}\`.\n\tSome commands might not be shown because you don't have permission to use them or they've been disabled by a server admin.\nFor a list of commands you can use in private messages with me, respond to this message with \`help\`. 👌\n\tFor detailed information about each command and all of GAwesomeBot's other features, head over to our wiki [here](https://github.com/GilbertGobbels/GAwesomeBot/wiki/Commands).\n\tIf you need support using GAwesomeBot, please join our Discord server [here](${config.discord_link}). Have fun! 🙂🐬`;
 		const commands = {};
-		const memberBotAdmin = bot.getUserBotAdmin(msg.guild, serverDocument, msg.member);
+		const memberBotAdmin = bot.getUserBotAdmin(msg.channel.guild, serverDocument, msg.member);
 		bot.getPublicCommandList().forEach(command => {
-			if(serverDocument.config.commands[command] && serverDocument.config.commands[command].isEnabled && memberBotAdmin>=serverDocument.config.commands[command].admin_level) {
+			if(serverDocument.config.commands[command] && serverDocument.config.commands[command].isEnabled && memberBotAdmin >= serverDocument.config.commands[command].admin_level) {
 				const commandData = bot.getPublicCommandMetadata(command);
 				if(!commands[commandData.category]) {
 					commands[commandData.category] = [];
@@ -32,13 +58,35 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 				commands[commandData.category].push(`${command} ${commandData.usage}`);
 			}
 		});
+        msg.author.getDMChannel().then(ch => {
+            ch.createMessage({
+                embed: {
+                    author: {
+                        name: bot.user.username,
+                        icon_url: bot.user.avatarURL,
+                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                    },
+                    color: 0x00FF00,
+                    description: description
+                }
+            });
+        });
 		Object.keys(commands).sort().forEach(category => {
-			info.push(`**${category}**\`\`\`${commands[category].sort().join("\n")}\`\`\``);
+			msg.author.getDMChannel().then(ch => {
+                ch.createMessage({
+                    embed: {
+                        author: {
+                            name: bot.user.username,
+                            icon_url: bot.user.avatarURL,
+                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
+                        },
+                        color: 0x00FF00,
+                        title: `**${category}**`,
+                        description: `\`\`\`css\n${commands[category].sort().join("\n")}\`\`\``
+                    }
+                });
+			});
 		});
-		info.push(`For detailed information about each command and all of AwesomeBot's other features, head over to our wiki: <https://awesomebot.xyz/wiki/Commands>. If you need support using AwesomeBot, please join our Discord server: <${config.discord_link}>. Have fun! 🙂🐬`);
 
-		msg.author.getDMChannel().then(ch => {
-			bot.sendArray(ch, info);
-		});
 	}
 };

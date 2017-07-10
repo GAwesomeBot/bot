@@ -16,10 +16,10 @@ module.exports = (bot, db, config, winston, member, ch) => {
 
 					// Create voicetext channel if necessary
 					const channel = ch.guild.channels.find(a => {
-						return a.name==(`${ch.name.replaceAll(" ", "").toLowerCase()}-voicetext`);
+						return a.name==(`${ch.name.replaceAll(" ", "").toLowerCase().replace(/[^-_a-z0-9]/ig,'')}-voicetext`);
 					});
 					if(!channel) {
-						ch.guild.createChannel(`${ch.name.replaceAll(" ", "").toLowerCase()}-voicetext`).then(channel => {
+						ch.guild.createChannel(`${ch.name.replaceAll(" ", "").toLowerCase().replace(/[^-_a-z0-9]/ig,'')}-voicetext`).then(channel => {
 							channel.editPermission(ch.guild.id, null, 3072, "role").then(() => {
 								addToVoicetext(channel);
 							}).catch(err => {

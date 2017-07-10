@@ -17,7 +17,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 	}
 	const roll = getRandomInt(parseInt(min), parseInt(max));
 	if(isNaN(roll)) {
-		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 		msg.channel.createMessage("wut.");
 	} else {
 		msg.channel.createMessage(`${msg.author.mention} rolled a **${roll}** 🎲`);

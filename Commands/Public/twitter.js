@@ -22,7 +22,7 @@ module.exports = (bot, db, config, winston, userDocument, serverDocument, channe
 
 		getRSS(winston, `http://twitrss.me/twitter_user_to_rss/?user=${encodeURIComponent(query)}`, num, (err, articles) => {
 			if(err || articles.length==0) {
-				winston.warn(`Twitter user '${query}' not found`, {svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id});
+				winston.warn(`Twitter user '${query}' not found`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
 				msg.channel.createMessage(`I can't find a ${query} on Twitter 🐦`);
 			} else {
 				const info = articles.reverse().map(a => {

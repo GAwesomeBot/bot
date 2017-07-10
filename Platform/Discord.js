@@ -17,8 +17,7 @@ module.exports = (db, auth, config) => {
 			TYPING_START: true
 		},
 		getAllUsers: true,
-		maxShards: config.shard_count || 1,
-		messageLimit: 50
+		maxShards: config.shard_count || 1
 	});
 	bot.isReady = false;
 
@@ -423,7 +422,7 @@ module.exports = (db, auth, config) => {
 				blockMember();
 				break;
 			case "mute":
-				bot.muteMember(ch, member).then(err => {
+				bot.muteMember(ch, member, err => {
 					if(err) {
 						blockMember();
 					} else {

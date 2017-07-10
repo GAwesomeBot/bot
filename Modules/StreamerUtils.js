@@ -3,7 +3,7 @@ const unirest = require("unirest");
 
 const isStreamingTwitch = (username, callback) => {
 	unirest.get(`https://api.twitch.tv/kraken/streams/${username}?client_id=${auth.tokens.twitch_client_id}`).header("Accept", "application/json").end(res => {
-		if(res.status==200 && res.body && res.body.stream) {
+		if(res.status == 200 && res.body && res.body.stream) {
 			callback({
 				name: res.body.stream.channel.display_name,
 				type: "Twitch",
@@ -18,7 +18,7 @@ const isStreamingTwitch = (username, callback) => {
 
 const isStreamingYoutube = (channel, callback) => {
 	unirest.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.google_api_key}`).header("Accept", "application/json").end(res => {
-		if(res.status==200 && res.body && res.body.items.length>0 && res.body.items[0].snippet.liveBroadcastContent=="live") {
+		if(res.status == 200 && res.body && res.body.items.length > 0 && res.body.items[0].snippet.liveBroadcastContent == "live") {
 			callback({
 				name: res.body.items[0].snippet.channelTitle,
 				type: "YouTube",

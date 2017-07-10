@@ -24,6 +24,14 @@ module.exports = class Member {
 		this.defaultAvatarURL = erisMember.defaultAvatarURL;
 		this.discriminator = erisMember.discriminator;
 		this.username = erisMember.username;
+		
+		//pass g_erisMember.user object now
+		const User = require("./User");
+		this.user = new User(g_erisMember.user);
+        
+        //pass g_erisMember.permission object now
+        const Permission = require("./Permission");
+        this.permission = new Permission(g_erisMember.permission);
 
 		// functions
 		this.ban = (deleteMessageDays, cb) => {
@@ -57,21 +65,27 @@ module.exports = class Member {
 				}
 			});
 		};
+        
+        this.addRole = (roleID, cb) => {
+			erisMember.addRole(roleID).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
+        
+        this.removeRole = (roleID, cb) => {
+            erisMember.removeRole(roleID).then(() => {
+				if(Util.isFunction(cb)) {
+					cb();
+				}
+			});
+		};
 	}
 
 	get guild() {
 		const Guild = require("./Guild");
 		return new Guild(g_erisMember.guild);
-	}
-
-	get permission() {
-		const Permission = require("./Permission");
-		return new Permission(g_erisMember.permission);
-	}
-
-	get user() {
-		const User = require("./User");
-		return new User(g_erisMember.user);
 	}
 
 	get voiceState() {

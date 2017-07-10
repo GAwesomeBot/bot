@@ -1,31 +1,25 @@
 const commands = require("./../../Configuration/commands.json");
 
 module.exports = (bot, db, config, winston, userDocument, msg) => {
-    // maintainers only
+    // Maintainers only
 	if(!~config.maintainers.indexOf(msg.author.id)) {
 		return;
 	}
-
 	const params = msg.content.split(/\s+/);
 	params.shift();
-
 	if(!params.length) {
 		msg.channel.createMessage("No commands to reload.");
 		return;
 	}
-
 	params.forEach(command => {
-		const command_args = command.split("/");
-
+		const command_args = command.split(".");
         // assume public command by default
 		let type = "public";
 		let command_hook = command_args[0];
-
 		if(command_args.length > 1) {
 			type = command_hook;
 			command_hook = command_args[1];
 		}
-
         // check if command exists
 		if(commands.hasOwnProperty(type)) {
             // wildcard reload?
@@ -43,7 +37,6 @@ module.exports = (bot, db, config, winston, userDocument, msg) => {
 				msg.channel.createMessage(`Reloaded all ${type} commands`);
 				return;
 			}
-
 			let failure = false;
 			switch(type) {
 				case "pm":
@@ -61,7 +54,6 @@ module.exports = (bot, db, config, winston, userDocument, msg) => {
 					msg.channel.createMessage(`Unable to find command \`${command_hook}\` of type \`${type}\`.`);
 					return;
 			}
-
 			if(!failure) {
 				winston.info(`Reloaded ${type} command \`${command_hook}\``, { usrid: msg.author.id });
 				msg.channel.createMessage(`Reloaded ${type} command \`${command_hook}\``);
