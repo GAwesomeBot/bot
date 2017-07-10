@@ -1,7 +1,5 @@
 # GAwesomeBot
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f84f588e498f4447b68ba16b03989eb7)](https://www.codacy.com/app/GAwesomeBot/GAwesomeBot?utm_source=github.com&utm_medium=referral&utm_content=GilbertGobbels/GAwesomeBot&utm_campaign=badger)
-
 *Welcome to GAwesomeBot, the community revival of AwesomeBot!*
 The official GAwesomeBot instance, [GAwesomeBot](https://bot.gilbertgobbels.xyz), will always run the latest code from this repo.
 
