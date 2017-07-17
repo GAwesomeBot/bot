@@ -25,6 +25,7 @@
     "express-session": "*",
     "fast-levenshtein": "*",
     "feed-read": "*",
+    "figlet": "^1.2.0",
     "goo.gl": "*",
     "google": "*",
     "google-play-scraper": "*",

@@ -241,7 +241,7 @@ module.exports = (bot, db, auth, config, winston) => {
 		res.redirect(config.oauth_link);
 	});
 
-	// AwesomeBot data API
+	// GAwesomeBot data API
 	app.use("/api/", new RateLimit({
 		windowMs: 3600000,	// 150 requests/per hr
 		max: 150,
@@ -816,7 +816,7 @@ module.exports = (bot, db, auth, config, winston) => {
 						break;
 					case "accept":
 						getGalleryDocument(galleryDocument => {
-							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been accepted to the AwesomeBot extension gallery! 🎉 ${config.hosting_url}extensions/gallery?id=${galleryDocument._id}`);
+							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉 ${config.hosting_url}extensions/gallery?id=${galleryDocument._id}`);
 							galleryDocument.state = "gallery";
 							galleryDocument.save(err => {
 								res.sendStatus(err ? 500 : 200);
@@ -844,7 +844,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					case "feature":
 						getGalleryDocument(galleryDocument => {
 							if(!galleryDocument.featured) {
-								messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been featured on the AwesomeBot extension gallery! 🌟 ${config.hosting_url}extensions/gallery?id=${galleryDocument._id}`);
+								messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been featured on the GAwesomeBot extension gallery! 🌟 ${config.hosting_url}extensions/gallery?id=${galleryDocument._id}`);
 							}
 							galleryDocument.featured = galleryDocument.featured!=true;
 							galleryDocument.save(err => {
@@ -855,7 +855,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					case "reject":
 					case "remove":
 						getGalleryDocument(galleryDocument => {
-							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been ${req.body.action}${req.body.action=="reject" ? "e" : ""}d from the AwesomeBot extension gallery for the following reason:\`\`\`${req.body.reason}\`\`\``);
+							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been ${req.body.action}${req.body.action=="reject" ? "e" : ""}d from the GAwesomeBot extension gallery for the following reason:\`\`\`${req.body.reason}\`\`\``);
 							db.users.findOrCreate({_id: galleryDocument.owner_id}, (err, ownerUserDocument) => {
 								if(!err && ownerUserDocument) {
 									ownerUserDocument.points -= galleryDocument.points * 10;
@@ -926,7 +926,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				}
 
 				db.gallery.find(matchCriteria).sort("-featured -points -last_updated").skip(count * (page - 1)).limit(count).exec((err, galleryDocuments) => {
-					const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - AwesomeBot Extensions`;
+					const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
 					const extensionData = galleryDocuments.map(getExtensionData);
 
 					res.render("pages/extensions.ejs", {
@@ -1000,7 +1000,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				res.render("pages/extensions.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					currentPage: req.path,
-					pageTitle: "My AwesomeBot Extensions",
+					pageTitle: "My GAwesomeBot Extensions",
 					serverData: {
 						id: req.user.id
 					},
@@ -1052,7 +1052,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				res.render("pages/extensions.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					currentPage: req.path,
-					pageTitle: `${extensionData.name ? (`${extensionData.name} - `) : ""}AwesomeBot Extension Builder`,
+					pageTitle: `${extensionData.name ? (`${extensionData.name} - `) : ""}GAwesomeBot Extension Builder`,
 					serverData: {
 						id: req.user.id
 					},
@@ -1242,7 +1242,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					mode: "list",
 					currentPage: page,
 					numPages: Math.ceil(rawCount/(count==0 ? rawCount : count)),
-					pageTitle: "AwesomeBot Blog",
+					pageTitle: "GAwesomeBot Blog",
 					data: blogPosts
 				});
 			});
@@ -1255,7 +1255,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					res.render("pages/blog.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 						isMaintainer: true,
-						pageTitle: `${data.title ? (`Edit ${data.title}`) : "New Post"} - AwesomeBot Blog`,
+						pageTitle: `${data.title ? (`Edit ${data.title}`) : "New Post"} - GAwesomeBot Blog`,
 						mode: "compose",
 						data
 					});
@@ -1343,7 +1343,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isMaintainer: req.isAuthenticated() ? config.maintainers.indexOf(req.user.id)>-1 : false,
 					mode: "article",
-					pageTitle: `${blogDocument.title} - AwesomeBot Blog`,
+					pageTitle: `${blogDocument.title} - GAwesomeBot Blog`,
 					blogPost: data
 				});
 			}
@@ -1439,7 +1439,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					res.render("pages/wiki.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 						isContributor: req.isAuthenticated() ? (config.wiki_contributors.indexOf(req.user.id)>-1 || config.maintainers.indexOf(req.user.id)>-1) : false,
-						pageTitle: `Search for "${req.query.q}" - AwesomeBot Wiki`,
+						pageTitle: `Search for "${req.query.q}" - GAwesomeBot Wiki`,
 						pageList: wikiDocuments.map(wikiDocument => {
 							return wikiDocument._id;
 						}),
@@ -1462,7 +1462,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				const renderPage = data => {
 					res.render("pages/wiki.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						pageTitle: `${data.title ? (`Edit ${data.title}`) : "New Page"} - AwesomeBot Wiki`,
+						pageTitle: `${data.title ? (`Edit ${data.title}`) : "New Page"} - GAwesomeBot Wiki`,
 						mode: "edit",
 						data
 					});
@@ -1562,7 +1562,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				res.render("pages/wiki.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isContributor: req.isAuthenticated() ? (config.wiki_contributors.indexOf(req.user.id)>-1 || config.maintainers.indexOf(req.user.id)>-1) : false,
-					pageTitle: `${page._id} - AwesomeBot Wiki`,
+					pageTitle: `${page._id} - GAwesomeBot Wiki`,
 					pageList: wikiDocuments.map(wikiDocument => {
 						return wikiDocument._id;
 					}),
@@ -1611,7 +1611,7 @@ module.exports = (bot, db, auth, config, winston) => {
 				res.render("pages/wiki.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isContributor: req.isAuthenticated() ? (config.wiki_contributors.indexOf(req.user.id)>-1 || config.maintainers.indexOf(req.user.id)>-1) : false,
-					pageTitle: `Edit history for ${page._id} - AwesomeBot Wiki`,
+					pageTitle: `Edit history for ${page._id} - GAwesomeBot Wiki`,
 					pageList: wikiDocuments.map(wikiDocument => {
 						return wikiDocument._id;
 					}),
@@ -3878,11 +3878,11 @@ module.exports = (bot, db, auth, config, winston) => {
 						name: req.body.game
 					};
 					config.game = req.body.game;
-					if(req.body.game=="awesomebot.xyz" || req.body["game-default"]!=null) {
+					if(req.body.game=="gawesomebot.com" || req.body["game-default"]!=null) {
 						config.game = "default";
 						game = {
-							name: "awesomebot.xyz",
-							url: "http://awesomebot.xyz"
+							name: "gawesomebot.com",
+							url: "https://gawesomeBot.com"
 						};
 					}
 					bot.editStatus(req.body.status, game);
