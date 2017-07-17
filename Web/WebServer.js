@@ -3881,7 +3881,7 @@ module.exports = (bot, db, auth, config, winston) => {
 					if(req.body.game=="gawesomebot.com" || req.body["game-default"]!=null) {
 						config.game = "default";
 						game = {
-							name: "gawesomeBot.com",
+							name: "gawesomebot.com",
 							url: "https://gawesomeBot.com"
 						};
 					}
