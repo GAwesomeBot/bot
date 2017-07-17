@@ -12,6 +12,10 @@ module.exports = class Bot {
 		this.connectionUptime = bot.uptime;
 
 		this.awaitMessage = (chid, usrid, filter, callback) => {
+			if (!callback) {
+				callback = filter;
+				filter = () => true;
+			}
 			if(svr.channels.get(chid) && svr.members.get(usrid)) {
 				bot.awaitMessage(chid, usrid, m => filter(new Message(m)), m => callback(new Message(m)));
 			}
