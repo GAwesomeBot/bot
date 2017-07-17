@@ -3878,11 +3878,11 @@ module.exports = (bot, db, auth, config, winston) => {
 						name: req.body.game
 					};
 					config.game = req.body.game;
-					if(req.body.game=="GAwesomeBot.xyz" || req.body["game-default"]!=null) {
+					if(req.body.game=="gawesomebot.com" || req.body["game-default"]!=null) {
 						config.game = "default";
 						game = {
-							name: "GAwesomeBot.xyz",
-							url: "http://GAwesomeBot.xyz"
+							name: "gawesomeBot.com",
+							url: "https://gawesomeBot.com"
 						};
 					}
 					bot.editStatus(req.body.status, game);
