@@ -1,6 +1,8 @@
-Configuration/config.json
-Configuration/auth.json
+Configurations/config.json
+Configurations/config.js
+Configurations/auth.js
 Extensions/
 node_modules/
 package-lock.json
 bot-out.log
+logs/
