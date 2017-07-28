@@ -31,6 +31,12 @@ module.exports = class Console {
 					},
 					filename: require("path").join(process.cwd(), `logs/gawesomebot.log`),
 				}),
+				new winston.transports.File({
+					level: "silly",
+					json: true,
+					colorize: false,
+					filename: require("path").join(process.cwd(), `logs/verbose.gawesomebot.log`),
+				}),
 			],
 		});
 	}

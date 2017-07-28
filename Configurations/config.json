@@ -12,5 +12,7 @@
   "status": "online",
   "headerImage": "header-bg.png",
   "homepageMessageHTML": "",
-  "pmForward": false
+  "pmForward": false,
+  "version": "4.0.2",
+  "branch": "development"
 }

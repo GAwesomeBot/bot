@@ -37,11 +37,8 @@ const configs = {
 	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
 	/*
    * MaxVoiceChannels should remain as is.
-   * Same with version
    */
 	maxVoiceChannels: 2,
-	version: "4.0.2",
-	branch: "development",
 	/*
    * Direct Discord link to invite your bot. Replace "<REPLACE HERE>" (including the "<>") with your bots ID.
    */
