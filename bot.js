@@ -48,27 +48,23 @@ global.winston = new wanston.Logger({
 });
 winston.info(`Logging to ${require("path").join(process.cwd(), 'logs/gawesomebot.log')}.`);
 
-let db;
-(async () => {
-	try {
-		await database.initialize(configJS.databaseURL);
-	} catch (err) {
-		winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
-		process.exit(-1);
-	}
-})();
-db = database.getConnection();
-if (db) {
-	winston.info(`Connected to the database successfully.`);
-	const bot = require("./Discord.js")(db, configJS, configJSON);
-	bot.login(auth.discord.clientToken).then(token => {
-		winston.info("Started Bot Application", { token: token });
-	}).catch(err => {
-		winston.error(`Failed to connect to Discord :/\n`, err);
-	});
-	bot.on("debug", info => {
-		winston.debug(info);
-	});
-	// Debug here
-	process.exit(0);
-}
+database.initialize(configJS.databaseURL).catch((err) => {
+    winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
+    process.exit(-1);
+}).then(() => {
+    db = database.getConnection();
+    if (db) {
+	    winston.info(`Connected to the database successfully.`);
+	    const bot = require("./Discord.js")(db, configJS, configJSON);
+	    bot.login(auth.discord.clientToken).then(token => {
+	    	winston.info("Started Bot Application", { token: token });
+    	}).catch(err => {
+		    winston.error(`Failed to connect to Discord :/\n`, err);
+	    });
+    	bot.on("debug", info => {
+	    	winston.debug(info);
+	    });
+	    // Debug here
+	    //process.exit(0);
+    }
+})
