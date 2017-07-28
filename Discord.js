@@ -329,8 +329,11 @@ bot.checkRank = async(server, serverDocument, member, memberDocument, override) 
 };
 /* eslint-enable max-depth */
 
+const shard = bot.shard;
+
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
+	shard.send("Hey mom");
 }).catch(err => {
 	winston.error("Failed to connect to discord :/\n", { err: err });
 });

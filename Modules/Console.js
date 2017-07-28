@@ -3,12 +3,14 @@ const chalk 	= require("chalk");
 const moment 	= require("moment");
 require("winston-daily-rotate-file");
 
+const config = require("./../Configurations/config.js");
+
 module.exports = class Console {
 	constructor(type) {
 		return new winston.Logger({
 			transports: [
 				new winston.transports.Console({
-					level: "silly",
+					level: config.consoleLevel,
 					colorize: true,
 					/* Shard-based labels?
 					 * Could have something like GAB Master Process for that, or GAB Shard?

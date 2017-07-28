@@ -137,7 +137,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	app.use("/", (req, res, next) => {
-		if (configJS.isUpdating) {
+		if (configJSON.isUpdating) {
 			res.status(503).render("pages/503.ejs", {});
 		}	else {
 			next(); // eslint-disable-line callback-return

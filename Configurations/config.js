@@ -44,6 +44,13 @@ const configs = {
    */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
 	/*
+	 * Level of output the console should be display. List of levels:
+	 * error, warn, info, debug, verbose
+	 * Recommended to stay as info to prevent console cluttering.
+	 * All log messages are always stored in the log files.
+	 */
+	consoleLevel: "info",
+	/*
    * Optional: If you want your bot to have an invite link to your guild, for support or things.
    */
 	discordLink: "",

@@ -3,6 +3,7 @@ const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
 const Discord			= require("Discord.js");
 const Console			= require("./Modules/").Console;
+const ShardIPC		= require("./Modules/").ShardIPC;
 
 // Set up default Winston Logger File and Global Instance
 global.winston = new Console("master");
@@ -16,14 +17,14 @@ database.initialize(configJS.databaseURL).catch(err => {
 	const db = database.getConnection();
 	if (db) {
 		await winston.info(`Connected to the database successfully.`);
-		db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
+		await db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 			}
 		});
 		if (!auth.discord.clientToken) {
 			winston.error("You must provide a clientToken to open the gates to Discord! x(");
-			process.exit(1);
+			return;
 		}
 		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
 			throw new RangeError(`In config.js, shardTotal must be greater than or equal to 1`);
@@ -37,6 +38,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (shard.id === sharder.totalShards - 1) winston.info(`All Shards Launched. Started Bot Application`);
 		});
 		sharder.spawn();
+		ShardIPC(sharder);
 		/* Bot.on("debug", info => {
 			 winston.verbose(info);
 		}); */
