@@ -44,23 +44,33 @@ global.winston = new wanston.Logger({
 		}),
 	],
 });
+
 winston.info(`Logging to ${require("path").join(process.cwd(), "logs/gawesomebot.log")}.`);
 
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
 	process.exit(-1);
-}).then(() => {
+}).then(async() => {
 	var db = database.getConnection();
 	if (db) {
-		winston.info(`Connected to the database successfully.`);
+		await winston.info(`Connected to the database successfully.`);
+		db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
+			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
+				winston.warn("Your mongodb instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
+			}
+		});
 		const bot = require("./Discord.js")(db, configJS, configJSON);
+		if (!auth.discord.clientToken) {
+			winston.error("You must provide a clientToken to open the gates to Discord! x(");
+			process.exit(1);
+		}
 		bot.login(auth.discord.clientToken).then(token => {
 			winston.info("Started Bot Application", { token: token });
 		}).catch(err => {
 			winston.error(`Failed to connect to Discord :/\n`, err);
 		});
 		bot.on("debug", info => {
-			winston.debug(info);
+			winston.verbose(info);
 		});
 		// Debug here
 		// process.exit(0);
