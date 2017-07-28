@@ -1,9 +1,9 @@
 const configs = {
 	/*
    * Represents how many shards the bot will have.
-   * It *must* be a integer, aka *0*, *52* etc.
+   * It *must* be a integer, aka *1*, *52* etc.
    */
-	shardTotal: 3,
+	shardTotal: 1,
 	/*
    * The URL all the bot commands should point to.
    * Example: /about shows this link for the web interface
