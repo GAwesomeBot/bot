@@ -62,12 +62,12 @@ module.exports = (db, configJS, configJSON) => {
 		// Cleans a string (strip markdown, prevent @everyone or @here)
 		const cleanName = str => {
 			str = removeMd(str).replace(/_/g, "\\_")
-												.replace(/\*/g, "\\*")
-												.replace(/`/g, "\\`");
+				.replace(/\*/g, "\\*")
+				.replace(/`/g, "\\`");
 			return (str.startsWith("everyone") || str.startsWith("here") ? `\u200b${str}` : str)
-							.replace(/@everyone/g, "@\u200beveryone")
-							.replace(/@here/g, "@\u200bhere")
-							.replace(/<@/g, "<@\u200b");
+				.replace(/@everyone/g, "@\u200beveryone")
+				.replace(/@here/g, "@\u200bhere")
+				.replace(/<@/g, "<@\u200b");
 		};
 		// eslint-disable-next-line max-len
 		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username)	+ serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : "");
@@ -143,7 +143,7 @@ module.exports = (db, configJS, configJSON) => {
 		}
 		if (string.lastIndexOf("#") === string.length - 5 && !isNaN(string.substring(string.lastIndexOf("#") + 1))) {
 			foundMember = server.members.filter(member => member.user.username === string.substring(0, string.lastIndexOf("#") + 1))
-																	.find(member => member.user.discriminator === string.substring(string.lastIndexOf("#") + 1));
+				.find(member => member.user.discriminator === string.substring(string.lastIndexOf("#") + 1));
 		} else {
 			foundMember = server.members.find(member => member.user.username.toLowerCase() === string.toLowerCase());
 		}
@@ -244,7 +244,7 @@ module.exports = (db, configJS, configJSON) => {
 
 	// Check if a user has leveled up a rank
 	/* eslint-disable max-depth, no-await-in-loop */
-	bot.checkRank = async (server, serverDocument, member, memberDocument, override) => {
+	bot.checkRank = async(server, serverDocument, member, memberDocument, override) => {
 		if (member && member.id !== bot.user.id && !member.user.bot && server) {
 			const currentRankScore = memberDocument.rank_score + override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice);
 			for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
