@@ -3,8 +3,9 @@ const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const { RankScoreCalculator: computeRankScores, Console } = require("./Modules/");
 
-const configJS 		= require("./Configurations/config.js")
-const configJSON 	= require("./Configurations/config.json");
+const configJS 		= require("./Configurations/config.js");
+
+const database 		= require("./Database/Driver.js");
 
 const privateCommandModules = {};
 const commandModules = {};
@@ -25,8 +26,17 @@ const bot = new Discord.Client({
 	],
 });
 
-	// Value set once READY triggers
+// Value set once READY triggers
 bot.isReady = false;
+
+var db;
+database.initialize(configJS.databaseURL).catch(err => {
+	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
+	process.exit(1);
+}).then(() => {
+	winston.info("Successfully connected to MongoDB!");
+	db = database.getConnection();
+});
 
 // Get the command prefix for a server
 bot.getCommandPrefix = (server, serverDocument) => new Promise(resolve => {
@@ -282,16 +292,16 @@ bot.checkRank = async(server, serverDocument, member, memberDocument, override) 
 						}
 						// Add 100 AwesomePoints as reward
 						if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-							db.users.findOrCreate({_id: member.id}, (err, userDocument) => {
+							db.users.findOrCreate({ _id: member.id }, (err, userDocument) => {
 								if (!err && userDocument) {
 									userDocument.points += 100;
 									userDocument.save(usrErr => {
 										if (usrErr) {
-											winston.error(`Failed to save user data (for ${member.user.tag}) for points`, {usrid: member.id}, usrErr);
+											winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
 										}
 									});
 								} else {
-									winston.error(`Failed to find or create user data (for ${member.user.tag}) for points`, {usrid: member.id}, err);
+									winston.error(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 								}
 							});
 						}
@@ -305,7 +315,7 @@ bot.checkRank = async(server, serverDocument, member, memberDocument, override) 
 									winston.error(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 										svrid: server.id,
 										usrid: member.id,
-										roleid: role.id
+										roleid: role.id,
 									}, err);
 								}
 							}
