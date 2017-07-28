@@ -2,7 +2,7 @@ const auth = {
 	discord: {
 		clientID: "",
 		clientSecret: "",
-		clientToken: "MjMyNTE5NTE4NDQwNjUyODAw.DFzd5w.2KfpNt_I_KeAnnE3KwRykCnVGF0",
+		clientToken: "",
 	},
 	tokens: {
 		carboniteEx: "",
