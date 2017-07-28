@@ -3,7 +3,7 @@ const configs = {
    * Represents how many shards the bot will have.
    * It *must* be a integer, aka *0*, *52* etc.
    */
-	shardTotal: 1,
+	shardTotal: 3,
 	/*
    * The URL all the bot commands should point to.
    * Example: /about shows this link for the web interface
@@ -34,7 +34,7 @@ const configs = {
 	/*
    * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
    */
-	databaseURL: "mongodb://localhost:27017/awesomebot",
+	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
 	/*
    * MaxVoiceChannels should remain as is.
    * Same with version
