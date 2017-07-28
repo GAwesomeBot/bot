@@ -25,9 +25,9 @@ module.exports = class Console {
 					json: false,
 					// eslint-disable-next-line no-unused-vars
 					formatter: ({ level, message = "", meta = {}, formatter, depth, colorize }) => {
-						const timestamp = moment().format("DD-MM-YYYY HH:mm:ss");
+						const ts = moment().format("DD-MM-YYYY HH:mm:ss");
 						const obj = Object.keys(meta).length ? `\n\t${meta.stack ? meta.stack : require("util").inspect(meta, false, depth || 2, colorize)}` : ``;
-						return `${timestamp} ${level.toUpperCase()} ${type === "master" ? "MASTER" : type} ${chalk.stripColor(message)} ${obj}`;
+						return `(${ts}) (${level.toUpperCase()}) (${type === "master" ? "MASTER" : type.toUpperCase()}) ${chalk.stripColor(message)} ${obj}`;
 					},
 					filename: require("path").join(process.cwd(), `logs/gawesomebot.log`),
 				}),
