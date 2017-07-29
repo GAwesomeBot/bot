@@ -1,4 +1,3 @@
-const { rp } = require("./Utils.js");
 const dgr = require("download-github-repo");
 const fs = require("fs-extra");
 
