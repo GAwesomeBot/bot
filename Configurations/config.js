@@ -1,7 +1,7 @@
 const configs = {
 	/*
    * Represents how many shards the bot will have.
-   * It *must* be a integer, aka *0*, *52* etc.
+   * It *must* be a integer, aka *1*, *52* etc.
    */
 	shardTotal: 1,
 	/*
@@ -34,18 +34,22 @@ const configs = {
 	/*
    * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
    */
-	databaseURL: "mongodb://localhost:27017/awesomebot",
+	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
 	/*
    * MaxVoiceChannels should remain as is.
-   * Same with version
    */
 	maxVoiceChannels: 2,
-	version: "4.0.2",
-	branch: "development",
 	/*
    * Direct Discord link to invite your bot. Replace "<REPLACE HERE>" (including the "<>") with your bots ID.
    */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
+	/*
+	 * Level of output the console should be display. List of levels:
+	 * error, warn, info, debug, verbose
+	 * Recommended to stay as info to prevent console cluttering.
+	 * All log messages are always stored in the log files.
+	 */
+	consoleLevel: "info",
 	/*
    * Optional: If you want your bot to have an invite link to your guild, for support or things.
    */

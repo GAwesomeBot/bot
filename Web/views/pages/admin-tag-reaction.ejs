@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title><%= serverData.name %> Tag Reaction - AwesomeBot Admin Console</title>
+	<% include ../partials/head %>
+
+	<script src="/static/js/form-change-listener.js"></script>
+	<script>
+	function newReaction() {
+		var newReactionMessage = $("#new-reaction-message");
+		if(newReactionMessage.val()) {
+			newReactionMessage.removeClass("is-danger");
+		} else {
+			newReactionMessage.addClass("is-danger");
+		}
+
+		if(newReactionMessage.val()) {
+			$.ajax({
+				type: "POST",
+				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				data: {
+					"new-message": newReactionMessage.val()
+				},
+				success: function() {
+					saveFormState();
+					$("#form").submit();
+				}
+			});
+		}
+	}
+	</script>
+</head>
+<body onload="saveFormState();">
+	<% include ../partials/dashboard-header %>
+	<% include ../partials/dashboard-socket-updates %>
+
+	<section class="section is-white">
+		<div class="container">
+			<div class="columns">
+				<div id="menu" class="column is-one-quarter">
+					<% include ../partials/admin-menu %>
+				</div>
+				<div class="column">
+					<h1 class="title">
+						AwesomeBot Tag Reaction
+					</h1>
+					<div class="container">
+						<article class="message is-primary">
+							<div class="message-body">
+								This is what happens when <strong>AwesomeBot is @mentioned</strong> in chat. You can disable the response altogether or create a list of possible responses that will be chosen from randomly.
+							</div>
+						</article>
+					</div>
+					<br>
+					<div class="container">
+						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+							<p class="control">
+								<label class="checkbox">
+								<input name="isEnabled" type="checkbox" onclick="$('#tag_reaction-options').toggleClass('is-hidden');" <%= configData.tag_reaction.isEnabled ? "checked" : "" %>>
+									Repond when tagged in chat
+								</label>
+							</p>
+							<ul id="tag_reaction-options" class="<%= configData.tag_reaction.isEnabled ? '' : 'is-hidden' %>">
+								<% for(var i=0; i<configData.tag_reaction.messages.length; i++) { %>
+									<li>
+										<button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="saveFormState();">
+											<span class="icon is-small" style="margin-left: -2px;">
+												<i class="fa fa-times"></i>
+											</span>
+										</button>
+										<%- configData.tag_reaction.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+									</li>
+								<% } %>
+							</ul>
+							<br>
+							<div class="control is-horizontal">
+								<div class="control is-grouped">
+									<p class="control is-expanded">
+										<input id="new-reaction-message" class="input" type="text" maxlength="2000" placeholder="Response message" onkeypress="return event.keyCode != 13;">
+										<span class="help"><code>@mention</code> to mention member. <code>@user</code> for username.</span>
+									</p>
+									<p class="control">
+										<a class="button is-primary" onclick="newReaction();">
+											<span class="icon">
+										        <i class="fa fa-plus"></i>
+										    </span>
+										    <span>Add</span>
+										</a>
+									</p>
+								</div>
+							</div>
+							<br>
+							<% var formButtonsUnsaved = false; %>
+							<% include ../partials/form-buttons %>
+							<% include ../partials/form-buttons-bar %>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<% include ../partials/footer %>
+	<% include ../partials/scroll-top-button %>
+</body>
+</html>
