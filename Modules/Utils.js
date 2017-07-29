@@ -6,5 +6,6 @@ const requestPromise = require("request-promise-native").defaults({
 
 module.exports = {
 	rp: requestPromise,
-	request: requestPromise
+	request: requestPromise,
+	RankScoreCalculator: require("./Utils/RankScoreCalculator.js"),
 };
