@@ -1,112 +1,125 @@
-const unirest = require("unirest");
+const { rp } = require("./Utils.js");
 const dgr = require("download-github-repo");
 const rimraf = require("rimraf");
 const fs = require("fs");
 
 module.exports = {
-	check: (config, cb) => {
-		unirest.get(`https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`).end(result => {
-			if (!result.body["up-to-date"] && !result.body.latest) {
-				cb(404);
-				return;
+	check: config => new Promise(async (resolve, reject) => {
+		let res;
+		try {
+			res = await rp.get({
+				uri: `https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`,
+			});
+		} catch (err) {
+			reject(err);
+		}
+		if (res) {
+			if (!res.body["up-to-date"] && !res.body.latest) {
+				reject(new Error(`Got a 404 from the server / this version is outdated..?`));
 			}
-			cb(result.body);
-		});
-	},
-	update: (bot, config, io, winston) => {
-		winston.info("Preparing for update");
+			resolve(res.body);
+		}
+	}),
+	get: (branch, version) => new Promise(async (resolve, reject) => {
+		let res;
+		try {
+			res = await rp.get({
+				uri: `https://status.gilbertgobbels.xyz/versions/${branch}/${version}`,
+			});
+		} catch (err) {
+			reject(err);
+		}
+		if (res) {
+			if (res.statusCode === 404) reject(new Error(`Couldn't find the requested version / branch combo.`));
+			resolve(res.body);
+		}
+	}),
+	update: async (bot, config, io) => {
+		winston.info(`Preparing for update...`);
 
-		bot.shards.forEach(shard => {
-			shard.disconnect();
-		});
+		// TODO: bot.shard.send(`[UPDATER] Shutdown`);
 
 		config.isUpdating = true;
 
 		io.emit("update", "metadata");
-		winston.info("Fetching newest version metadata");
+		winston.info(`Fetching newest version metadata..`);
 
-		unirest.get(`https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`).end(response => {
-			io.emit("update", "downloading");
-			winston.info("Downloading newest version from github");
+		let res;
+		try {
+			res = await rp.get({
+				uri: `https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`,
+			});
+		} catch (err) {
+			throw err;
+		}
+		io.emit("update", "downloading");
+		winston.info(`Downloading the newest version from GitHub`);
 
-			if (!fs.existsSync("./Temp")) fs.mkdirSync("./Temp");
-			var tpath = fs.mkdtempSync("./Temp/v-");
+		if (!fs.existsSync("./Temp")) fs.mkdirSync("./Temp");
+		const tempPath = fs.mkdtempSync("./Temp/v-");
+		let repoBranch = config.branch;
+		if (config.branc === "stable") repoBranch = "master";
 
-			var repob = config.branch;
-			if (config.branch === "stable") repob = "master";
+		dgr(`GilbertGobbels/GAwesomeBot#${repoBranch}`, tempPath, () => {
+			const body = res.body.latest;
+			const filesc = [];
+			const files = [];
 
-			dgr(`GilbertGobbels/GAwesomeBot#${repob}`, tpath, () => {
-				var body = response.body.latest;
+			for (let i = 0; i < body.files.length; i++) {
+				// TODO: Gilbert check this pls
+				if (body.files[i].substring(0, 13) === "Configurations/") {
+					const dataNew = fs.readFileSync(`${tempPath}/${body.files[i]}`, "utf8");
+					const dataOld = fs.readFileSync(`./${body.files[i]}`, "utf8");
+					filesc.push({
+						file: body.files[i],
+						dataNew,
+						dataOld,
+					});
+				} else {
+					files.push(body.files[i]);
+				}
+			}
 
-				var filesc = [];
-				var files = [];
-				for (var ii = 0; ii < body.files.length; ii++) {
-					if (body.files[ii].substring(0, 14) === "Configuration/") {
-						var datan = fs.readFileSync(`${tpath}/${body.files[ii]}`, "utf8");
-						var datao = fs.readFileSync(`./${body.files[ii]}`, "utf8");
-						var p = {
-							file: body.files[ii],
-							datan,
-							datao,
-						};
-						filesc.push(p);
-					} else {
-						files.push(body.files[ii]);
-					}
+			io.emit("update", "files_conf");
+			io.on("confirm", data => {
+				if (data === "filesc") io.emit("files_conf", filesc);
+				else if (data === "files") io.emit("files", files);
+			});
+
+			winston.info(`Awaiting response from client..`);
+
+			io.on("files_conf", files_conf => {
+				winston.info(`Installing configuration files..`);
+				for (let i = 0; i < files_conf.length; i++) {
+					fs.writeFileSync(`./${files_conf[i].file}`, files_conf[i].data);
 				}
 
-				io.emit("update", "files_conf");
-				io.on("confirm", data => {
-					if (data === "filesc") io.emit("files_conf", filesc);
-					else if (data === "files") io.emit("files", files);
-				});
-				winston.info("Awaiting response from client...");
+				io.emit("update", "files");
+				winston.info(`Awaiting response from client..`);
 
-				io.on("files_conf", files_conf => {
-					winston.info("Installing configuration files");
-					for (var iii = 0; iii < files_conf.length; iii++) {
-						fs.writeFileSync(`./${files_conf[iii].file}`, files_conf[iii].data);
+				io.on("files", cfiles => {
+					winston.info(`Installing the new files..`);
+					io.emit("update", "install");
+
+					for (let i = 0; i < cfiles.length; i++) {
+						fs.createReadStream(`${tempPath}/${cfiles[i]}`).pipe(fs.createWriteStream(`./${cfiles[i]}`));
 					}
 
-					io.emit("update", "files");
+					io.emit("update", "done");
+					winston.info(`Finalizing the update..`);
 
-					winston.info("Awaiting response from client...");
+					const configg = JSON.parse(fs.readFileSync(`./Configurations/config.json`, "utf8"));
+					configg.version = body.version;
+					fs.writeFileSync("./Configurations/config.json", JSON.stringify(configg, null, 4));
 
-					io.on("files", cfiles => {
-						winston.info("Installing new files");
-						io.emit("update", "install");
+					winston.info(`Cleaning up..`);
 
-						for (var ki = 0; ki < cfiles.length; ki++) {
-							fs.createReadStream(`${tpath}/${cfiles[ki]}`).pipe(fs.createWriteStream(`./${cfiles[ki]}`));
-						}
-
-						io.emit("update", "done");
-						winston.info("Finishing update");
-
-						const configg = JSON.parse(fs.readFileSync("./Configuration/config.json", "utf8"));
-						configg.version = body.version;
-						fs.writeFileSync("./Configuration/config.json", JSON.stringify(configg, null, 4));
-
-						winston.info("Cleaning up");
-
-						// eslint-disable-next-line max-nested-callbacks
-						rimraf(tpath, () => {
-							io.emit("update", "finished");
-							winston.info("Finished updating. Please restart GAB.");
-						});
+					rimraf(tempPath, () => {
+						io.emit("update", "finished");
+						winston.info(`Finished updating. Please restart GAwesomeBot.`);
 					});
 				});
 			});
-		}
-		);
-	},
-	get: (branch, version, cb) => {
-		unirest.get(`https://status.gilbertgobbels.xyz/versions/${branch}/${version}`).end(res => {
-			if (res.code === 404) {
-				cb(res.code);
-				return;
-			}
-			cb(res.body);
 		});
 	},
 };
