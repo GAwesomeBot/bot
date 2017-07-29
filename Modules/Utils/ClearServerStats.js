@@ -20,7 +20,6 @@ module.exports = async (bot, db, server, serverDocument) => {
 			memberDocument.rank = await bot.checkRank(server, serverDocument, member, memberDocument, true);
 			memberDocument.messages = 0;
 			memberDocument.voice = 0;
-			// TODO: Don't we need to save?
 		} else {
 			memberDocument.remove();
 		}
@@ -52,4 +51,21 @@ module.exports = async (bot, db, server, serverDocument) => {
 		}
 		await Promise.all(promiseArray);
 	}
+
+	// Reset game and command data
+	serverDocument.games = [];
+	serverDocument.command_usage = {};
+	serverDocument.markModified("command_usage");
+
+	// Reset stats timestamp
+	serverDocument.stats_timestamp = Date.now();
+
+	// Save changes to serverDocument
+	serverDocument.save(err => {
+		if (err) {
+			winston.warn(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
+		} else {
+			winston.info(`Cleared stats for server "${server}"`, { svrid: server.id });
+		}
+	});
 };
