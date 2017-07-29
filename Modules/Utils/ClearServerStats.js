@@ -29,7 +29,7 @@ module.exports = async (bot, db, server, serverDocument) => {
 	/**
 	 * Award points to Top 3
 	 * @param member The affected member
-	 * @param {?number} amount The amount of points to give the member
+	 * @param {Number} amount The amount of points to give the member
 	 */
 	const awardPoints = async (member, amount) => {
 		const userDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {

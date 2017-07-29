@@ -17,7 +17,7 @@ module.exports = () => {
 
 	/**
 	 * Randomised output from an array
-	 * @returns {?Anything} Random output from the array
+	 * @returns {*} Random output from the array
 	 */
 	Object.assign(Array.prototype, {
 		random() {
@@ -29,7 +29,7 @@ module.exports = () => {
 	 * Check if a string contains at least one element from an array
 	 * @param {Array} arr The array containing the elements
 	 * @param {Boolean} isCaseSensitive Should case sensitivity be ignored
-	 * @returns {?Object}
+	 * @returns {Object}
 	 */
 	Object.assign(String.prototype, {
 		containsArray(arr, isCaseSensitive) {

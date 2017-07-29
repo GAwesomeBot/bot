@@ -16,9 +16,10 @@ module.exports = class GitHubGist {
 
 	/**
 	 * Uploads text to GitHub Gist
-	 * @param {?string} title Optional title for the Gist
-	 * @param {string} text The content of the Gist
-	 * @returns {object} Object containing the id and the url to the Gist
+	 * @param {Object} [options] The text object
+	 * @param {String} [options.title] Optional title for the Gist
+	 * @param {String} options.text The content of the Gist
+	 * @returns {Object} Object containing the id and the url to the Gist
 	 */
 	async upload({ title, text } = {}) {
 		const censor = [
