@@ -7,7 +7,7 @@ const { Console, ShardIPC } = require("./Modules/");
 // Set up a winston instance for the Master Process
 const winston = new Console("master");
 
-winston.info(`Logging to ${require("path").join(process.cwd(), "logs/gawesomebot.log")}.`);
+winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawesomebot.log`)}.`);
 
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
