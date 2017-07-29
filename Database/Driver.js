@@ -1,6 +1,6 @@
 /* eslint-disable require-await */
 const mongoose = require("mongoose");
-mongoose.Promise = global.Promise;
+mongoose.Promise = Promise;
 const findOrCreate = require("mongoose-findorcreate");
 const serverSchema = require("./Schemas/serverSchema");
 const userSchema = require("./Schemas/userSchema");

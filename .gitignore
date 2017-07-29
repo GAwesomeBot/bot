@@ -6,3 +6,4 @@ node_modules/
 package-lock.json
 bot-out.log
 logs/
+.idea/
