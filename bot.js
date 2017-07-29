@@ -2,18 +2,17 @@ const database 		= require("./Database/Driver.js");
 const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
 const Discord			= require("Discord.js");
-const Console			= require("./Modules/").Console;
-const ShardIPC		= require("./Modules/").ShardIPC;
+const { Console, ShardIPC } = require("./Modules/");
 
-// Set up default Winston Logger File and Global Instance
-global.winston = new Console("master");
+// Set up a winston instance for the Master Process
+const winston = new Console("master");
 
 winston.info(`Logging to ${require("path").join(process.cwd(), "logs/gawesomebot.log")}.`);
 
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
 	process.exit(-1);
-}).then(async() => {
+}).then(async () => {
 	const db = database.getConnection();
 	if (db) {
 		await winston.info(`Connected to the database successfully.`);
@@ -23,7 +22,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 		if (!auth.discord.clientToken) {
-			winston.error("You must provide a clientToken to open the gates to Discord! x(");
+			winston.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! x(");
 			return;
 		}
 		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
@@ -39,10 +38,5 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 		sharder.spawn();
 		ShardIPC(sharder);
-		/* Bot.on("debug", info => {
-			 winston.verbose(info);
-		}); */
-		// Debug here
-		// process.exit(0);
 	}
 });
