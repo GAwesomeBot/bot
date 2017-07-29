@@ -1,4 +1,5 @@
-const Discord = require("discord.js");
+// TODO: Uncomment this if you need it, otherwise #SaveMoreRAM I guess
+// const Discord = require("discord.js");
 
 module.exports = sharder => {
 	sharder.on("message", (shard, msg) => {
