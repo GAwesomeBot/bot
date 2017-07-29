@@ -3,4 +3,5 @@ module.exports = {
 	ShardIPC: require("./ShardIPC.js"),
 	Utils: require("./Utils/"),
 	ObjectDefines: require("./ObjectDefines.js"),
+	GlobalDefines: require("./GlobalDefines.js"),
 };

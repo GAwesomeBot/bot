@@ -9,6 +9,8 @@ module.exports = {
 	},
 	globals: {
 		winston: true,
+		rp: true,
+		requestPromise: true,
 	},
 	rules: {
 		"no-await-in-loop": "warn",
