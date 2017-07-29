@@ -75,4 +75,6 @@ module.exports = () => {
 			return Array.from(Array(Math.ceil(this.length / number)), (_, i) => this.slice(i * number, (i * number) + number));
 		},
 	});
+
+	winston.debug(`Loaded ${properties} Object.assigns`);
 };
