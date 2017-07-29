@@ -1,7 +1,6 @@
 const { rp } = require("./Utils.js");
 const dgr = require("download-github-repo");
-const rimraf = require("rimraf");
-const fs = require("fs");
+const fs = require("fs-extra");
 
 module.exports = {
 	check: config => new Promise(async (resolve, reject) => {
@@ -55,21 +54,23 @@ module.exports = {
 		io.emit("update", "downloading");
 		winston.info(`Downloading the newest version from GitHub`);
 
-		if (!fs.existsSync("./Temp")) fs.mkdirSync("./Temp");
-		const tempPath = fs.mkdtempSync("./Temp/v-");
+		if (!await fs.exists("./Temp")) await fs.mkdir("./Temp");
+		const tempPath = await fs.mkdtemp("./Temp/v-");
 		let repoBranch = config.branch;
 		if (config.branc === "stable") repoBranch = "master";
 
-		dgr(`GilbertGobbels/GAwesomeBot#${repoBranch}`, tempPath, () => {
+		dgr(`GilbertGobbels/GAwesomeBot#${repoBranch}`, tempPath, async () => {
 			const body = res.body.latest;
 			const filesc = [];
 			const files = [];
 
+			/* eslint-disable no-await-in-loop*/
+			// TODO: Gilbert make this use await Promise.all pls
 			for (let i = 0; i < body.files.length; i++) {
 				// TODO: Gilbert check this pls
 				if (body.files[i].substring(0, 13) === "Configurations/") {
-					const dataNew = fs.readFileSync(`${tempPath}/${body.files[i]}`, "utf8");
-					const dataOld = fs.readFileSync(`./${body.files[i]}`, "utf8");
+					const dataNew = await fs.readFile(`${tempPath}/${body.files[i]}`, "utf8");
+					const dataOld = await fs.readFile(`./${body.files[i]}`, "utf8");
 					filesc.push({
 						file: body.files[i],
 						dataNew,
@@ -79,7 +80,7 @@ module.exports = {
 					files.push(body.files[i]);
 				}
 			}
-
+			/* eslint-enable no-await-in-loop*/
 			io.emit("update", "files_conf");
 			io.on("confirm", data => {
 				if (data === "filesc") io.emit("files_conf", filesc);
@@ -88,16 +89,18 @@ module.exports = {
 
 			winston.info(`Awaiting response from client..`);
 
-			io.on("files_conf", files_conf => {
+			io.on("files_conf", async files_conf => {
 				winston.info(`Installing configuration files..`);
+				const promiseArray = [];
 				for (let i = 0; i < files_conf.length; i++) {
-					fs.writeFileSync(`./${files_conf[i].file}`, files_conf[i].data);
+					promiseArray.push(fs.writeFile(`./${files_conf[i].file}`, files_conf[i].data));
 				}
+				await Promise.all(promiseArray);
 
 				io.emit("update", "files");
 				winston.info(`Awaiting response from client..`);
 
-				io.on("files", cfiles => {
+				io.on("files", async cfiles => {
 					winston.info(`Installing the new files..`);
 					io.emit("update", "install");
 
@@ -108,16 +111,23 @@ module.exports = {
 					io.emit("update", "done");
 					winston.info(`Finalizing the update..`);
 
-					const configg = JSON.parse(fs.readFileSync(`./Configurations/config.json`, "utf8"));
+					const configg = JSON.parse(await fs.readFile(`./Configurations/config.json`, "utf8"));
 					configg.version = body.version;
-					fs.writeFileSync("./Configurations/config.json", JSON.stringify(configg, null, 4));
+					try {
+						await fs.writeFile("./Configurations/config.json", JSON.stringify(configg, null, 4));
+					} catch (err) {
+						winston.verbose(`There has been an error saving the config.json file.. Impossible!`, err);
+					}
 
 					winston.info(`Cleaning up..`);
 
-					rimraf(tempPath, () => {
+					try {
+						await fs.remove(tempPath);
 						io.emit("update", "finished");
 						winston.info(`Finished updating. Please restart GAwesomeBot.`);
-					});
+					} catch (err) {
+						winston.verbose(`Couldn't remove the temp directory for the updater..`, err);
+					}
 				});
 			});
 		});

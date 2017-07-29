@@ -1,9 +1,8 @@
 module.exports = () => {
-	const properties = 5;
-
+	const properties = 6;
 	/**
 	 * Removes null objects from an array
-	 * @returns {array} The array without the null objects
+	 * @returns {Array} The array without the null objects
 	 */
 	Object.assign(Array.prototype, {
 		spliceNullElements() {
@@ -18,7 +17,7 @@ module.exports = () => {
 
 	/**
 	 * Randomised output from an array
-	 * @returns {?anything} Random output from the array
+	 * @returns {?Anything} Random output from the array
 	 */
 	Object.assign(Array.prototype, {
 		random() {
@@ -28,9 +27,9 @@ module.exports = () => {
 
 	/**
 	 * Check if a string contains at least one element from an array
-	 * @param {array} arr The array containing the elements
-	 * @param {boolean} isCaseSensitive Should case sensitivity be ignored
-	 * @returns {?object}
+	 * @param {Array} arr The array containing the elements
+	 * @param {Boolean} isCaseSensitive Should case sensitivity be ignored
+	 * @returns {?Object}
 	 */
 	Object.assign(String.prototype, {
 		containsArray(arr, isCaseSensitive) {
@@ -55,9 +54,9 @@ module.exports = () => {
 
 	/**
 	 * Replaces every occurence of a string with a string
-	 * @param {?string} target The string to look for
-	 * @param {?string} replacement What should target get replaced with
-	 * @returns {?string} The new string
+	 * @param {?String} target The string to look for
+	 * @param {?String} replacement What should target get replaced with
+	 * @returns {?String} The new string
 	 */
 	Object.assign(String.prototype, {
 		replaceAll(target, replacement) {
@@ -67,12 +66,23 @@ module.exports = () => {
 
 	/**
 	 * Chunks an array to the specified number, returning smaller arrays
-	 * @param {number} number The number of elements in the splitted arrays
-	 * @returns {array} The new array, with mini arrays in it, chunked at number elements per mini array
+	 * @param {Number} number The number of elements in the splitted arrays
+	 * @returns {Array} The new array, with mini arrays in it, chunked at number elements per mini array
 	 */
 	Object.assign(Array.prototype, {
 		chunk(number) {
 			return Array.from(Array(Math.ceil(this.length / number)), (_, i) => this.slice(i * number, (i * number) + number));
+		},
+	});
+
+	/**
+	 * Escapes all possible RegExp variables from the string
+	 * @returns {String} The escaped String
+	 */
+	Object.assign(String.prototype, {
+		escapeRegex() {
+			const matchOperators = /[|\\{}()[\]^$+*?.]/g;
+			return this.replace(matchOperators, "\\$&");
 		},
 	});
 
