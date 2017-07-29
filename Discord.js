@@ -453,7 +453,7 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 						description: `${adminMessage}, so I banned them from the server.`,
 					},
 				});
-				ModLog.create(server, serverDocument, "Ban", member, null, strikeMessage)
+				ModLog.create(server, serverDocument, "Ban", member, null, strikeMessage);
 			} catch (err) {
 				await blockMember();
 			}
@@ -485,7 +485,7 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 	// Save serverDocument
 	serverDocument.save(err => {
 		if (err) {
-			winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err );
+			winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err);
 		}
 	});
 };
