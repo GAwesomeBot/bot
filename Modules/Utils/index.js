@@ -7,5 +7,7 @@ const requestPromise = require("request-promise-native").defaults({
 module.exports = {
 	rp: requestPromise,
 	request: requestPromise,
-	RankScoreCalculator: require("./Utils/RankScoreCalculator.js"),
+	RankScoreCalculator: require("./RankScoreCalculator.js"),
+	Gist: require("./GitHubGist.js"),
+	RegExpMaker: require("./RegExpMaker.js"),
 };
