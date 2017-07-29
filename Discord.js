@@ -1,17 +1,20 @@
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
-const { RankScoreCalculator: computeRankScores, Console } = require("./Modules/");
-
-const configJS 		= require("./Configurations/config.js");
-
-const database 		= require("./Database/Driver.js");
+const { Console, Utils } = require("./Modules/");
+const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDefines } = Utils;
+const configJS = require("./Configurations/config.js");
+const configJSON = require("./Configurations/config.json");
+const database = require("./Database/Driver.js");
 
 const privateCommandModules = {};
 const commandModules = {};
 
-// Set up default Winston Logger File and Global Instance
+// Set up a global instance of Winston for this Shard
 global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
+
+ObjectDefines();
+GlobalDefines();
 
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
@@ -29,7 +32,7 @@ const bot = new Discord.Client({
 // Value set once READY triggers
 bot.isReady = false;
 
-var db;
+let db;
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
 	process.exit(1);
@@ -258,7 +261,7 @@ bot.getGame = member => new Promise((resolve, reject) => {
 
 // Check if a user has leveled up a rank
 /* eslint-disable max-depth, no-await-in-loop */
-bot.checkRank = async(server, serverDocument, member, memberDocument, override) => {
+bot.checkRank = async (server, serverDocument, member, memberDocument, override) => {
 	if (member && member.id !== bot.user.id && !member.user.bot && server) {
 		const currentRankScore = memberDocument.rank_score + override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice);
 		for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
@@ -292,18 +295,17 @@ bot.checkRank = async(server, serverDocument, member, memberDocument, override) 
 						}
 						// Add 100 AwesomePoints as reward
 						if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-							db.users.findOrCreate({ _id: member.id }, (err, userDocument) => {
-								if (!err && userDocument) {
-									userDocument.points += 100;
-									userDocument.save(usrErr => {
-										if (usrErr) {
-											winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
-										}
-									});
-								} else {
-									winston.error(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
-								}
+							const userDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {
+								winston.error(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 							});
+							if (userDocument) {
+								userDocument.points += 100;
+								userDocument.save(usrErr => {
+									if (usrErr) {
+										winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
+									}
+								});
+							}
 						}
 						// Assign new rank role if necessary
 						if (serverDocument.config.ranks_list[i].role_id) {
@@ -328,6 +330,242 @@ bot.checkRank = async(server, serverDocument, member, memberDocument, override) 
 	}
 };
 /* eslint-enable max-depth */
+
+// Handle a spam or filter violation on a server
+bot.handleViolation = async (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) => {
+	// Deduct 50 GAwesomePoints if necessary
+	if (serverDocument.config.commands.points.isEnabled) {
+		userDocument.points -= 50;
+		userDocument.save(userErr => {
+			if (userErr) {
+				winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
+			}
+		});
+	}
+
+	// Add a strike for the user
+	memberDocument.strikes.push({
+		_id: bot.user.id,
+		reason: strikeMessage,
+	});
+
+	// Assign role if necessary
+	if (roleID) {
+		const role = server.roles.get(roleID);
+		if (role) {
+			try {
+				await member.addRole(role);
+			} catch (err) {
+				winston.error(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
+			}
+		}
+	}
+
+	const blockMember = async () => {
+		if (!serverDocument.config.blocked.includes(member.id)) {
+			serverDocument.config.blocked.push(member.id);
+		}
+		try {
+			await member.send({
+				embed: {
+					color: 0xFF0000,
+					description: `${userMessage}, so I blocked you from using me on the server.`,
+					footer: {
+						text: `Contact a moderator to resolve this.`,
+					},
+				},
+			});
+		} catch (err) {
+			// Whatever
+		}
+		await bot.messageBotAdmins(server, serverDocument, {
+			embed: {
+				color: 0x3669FA,
+				description: `${adminMessage}, so I blocked them from using me on the server.`,
+			},
+		});
+		ModLog.create(server, serverDocument, "Block", member, null, strikeMessage);
+	};
+
+	switch (action) {
+		case "block": {
+			await blockMember();
+			break;
+		}
+		case "mute": {
+			try {
+				await bot.muteMember(channel, member);
+				await member.send({
+					embed: {
+						color: 0xFF0000,
+						description: `${userMessage}, so I muted you in the channel.`,
+						footer: {
+							text: `Contact a moderator to resolve this.`,
+						},
+					},
+				});
+				await bot.messageBotAdmins(server, serverDocument, {
+					embed: {
+						color: 0x3669FA,
+						description: `${adminMessage}, so I muted them in the channel.`,
+					},
+				});
+				ModLog.create(server, serverDocument, "Mute", member, null, strikeMessage);
+			} catch (err) {
+				await blockMember();
+			}
+			break;
+		}
+		case "kick": {
+			try {
+				await member.kick(`${adminMessage}, so I kicked them from the server.`);
+				await member.send({
+					embed: {
+						color: 0xFF0000,
+						description: `${userMessage}, so I kicked you from the server. Goodbye.`,
+					},
+				});
+				await bot.messageBotAdmins(server, serverDocument, {
+					color: 0x3669FA,
+					description: `${adminMessage}, so I kicked them from the server.`,
+				});
+				ModLog.create(server, serverDocument, "Kick", member, null, strikeMessage);
+			} catch (err) {
+				await blockMember();
+			}
+			break;
+		}
+		case "ban": {
+			try {
+				await member.ban({
+					days: 0,
+					reason: `${adminMessage}, so I banned them from the server.`,
+				});
+				await member.send({
+					embed: {
+						color: 0xFF0000,
+						description: `${userMessage}, so I banned you from the server. Goodbye.`,
+					},
+				});
+				await bot.messageBotAdmins(server, serverDocument, {
+					embed: {
+						color: 0x3669FA,
+						description: `${adminMessage}, so I banned them from the server.`,
+					},
+				});
+				ModLog.create(server, serverDocument, "Ban", member, null, strikeMessage)
+			} catch (err) {
+				await blockMember();
+			}
+			break;
+		}
+		case "none":
+		default: {
+			try {
+				await member.send({
+					embed: {
+						color: 0xFF0000,
+						description: `${userMessage}, and the chat moderator have again been notified about this.`,
+					},
+				});
+				await bot.messageBotAdmins(server, serverDocument, {
+					embed: {
+						color: 0x3669FA,
+						description: `${adminMessage}, but I didn't do anything about it.`,
+					},
+				});
+				ModLog.create(server, serverDocument, "Warning", member, null, strikeMessage);
+			} catch (err) {
+				// Whatever
+			}
+			break;
+		}
+	}
+
+	// Save serverDocument
+	serverDocument.save(err => {
+		if (err) {
+			winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err );
+		}
+	});
+};
+
+// Check if user has a bot admin role on a server / is a bot admin on the server
+bot.getUserBotAdmin = (server, serverDocument, member) => {
+	if (!server || !serverDocument || !member) return -1;
+
+	if (configJSON.maintainers.includes(member.id)) return 4;
+
+	if (server.ownerID === member.id) return 3;
+
+	let adminLevel = 0;
+	let roles = member.roles.array();
+	for (const role of roles) {
+		const adminDocument = serverDocument.config.admins.id(role.id);
+		if (adminDocument && adminDocument.level > adminLevel) {
+			adminLevel = adminDocument.level;
+		}
+		if (adminLevel >= 3) break;
+	}
+	return adminLevel;
+};
+
+// Message the bot admins for a server
+bot.messageBotAdmins = (server, serverDocument, messageObject) => {
+	let content = "";
+	if (messageObject.content) {
+		content = messageObject.content;
+		delete messageObject.content;
+	}
+	server.members.forEach(async member => {
+		if (bot.getUserBotAdmin(server, serverDocument, member) >= 2 && member.id !== bot.user.id && !member.user.bot) {
+			try {
+				await member.send(content, messageObject);
+			} catch (err) {
+				winston.verbose(`bot.messageBotAdmins error at sending, probably blocked the bot / doesn't have messages from non-friends`, err);
+			}
+		}
+	});
+};
+
+// Check if a user is muted on a server, with or without overwrites
+bot.isMuted = (channel, member) => !channel.permissionsFor(member).has("SEND_MESSAGES");
+
+/**
+ * Mutes a member of a server in a channel
+ * Doesn't account for READ_MESSAGES
+ * @param channel The channel to unmute
+ * @param member The member to unmute
+ */
+bot.muteMember = async (channel, member) => {
+	if (bot.isMuted(channel, member) && channel.type === 0) {
+		try {
+			await channel.overwritePermissions(member.id, {
+				SEND_MESSAGES: false,
+			});
+		} catch (err) {
+			winston.verbose(`Probably missing permissions to mute member in "${channel.guild}".`, err);
+		}
+	}
+};
+
+/**
+ * Unmute a member of a server in a channel
+ * Doesn't account for READ_MESSAGES
+ * @param channel The channel to unmute
+ * @param member The member to unmute
+ */
+bot.unmuteMember = async (channel, member) => {
+	if (bot.isMuted(channel, member) && channel.type === 0) {
+		try {
+			await channel.overwritePermissions(member.id, {
+				SEND_MESSAGES: true,
+			});
+		} catch (err) {
+			winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+		}
+	}
+};
 
 const shard = bot.shard;
 
