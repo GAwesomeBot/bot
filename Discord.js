@@ -6,6 +6,7 @@ const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDef
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const database = require("./Database/Driver.js");
+const Events = require("./Events/");
 
 const privateCommandModules = {};
 const commandModules = {};
@@ -251,12 +252,12 @@ bot.roleSearch = (string, server) => new Promise((resolve, reject) => {
 });
 
 // Gets the game a member is playing
-bot.getGame = member => new Promise((resolve, reject) => {
+bot.getGame = member => new Promise(resolve => {
 	let presence = member.presence;
 	if (presence.game.name) {
 		resolve(presence.game.name);
 	}
-	reject(new Error(`${member.user} didn't have any game`));
+	resolve("");
 });
 
 // Check if a user has leveled up a rank
@@ -300,10 +301,8 @@ bot.checkRank = async (server, serverDocument, member, memberDocument, override)
 							});
 							if (userDocument) {
 								userDocument.points += 100;
-								userDocument.save(usrErr => {
-									if (usrErr) {
-										winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
-									}
+								userDocument.save().catch(usrErr => {
+									winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
 								});
 							}
 						}
@@ -336,10 +335,8 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 	// Deduct 50 GAwesomePoints if necessary
 	if (serverDocument.config.commands.points.isEnabled) {
 		userDocument.points -= 50;
-		userDocument.save(userErr => {
-			if (userErr) {
-				winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
-			}
+		userDocument.save().catch(usrErr => {
+			winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
 		});
 	}
 
@@ -483,10 +480,8 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 	}
 
 	// Save serverDocument
-	serverDocument.save(err => {
-		if (err) {
-			winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err);
-		}
+	serverDocument.save().catch(err => {
+		winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err);
 	});
 };
 
@@ -575,3 +570,43 @@ bot.login(process.env.CLIENT_TOKEN).then(() => {
 }).catch(err => {
 	winston.error("Failed to connect to discord :/\n", { err: err });
 });
+
+bot.on("error", error => {
+	winston.verbose(`The Client WebSocket encountered an error..`, error);
+});
+
+bot.on("guildUnavailable", guild => {
+	winston.verbose(`${guild} was / is unavailable`, { date: Date.now() });
+});
+
+bot.on("guildMembersChunk", (members, guild) => {
+	winston.verbose(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.size });
+});
+
+bot.once("ready", async () => {
+	await Events.onceReady(bot, db, configJS, configJSON);
+});
+
+// bot.on("", event => {
+//
+// });
+//
+// bot.on("", event => {
+//
+// });
+//
+// bot.on("", event => {
+//
+// });
+//
+// bot.on("", event => {
+//
+// });
+//
+// bot.on("", event => {
+//
+// });
+//
+// bot.on("", event => {
+//
+// });
