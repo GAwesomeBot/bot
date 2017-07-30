@@ -335,7 +335,7 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 	// Deduct 50 GAwesomePoints if necessary
 	if (serverDocument.config.commands.points.isEnabled) {
 		userDocument.points -= 50;
-		userDocument.save().catch(usrErr => {
+		userDocument.save().catch(userErr => {
 			winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
 		});
 	}
@@ -580,11 +580,15 @@ bot.on("guildUnavailable", guild => {
 });
 
 bot.on("guildMembersChunk", (members, guild) => {
-	winston.verbose(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.size });
+	winston.verbose(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.length });
 });
 
 bot.once("ready", async () => {
-	await Events.onceReady(bot, db, configJS, configJSON);
+	try {
+		await Events.onceReady(bot, db, configJS, configJSON);
+	} catch (err) {
+		winston.warn(`Got an error while trying to run READY`, err);
+	}
 });
 
 // bot.on("", event => {
