@@ -37,9 +37,11 @@ module.exports = async (bot, db, server, serverDocument) => {
 		});
 		if (userDocument) {
 			userDocument.points += amount;
-			userDocument.save(userErr => {
-				if (userErr) winston.warn(`Failed to save user document for activity points`, { usrid: member.id }, userErr);
-			});
+			try {
+				await userDocument.save();
+			} catch (err) {
+				winston.warn(`Failed to save user document for activity points`, { usrid: member.id }, err);
+			}
 		}
 	};
 	if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
@@ -61,11 +63,10 @@ module.exports = async (bot, db, server, serverDocument) => {
 	serverDocument.stats_timestamp = Date.now();
 
 	// Save changes to serverDocument
-	serverDocument.save(err => {
-		if (err) {
-			winston.warn(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
-		} else {
-			winston.info(`Cleared stats for server "${server}"`, { svrid: server.id });
-		}
-	});
+	try {
+		await serverDocument.save();
+		winston.info(`Cleared stats for server "${server}"`, { svrid: server.id });
+	} catch (err) {
+		winston.warn(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
+	}
 };
