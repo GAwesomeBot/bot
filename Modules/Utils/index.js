@@ -8,4 +8,5 @@ module.exports = {
 	ObjectDefines: require("./ObjectDefines.js"),
 	RankScoreCalculator: require("./RankScoreCalculator.js"),
 	RegExpMaker: require("./RegExpMaker.js"),
+	SetReminder: require("./SetReminder.js"),
 };
