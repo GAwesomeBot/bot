@@ -11,6 +11,8 @@ const { Utils } = require("../Modules/");
 const {
 	ClearServerStats: clearStats,
 	SetReminder: setReminder,
+	SetCountdown: setCountdown,
+	Giveaways,
 } = Utils;
 
 /* eslint-disable max-len */
@@ -82,6 +84,52 @@ module.exports = async (bot, db, configJS, configJSON) => {
 					promiseArray.push(setReminder(bot, userDocuments[i], userDocuments[i].reminders[j]));
 				}
 			}
+		}
+		await Promise.all(promiseArray);
+	};
+
+	// Set existing countdowns in servers to send message when they expire
+	const setCountdowns = async () => {
+		const promiseArray = [];
+		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).catch(err => {
+			winston.warn("Failed to get countdowns", err);
+		});
+		if (serverDocuments) {
+			for (let i = 0; i < serverDocuments.length; i++) {
+				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
+					promiseArray.push(setCountdown(bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
+				}
+			}
+		}
+		await Promise.all(promiseArray);
+	};
+
+	// Set existing giveaways to end when they expire
+	const setGiveaways = async () => {
+		const promiseArray = [];
+		const serverDocuments = await db.servers.find({
+			channels: {
+				$elemMatch: {
+					"giveaway.isOngoing": true,
+				},
+			},
+		}).catch(err => {
+			winston.warn("Failed to get giveaways", err);
+		});
+		if (serverDocuments) {
+			serverDocuments.forEach(serverDocument => {
+				const svr = bot.guilds.get(serverDocument._id);
+				if (svr) {
+					serverDocument.channels.forEach(channelDocument => {
+						if (channelDocument.giveaway.isOngoing) {
+							const ch = svr.channels.get(channelDocument._id);
+							if (ch) {
+								promiseArray.push(Giveaways.endTimedGiveaway(bot, db, svr, ch, channelDocument.giveaway.expiry_timestamp));
+							}
+						}
+					});
+				}
+			});
 		}
 		await Promise.all(promiseArray);
 	};
