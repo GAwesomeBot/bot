@@ -18,7 +18,6 @@ const {
 /* eslint-disable max-len */
 module.exports = async (bot, db, configJS, configJSON) => {
 	// TODO: Handler for these messages
-	bot.shard.send(`[READY:${bot.shard.id}] guilds:${bot.guilds.size} channels:${bot.channels.size} users:${bot.users.size}`);
 
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = async () => {
@@ -132,5 +131,41 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			});
 		}
 		await Promise.all(promiseArray);
+	};
+
+	// Start streaming RSS timer
+	const startStreamingRSS = async () => {
+		const serverDocuments = await db.servers.find({}).catch(err => {
+			winston.warn(`Failed to.. get server documents? O.o`, err);
+		});
+		if (serverDocuments) {
+			const sendStreamingRSSToServer = async i => {
+				if (i < serverDocuments.length) {
+					const serverDocument = serverDocuments[i];
+					const server = bot.guilds.get(serverDocument._id);
+					if (server) {
+						const sendStreamingRSSFeed = async j => {
+							if (j < serverDocument.config.rss_feeds.length) {
+								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
+									sendStreamingRSSUpdates(bot, server, serverDocument, serverDocument.config.rss_feeds[j]).then(async () => {
+										await sendStreamingRSSFeed(++j);
+									});
+								} else {
+									await sendStreamingRSSFeed(++j);
+								}
+							} else {
+								await sendStreamingRSSToServer(++i);
+							}
+						};
+						await sendStreamingRSSFeed(0);
+					}
+				} else {
+					setTimeout(async () => {
+						await startStreamingRSS();
+					}, 600000);
+				}
+			};
+			await sendStreamingRSSToServer(0);
+		}
 	};
 };
