@@ -17,7 +17,7 @@ const auth = {
 		wolframAppID: "",
 		openExchangeRatesKey: "",
 		omdbAPI: "",
-		gistKey: "3b82480b034e38989b44187551d543e7ca963fba",
+		gistKey: "3f9044fa2ea8d19ae\u003102bd8161291af805dc7611",
 	},
 };
 
