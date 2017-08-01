@@ -9,6 +9,8 @@ module.exports = {
 	ObjectDefines: require("./ObjectDefines.js"),
 	RankScoreCalculator: require("./RankScoreCalculator.js"),
 	RegExpMaker: require("./RegExpMaker.js"),
+	RSS: require("./RSS.js"),
 	SetCountdown: require("./SetCountdown.js"),
 	SetReminder: require("./SetReminder.js"),
+	StreamingRSS: require("./StreamingRSS.js"),
 };
