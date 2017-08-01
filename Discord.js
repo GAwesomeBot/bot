@@ -569,9 +569,11 @@ bot.unmuteMember = async (channel, member) => {
 
 const shard = bot.shard;
 
+bot.IPC = shardIPC
+
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
-	shardIPC.listen();
+	bot.IPC.listen();
 }).catch(err => {
 	winston.error("Failed to connect to discord :/\n", { err: err });
 });
@@ -594,7 +596,7 @@ bot.once("ready", async () => {
 		Events.onceReady(bot, db, configJS, configJSON);
 		await winston.verbose("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
-		shardIPC.send("ready", {id: bot.shard.id});
+		bot.IPC.send("ready", {id: bot.shard.id});
 	} catch (err) {
 		winston.error(`A critical error occurred while starting GAB x.x\n`, err);
 	}

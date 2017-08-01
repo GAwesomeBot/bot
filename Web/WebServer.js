@@ -105,6 +105,10 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 // Setup the web server
 module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Setup passport and express-session
+	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
+		bot.IPC.send("warnDefaultSecret", {});
+	}
+	
 	passport.use(new discordStrategy({
 		clientID: auth.discord.clientID,
 		clientSecret: auth.discord.clientSecret,
@@ -123,7 +127,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		mongooseConnection: database.getConnection(),
 	});
 	app.use(session({
-		secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
+		secret: configJS.secret,
 		resave: false,
 		saveUninitialized: false,
 		store: sessionStore,
@@ -194,7 +198,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	const io = sio(typeof httpsServer !== "undefined" ? httpsServer : server);
 	io.use(passportSocketIo.authorize({
 		key: "connect.sid",
-		secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
+		secret: configJS.secret,
 		store: sessionStore,
 		passport,
 	}));

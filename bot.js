@@ -37,11 +37,16 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 		sharder.IPC = await new SharderIPC(sharder, winston);
 		await sharder.IPC.listen();
+		// Sharder events
 		sharder.IPC.on("ready", (msg, shard) => {
 			if (shard === sharder.totalShards - 1) {
 				winston.info("All shards ready.")
 			}
 		});
+		sharder.IPC.once("warnDefaultSecret", (msg, shard) => {
+			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!")
+		})
+		
 		sharder.spawn();
 	}
 });

@@ -3,7 +3,7 @@ const configs = {
    * Represents how many shards the bot will have.
    * It *must* be a integer, aka *1*, *52* etc.
    */
-	shardTotal: 1,
+	shardTotal: 2,
 	/*
    * The URL all the bot commands should point to.
    * Example: /about shows this link for the web interface
@@ -44,12 +44,18 @@ const configs = {
    */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
 	/*
-	 * Level of output the console should be display. List of levels:
-	 * error, warn, info, debug, verbose and silly
+	 * Level of output the console should display. List of levels:
+	 * error, warn, info, debug and verbose.
 	 * Recommended to stay as info to prevent console cluttering.
 	 * All log messages are always stored in the log files.
 	 */
 	consoleLevel: "info",
+	/*
+	 * The secret used to sign session hashes.
+	 * This must be a random and secure string!
+	 * Leaving this as default is NOT recommended.
+	 */
+	secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
 	/*
    * Optional: If you want your bot to have an invite link to your guild, for support or things.
    */

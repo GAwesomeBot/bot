@@ -16,7 +16,7 @@ module.exports = class Console {
 				new winston.transports.Console({
 					level: config.consoleLevel,
 					colorize: true,
-					label: `GAwesomeBot | ${type === "master" ? "Master" : type}`,
+					label: `${type === "master" ? "Master" : type}`,
 					timestamp: () => `[${chalk.grey(moment().format("HH:mm:ss"))}]`,
 				}),
 				new winston.transports.DailyRotateFile({
