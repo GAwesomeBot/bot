@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
 module.exports = class Giveaways {
-	constructor() {
+	constructor () {
 		throw new Error(`The ${this.constructor.name} class shouldn't be instantiated!`);
 	}
 
-	static async start(bot, db, server, serverDocument, user, channel, channelDocument, title, secret, duration) {
+	static async start (bot, db, server, serverDocument, user, channel, channelDocument, title, secret, duration) {
 		if (!channelDocument.giveaway.isOngoing) {
 			channelDocument.giveaway.isOngoing = true;
 			channelDocument.giveaway.expiry_timestamp = Date.now() + duration;
@@ -32,7 +32,7 @@ module.exports = class Giveaways {
 		}
 	}
 
-	static async end(bot, db, server, channel) {
+	static async end (bot, db, server, channel) {
 		const serverDocument = await db.findOne({ _id: server.id }).catch(err => {
 			winston.warn(`Failed to end giveaway`, err);
 		});
@@ -86,7 +86,7 @@ module.exports = class Giveaways {
 		}
 	}
 	// eslint-disable-next-line require-await
-	static async endTimedGiveaway(bot, db, server, channel, timer) {
+	static async endTimedGiveaway (bot, db, server, channel, timer) {
 		setTimeout(async () => {
 			await this.end(bot, db, server, channel);
 		}, timer - Date.now());
