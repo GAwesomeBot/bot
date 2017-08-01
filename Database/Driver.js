@@ -22,6 +22,7 @@ module.exports = {
 			socketTimeoutMS: 30000,
 			keepAlive: 120,
 			poolSize: 100,
+			useMongoClient: true,
 		});
 
 		mongoose.model("servers", serverSchema);
