@@ -1,4 +1,5 @@
 const express = require("express");
+const http = require("http");
 const https = require("https");
 const compression = require("compression");
 const sio = require("socket.io");
@@ -33,13 +34,14 @@ const xssFilters = require("xss-filters");
 const removeMd = require("remove-markdown");
 
 const database = require("./../Database/Driver.js");
+/*
 const createMessageOfTheDay = require("./../Modules/MessageOfTheDay.js");
 const Giveaways = require("./../Modules/Giveaways.js");
 const Lotteries = require("./../Modules/Lotteries.js");
 const Polls = require("./../Modules/Polls.js");
 const Trivia = require("./../Modules/Trivia.js");
 const Updater = require("./../Modules/Updater.js");
-
+*/
 const app = express();
 app.use(compression());
 app.enable("trust proxy");
@@ -103,9 +105,13 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 // Setup the web server
 module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Setup passport and express-session
+	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
+		bot.IPC.send("warnDefaultSecret", {});
+	}
+	
 	passport.use(new discordStrategy({
-		clientID: auth.platform.client_id,
-		clientSecret: auth.platform.client_secret,
+		clientID: auth.discord.clientID,
+		clientSecret: auth.discord.clientSecret,
 		callbackURL: `${configJS.hosting_url}login/callback`,
 		scope: discordOAuthScopes,
 	}, (accessToken, refreshToken, profile, done) => {
@@ -121,7 +127,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		mongooseConnection: database.getConnection(),
 	});
 	app.use(session({
-		secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
+		secret: configJS.secret,
 		resave: false,
 		saveUninitialized: false,
 		store: sessionStore,
@@ -145,7 +151,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Serve public dir
-	app.use("/static", express.static(`${__dirname}/public`));
+	app.use("/static", express.static(`${__dirname}/public`, { maxAge: 86400000 }));
 
 	// Handle errors (redirect to error page)
 	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
@@ -171,21 +177,28 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			key: privKey,
 			cert: cert,
 		};
-		var httpsServer = https.createServer(credentials, app);
+		const httpsServer = https.createServer(credentials, app);
+		httpsServer.on("error", (err) => {
+			winston.error("We failed to listen to your incoming memes on the secure WebServer x/\n", { "err": err })
+		})
 		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
 			winston.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
 		});
 	}
-	const server = app.listen(configJS.httpPort, configJS.serverIP, () => {
-		winston.info(`Opened http web interface on ${configJS.server_ip}:${configJS.httpPort}`);
+	const server = http.createServer(app);
+	server.on("error", (err) => {
+		winston.error("We failed to listen to your incoming memes on the WebServer x/\n", { "err": err })
+	})
+	server.listen(configJS.httpPort, configJS.serverIP, () => {
+		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
 		process.setMaxListeners(0);
 	});
 
 	// Setup socket.io for dashboard
-	const io = sio(server);
+	const io = sio(typeof httpsServer !== "undefined" ? httpsServer : server);
 	io.use(passportSocketIo.authorize({
 		key: "connect.sid",
-		secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
+		secret: configJS.secret,
 		store: sessionStore,
 		passport,
 	}));
@@ -643,7 +656,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Header image provider
 	app.get("/header-image", (req, res) => {
-		res.sendFile(`${__dirname}/public/img/${configJSON.headerImage}`);
+			res.sendFile(`${__dirname}/public/img/${configJSON.headerImage}`, err => {
+				if (err) winston.warn("It seems your headerImage value is invalid!", { "err": err })
+			});
 	});
 
 	// Server list provider for typeahead

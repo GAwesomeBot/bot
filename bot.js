@@ -1,8 +1,8 @@
 const database 		= require("./Database/Driver.js");
 const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
-const Discord			= require("Discord.js");
-const { Console, ShardIPC } = require("./Modules/");
+const Discord			= require("discord.js");
+const { Console, SharderIPC } = require("./Modules/");
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -34,9 +34,19 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 		sharder.on("launch", shard => {
 			winston.info(`Shard ${shard.id} launched.`, { shard: shard.id });
-			if (shard.id === sharder.totalShards - 1) winston.info(`All Shards Launched. Started Bot Application`);
 		});
+		sharder.IPC = await new SharderIPC(sharder, winston);
+		await sharder.IPC.listen();
+		// Sharder events
+		sharder.IPC.on("ready", (msg, shard) => {
+			if (shard === sharder.totalShards - 1) {
+				winston.info("All shards ready.")
+			}
+		});
+		sharder.IPC.once("warnDefaultSecret", (msg, shard) => {
+			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!")
+		})
+		
 		sharder.spawn();
-		ShardIPC(sharder);
 	}
 });
