@@ -17,6 +17,11 @@ const {
 
 /* eslint-disable max-len */
 module.exports = async (bot, db, configJS, configJSON) => {
+<<<<<<< HEAD
+=======
+	// TODO: Handler for these messages
+
+>>>>>>> 587e371a525af5134588f511d4508fa51ddc0591
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = async () => {
 		const promiseArray = [];
