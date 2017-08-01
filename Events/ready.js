@@ -17,8 +17,6 @@ const {
 
 /* eslint-disable max-len */
 module.exports = async (bot, db, configJS, configJSON) => {
-	// TODO: Handler for these messages
-
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = async () => {
 		const promiseArray = [];
