@@ -10,7 +10,9 @@
     "url": "https://github.com/GilbertGobbels/GAwesomeBot.git"
   },
   "scripts": {
-    "start": "npm install --save && node bot.js"
+    "first-time": "npm install -g --production windows-build-tools && npm install --production",
+		"test": "npm run lint",
+		"lint": "eslint ."
   },
   "dependencies": {
     "body-parser": "*",
@@ -47,12 +49,10 @@
     "passport": "*",
     "passport-discord": "*",
     "passport.socketio": "*",
-    "random-animal": "*",
     "remove-markdown": "*",
     "request": "*",
     "request-promise-native": "*",
     "require-reload": "*",
-    "rimraf": "*",
     "searchitunes": "*",
     "showdown": "*",
     "socket.io": "*",
@@ -67,7 +67,9 @@
     "wolfram-node": "*",
     "write-file-atomic": "*",
     "xml-parser": "*",
-    "xss-filters": "*",
-    "youtube-node": "*"
-  }
+    "xss-filters": "*"
+  },
+	"devDependencies": {
+		"eslint": "^4.3.0"
+	}
 }
