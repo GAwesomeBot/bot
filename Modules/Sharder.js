@@ -13,7 +13,7 @@ class Shard {
     });
     
     this.process.on("message", msg => {
-      this.sharder.emit(this, msg);
+      this.sharder.emit("message", this, msg);
     });
   }
   

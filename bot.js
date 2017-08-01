@@ -35,8 +35,10 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 		await sharder.IPC.listen();
 		// Sharder events
+		sharder.ready = 0
 		sharder.IPC.on("ready", (msg, shard) => {
-			if (shard === sharder.count - 1) {
+			sharder.ready++
+			if (sharder.ready === sharder.count) {
 				winston.info("All shards ready.")
 			}
 		});
