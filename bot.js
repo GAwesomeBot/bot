@@ -2,7 +2,8 @@ const database 		= require("./Database/Driver.js");
 const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
 const Discord			= require("discord.js");
-const { Console, SharderIPC } = require("./Modules/");
+const { Console, SharderIPC, Sharder } = require("./Modules/");
+const cluster			= require("cluster");
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -32,8 +33,8 @@ database.initialize(configJS.databaseURL).catch(err => {
 			totalShards: configJS.shardTotal,
 			token: auth.discord.clientToken,
 		});
-		sharder.on("launch", shard => {
-			winston.info(`Shard ${shard.id} launched.`, { shard: shard.id });
+		sharder.on("online", worker => {
+			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
 		sharder.IPC = await new SharderIPC(sharder, winston);
 		await sharder.IPC.listen();
