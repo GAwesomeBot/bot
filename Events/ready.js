@@ -18,7 +18,6 @@ const {
 /* eslint-disable max-len */
 module.exports = async (bot, db, configJS, configJSON) => {
 	// TODO: Handler for these messages
-	bot.shard.send(`[READY:${bot.shard.id}] guilds:${bot.guilds.size} channels:${bot.channels.size} users:${bot.users.size}`);
 
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = async () => {

@@ -31,7 +31,22 @@ module.exports = class Console {
 						const obj = Object.keys(meta).length ? `\n\t${meta.stack ? meta.stack : require("util").inspect(meta, false, depth || 2, colorize)}` : ``;
 						return `(${ts}) (${level.toUpperCase()}) (${type === "master" ? "MASTER" : type.toUpperCase()}) ${chalk.stripColor(message)} ${obj}`;
 					},
-					filename: require("path").join(process.cwd(), `logs/${type === "master" ? "master" : type.replace(/ /g, "-")}-gawesomebot.log`),
+					filename: require("path").join(process.cwd(), `logs/${type === "master" ? "master" : type.replace(/ /g, "-")} -gawesomebot.log`),
+				}),
+				new winston.transports.DailyRotateFile({
+					name: "Console Output",
+					level: config.consoleLevel,
+					colorize: false,
+					datePattern: `dd-MM-yyyy.`,
+					prepend: true,
+					json: false,
+					// eslint-disable-next-line no-unused-vars
+					formatter: ({ level, message = "", meta = {}, formatter, depth, colorize }) => {
+						const ts = moment().format("DD-MM-YYYY HH:mm:ss");
+						const obj = Object.keys(meta).length ? `\n\t${meta.stack ? meta.stack : require("util").inspect(meta, false, depth || 2, colorize)}` : ``;
+						return `(${ts}) (${level.toUpperCase()}) (${type === "master" ? "MASTER" : type.toUpperCase()}) ${chalk.stripColor(message)} ${obj}`;
+					},
+					filename: require("path").join(process.cwd(), `logs/gawesomebot.log`)
 				}),
 				new winston.transports.File({
 					level: "silly",

@@ -1,12 +1,15 @@
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
-const { Console, Utils } = require("./Modules/");
+const { Console, Utils, ShardIPC } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDefines } = Utils;
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
+const auth = require("./Configurations/auth.js")
 const database = require("./Database/Driver.js");
 const Events = require("./Events/");
+const WebServer = require("./Web/WebServer");
+const process = require("process");
 
 const privateCommandModules = {};
 const commandModules = {};
@@ -41,6 +44,8 @@ database.initialize(configJS.databaseURL).catch(err => {
 	winston.info("Successfully connected to MongoDB!");
 	db = database.getConnection();
 });
+
+const shardIPC = new ShardIPC(bot, winston, process);
 
 // Get the command prefix for a server
 bot.getCommandPrefix = (server, serverDocument) => new Promise(resolve => {
@@ -566,17 +571,17 @@ const shard = bot.shard;
 
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
-	shard.send("Hey mom");
+	shardIPC.listen();
 }).catch(err => {
 	winston.error("Failed to connect to discord :/\n", { err: err });
 });
 
 bot.on("error", error => {
-	winston.verbose(`The Client WebSocket encountered an error..`, error);
+	winston.warn(`The Client WebSocket encountered an error.. ._.`, error);
 });
 
 bot.on("guildUnavailable", guild => {
-	winston.verbose(`${guild} was / is unavailable`, { date: Date.now() });
+	winston.debug(`${guild} was / is unavailable`, { date: Date.now() });
 });
 
 bot.on("guildMembersChunk", (members, guild) => {
@@ -585,9 +590,13 @@ bot.on("guildMembersChunk", (members, guild) => {
 
 bot.once("ready", async () => {
 	try {
-		await Events.onceReady(bot, db, configJS, configJSON);
+		await winston.verbose("Running event READY");
+		Events.onceReady(bot, db, configJS, configJSON);
+		await winston.verbose("Running webserver");
+		WebServer(bot, db, auth, configJS, configJSON, winston);
+		shardIPC.send("ready", {id: bot.shard.id});
 	} catch (err) {
-		winston.warn(`Got an error while trying to run READY`, err);
+		winston.error(`A critical error occurred while starting GAB x.x\n`, err);
 	}
 });
 
