@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 const database 		= require("./Database/Driver.js");
 const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
@@ -30,24 +29,21 @@ database.initialize(configJS.databaseURL).catch(err => {
 		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
 			throw new RangeError(`In config.js, shardTotal must be greater than or equal to 1`);
 		}
-		const sharder = await new Discord.ShardingManager("./Discord.js", {
-			totalShards: configJS.shardTotal,
-			token: auth.discord.clientToken,
-		});
-		sharder.on("online", worker => {
+		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, winston);
+		sharder.cluster.on("online", worker => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
-		sharder.IPC = await new SharderIPC(sharder, winston);
 		await sharder.IPC.listen();
 		// Sharder events
 		sharder.IPC.on("ready", (msg, shard) => {
-			if (shard === sharder.totalShards - 1) {
-				winston.info("All shards ready.");
+			if (shard === sharder.count - 1) {
+				winston.info("All shards ready.")
 			}
 		});
-		sharder.IPC.once("warnDefaultSecret", (msg, shard) => { // eslint-disable-line no-unused-vars
-			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
-		});
+		sharder.IPC.once("warnDefaultSecret", (msg, shard) => {
+			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!")
+		})
+		
 		sharder.spawn();
 	}
 });

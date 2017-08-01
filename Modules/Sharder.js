@@ -1,5 +1,5 @@
 const cluster = require("cluster");
-const SharderIPC = require("./").SharderIPC;
+const EventEmitter = require("events");
 
 class Shard {
   constructor(id, proc, sharder, worker) {
@@ -9,13 +9,26 @@ class Shard {
     this.id = id;
     
     this.process.once("exit", () => {
-      this.sharder.create(this.id)
+      this.sharder.create(this.id);
+    });
+    
+    this.process.on("message", msg => {
+      this.sharder.emit(this, msg);
+    });
+  }
+  
+  send(msg) {
+    return new Promise((resolve, reject) => {
+      this.process.send(msg, err => {
+        if (err) reject(err); else resolve();
+      });
     });
   }
 }
 
-class Sharder {
+class Sharder extends EventEmitter {
   constructor(token, count, winston) {
+    super();
     this.cluster = cluster;
     this.cluster.setupMaster({
       exec: "Discord.js"
@@ -23,8 +36,10 @@ class Sharder {
     this.winston = winston;
     this.token = token;
     this.count = count;
-    this.IPC = new SharderIPC();
-    this.shards = new require("discord.js").Collection();
+    this.SharderIPC = require("./").SharderIPC;
+    this.Collection = require("discord.js").Collection;
+    this.IPC = new this.SharderIPC(this, winston);
+    this.shards = new this.Collection();
   }
   
   spawn() {
@@ -43,4 +58,12 @@ class Sharder {
     let shard = new Shard(id, worker.process, this, worker);
     this.shards.set(id, shard);
   }
+  
+  broadcast(message) {
+    const promises = [];
+    for (const shard of this.shards.values()) promises.push(shard.send(message));
+    return Promise.all(promises);
+  }
 }
+
+module.exports = Sharder;
