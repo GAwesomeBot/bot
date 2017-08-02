@@ -2,7 +2,6 @@ const auth = require("../Configurations/auth.js");
 // const getNewServerData = require("../Modules/NewServer.js");
 // const setReminder = require("../Modules/SetReminder.js");
 // const setCountdown = require("../Modules/SetCountdown.js");
-// const sendStreamingRSSUpdates = require("../Modules/StreamingRSS.js");
 // const sendStreamerMessage = require("../Modules/StreamChecker.js");
 // const createMessageOfTheDay = require("../Modules/MessageOfTheDay.js");
 // const runTimerExtension = require("../Modules/TimerExtensionRunner.js");
@@ -10,9 +9,11 @@ const auth = require("../Configurations/auth.js");
 const { Utils } = require("../Modules/");
 const {
 	ClearServerStats: clearStats,
-	SetReminder: setReminder,
-	SetCountdown: setCountdown,
 	Giveaways,
+	SetCountdown: setCountdown,
+	SetReminder: setReminder,
+	StreamChecker: sendStreamerMessage,
+	StreamingRSS: sendStreamingRSSUpdates,
 } = Utils;
 
 /* eslint-disable max-len */
@@ -164,6 +165,39 @@ module.exports = async (bot, db, configJS, configJSON) => {
 				}
 			};
 			await sendStreamingRSSToServer(0);
+		}
+	};
+
+	// Periodically check if people are streaming
+	// Totally not stalking 👀 // Vlad
+	const checkStreamers = async () => {
+		const serverDocuments = await db.servers.find({}).catch(err => {
+			winston.warn(`Failed to get server documents for streamers.. ;-;`, err);
+		});
+		if (serverDocuments) {
+			const checkStreamersForServer = async i => {
+				if (i < serverDocuments.length) {
+					const serverDocument = serverDocuments[i];
+					const server = bot.guilds.get(serverDocument._id);
+					if (server) {
+						const checkIfStreaming = async j => {
+							if (j < serverDocument.config.streamers_data.length) {
+								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
+									await checkIfStreaming(++j);
+								});
+							} else {
+								await checkStreamersForServer(++i);
+							}
+						};
+						await checkIfStreaming(0);
+					}
+				} else {
+					setTimeout(async () => {
+						await checkStreamers();
+					}, 600000);
+				}
+			};
+			await checkStreamersForServer(0);
 		}
 	};
 };

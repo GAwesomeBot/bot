@@ -12,5 +12,7 @@ module.exports = {
 	RSS: require("./RSS.js"),
 	SetCountdown: require("./SetCountdown.js"),
 	SetReminder: require("./SetReminder.js"),
+	StreamChecker: require("./StreamChecker.js"),
+	StreamerUtils: require("./StreamerUtils.js"),
 	StreamingRSS: require("./StreamingRSS.js"),
 };
