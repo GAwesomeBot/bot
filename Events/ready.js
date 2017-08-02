@@ -184,6 +184,8 @@ module.exports = async (bot, db, configJS, configJSON) => {
 							if (j < serverDocument.config.streamers_data.length) {
 								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
 									await checkIfStreaming(++j);
+								}).catch(err => {
+									winston.verbose(`Error whilst searching for streamers, probably wrong data... (╯°□°）╯︵ ┻━┻\n`, err);
 								});
 							} else {
 								await checkStreamersForServer(++i);
