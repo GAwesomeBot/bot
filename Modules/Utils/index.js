@@ -3,6 +3,7 @@
 module.exports = {
 	ClearServerStats: require("./ClearServerStats.js"),
 	FilterChecker: require("./FilterChecker.js"),
+	GetValue: require("./GetValue.js"),
 	Gist: require("./GitHubGist.js"),
 	Giveaways: require("./Giveaways.js"),
 	GlobalDefines: require("./GlobalDefines.js"),
@@ -15,5 +16,4 @@ module.exports = {
 	StreamChecker: require("./StreamChecker.js"),
 	StreamerUtils: require("./StreamerUtils.js"),
 	StreamingRSS: require("./StreamingRSS.js"),
-	GetValue: require("./GetValue.js"),
 };
