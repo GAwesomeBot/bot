@@ -42,6 +42,9 @@ const Polls = require("./../Modules/Polls.js");
 const Trivia = require("./../Modules/Trivia.js");
 const Updater = require("./../Modules/Updater.js");
 */
+const Utils = require("./../Modules/Utils")
+
+
 const app = express();
 app.use(compression());
 app.enable("trust proxy");
@@ -446,19 +449,21 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					},
 				},
 			},
-		}, (err, result) => {
+		}, async (err, result) => {
+			const guildAmount = await Utils.GetValue(bot, "guilds.size", "int");
+			const userAmount = await Utils.GetValue(bot, "users.size", "int");
 			let messageCount = 0;
-			let activeServers = bot.guilds.size;
+			let activeServers = guildAmount
 			if (!err && result) {
 				messageCount = result[0].total;
 				activeServers = result[0].active;
 			}
-
+			
 			const renderPage = data => {
 				res.render("pages/activity.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					rawServerCount: bot.guilds.size,
-					rawUserCount: bot.users.size,
+					rawServerCount: guildAmount,
+					rawUserCount: userAmount,
 					totalMessageCount: messageCount,
 					numActiveServers: activeServers,
 					activeSearchQuery: req.query.q,
@@ -475,7 +480,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (!req.query.count || isNaN(req.query.count)) {
 					count = 16;
 				} else {
-					count = parseInt(req.query.count) || bot.guilds.size;
+					count = parseInt(req.query.count) || guildAmount;
 				}
 				let page;
 				if (!req.query.page || isNaN(req.query.page)) {
@@ -499,11 +504,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (req.query.q) {
 					const query = req.query.q.toLowerCase();
 					matchCriteria._id = {
-						$in: bot.guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query).map(svr => svr.id),
+						$in: await Utils.GetValue(bot, `guilds.filter(svr => svr.name.toLowerCase().indexOf(${query}) > -1 || svr.id === ${query}).map(svr => svr.id)`, "arr"),
 					};
 				} else {
 					matchCriteria._id = {
-						$in: Array.from(bot.guilds.keys()),
+						$in: await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from"),
 					};
 				}
 				if (req.query.category !== "All") {
@@ -540,7 +545,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 				db.servers.count(matchCriteria, (err, rawCount) => {
 					if (err || rawCount === null) {
-						rawCount = bot.guilds.size;
+						rawCount = guildAmount;
 					}
 					db.servers.aggregate([
 						{
@@ -1360,7 +1365,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		}).exec((err, wikiDocuments) => {
 			if (err || !wikiDocuments) {
 				res.redirect("/error");
-			} else if (req.query.q !== null) {
+			} else if (req.query.q) {
 				req.query.q = req.query.q.toLowerCase().trim();
 
 				const searchResults = [];

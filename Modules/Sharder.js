@@ -13,7 +13,16 @@ class Shard {
     });
     
     this.process.on("message", msg => {
-      this.sharder.emit("message", this, msg);
+      if (msg) {
+        if (msg._SEval) {
+          this.sharder.broadcastEval(msg._SEval).then(
+            results => this.send({ _SEval: msg._SEval, _result: results }),
+            err => this.send({ _SEval: msg._SEval, _error: "" })
+          );
+          return;
+        }
+      }
+      if (!msg._SEval) this.sharder.emit("message", this, msg);
     });
   }
   
@@ -23,6 +32,23 @@ class Shard {
         if (err) reject(err); else resolve();
       });
     });
+  }
+  
+  eval(code) {
+    const promise = new Promise((resolve, reject) => {
+      const listener = message => {
+        if (!message || message._Eval !== code) return;
+        this.process.removeListener('message', listener);
+        resolve(message._result);
+      };
+      this.process.on('message', listener);
+
+      this.send({ _Eval: code }).catch(err => {
+        this.process.removeListener('message', listener);
+        reject(err);
+      });
+    });
+    return promise;
   }
 }
 
@@ -62,6 +88,12 @@ class Sharder extends EventEmitter {
   broadcast(message) {
     const promises = [];
     for (const shard of this.shards.values()) promises.push(shard.send(message));
+    return Promise.all(promises);
+  }
+  
+  broadcastEval(val) {
+    const promises = [];
+    for (const shard of this.shards.values()) promises.push(shard.eval(val));
     return Promise.all(promises);
   }
 }
