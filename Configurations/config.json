@@ -8,11 +8,14 @@
   "globalBlockList": [
 
   ],
-  "game": "default",
+  "game": {
+    "name": "",
+    "twitchURL": ""
+  },
   "status": "online",
-  "headerImage": "header-bg.png",
+  "headerImage": "header-bg.jpg",
   "homepageMessageHTML": "",
   "pmForward": false,
-  "version": "4.0.2",
+  "version": "4.1.0",
   "branch": "development"
 }
