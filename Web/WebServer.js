@@ -1134,8 +1134,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Blog (updates + announcements)
-	const getBlogData = blogDocument => {
-		const author = bot.users.get(blogDocument.author_id) || {
+	const getBlogData = async (blogDocument) => {
+		const author = await Utils.GetValue(bot, `users.get(${blogDocument.author_id})`, "obj").spliceNullElements()[0] || {
 			id: "invalid-user",
 			username: "invalid-user",
 		};
