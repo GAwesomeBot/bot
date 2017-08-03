@@ -224,6 +224,29 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		}
 	};
 
+		// // Start all timer extensions (third-party)
+		// I'll finish these once we have an actual extension api
+		// const runTimerExtensions = () => {
+		// 	db.servers.find({"extensions": {$not: {$size: 0}}}, (err, serverDocuments) => {
+		// 		if(err) {
+		// 			winston.error("Failed to find server data to start timer extensions", err);
+		// 		} else {
+		// 			for(let i=0; i<serverDocuments.length; i++) {
+		// 				const svr = bot.guilds.get(serverDocuments[i]._id);
+		// 				if(svr) {
+		// 					serverDocuments[i].extensions.forEach(extensionDocument => {
+		// 						if(extensionDocument.type=="timer") {
+		// 							setTimeout(() => {
+		// 								runTimerExtension(bot, db, winston, svr, serverDocuments[i], extensionDocument);
+		// 							}, (extensionDocument.last_run + extensionDocument.interval) - Date.now());
+		// 						}
+		// 					});
+		// 				}
+		// 			}
+		// 		}
+		// 	});
+		// };
+
 	// Print startup ASCII art in console
 	const showStartupMessage = () => {
 		bot.isReady = true;
@@ -242,5 +265,19 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			// I know I know, console.log, deal with it 😎
 			console.log(ascii);
 		}
+	};
+
+	// Set messages_today to 0 for all servers
+	// And start a chain of events..
+	const startMessageCount = async () => {
+		await db.servers.update({}, { messages_today: 0 }, { multi: true }).catch(err => {
+			winston.warn(`Failed to start message counter.. >->`, err);
+		});
+		const clearMessageCount = () => {
+			db.servers.update({}, { messages_today: 0 }, { multi: true }).exec();
+		};
+		setInterval(clearMessageCount, 86400000);
+		await Promise.all([statsCollector, setReminders, setCountdowns, setGiveaways, startStreamingRSS, checkStreamers, startMessageOfTheDay]);
+		showStartupMessage();
 	};
 };
