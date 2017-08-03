@@ -1,0 +1,42 @@
+[
+	{
+		"_id": "Pro Lurker",
+		"max_score": 5
+	},
+	{
+		"_id": "Learning Lurker",
+		"max_score": 10
+	},
+	{
+		"_id": "Bad Lurker",
+		"max_score": 20
+	},
+	{
+		"_id": "Mostly Inactive",
+		"max_score": 40
+	},
+	{
+		"_id": "In Between",
+		"max_score": 75
+	},
+	{
+		"_id": "Kinda Active",
+		"max_score": 100
+	},
+	{
+		"_id": "Pretty Active",
+		"max_score": 200
+	},
+	{
+		"_id": "Super Active",
+		"max_score": 400
+	},
+	{
+		"_id": "Pro Member",
+		"max_score": 750
+	},
+	{
+		"_id": "Almost a Spammer",
+		"max_score": 1000
+	}
+]

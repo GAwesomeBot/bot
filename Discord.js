@@ -5,7 +5,7 @@ const { Console, Utils, ShardIPC } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDefines } = Utils;
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
-const auth = require("./Configurations/auth.js")
+const auth = require("./Configurations/auth.js");
 const database = require("./Database/Driver.js");
 const Events = require("./Events/");
 const WebServer = require("./Web/WebServer");
@@ -511,7 +511,8 @@ bot.getUserBotAdmin = (server, serverDocument, member) => {
 };
 
 // Message the bot admins for a server
-bot.messageBotAdmins = (server, serverDocument, messageObject) => {
+// eslint-disable-next-line require-await
+bot.messageBotAdmins = async (server, serverDocument, messageObject) => {
 	let content = "";
 	if (messageObject.content) {
 		content = messageObject.content;
@@ -569,7 +570,7 @@ bot.unmuteMember = async (channel, member) => {
 
 const shard = bot.shard;
 
-bot.IPC = shardIPC
+bot.IPC = shardIPC;
 
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
@@ -596,7 +597,7 @@ bot.once("ready", async () => {
 		Events.onceReady(bot, db, configJS, configJSON);
 		await winston.verbose("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
-		bot.IPC.send("ready", {id: bot.shard.id});
+		bot.IPC.send("ready", { id: bot.shard.id });
 	} catch (err) {
 		winston.error(`A critical and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 	}

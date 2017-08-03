@@ -2,6 +2,7 @@ module.exports = {
 	Console: require("./Console.js"),
 	ConvertCurrency: require("./ConvertCurrency.js"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
+	NewServer: require("./NewServer.js"),
 	PostData: require("./PostData.js"),
 	Sharder: require("./Sharder.js"),
 	SharderIPC: require("./ShardIPC.js").SharderIPC,

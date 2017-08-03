@@ -6,7 +6,11 @@ const auth = require("../Configurations/auth.js");
 // const createMessageOfTheDay = require("../Modules/MessageOfTheDay.js");
 // const runTimerExtension = require("../Modules/TimerExtensionRunner.js");
 // const postData = require("../Modules/PostData.js");
-const { Utils } = require("../Modules/");
+const { 
+	NewServer: getNewServerData,
+	PostData,
+	Utils,
+} = require("../Modules/");
 const {
 	ClearServerStats: clearStats,
 	Giveaways,
@@ -278,6 +282,75 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		};
 		setInterval(clearMessageCount, 86400000);
 		await Promise.all([statsCollector, setReminders, setCountdowns, setGiveaways, startStreamingRSS, checkStreamers, startMessageOfTheDay]);
+		PostData(bot);
 		showStartupMessage();
 	};
+
+	// Set bot's "now playing" game
+	const setBotGame = async () => {
+		let gameObject = {
+			name: configJSON.game.name,
+			url: configJSON.game.twitchURL,
+		};
+		if (configJSON.game.name === "default") {
+			gameObject = {
+				name: "https://gawesomebot.com",
+				url: "",
+			};
+		}
+		bot.user.setPresence({
+			game: gameObject,
+			status: configJSON.status,
+		});
+		await startMessageCount();
+	};
+
+	// Delete data for old servers
+	const pruneServerData = async () => {
+		db.servers.find({
+			_id: {
+				$nin: await Utils.GetValue(bot, "guild.keys()", "arr", "Array.from"),
+			},
+		}).remove().catch(err => {
+			winston.warn(`Failed to prune old server documents -_-`, err);
+		});
+		await setBotGame();
+	};
+
+	// Ensure that all servers hava database documents
+	const shardGuildIterator = bot.guilds.entries();
+	const checkServerData = async (server, newServerDocuments) => {
+		const serverDocument = await db.servers.findOne({ _id: server.id }).catch(err => {
+			winston.warn(`Failed to find server data.. Sorry!`, err);
+		});
+		if (serverDocument) {
+			const channelIDs = server.channels.map(a => a.id);
+			for (let j = 0; j < serverDocument.channels.length; j++) {
+				if (!channelIDs.includes(serverDocument.channels[j]._id)) {
+					serverDocument.channels[j].remove();
+				}
+			}
+		} else {
+			newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
+		}
+		try {
+			checkServerData(shardGuildIterator.next().value[1], newServerDocuments);
+		} catch (err) {
+			return newServerDocuments;
+		}
+	};
+
+	checkServerData(shardGuildIterator.next().value[1], []).then(async newServerDocuments => {
+		if (newServerDocuments.length > 0) {
+			winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
+			db.servers.insertMany(newServerDocuments).catch(err => {
+				winston.warn(`Failed to insert new server documents..`, err);
+			}).then(async () => {
+				winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
+				await pruneServerData();
+			});
+		} else {
+			await pruneServerData();
+		}
+	});
 };
