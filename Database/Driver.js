@@ -1,6 +1,6 @@
 /* eslint-disable require-await */
 const mongoose = require("mongoose");
-mongoose.Promise = Promise;
+mongoose.Promise = global.Promise;
 const findOrCreate = require("mongoose-findorcreate");
 const serverSchema = require("./Schemas/serverSchema");
 const userSchema = require("./Schemas/userSchema");
@@ -22,6 +22,7 @@ module.exports = {
 			socketTimeoutMS: 30000,
 			keepAlive: 120,
 			useMongoClient: true,
+			promiseLibrary: global.Promise,
 		});
 
 		mongoose.model("servers", serverSchema);
