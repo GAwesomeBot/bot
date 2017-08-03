@@ -57,6 +57,16 @@ const configs = {
 	 */
 	secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
 	/*
+	 * Discord channel and server where any errors should be outputted,
+	 * whenever applicable
+	 * debugServer: The server ID of the server
+	 * debugChannel: The Channel ID in the server
+	 */
+	discord: {
+		debugServer: ``,
+		debugChannel: ``,
+	},
+	/*
    * Optional: If you want your bot to have an invite link to your guild, for support or things.
    */
 	discordLink: "",
