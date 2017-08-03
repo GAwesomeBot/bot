@@ -260,7 +260,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			\\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 		
 		`;
-		winston.info(`Started the best Discord Bot, version ${configJSON.version}`);
+		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 		if (bot.shard.id === 0) {
 			// I know I know, console.log, deal with it 😎
 			console.log(ascii);
