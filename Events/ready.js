@@ -265,7 +265,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		
 		`;
 		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
-		if (bot.shard.id === 0) {
+		if (bot.shardId === 0) {
 			// I know I know, console.log, deal with it 😎
 			console.log(ascii);
 		}
