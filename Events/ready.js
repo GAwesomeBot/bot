@@ -265,7 +265,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		
 		`;
 		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
-		if (bot.shard.id === 0) {
+		if (process.env.SHARD_ID === "0") {
 			// I know I know, console.log, deal with it 😎
 			console.log(ascii);
 		}
@@ -334,23 +334,28 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
 		}
 		try {
-			checkServerData(shardGuildIterator.next().value[1], newServerDocuments);
+			checkServerData(shardGuildIterator.next().value[1], newServerDocuments).catch(err => {
+				return newServerDocuments;
+			});
 		} catch (err) {
 			return newServerDocuments;
 		}
 	};
-
-	checkServerData(shardGuildIterator.next().value[1], []).then(async newServerDocuments => {
-		if (newServerDocuments.length > 0) {
-			winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-			db.servers.insertMany(newServerDocuments).catch(err => {
-				winston.warn(`Failed to insert new server documents..`, err);
-			}).then(async () => {
-				winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
+	try {
+		checkServerData(shardGuildIterator.next().value[1], []).then(async newServerDocuments => {
+			if (typeof newServerDocuments !== "undefined" && newServerDocuments.length > 0) {
+				winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
+				db.servers.insertMany(newServerDocuments).catch(err => {
+					winston.warn(`Failed to insert new server documents..`, err);
+				}).then(async () => {
+					winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
+					await pruneServerData();
+				});
+			} else {
 				await pruneServerData();
-			});
-		} else {
-			await pruneServerData();
-		}
-	});
+			}
+		})
+	} catch (err) {
+		pruneServerData();
+	}
 };

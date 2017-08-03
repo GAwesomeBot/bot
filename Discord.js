@@ -572,6 +572,11 @@ const shard = bot.shard;
 
 bot.IPC = shardIPC;
 
+process.on('unhandledRejection', (reason, p) => {
+	winston.error(`Unhandled Promise Rejection. Please report to github x.x\n Error:`)
+	console.log(reason)
+});
+
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
 	bot.IPC.listen();

@@ -4,7 +4,7 @@ const defaultTags 			= require("../Configurations/tags.json");
 const defaultRanksList 	= require("../Configurations/ranks.json");
 const defStatusMessages = require("../Configurations/status_messages.json");
 const defTagReactions		= require("../Configurations/tag_reactions.json");
-const { Utils } = require("./");
+const Utils = require("./Utils/");
 
 // Set defaults for new server document
 module.exports = async (bot, server, serverDocument) => {

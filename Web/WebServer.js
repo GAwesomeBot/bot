@@ -1135,7 +1135,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Blog (updates + announcements)
 	const getBlogData = async (blogDocument) => {
-		const author = await Utils.GetValue(bot, `users.get(${blogDocument.author_id})`, "obj").spliceNullElements()[0] || {
+		const author = await Utils.GetValue(bot, `users.get(${blogDocument.author_id})`, "obj") || {
 			id: "invalid-user",
 			username: "invalid-user",
 		};
@@ -1157,13 +1157,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				categoryColor = "is-primary";
 				break;
 		}
+		const avatarURL = await Utils.GetValue(bot, `users.get("${blogDocument.author_id}").avatarURL`);
+		avatarURL.spliceNullElements();
 		return {
 			id: blogDocument._id,
 			title: blogDocument.title,
 			author: {
 				name: author.username,
 				id: author.id,
-				avatar: author.avatarURL || "/static/img/discord-icon.png",
+				avatar: avatarURL[0] || "/static/img/discord-icon.png",
 			},
 			category: blogDocument.category,
 			categoryColor,
@@ -1191,11 +1193,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				rawCount = 0;
 			}
 
-			db.blog.find({}).sort("-published_timestamp").skip(count * (page - 1)).limit(count).exec((err, blogDocuments) => {
+			db.blog.find({}).sort("-published_timestamp").skip(count * (page - 1)).limit(count).exec(async (err, blogDocuments) => {
 				let blogPosts = [];
 				if (!err && blogDocuments) {
-					blogPosts = blogDocuments.map(blogDocument => {
-						const data = getBlogData(blogDocument);
+					blogPosts = blogDocuments.map(async blogDocument => {
+						const data = await getBlogData(blogDocument);
 						data.isPreview = true;
 						if (data.content.length > 1000) {
 							data.content = `${data.content.slice(0, 1000)}...`;
@@ -1203,8 +1205,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						return data;
 					});
 				}
-
-				res.render("pages/blog.ejs", {
+				console.log(blogPosts)
+				await res.render("pages/blog.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
 					mode: "list",
