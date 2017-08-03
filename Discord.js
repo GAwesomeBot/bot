@@ -598,7 +598,7 @@ bot.once("ready", async () => {
 		WebServer(bot, db, auth, configJS, configJSON, winston);
 		bot.IPC.send("ready", {id: bot.shard.id});
 	} catch (err) {
-		winston.error(`A critical error occurred while starting GAB x.x\n`, err);
+		winston.error(`A critical and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 	}
 });
 

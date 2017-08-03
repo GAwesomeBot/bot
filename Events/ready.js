@@ -24,7 +24,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const promiseArray = [];
 		const countServerStats = async server => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).catch(err => {
-				winston.warn(`Failed to find a server document for counting stats`, { svrid: server.id }, err);
+				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
 			if (serverDocument) {
 				// Clear stats for server if older than a week
@@ -48,8 +48,8 @@ module.exports = async (bot, db, configJS, configJSON) => {
 							const memberDocument = serverDocument.members.id(member.id);
 							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && bot.getUserBotAdmin(server, serverDocument, member) === 0) {
 								try {
-									await member.kick(`Kicked for inactivity on the server.`);
-									winston.info(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.id });
+									await member.kick(`Kicked for inactivity on server.`);
+									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.id });
 								} catch (err) {
 									memberDocument.cannotAutokick = true;
 									winston.warn(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.id }, err);
@@ -60,7 +60,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 					try {
 						await serverDocument.save();
 					} catch (err) {
-						winston.warn(`Failed to save server data for stats..`, { svrid: server.id }, err);
+						winston.warn(`Failed to save server data for stats.. <.>`, { svrid: server.id }, err);
 					}
 				}
 			}
@@ -75,7 +75,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	const setReminders = async () => {
 		const promiseArray = [];
 		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).catch(err => {
-			winston.warn(`Failed to get reminders`, err);
+			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
 		if (userDocuments) {
 			for (let i = 0; i < userDocuments.length; i++) {
@@ -91,7 +91,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	const setCountdowns = async () => {
 		const promiseArray = [];
 		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).catch(err => {
-			winston.warn("Failed to get countdowns", err);
+			winston.warn("Failed to get countdowns from db (-_-*)", err);
 		});
 		if (serverDocuments) {
 			for (let i = 0; i < serverDocuments.length; i++) {
@@ -113,7 +113,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 				},
 			},
 		}).catch(err => {
-			winston.warn("Failed to get giveaways", err);
+			winston.warn("Failed to get giveaways from db (-_-*)", err);
 		});
 		if (serverDocuments) {
 			serverDocuments.forEach(serverDocument => {
@@ -136,7 +136,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Start streaming RSS timer
 	const startStreamingRSS = async () => {
 		const serverDocuments = await db.servers.find({}).catch(err => {
-			winston.warn(`Failed to.. get server documents? O.o`, err);
+			winston.warn(`Failed to get servers from db (-_-*)`, err);
 		});
 		if (serverDocuments) {
 			const sendStreamingRSSToServer = async i => {
@@ -173,7 +173,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Totally not stalking 👀 // Vlad
 	const checkStreamers = async () => {
 		const serverDocuments = await db.servers.find({}).catch(err => {
-			winston.warn(`Failed to get server documents for streamers.. ;-;`, err);
+			winston.warn(`Failed to get server documents for streamers (-_-*)`, err);
 		});
 		if (serverDocuments) {
 			const checkStreamersForServer = async i => {
@@ -186,7 +186,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
 									await checkIfStreaming(++j);
 								}).catch(err => {
-									winston.verbose(`Error whilst searching for streamers, probably wrong data... (╯°□°）╯︵ ┻━┻\n`, err);
+									winston.debug(`Failed to send streaming message to server ;.;\n`, err);
 								});
 							} else {
 								await checkStreamersForServer(++i);
