@@ -1,5 +1,3 @@
-// TODO: Move all utilities here
-
 module.exports = {
 	ClearServerStats: require("./ClearServerStats.js"),
 	FilterChecker: require("./FilterChecker.js"),
@@ -7,6 +5,7 @@ module.exports = {
 	Gist: require("./GitHubGist.js"),
 	Giveaways: require("./Giveaways.js"),
 	GlobalDefines: require("./GlobalDefines.js"),
+	MessageOfTheDay: require("./MessageOfTheDay.js"),
 	ObjectDefines: require("./ObjectDefines.js"),
 	RankScoreCalculator: require("./RankScoreCalculator.js"),
 	RegExpMaker: require("./RegExpMaker.js"),

@@ -10,6 +10,7 @@ const { Utils } = require("../Modules/");
 const {
 	ClearServerStats: clearStats,
 	Giveaways,
+	MessageOfTheDay: createMessageOfTheDay,
 	SetCountdown: setCountdown,
 	SetReminder: setReminder,
 	StreamChecker: sendStreamerMessage,
@@ -200,6 +201,46 @@ module.exports = async (bot, db, configJS, configJSON) => {
 				}
 			};
 			await checkStreamersForServer(0);
+		}
+	};
+
+	// Start message of the day timer
+	// This time, no more bork, hopefully..
+	const startMessageOfTheDay = async () => {
+		const serverDocuments = await db.servers.find({
+			"config.message_of_the_day.isEnabled": true,
+		}).catch(err => {
+			winston.warn(`Failed to find server data for message of the day <.<\n`, err);
+		});
+		if (serverDocuments) {
+			const promiseArray = [];
+			for (let i = 0; i < serverDocuments.length; i++) {
+				const server = bot.guilds.get(serverDocuments[i]._id);
+				if (server) {
+					promiseArray.push(createMessageOfTheDay(bot, db, server, serverDocuments[i].config.message_of_the_day));
+				}
+			}
+			await Promise.all(promiseArray);
+		}
+	};
+
+	// Print startup ASCII art in console
+	const showStartupMessage = () => {
+		bot.isReady = true;
+		const ascii = `
+		
+			 _____                                               ____        _
+			/ ____|   /\\                                        |  _ \\      | |
+		 | |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_
+		 | | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
+		 | |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_
+			\\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
+		
+		`;
+		winston.info(`Started the best Discord Bot, version ${configJSON.version}`);
+		if (bot.shard.id === 0) {
+			// I know I know, console.log, deal with it 😎
+			console.log(ascii);
 		}
 	};
 };
