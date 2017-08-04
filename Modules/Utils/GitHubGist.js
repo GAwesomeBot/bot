@@ -1,4 +1,4 @@
-const { RegExpMaker: regMaker } = require("./");
+const RegExpMaker = require("./RegExpMaker.js");
 const { discord, tokens } = require("../../Configurations/auth.js");
 const { gistKey } = tokens;
 
@@ -40,7 +40,7 @@ module.exports = class GitHubGist {
 			tokens.omdbAPI,
 			tokens.gistKey,
 		];
-		const regExp = new regMaker(censor).make("gi");
+		const regExp = new RegExpMaker(censor).make("gi");
 		let res;
 		try {
 			res = await rp.post({
