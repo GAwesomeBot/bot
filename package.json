@@ -1,6 +1,6 @@
 {
   "name": "GAwesomeBot",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "Still the best Discord Bot!",
   "license": "GPL v2",
   "author": "Gilbert Gobbels, Frangu Vlad, Hilbert Gilbertson",
@@ -12,7 +12,8 @@
   "scripts": {
     "first-time": "npm install -g --production windows-build-tools && npm install --production",
     "test": "npm run lint",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "preinstall": "echo If you encounter any errors, please run \"npm run first-time\"! && echo If you still are having issues, submit the error log on GitHub!"
   },
   "dependencies": {
     "body-parser": "*",
