@@ -33,7 +33,7 @@ module.exports = class Giveaways {
 	}
 
 	static async end (bot, db, server, channel) {
-		const serverDocument = await db.findOne({ _id: server.id }).catch(err => {
+		const serverDocument = await db.findOne({ _id: server.id }).exec().catch(err => {
 			winston.warn(`Failed to end giveaway`, err);
 		});
 		if (serverDocument) {

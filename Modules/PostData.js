@@ -1,8 +1,8 @@
 const { tokens } = require("../Configurations/auth.js");
-const { Utils } = require("./");
+const { GetValue } = require("./Utils/");
 
 module.exports = async bot => {
-	const totalAmount = await Utils.GetValue(bot, "guilds.size", "int");
+	const totalAmount = await GetValue(bot, "guilds.size", "int");
 	if (tokens.carboniteEx) {
 		let res;
 		try {
@@ -61,8 +61,8 @@ module.exports = async bot => {
 				},
 				json: true,
 				body: {
-					shard_id: bot.shardId,
-					shard_total: bot.shardCount,
+					shard_id: process.env.SHARD_ID,
+					shard_total: process.env.SHARD_COUNT,
 					server_count: bot.guilds.size,
 				},
 			});

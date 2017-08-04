@@ -1,12 +1,4 @@
-const auth = require("../Configurations/auth.js");
-// const getNewServerData = require("../Modules/NewServer.js");
-// const setReminder = require("../Modules/SetReminder.js");
-// const setCountdown = require("../Modules/SetCountdown.js");
-// const sendStreamerMessage = require("../Modules/StreamChecker.js");
-// const createMessageOfTheDay = require("../Modules/MessageOfTheDay.js");
-// const runTimerExtension = require("../Modules/TimerExtensionRunner.js");
-// const postData = require("../Modules/PostData.js");
-const { 
+const {
 	NewServer: getNewServerData,
 	PostData,
 	Utils,
@@ -27,7 +19,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	const statsCollector = async () => {
 		const promiseArray = [];
 		const countServerStats = async server => {
-			const serverDocument = await db.servers.findOne({ _id: server.id }).catch(err => {
+			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
 			if (serverDocument) {
@@ -78,7 +70,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Set existing reminders to send message when they expire
 	const setReminders = async () => {
 		const promiseArray = [];
-		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).catch(err => {
+		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
 		if (userDocuments) {
@@ -94,7 +86,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Set existing countdowns in servers to send message when they expire
 	const setCountdowns = async () => {
 		const promiseArray = [];
-		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).catch(err => {
+		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn("Failed to get countdowns from db (-_-*)", err);
 		});
 		if (serverDocuments) {
@@ -116,7 +108,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 					"giveaway.isOngoing": true,
 				},
 			},
-		}).catch(err => {
+		}).exec().catch(err => {
 			winston.warn("Failed to get giveaways from db (-_-*)", err);
 		});
 		if (serverDocuments) {
@@ -139,7 +131,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 
 	// Start streaming RSS timer
 	const startStreamingRSS = async () => {
-		const serverDocuments = await db.servers.find({}).catch(err => {
+		const serverDocuments = await db.servers.find({}).exec().catch(err => {
 			winston.warn(`Failed to get servers from db (-_-*)`, err);
 		});
 		if (serverDocuments) {
@@ -176,7 +168,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Periodically check if people are streaming
 	// Totally not stalking 👀 // Vlad
 	const checkStreamers = async () => {
-		const serverDocuments = await db.servers.find({}).catch(err => {
+		const serverDocuments = await db.servers.find({}).exec().catch(err => {
 			winston.warn(`Failed to get server documents for streamers (-_-*)`, err);
 		});
 		if (serverDocuments) {
@@ -213,7 +205,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	const startMessageOfTheDay = async () => {
 		const serverDocuments = await db.servers.find({
 			"config.message_of_the_day.isEnabled": true,
-		}).catch(err => {
+		}).exec().catch(err => {
 			winston.warn(`Failed to find server data for message of the day <.<\n`, err);
 		});
 		if (serverDocuments) {
@@ -255,14 +247,12 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	const showStartupMessage = () => {
 		bot.isReady = true;
 		const ascii = `
-		
-			 _____                                               ____        _
-			/ ____|   /\\                                        |  _ \\      | |
-		 | |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_
-		 | | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
-		 | |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_
-			\\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
-		
+  _____                                               ____        _   
+ / ____|   /\\                                        |  _ \\      | |  
+| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
+| | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
+| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
+ \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
 		`;
 		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 		if (process.env.SHARD_ID === "0") {
@@ -274,14 +264,14 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Set messages_today to 0 for all servers
 	// And start a chain of events..
 	const startMessageCount = async () => {
-		await db.servers.update({}, { messages_today: 0 }, { multi: true }).catch(err => {
+		await db.servers.update({}, { messages_today: 0 }, { multi: true }).exec().catch(err => {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
 		const clearMessageCount = () => {
 			db.servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
 		setInterval(clearMessageCount, 86400000);
-		await Promise.all([statsCollector, setReminders, setCountdowns, setGiveaways, startStreamingRSS, checkStreamers, startMessageOfTheDay]);
+		await Promise.all([statsCollector(), setReminders(), setCountdowns(), setGiveaways(), startStreamingRSS(), checkStreamers(), startMessageOfTheDay()]);
 		PostData(bot);
 		showStartupMessage();
 	};
@@ -309,18 +299,20 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	const pruneServerData = async () => {
 		db.servers.find({
 			_id: {
-				$nin: await Utils.GetValue(bot, "guild.keys()", "arr", "Array.from"),
+				$nin: await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from"),
 			},
-		}).remove().catch(err => {
-			winston.warn(`Failed to prune old server documents -_-`, err);
-		});
+		}).remove()
+			.exec()
+			.catch(err => {
+				winston.warn(`Failed to prune old server documents -_-`, err);
+			});
 		await setBotGame();
 	};
 
 	// Ensure that all servers hava database documents
 	const shardGuildIterator = bot.guilds.entries();
 	const checkServerData = async (server, newServerDocuments) => {
-		const serverDocument = await db.servers.findOne({ _id: server.id }).catch(err => {
+		const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 			winston.warn(`Failed to find server data.. Sorry!`, err);
 		});
 		if (serverDocument) {
@@ -334,7 +326,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
 		}
 		try {
-			checkServerData(shardGuildIterator.next().value[1], newServerDocuments).catch(err => {
+			checkServerData(shardGuildIterator.next().value[1], newServerDocuments).catch(err => { // eslint-disable-line arrow-body-style, handle-callback-err, no-unused-vars
 				return newServerDocuments;
 			});
 		} catch (err) {
@@ -354,8 +346,8 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			} else {
 				await pruneServerData();
 			}
-		})
+		});
 	} catch (err) {
-		pruneServerData();
+		await pruneServerData();
 	}
 };

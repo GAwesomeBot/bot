@@ -10,7 +10,7 @@ module.exports = class Console {
 	 * Gets you a winston instance pre-configured with everything that you need.
 	 * @param {string} type The type that determines the label (master for the master sharder, otherwise Shard ID)
 	 */
-	constructor(type) {
+	constructor (type) {
 		return new winston.Logger({
 			transports: [
 				new winston.transports.Console({

@@ -259,7 +259,7 @@ bot.roleSearch = (string, server) => new Promise((resolve, reject) => {
 // Gets the game a member is playing
 bot.getGame = member => new Promise(resolve => {
 	let presence = member.presence;
-	if (presence.game.name) {
+	if (presence.game && presence.game !== null && presence.game.name) {
 		resolve(presence.game.name);
 	}
 	resolve("");

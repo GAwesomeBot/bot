@@ -20,7 +20,7 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 							color: 0x00FF00,
 							description: `**${data.name}** started streaming on ${data.type}: ${data.game}\nYou can go watch them by going [here](${data.url})`,
 							title: `A streamer started streaming!`,
-							url: data.url,							
+							url: data.url,
 						},
 					});
 				}
@@ -36,8 +36,7 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 				winston.error(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
 			});
 		}
-
 	}).catch(err => {
-		winston.warn(`Error occured while checking if user is streaming.. -_-`, { svrid: server.id, streamer: streamerDocument._id}, err);
+		winston.warn(`Error occured while checking if user is streaming.. -_-`, { svrid: server.id, streamer: streamerDocument._id }, err);
 	});
 };

@@ -3,7 +3,7 @@ const { discord, tokens } = require("../../Configurations/auth.js");
 const { gistKey } = tokens;
 
 module.exports = class GitHubGist {
-	constructor(bot) {
+	constructor (bot) {
 		this.bot = bot;
 		this.token = gistKey;
 		this.public = this.token === "";
@@ -21,7 +21,7 @@ module.exports = class GitHubGist {
 	 * @param {String} options.text The content of the Gist
 	 * @returns {Object} Object containing the id and the url to the Gist
 	 */
-	async upload({ title, text } = {}) {
+	async upload ({ title, text } = {}) {
 		const censor = [
 			discord.clientID,
 			discord.clientSecret,
@@ -66,7 +66,7 @@ module.exports = class GitHubGist {
 		};
 	}
 
-	async delete(id) {
+	async delete (id) {
 		let res;
 		try {
 			res = await rp.delete({

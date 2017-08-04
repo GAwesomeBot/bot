@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const database 		= require("./Database/Driver.js");
 const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
@@ -35,17 +36,17 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 		await sharder.IPC.listen();
 		// Sharder events
-		sharder.ready = 0
-		sharder.IPC.on("ready", (msg, shard) => {
-			sharder.ready++
+		sharder.ready = 0;
+		sharder.IPC.on("ready", () => {
+			sharder.ready++;
 			if (sharder.ready === sharder.count) {
-				winston.info("All shards ready.")
+				winston.info("All shards ready.");
 			}
 		});
-		sharder.IPC.once("warnDefaultSecret", (msg, shard) => {
-			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!")
-		})
-		
+		sharder.IPC.once("warnDefaultSecret", () => {
+			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
+		});
+
 		sharder.spawn();
 	}
 });

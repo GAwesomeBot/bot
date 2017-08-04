@@ -21,7 +21,6 @@ module.exports = {
 			connectTimeoutMS: 30000,
 			socketTimeoutMS: 30000,
 			keepAlive: 120,
-			useMongoClient: true,
 			promiseLibrary: global.Promise,
 		});
 

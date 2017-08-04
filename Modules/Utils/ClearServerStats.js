@@ -4,7 +4,7 @@ const computeRankScore = require("./RankScoreCalculator.js");
  * Clear activity stats for a server
  * @param bot The bot instance
  * @param db The database instance
- * @param {guild} server The server whos stats get cleared
+ * @param {Guild} server The server which has its stats cleared
  * @param serverDocument The Server Document
  */
 /* eslint-disable max-len */
@@ -32,9 +32,13 @@ module.exports = async (bot, db, server, serverDocument) => {
 	 * @param {Number} amount The amount of points to give the member
 	 */
 	const awardPoints = async (member, amount) => {
-		const userDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {
+		/**
+		 * Check https://www.npmjs.com/package/mongoose-findorcreate#promise-support
+		 */
+		const findOrCreate = await db.users.findOrCreate({ _id: member.id }).catch(err => {
 			winston.warn(`Failed to find or create user data for "${member.user.tag}" to award activity points on server "${server}"`, { usrid: member.id }, err);
 		});
+		const userDocument = findOrCreate.doc;
 		if (userDocument) {
 			userDocument.points += amount;
 			try {

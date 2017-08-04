@@ -5,7 +5,7 @@ module.exports = () => {
 	 * @returns {Array} The array without the null objects
 	 */
 	Object.assign(Array.prototype, {
-		spliceNullElements() {
+		spliceNullElements () {
 			for (let i = 0; i < this.length; i++) {
 				if (this[i] === null) {
 					this.splice(i, 1);
@@ -20,7 +20,7 @@ module.exports = () => {
 	 * @returns {*} Random output from the array
 	 */
 	Object.assign(Array.prototype, {
-		random() {
+		random () {
 			return this[Math.floor(Math.random() * this.length)];
 		},
 	});
@@ -32,7 +32,7 @@ module.exports = () => {
 	 * @returns {Object}
 	 */
 	Object.assign(String.prototype, {
-		containsArray(arr, isCaseSensitive) {
+		containsArray (arr, isCaseSensitive) {
 			let selectedKeyword = -1, keywordIndex = -1;
 			for (let i = 0; i < arr.length; i++) {
 				if (isCaseSensitive && this.includes(arr[i])) {
@@ -59,7 +59,7 @@ module.exports = () => {
 	 * @returns {?String} The new string
 	 */
 	Object.assign(String.prototype, {
-		replaceAll(target, replacement) {
+		replaceAll (target, replacement) {
 			return this.replace(new RegExp(`${target}`, "g"), replacement);
 		},
 	});
@@ -70,7 +70,7 @@ module.exports = () => {
 	 * @returns {Array} The new array, with mini arrays in it, chunked at number elements per mini array
 	 */
 	Object.assign(Array.prototype, {
-		chunk(number) {
+		chunk (number) {
 			return Array.from(Array(Math.ceil(this.length / number)), (_, i) => this.slice(i * number, (i * number) + number));
 		},
 	});
@@ -80,7 +80,7 @@ module.exports = () => {
 	 * @returns {String} The escaped String
 	 */
 	Object.assign(String.prototype, {
-		escapeRegex() {
+		escapeRegex () {
 			const matchOperators = /[|\\{}()[\]^$+*?.]/g;
 			return this.replace(matchOperators, "\\$&");
 		},

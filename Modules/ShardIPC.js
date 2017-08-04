@@ -1,4 +1,6 @@
-const Discord = require("discord.js");
+// You aren't using this variable in this file!
+// Uncomment when you will.. 😒
+// const Discord = require("discord.js");
 const EventEmitter = require("events");
 
 class SharderIPC extends EventEmitter {

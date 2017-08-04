@@ -1,4 +1,4 @@
- // TODO: getSandbox
+// TODO: getSandbox
 
 const domain = require("domain");
 const fs = require("fs-extra");
@@ -17,7 +17,7 @@ module.exports = async (bot, db, server, serverDocument, channel, extensionDocum
 	if (extensionCode) {
 		const extensionDomain = domain.create();
 		extensionDomain.run(() => {
-			const extensionVM = new vm.Script(`(async () => {${extensionCode}})()`);
+			// Const extensionVM = new vm.Script(`(async () => {${extensionCode}})()`);
 			// extensionVM.runInContext(extensionSandbox, {
 			// 	displayErrors: true,
 			// 	timeout: 10000,
