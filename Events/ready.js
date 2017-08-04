@@ -22,16 +22,20 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
+			winston.verbose(`Collecting stats for server ${server.name}.`, { svrid: server.id })
 			if (serverDocument) {
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
+					await winston.silly(`Stats for server ${server.name} are outdated!`, { svrid: server.id, });
 					await clearStats(bot, db, server, serverDocument);
 				} else {
 					// Iterate through all members
 					server.members.forEach(async member => {
 						if (member.id !== bot.user.id && !member.user.bot) {
+							await winston.silly(`Collecting member stats from guild ${server.name} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id })
 							const game = await bot.getGame(member);
 							if (game !== "" && member.presence.status === "online") {
+								await winston.silly(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
 								let gameDocument = serverDocument.games.id(game);
 								if (!gameDocument) {
 									serverDocument.games.push({ _id: game });
@@ -54,6 +58,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 						}
 					});
 					try {
+						winston.silly("Saving serverDocument after stats collected.", { svrid: server.id })
 						await serverDocument.save();
 					} catch (err) {
 						winston.warn(`Failed to save server data for stats.. <.>`, { svrid: server.id }, err);
@@ -73,9 +78,12 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
+		winston.verbose("Setting existing reminders for all users.")
 		if (userDocuments) {
 			for (let i = 0; i < userDocuments.length; i++) {
+				winston.debug("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
 				for (let j = 0; j < userDocuments[i].reminders.length; j++) {
+					winston.silly(`Calling setReminder() for reminder ${j} for user.`, { usrid: userDocuments[i]._id, reminder: userDocuments[i].reminders[j] })
 					promiseArray.push(setReminder(bot, userDocuments[i], userDocuments[i].reminders[j]));
 				}
 			}
@@ -89,8 +97,10 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn("Failed to get countdowns from db (-_-*)", err);
 		});
+		winston.verbose("Setting existing countdowns in servers.");
 		if (serverDocuments) {
 			for (let i = 0; i < serverDocuments.length; i++) {
+				winston.debug(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id })
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
 					promiseArray.push(setCountdown(bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
 				}
@@ -297,35 +307,33 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		await setBotGame();
 	};
 
-	// Ensure that all servers have database documents
-	const ensureDocuments = async () => {
-		let newServerDocuments = [];
-		const makeNewDocument = async server => {
-			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
-				winston.warn(`Failed to find server data.. Sorry!`, err);
-			});
-			if (serverDocument) {
-				const channelIDs = server.channels.map(a => a.id);
-				for (let j = 0; j < serverDocument.channels.length; j++) {
-					if (!channelIDs.includes(serverDocument.channels[j]._id)) {
-						serverDocument.channels[j].remove();
-					}
-				}
-			} else {
-				newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
-			}
-		};
-		let promiseArray = [];
-		bot.guilds.forEach(guild => {
-			promiseArray.push(makeNewDocument(guild));
+	// Ensure that all servers hava database documents
+	const shardGuildIterator = bot.guilds.entries();
+	const checkServerData = async (server, newServerDocuments) => {
+		const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
+			winston.warn(`Failed to find server data.. Sorry!`, err);
 		});
-		await Promise.all(promiseArray);
-		return newServerDocuments;
+		if (serverDocument) {
+			const channelIDs = server.channels.map(a => a.id);
+			for (let j = 0; j < serverDocument.channels.length; j++) {
+				if (!channelIDs.includes(serverDocument.channels[j]._id)) {
+					serverDocument.channels[j].remove();
+				}
+			}
+		} else {
+			newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
+		}
+		try {
+			checkServerData(shardGuildIterator.next().value[1], newServerDocuments).catch(err => { // eslint-disable-line arrow-body-style, handle-callback-err, no-unused-vars
+				return newServerDocuments;
+			});
+		} catch (err) {
+			return newServerDocuments;
+		}
 	};
-
 	try {
-		ensureDocuments().then(async newServerDocuments => {
-			if (newServerDocuments && newServerDocuments.length > 0) {
+		checkServerData(shardGuildIterator.next().value[1], []).then(async newServerDocuments => {
+			if (typeof newServerDocuments !== "undefined" && newServerDocuments.length > 0) {
 				winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
 				db.servers.insertMany(newServerDocuments).catch(err => {
 					winston.warn(`Failed to insert new server documents..`, err);
