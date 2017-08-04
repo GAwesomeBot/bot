@@ -60,8 +60,9 @@ database.initialize(configJS.databaseURL).catch(err => {
 			sharder.finished++
 			if (sharder.finished === sharder.count) {
 				// Print startup ascii message
-				console.log(ascii);
 				winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
+				// Use console.log because winston never lets us have anything fun, MOM
+				console.log(ascii);
 				sharder.removeListener("finished", shardFinished);
 			}
 		};
