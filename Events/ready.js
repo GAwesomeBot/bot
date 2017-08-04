@@ -307,33 +307,35 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		await setBotGame();
 	};
 
-	// Ensure that all servers hava database documents
-	const shardGuildIterator = bot.guilds.entries();
-	const checkServerData = async (server, newServerDocuments) => {
-		const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
-			winston.warn(`Failed to find server data.. Sorry!`, err);
-		});
-		if (serverDocument) {
-			const channelIDs = server.channels.map(a => a.id);
-			for (let j = 0; j < serverDocument.channels.length; j++) {
-				if (!channelIDs.includes(serverDocument.channels[j]._id)) {
-					serverDocument.channels[j].remove();
-				}
-			}
-		} else {
-			newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
-		}
-		try {
-			checkServerData(shardGuildIterator.next().value[1], newServerDocuments).catch(err => { // eslint-disable-line arrow-body-style, handle-callback-err, no-unused-vars
-				return newServerDocuments;
+		// Ensure that all servers have database documents
+	const ensureDocuments = async () => {
+		let newServerDocuments = [];
+		const makeNewDocument = async server => {
+			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
+				winston.warn(`Failed to find server data.. Sorry!`, err);
 			});
-		} catch (err) {
-			return newServerDocuments;
-		}
+			if (serverDocument) {
+				const channelIDs = server.channels.map(a => a.id);
+				for (let j = 0; j < serverDocument.channels.length; j++) {
+					if (!channelIDs.includes(serverDocument.channels[j]._id)) {
+						serverDocument.channels[j].remove();
+					}
+				}
+			} else {
+				newServerDocuments.push(await getNewServerData(bot, server, new db.servers({ _id: server.id })));
+			}
+		};
+		let promiseArray = [];
+		bot.guilds.forEach(guild => {
+			promiseArray.push(makeNewDocument(guild));
+		});
+		await Promise.all(promiseArray);
+		return newServerDocuments;
 	};
+
 	try {
-		checkServerData(shardGuildIterator.next().value[1], []).then(async newServerDocuments => {
-			if (typeof newServerDocuments !== "undefined" && newServerDocuments.length > 0) {
+		ensureDocuments().then(async newServerDocuments => {
+			if (newServerDocuments && newServerDocuments.length > 0) {
 				winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
 				db.servers.insertMany(newServerDocuments).catch(err => {
 					winston.warn(`Failed to insert new server documents..`, err);
