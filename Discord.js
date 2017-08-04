@@ -632,7 +632,7 @@ bot.once("ready", async () => {
 	}
 });
 
-bot.on("message", async msg => {
+bot.on("messagesoof", async msg => {
 	try {
 		await Events.onMessage(bot, db, configJS, configJSON, msg);
 	} catch (err) {

@@ -2,6 +2,7 @@
 const database 		= require("./Database/Driver.js");
 const auth 				= require("./Configurations/auth.js");
 const configJS 		= require("./Configurations/config.js");
+const configJSON	= require("./Configurations/config.json");
 const Discord			= require("discord.js");
 const { Console, SharderIPC, Sharder } = require("./Modules/");
 const cluster			= require("cluster");
@@ -37,16 +38,34 @@ database.initialize(configJS.databaseURL).catch(err => {
 		await sharder.IPC.listen();
 		// Sharder events
 		sharder.ready = 0;
+		sharder.finished = 0;
 		sharder.IPC.on("ready", () => {
 			sharder.ready++;
 			if (sharder.ready === sharder.count) {
-				winston.info("All shards ready.");
+				winston.info("All shards connected.");
 			}
 		});
 		sharder.IPC.once("warnDefaultSecret", () => {
 			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
 		});
-
+		function shardFinished() {
+			const ascii = `
+  _____                                               ____        _   
+ / ____|   /\\                                        |  _ \\      | |  
+| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
+| | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
+| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
+ \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
+			`;
+			sharder.finished++
+			if (sharder.finished === sharder.count) {
+				// Print startup ascii message
+				console.log(ascii);
+				winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
+				sharder.removeListener("finished", shardFinished);
+			}
+		};
+		sharder.IPC.on("finished", shardFinished);
 		sharder.spawn();
 	}
 });

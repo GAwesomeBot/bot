@@ -243,22 +243,10 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		// 	});
 		// };
 
-	// Print startup ASCII art in console
+	// Report to master that we're ok to go
 	const showStartupMessage = () => {
 		bot.isReady = true;
-		const ascii = `
-  _____                                               ____        _   
- / ____|   /\\                                        |  _ \\      | |  
-| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
-| | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
-| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
- \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
-		`;
-		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
-		if (process.env.SHARD_ID === "0") {
-			// I know I know, console.log, deal with it 😎
-			console.log(ascii);
-		}
+		bot.IPC.send("finished", { id: bot.shard.id });
 	};
 
 	// Set messages_today to 0 for all servers
