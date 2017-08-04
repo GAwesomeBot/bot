@@ -20,7 +20,7 @@ module.exports = class Console {
 					timestamp: () => `[${chalk.grey(moment().format("HH:mm:ss"))}]`,
 				}),
 				new winston.transports.DailyRotateFile({
-					level: "silly",
+					level: config.fileLevel,
 					colorize: false,
 					datePattern: `dd-MM-yyyy.`,
 					prepend: true,
@@ -49,7 +49,7 @@ module.exports = class Console {
 					filename: require("path").join(process.cwd(), `logs/gawesomebot.log`),
 				}),
 				new winston.transports.File({
-					level: "silly",
+					level: config.fileLevel,
 					json: true,
 					colorize: false,
 					filename: require("path").join(process.cwd(), `logs/verbose.gawesomebot.log`),

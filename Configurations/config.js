@@ -45,11 +45,12 @@ const configs = {
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
 	/*
 	 * Level of output the console should display. List of levels:
-	 * error, warn, info, debug and verbose.
+	 * error, warn, info, debug, verbose and silly.
 	 * Recommended to stay as info to prevent console cluttering.
-	 * All log messages are always stored in the log files.
+	 * fileLevel determines the output to master/shard.gawesomebot.log and verbose.gawesomebot.log files.
 	 */
 	consoleLevel: "info",
+	fileLevel: "silly",
 	/*
 	 * The secret used to sign session hashes.
 	 * This must be a random and secure string!

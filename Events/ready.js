@@ -22,7 +22,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
-			winston.verbose(`Collecting stats for server ${server.name}.`, { svr: server, svrDoc: serverDocument })
+			winston.verbose(`Collecting stats for server ${server.name}.`, { svrid: server.id })
 			if (serverDocument) {
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
@@ -78,9 +78,12 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
+		winston.verbose("Setting existing reminders for all users.")
 		if (userDocuments) {
 			for (let i = 0; i < userDocuments.length; i++) {
+				winston.debug("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
 				for (let j = 0; j < userDocuments[i].reminders.length; j++) {
+					winston.silly(`Calling setReminder() for reminder ${j} for user.`, { usrid: userDocuments[i]._id, reminder: userDocuments[i].reminders[j] })
 					promiseArray.push(setReminder(bot, userDocuments[i], userDocuments[i].reminders[j]));
 				}
 			}
@@ -94,8 +97,10 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn("Failed to get countdowns from db (-_-*)", err);
 		});
+		winston.verbose("Setting existing countdowns in servers.");
 		if (serverDocuments) {
 			for (let i = 0; i < serverDocuments.length; i++) {
+				winston.debug(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id })
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
 					promiseArray.push(setCountdown(bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
 				}
