@@ -99,7 +99,7 @@ bot.getName = (server, serverDocument, member, ignoreNick = false) => {
 // Bot Command Handlers
 bot.reloadPrivateCommand = command => {
 	try {
-		privateCommandModules[command] = reload(`./../Commands/PM/${command}.js`);
+		privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
 	} catch (err) {
 		return err;
 	}
@@ -107,7 +107,7 @@ bot.reloadPrivateCommand = command => {
 
 bot.reloadPublicCommand = command => {
 	try {
-		commandModules[command] = reload(`./../Commands/Public/${command}.js`);
+		commandModules[command] = reload(`./Commands/Public/${command}.js`);
 	} catch (err) {
 		return err;
 	}
@@ -596,7 +596,7 @@ const shard = bot.shard;
 
 bot.IPC = shardIPC;
 
-process.on('unhandledRejection', (reason, p) => {
+process.on("unhandledRejection", (reason, p) => {
 	winston.error(`Unhandled Promise Rejection. Please report to github x.x\n Error:`)
 	console.log(reason)
 });
@@ -632,11 +632,13 @@ bot.once("ready", async () => {
 	}
 });
 
-bot.on("messagesoof", async msg => {
-	try {
-		await Events.onMessage(bot, db, configJS, configJSON, msg);
-	} catch (err) {
-		winston.error(`An unexpected error happened while handling a MESSAGE event! x.x\n`, err);
+bot.on("message", async msg => {
+	if (bot.isReady) {
+		try {
+			await Events.onMessage(bot, db, configJS, configJSON, msg);
+		} catch (err) {
+			winston.error(`An unexpected error happened while handling a MESSAGE event! x.x\n`, err);
+		}
 	}
 });
 //
