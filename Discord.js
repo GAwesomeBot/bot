@@ -144,9 +144,33 @@ bot.getPublicCommandList = () => Object.keys(commands.public);
 
 bot.getPMCommand = command =>	privateCommandModules[command];
 
-bot.getPublicCommand = command => commandModules[command];
+bot.getPublicCommand = command => {
+	if (commandModules[command]) {
+		return commandModules[command];
+	} else {
+		for (const publicCommand in commands.public) {
+			if (commands.public[publicCommand].aliases && commands.public[publicCommand].aliases.length > 0) {
+				if (commands.public[publicCommand].aliases.includes(command.trim())) {
+					return commandModules[publicCommand];
+				}
+			}
+		}
+	}
+};
 
-bot.getPublicCommandMetadata = command =>	commands.public[command];
+bot.getPublicCommandMetadata = command =>	{
+	if (commands.public[command]) {
+		return commands.public[command];
+	} else {
+		for (const publicCommand in commands.public) {
+			if (commands.public[publicCommand].aliases && commands.public[publicCommand].aliases.length > 0) {
+				if (commands.public[publicCommand].aliases.includes(command.trim())) {
+					return commands.public[publicCommand];
+				}
+			}
+		}
+	}
+};
 
 bot.getPMCommandMetadata = command =>	commands.pm[command];
 
@@ -608,9 +632,13 @@ bot.once("ready", async () => {
 	}
 });
 
-// bot.on("", event => {
-//
-// });
+bot.on("message", async msg => {
+	try {
+		await Events.onMessage(bot, db, configJS, configJSON, msg);
+	} catch (err) {
+		winston.error(`An unexpected error happened while handling a MESSAGE event! x.x\n`, err);
+	}
+});
 //
 // bot.on("", event => {
 //
