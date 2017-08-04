@@ -17,8 +17,7 @@ class Shard {
 				if (msg._SEval) {
 					this.sharder.broadcastEval(msg._SEval).then(
 						results => this.send({ _SEval: msg._SEval, _result: results }),
-						// TODO: Uhh, err is unused?
-						err => this.send({ _SEval: msg._SEval, _error: "" })
+						err => this.send({ _SEval: msg._SEval, _error: err })
 					);
 					return;
 				}
