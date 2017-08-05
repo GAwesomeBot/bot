@@ -328,12 +328,13 @@ bot.checkRank = async (server, serverDocument, member, memberDocument, override)
 						}
 						// Add 100 AwesomePoints as reward
 						if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-							const userDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {
+							const findDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {
 								winston.error(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 							});
+							const userDocument = findDocument.doc;
 							if (userDocument) {
 								userDocument.points += 100;
-								userDocument.save().catch(usrErr => {
+								await userDocument.save().catch(usrErr => {
 									winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
 								});
 							}

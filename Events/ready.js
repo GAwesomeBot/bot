@@ -22,7 +22,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
-			winston.debug(`Collecting stats for server ${server.name}.`, { svrid: server.id })
+			winston.debug(`Collecting stats for server ${server}.`, { svrid: server.id });
 			if (serverDocument) {
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
@@ -31,7 +31,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 					// Iterate through all members
 					server.members.forEach(async member => {
 						if (member.id !== bot.user.id && !member.user.bot) {
-							await winston.verbose(`Collecting member stats from guild ${server.name} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id })
+							await winston.verbose(`Collecting member stats from guild ${server} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
 							const game = await bot.getGame(member);
 							if (game !== "" && member.presence.status === "online") {
 								await winston.verbose(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
@@ -48,10 +48,10 @@ module.exports = async (bot, db, configJS, configJSON) => {
 							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && bot.getUserBotAdmin(server, serverDocument, member) === 0) {
 								try {
 									await member.kick(`Kicked for inactivity on server.`);
-									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server.name}"`, { svrid: server.id, usrid: member.user.id });
+									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id });
 								} catch (err) {
 									memberDocument.cannotAutokick = true;
-									winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server.name}"`, { svrid: server.id, usrid: member.user.id }, err);
+									winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id }, err);
 								}
 							}
 						}
@@ -76,7 +76,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
-		winston.debug("Setting existing reminders for all users.")
+		winston.debug("Setting existing reminders for all users.");
 		if (userDocuments) {
 			for (let i = 0; i < userDocuments.length; i++) {
 				winston.verbose("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
@@ -97,7 +97,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		winston.debug("Setting existing countdowns in servers.");
 		if (serverDocuments) {
 			for (let i = 0; i < serverDocuments.length; i++) {
-				winston.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id })
+				winston.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id });
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
 					promiseArray.push(setCountdown(bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
 				}
@@ -150,7 +150,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 					const serverDocument = serverDocuments[i];
 					const server = bot.guilds.get(serverDocument._id);
 					if (server) {
-						winston.verbose(`Setting streaming RSS timers for server ${server.name}`, { svrid: server.id });
+						winston.verbose(`Setting streaming RSS timers for server ${server}`, { svrid: server.id });
 						const sendStreamingRSSFeed = async j => {
 							if (j < serverDocument.config.rss_feeds.length) {
 								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
@@ -189,7 +189,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 					const serverDocument = serverDocuments[i];
 					const server = bot.guilds.get(serverDocument._id);
 					if (server) {
-						winston.verbose(`Checking for streamers in server ${server.name}`, { svrid: server.id })
+						winston.verbose(`Checking for streamers in server ${server}`, { svrid: server.id });
 						const checkIfStreaming = async j => {
 							if (j < serverDocument.config.streamers_data.length) {
 								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
@@ -221,13 +221,13 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		}).exec().catch(err => {
 			winston.warn(`Failed to find server data for message of the day <.<\n`, err);
 		});
-		winston.debug("Starting MOTD timers for servers.")
+		winston.debug("Starting MOTD timers for servers.");
 		if (serverDocuments) {
 			const promiseArray = [];
 			for (let i = 0; i < serverDocuments.length; i++) {
 				const server = bot.guilds.get(serverDocuments[i]._id);
 				if (server) {
-					winston.verbose(`Starting MOTD timer for server ${server.name}`, { svrid: server.id });
+					winston.verbose(`Starting MOTD timer for server ${server}`, { svrid: server.id });
 					promiseArray.push(createMessageOfTheDay(bot, db, server, serverDocuments[i].config.message_of_the_day));
 				}
 			}
@@ -267,25 +267,25 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			"make it double!",
 			"party like you've never boogied before.",
 			"rave in the UK.",
-			"explore the depths of discord.",
-			"dive into many DM's.",
+			"explore the depths of Discord.",
+			"slide into many DM's.",
 			"have a wonderful time.",
-			"endure the wrath of auttaja.",
+			"endure the wrath of Auttaja. >.>",
 			"do something, I guess.",
 			"come up with new loading lines.",
-			"generate lots of fun and exciement!",
+			"generate lots of fun and excitement!",
 			"make insane amounts of cold hard cash.",
 			"hack into the pentagon a couple of times.",
 			"activate mutually assured destruction sequences.",
 			"impress everyone with these crazy abs.",
-			"go faster than any sonic has gone before.",
+			"go faster than any Sonic has gone before.",
 			"be intrepid, and explode.",
 			"destroy all humans, in fashion.",
-			"go to war!",
+			"go to war!", // We don't endorse wars!
 			"generate the spiciest of memes.",
 			"fulfill life's purpose.",
 			"come at you, bro.",
-			"be better than auttaja in every way.",
+			"be better than Auttaja in every way.",
 		];
 		winston.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
 		bot.isReady = true;
@@ -295,7 +295,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Set messages_today to 0 for all servers
 	// And start a chain of events..
 	const startMessageCount = async () => {
-		winston.debug("Creating messages_today timers.")
+		winston.debug("Creating messages_today timers.");
 		await db.servers.update({}, { messages_today: 0 }, { multi: true }).exec().catch(err => {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
@@ -304,14 +304,14 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		};
 		setInterval(clearMessageCount, 86400000);
 		await Promise.all([statsCollector(), setReminders(), setCountdowns(), setGiveaways(), startStreamingRSS(), checkStreamers(), startMessageOfTheDay()]);
-		await winston.debug("Posting stats data to discord bot lists.")
+		await winston.debug("Posting stats data to Discord bot lists.");
 		PostData(bot);
 		showStartupMessage();
 	};
 
 	// Set bot's "now playing" game
 	const setBotGame = async () => {
-		winston.debug("Setting bot's playing game.")
+		winston.debug("Setting bot's playing game.");
 		let gameObject = {
 			name: configJSON.game.name,
 			url: configJSON.game.twitchURL,
@@ -331,7 +331,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 
 	// Delete data for old servers
 	const pruneServerData = async () => {
-		winston.debug("Deleting data for old servers.")
+		winston.debug("Deleting data for old servers.");
 		db.servers.find({
 			_id: {
 				$nin: await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from"),
@@ -340,13 +340,16 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			.exec()
 			.catch(err => {
 				winston.warn(`Failed to prune old server documents -_-`, err);
+			})
+			.then(() => {
+				winston.debug(`Purged all serverDocuments that the bot doesn't know`);
 			});
 		await setBotGame();
 	};
 
 		// Ensure that all servers have database documents
 	const ensureDocuments = async () => {
-		winston.debug("Ensuring all guilds have a serverDocument.")
+		winston.debug("Ensuring all guilds have a serverDocument.");
 		let newServerDocuments = [];
 		const makeNewDocument = async server => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
