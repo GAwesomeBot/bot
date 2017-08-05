@@ -273,8 +273,19 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			"endure the wrath of auttaja.",
 			"do something, I guess.",
 			"come up with new loading lines.",
-			"generate lot's of fun and exciement!",
-			"make insane amounts of cold hard cash."
+			"generate lots of fun and exciement!",
+			"make insane amounts of cold hard cash.",
+			"hack into the pentagon a couple of times.",
+			"activate mutually assured destruction sequences.",
+			"impress everyone with these crazy abs.",
+			"go faster than any sonic has gone before.",
+			"be intrepid, and explode.",
+			"destroy all humans, in fashion.",
+			"go to war!",
+			"generate the spiciest of memes.",
+			"fulfill life's purpose.",
+			"come at you, bro.",
+			"be better than auttaja in every way.",
 		];
 		winston.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
 		bot.isReady = true;
