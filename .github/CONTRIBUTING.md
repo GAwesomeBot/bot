@@ -7,7 +7,7 @@ If you wish to contribute to the GAwesomeBot codebase, feel free to fork the rep
 ## Setup
 To get ready to code on GAwesomeBot, please do the following:
 
-1. Fork & clone the repository, and make sure you're on the **experimental** branch
+1. Fork & clone the repository, and make sure you're on the **development** branch
 2. Run `npm install`
 3. Code your heart out!
 4. Run the bot, and test that your changes work.
