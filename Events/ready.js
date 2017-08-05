@@ -22,20 +22,19 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
-			winston.verbose(`Collecting stats for server ${server.name}.`, { svrid: server.id })
+			winston.debug(`Collecting stats for server ${server.name}.`, { svrid: server.id })
 			if (serverDocument) {
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
-					await winston.silly(`Stats for server ${server.name} are outdated!`, { svrid: server.id, });
 					await clearStats(bot, db, server, serverDocument);
 				} else {
 					// Iterate through all members
 					server.members.forEach(async member => {
 						if (member.id !== bot.user.id && !member.user.bot) {
-							await winston.silly(`Collecting member stats from guild ${server.name} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id })
+							await winston.verbose(`Collecting member stats from guild ${server.name} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id })
 							const game = await bot.getGame(member);
 							if (game !== "" && member.presence.status === "online") {
-								await winston.silly(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
+								await winston.verbose(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
 								let gameDocument = serverDocument.games.id(game);
 								if (!gameDocument) {
 									serverDocument.games.push({ _id: game });
@@ -49,16 +48,15 @@ module.exports = async (bot, db, configJS, configJSON) => {
 							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && bot.getUserBotAdmin(server, serverDocument, member) === 0) {
 								try {
 									await member.kick(`Kicked for inactivity on server.`);
-									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.id });
+									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server.name}"`, { svrid: server.id, usrid: member.user.id });
 								} catch (err) {
 									memberDocument.cannotAutokick = true;
-									winston.warn(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.id }, err);
+									winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server.name}"`, { svrid: server.id, usrid: member.user.id }, err);
 								}
 							}
 						}
 					});
 					try {
-						winston.silly("Saving serverDocument after stats collected.", { svrid: server.id })
 						await serverDocument.save();
 					} catch (err) {
 						winston.warn(`Failed to save server data for stats.. <.>`, { svrid: server.id }, err);
@@ -78,12 +76,11 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const userDocuments = await db.users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
-		winston.verbose("Setting existing reminders for all users.")
+		winston.debug("Setting existing reminders for all users.")
 		if (userDocuments) {
 			for (let i = 0; i < userDocuments.length; i++) {
-				winston.debug("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
+				winston.verbose("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
 				for (let j = 0; j < userDocuments[i].reminders.length; j++) {
-					winston.silly(`Calling setReminder() for reminder ${j} for user.`, { usrid: userDocuments[i]._id, reminder: userDocuments[i].reminders[j] })
 					promiseArray.push(setReminder(bot, userDocuments[i], userDocuments[i].reminders[j]));
 				}
 			}
@@ -97,10 +94,10 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const serverDocuments = await db.servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn("Failed to get countdowns from db (-_-*)", err);
 		});
-		winston.verbose("Setting existing countdowns in servers.");
+		winston.debug("Setting existing countdowns in servers.");
 		if (serverDocuments) {
 			for (let i = 0; i < serverDocuments.length; i++) {
-				winston.debug(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id })
+				winston.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id })
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
 					promiseArray.push(setCountdown(bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
 				}
@@ -121,10 +118,12 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		}).exec().catch(err => {
 			winston.warn("Failed to get giveaways from db (-_-*)", err);
 		});
+		winston.debug("Setting existing giveaways for servers.");
 		if (serverDocuments) {
 			serverDocuments.forEach(serverDocument => {
 				const svr = bot.guilds.get(serverDocument._id);
 				if (svr) {
+					winston.verbose(`Setting existing giveaways for server ${svr.id}.`, { svrid: svr.id });
 					serverDocument.channels.forEach(channelDocument => {
 						if (channelDocument.giveaway.isOngoing) {
 							const ch = svr.channels.get(channelDocument._id);
@@ -144,12 +143,14 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const serverDocuments = await db.servers.find({}).exec().catch(err => {
 			winston.warn(`Failed to get servers from db (-_-*)`, err);
 		});
+		winston.debug("Starting streaming RSS timers for servers.");
 		if (serverDocuments) {
 			const sendStreamingRSSToServer = async i => {
 				if (i < serverDocuments.length) {
 					const serverDocument = serverDocuments[i];
 					const server = bot.guilds.get(serverDocument._id);
 					if (server) {
+						winston.verbose(`Setting streaming RSS timers for server ${server.name}`, { svrid: server.id });
 						const sendStreamingRSSFeed = async j => {
 							if (j < serverDocument.config.rss_feeds.length) {
 								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
@@ -181,12 +182,14 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		const serverDocuments = await db.servers.find({}).exec().catch(err => {
 			winston.warn(`Failed to get server documents for streamers (-_-*)`, err);
 		});
+		winston.debug("Checking for streamers in servers.");
 		if (serverDocuments) {
 			const checkStreamersForServer = async i => {
 				if (i < serverDocuments.length) {
 					const serverDocument = serverDocuments[i];
 					const server = bot.guilds.get(serverDocument._id);
 					if (server) {
+						winston.verbose(`Checking for streamers in server ${server.name}`, { svrid: server.id })
 						const checkIfStreaming = async j => {
 							if (j < serverDocument.config.streamers_data.length) {
 								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
@@ -218,11 +221,13 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		}).exec().catch(err => {
 			winston.warn(`Failed to find server data for message of the day <.<\n`, err);
 		});
+		winston.debug("Starting MOTD timers for servers.")
 		if (serverDocuments) {
 			const promiseArray = [];
 			for (let i = 0; i < serverDocuments.length; i++) {
 				const server = bot.guilds.get(serverDocuments[i]._id);
 				if (server) {
+					winston.verbose(`Starting MOTD timer for server ${server.name}`, { svrid: server.id });
 					promiseArray.push(createMessageOfTheDay(bot, db, server, serverDocuments[i].config.message_of_the_day));
 				}
 			}
@@ -255,6 +260,23 @@ module.exports = async (bot, db, configJS, configJSON) => {
 
 	// Report to master that we're ok to go
 	const showStartupMessage = () => {
+		const readyMsgs = [
+			"rock and roll!",
+			"PWN some n00bs.",
+			"cause trouble!",
+			"make it double!",
+			"party like you've never boogied before.",
+			"rave in the UK.",
+			"explore the depths of discord.",
+			"dive into many DM's.",
+			"have a wonderful time.",
+			"endure the wrath of auttaja.",
+			"do something, I guess.",
+			"come up with new loading lines.",
+			"generate lot's of fun and exciement!",
+			"make insane amounts of cold hard cash."
+		];
+		winston.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
 		bot.isReady = true;
 		bot.IPC.send("finished", { id: bot.shard.id });
 	};
@@ -262,6 +284,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 	// Set messages_today to 0 for all servers
 	// And start a chain of events..
 	const startMessageCount = async () => {
+		winston.debug("Creating messages_today timers.")
 		await db.servers.update({}, { messages_today: 0 }, { multi: true }).exec().catch(err => {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
@@ -270,12 +293,14 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		};
 		setInterval(clearMessageCount, 86400000);
 		await Promise.all([statsCollector(), setReminders(), setCountdowns(), setGiveaways(), startStreamingRSS(), checkStreamers(), startMessageOfTheDay()]);
+		await winston.debug("Posting stats data to discord bot lists.")
 		PostData(bot);
 		showStartupMessage();
 	};
 
 	// Set bot's "now playing" game
 	const setBotGame = async () => {
+		winston.debug("Setting bot's playing game.")
 		let gameObject = {
 			name: configJSON.game.name,
 			url: configJSON.game.twitchURL,
@@ -295,6 +320,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 
 	// Delete data for old servers
 	const pruneServerData = async () => {
+		winston.debug("Deleting data for old servers.")
 		db.servers.find({
 			_id: {
 				$nin: await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from"),
@@ -309,6 +335,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 
 		// Ensure that all servers have database documents
 	const ensureDocuments = async () => {
+		winston.debug("Ensuring all guilds have a serverDocument.")
 		let newServerDocuments = [];
 		const makeNewDocument = async server => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {

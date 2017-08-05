@@ -11,7 +11,16 @@ module.exports = class Console {
 	 * @param {string} type The type that determines the label (master for the master sharder, otherwise Shard ID)
 	 */
 	constructor (type) {
+		const levels = {
+			error: 0,
+			warn: 1,
+			info: 2,
+			debug: 3,
+			verbose: 4,
+			silly: 5
+		}
 		return new winston.Logger({
+			levels: levels,
 			transports: [
 				new winston.transports.Console({
 					level: config.consoleLevel,

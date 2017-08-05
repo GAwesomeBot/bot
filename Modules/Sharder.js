@@ -7,8 +7,10 @@ class Shard {
 		this.sharder = sharder;
 		this.worker = worker;
 		this.id = id;
+		this.winston = sharder.winston;
 
 		this.process.once("exit", () => {
+			this.winston.verbose(`Shard ${this.id} peacefully passed away. Respawning...`, { id: this.id });
 			this.sharder.create(this.id);
 		});
 
@@ -35,9 +37,11 @@ class Shard {
 	}
 
 	eval (code) {
+		this.winston.silly("Evaluating code on shard", { code: code })
 		const promise = new Promise((resolve, reject) => {
 			const listener = message => {
 				if (!message || message._Eval !== code) return;
+				this.winston.silly("Recieved eval reply from shard!", { message: message })
 				this.process.removeListener("message", listener);
 				resolve(message._result);
 			};
@@ -76,6 +80,7 @@ class Sharder extends EventEmitter {
 	}
 
 	create (id) {
+		this.winston.silly("Creating new shard instance and process.", { id: id });
 		let worker = this.cluster.fork({
 			CLIENT_TOKEN: this.token,
 			SHARD_ID: id,
@@ -86,12 +91,14 @@ class Sharder extends EventEmitter {
 	}
 
 	broadcast (message) {
+		this.winston.verbose("Broadcasting message to all shards.", { msg: message });
 		const promises = [];
 		for (const shard of this.shards.values()) promises.push(shard.send(message));
 		return Promise.all(promises);
 	}
 
 	broadcastEval (val) {
+		this.winston.verbose("Broadcasting eval to all shards.", { code: val })
 		const promises = [];
 		for (const shard of this.shards.values()) promises.push(shard.eval(val));
 		return Promise.all(promises);

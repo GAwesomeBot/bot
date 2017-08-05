@@ -1,6 +1,6 @@
 module.exports = (bot, val, merge, func) => {
 	try {
-		let code = `this.${val}`;
+		let code = `this.${val}`
 		if (func) {
 			code = `${func}(this.${val})`;
 		}

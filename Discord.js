@@ -23,6 +23,7 @@ GlobalDefines();
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
 const Discord = require("discord.js");
+winston.silly("Creating discord.js client.");
 const bot = new Discord.Client({
 	shardId: Number(process.env.SHARD_ID),
 	shardCount: Number(process.env.SHARD_COUNT),
@@ -37,6 +38,7 @@ const bot = new Discord.Client({
 bot.isReady = false;
 
 let db;
+winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
 	process.exit(1);
@@ -45,6 +47,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 	db = database.get();
 });
 
+winston.verbose("Creating ShardIPC instance.");
 const shardIPC = new ShardIPC(bot, winston, process);
 
 // Get the command prefix for a server
@@ -597,13 +600,15 @@ const shard = bot.shard;
 bot.IPC = shardIPC;
 
 process.on("unhandledRejection", (reason, p) => {
-	winston.error(`Unhandled Promise Rejection. Please report to github x.x\n Error:`)
-	console.log(reason)
+	winston.error(`Unhandled Promise Rejection. Please report to github x.x\n`);
+	console.log(reason);
 });
 
+winston.debug("Logging in to discord gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
 	bot.IPC.listen();
+	winston.debug("Listening for incoming IPC messages.");
 }).catch(err => {
 	winston.error("Failed to connect to discord :/\n", { err: err });
 });
@@ -622,9 +627,9 @@ bot.on("guildMembersChunk", (members, guild) => {
 
 bot.once("ready", async () => {
 	try {
-		await winston.verbose("Running event READY");
+		await winston.debug("Running event READY");
 		Events.onceReady(bot, db, configJS, configJSON);
-		await winston.verbose("Running webserver");
+		await winston.debug("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
 		bot.IPC.send("ready", { id: bot.shard.id });
 	} catch (err) {
@@ -633,6 +638,7 @@ bot.once("ready", async () => {
 });
 
 bot.on("message", async msg => {
+	winston.silly("Recieved message from discord!", { msg: msg });
 	if (bot.isReady) {
 		try {
 			await Events.onMessage(bot, db, configJS, configJSON, msg);

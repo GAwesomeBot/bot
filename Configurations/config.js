@@ -3,7 +3,7 @@ const configs = {
    * Represents how many shards the bot will have.
    * It *must* be a integer, aka *1*, *52* etc.
    */
-	shardTotal: 2,
+	shardTotal: 1,
 	/*
    * The URL all the bot commands should point to.
    * Example: /about shows this link for the web interface
@@ -45,12 +45,13 @@ const configs = {
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
 	/*
 	 * Level of output the console should display. List of levels:
-	 * error, warn, info, debug, verbose and silly.
+	 * error, warn, info, debug and verbose.
 	 * Recommended to stay as info to prevent console cluttering.
 	 * fileLevel determines the output to master/shard.gawesomebot.log and verbose.gawesomebot.log files.
+	 * Note that setting these values to a level lower than `info` might influence your bot's performence.
 	 */
 	consoleLevel: "info",
-	fileLevel: "silly",
+	fileLevel: "info",
 	/*
 	 * The secret used to sign session hashes.
 	 * This must be a random and secure string!

@@ -12,6 +12,7 @@ global.winston = new Console("master");
 
 winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawesomebot.log`)}.`);
 
+winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 	process.exit(-1);
@@ -19,18 +20,22 @@ database.initialize(configJS.databaseURL).catch(err => {
 	const db = database.getConnection();
 	if (db) {
 		await winston.info(`Connected to the database successfully.`);
+		winston.verbose("Confirming MongoDB config values... ~(˘▾˘~)");
 		await db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 			}
 		});
+		winston.silly("Confirming clientToken config value.");
 		if (!auth.discord.clientToken) {
 			winston.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! -.-");
 			return;
 		}
+		winston.silly("Confirming shardTotal config value.");
 		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
 			winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
 		}
+		winston.debug("Creating sharder instance.");
 		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, winston);
 		sharder.cluster.on("online", worker => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
