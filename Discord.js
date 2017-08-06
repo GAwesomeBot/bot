@@ -596,11 +596,9 @@ bot.unmuteMember = async (channel, member) => {
 	}
 };
 
-const shard = bot.shard;
-
 bot.IPC = shardIPC;
 
-process.on("unhandledRejection", (reason, p) => {
+process.on("unhandledRejection", reason => {
 	winston.error(`Unhandled Promise Rejection. Please report to github x.x\n`);
 	console.log(reason);
 });

@@ -8,7 +8,7 @@ module.exports = (bot, val, merge, func) => {
 			const listener = message => {
 				if (!message || message._SEval !== code) return;
 				process.removeListener("message", listener);
-				if (!message._error) resolve(message._result); else reject(Util.makeError(message._error));
+				if (!message._error) resolve(message._result); else reject(message._error);
 			};
 			process.on("message", listener);
 

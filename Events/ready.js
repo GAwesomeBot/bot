@@ -281,7 +281,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			"go faster than any Sonic has gone before.",
 			"be intrepid, and explode.",
 			"destroy all humans, in fashion.",
-			"go to war!", // We don't endorse wars!
+			"go to war!",
 			"generate the spiciest of memes.",
 			"fulfill life's purpose.",
 			"come at you, bro.",
