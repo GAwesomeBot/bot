@@ -248,7 +248,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 							if (spamDocument) {
 								spamDocument.remove();
 								await newServerDocument.save().catch(err => {
-									winston.warn("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);									
+									winston.warn("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
 								});
 							}
 						}
