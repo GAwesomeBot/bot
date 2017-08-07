@@ -76,3 +76,8 @@ function shardFinished (sharder) {
 		sharder.IPC.removeListener("finished", shardFinished);
 	}
 }
+
+process.on("uncaughtException", err => {
+	winston.error("An unknown, and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
+	process.exit(0);
+});

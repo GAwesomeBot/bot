@@ -230,7 +230,6 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 			}
 
 			// Spam filter
-			
 		}
 	}
 };
