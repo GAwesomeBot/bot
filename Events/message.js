@@ -91,7 +91,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 		if (command_func) {
 			winston.info(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
 			const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
-				winston.error("Failed to find or create user data for message", { usrid: msg.author.id }, err);
+				winston.error("Failed to find or create user data for message", { usrid: msg.author.id }, err);				
 			});
 			const userDocument = findDocument.doc;
 			try {
@@ -214,9 +214,8 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					}
 				}
 				// Get user data
-				// eslint-disable-next-line no-unused-vars
 				const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
-					winston.error("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
+					winston.error("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);						
 				});
 				const userDocument = findDocument.doc;
 				if (userDocument) {
@@ -225,12 +224,24 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					if (!isNaN(serverDocument.config.moderation.filters.custom_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.custom_filter.violator_role_id)) {
 						violatorRoleID = serverDocument.config.moderation.filters.custom_filter.violator_role_id;
 					}
-					await bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered work in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
+					await bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered work in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${mdg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 				}
 			}
 
 			// Spam filter
-			
+			if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.spam_filter.isEnabled && !serverDocument.config.moderation.filters.spam_filter.disabled_channel_ids.includes(msg.channel.id) && memberBotAdminLevel < 1) {
+				// Tracks spam with each new message (auto-delete after 45 seconds)
+				let spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
+				if (!spamDocument) {
+					channelDocument.spam_filter_data.push({ _id: msg.author.id });
+					spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
+					spamDocument.message_count++;
+					spamDocument.last_message_content = msg.cleanContent;
+					setTimeout(async () => {
+
+					}, 45000);
+				}
+			}
 		}
 	}
 };
