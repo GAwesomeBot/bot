@@ -6,7 +6,6 @@ const {
 } = Utils;
 
 module.exports = async (bot, db, configJS, configJSON, msg) => {
-
 	// Reload commands, dumb idea but whatever
 	// TODO: Can we remove this after we are sure everything works?
 	// Put it in ready or something
@@ -46,9 +45,9 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 	// Stop responding if user is a bot or is globally blocked
 	if (msg.author.id === bot.user.id || msg.author.bot || configJSON.globalBlockList.includes(msg.author.id)) {
 		if (msg.author.id === bot.user.id) {
-			// Actually do nothing top keke
+			// Actually do nothing top kek
 		} else {
-			winston.silly(`Ignored ${msg.author.tag}.`, { usrid: msg.author.id });
+			winston.silly(`Ignored ${msg.author.tag}.`, { usrid: msg.author.id, global_blocked: configJSON.globalBlockList.includes(msg.author.id) });
 		}
 		// Handle private messages
 	} else if (!msg.guild) {
@@ -92,7 +91,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 		if (command_func) {
 			winston.info(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
 			const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
-				winston.error("Failed to find or create user data for message", { usrid: msg.author.id }, err);				
+				winston.error("Failed to find or create user data for message", { usrid: msg.author.id }, err);
 			});
 			const userDocument = findDocument.doc;
 			try {
@@ -197,7 +196,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					msg.channel.send({
 						embed: {
 							color: 0x3669FA,
-							description: `Hello! I'm back${inAllChannels ? "in all channels" : ""}! 🐬`,
+							description: `Hello! I'm back${inAllChannels ? " in all channels" : ""}! 🐬`,
 						},
 					});
 					return;
@@ -216,9 +215,21 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 				}
 				// Get user data
 				const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
-					winston.error("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);						
+					winston.error("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 				});
+				const userDocument = findDocument.doc;
+				if (userDocument) {
+					// Handle this as a violation
+					let violatorRoleID = null;
+					if (!isNaN(serverDocument.config.moderation.filters.custom_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.custom_filter.violator_role_id)) {
+						violatorRoleID = serverDocument.config.moderation.filters.custom_filter.violator_role_id;
+					}
+					await bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered work in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
+				}
 			}
+
+			// Spam filter
+			
 		}
 	}
 };
