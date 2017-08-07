@@ -5,12 +5,13 @@ class SharderIPC extends EventEmitter {
 		super();
 		this.sharder = sharder;
 		this.winston = winston;
+		this.setMaxListeners(0);
 	}
 
 	listen () {
-		this.winston.silly("Started sharder listener.");
+		this.winston.verbose("Started sharder listener.");
 		this.sharder.on("message", (shard, msg) => {
-			this.winston.verbose("Recieved message from shard.", { msg: msg, shard: shard.id });
+			this.winston.silly("Recieved message from shard.", { msg: msg, shard: shard.id });
 			try {
 				const payload = JSON.parse(msg);
 				this.emit(payload.subject, payload, shard.id);
@@ -22,7 +23,7 @@ class SharderIPC extends EventEmitter {
 
 	send (subject, payload, shard) {
 		try {
-			this.winston.verbose("Sending message to shard", { subject: subject, payload: payload, shard: shard });
+			this.winston.silly("Sending message to shard", { subject: subject, payload: payload, shard: shard });
 			payload.subject = subject;
 
 			if (shard === "*") {
@@ -48,13 +49,14 @@ class ShardIPC extends EventEmitter {
 		this.winston = winston;
 		this.proc = proc;
 		this.client = client;
+		this.setMaxListeners(0);
 	}
 
 	listen () {
-		this.winston.silly("Started shard listener.");
+		this.winston.verbose("Started shard listener.");
 		this.proc.on("message", msg => {
 			try {
-				this.winston.verbose("Recieved message from sharder.", { msg: msg });
+				this.winston.silly("Recieved message from sharder.", { msg: msg });
 				if (msg._Eval) {
 					let result = this.client._eval(msg._Eval);
 					if (result instanceof Map) result = Array.from(result.entries());
@@ -70,7 +72,7 @@ class ShardIPC extends EventEmitter {
 
 	send (subject, payload) {
 		try {
-			this.winston.verbose("Sending message to master", { subject: subject, payload: payload });
+			this.winston.silly("Sending message to master", { subject: subject, payload: payload });
 			payload.subject = subject;
 			this.shardClient.send(JSON.stringify(payload));
 		} catch (err) {

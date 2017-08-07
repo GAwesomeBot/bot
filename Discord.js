@@ -608,6 +608,7 @@ winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
 	bot.IPC.listen();
+	process.setMaxListeners(0);
 	winston.debug("Listening for incoming IPC messages.");
 }).catch(err => {
 	winston.error("Failed to connect to Discord :/\n", { err: err });

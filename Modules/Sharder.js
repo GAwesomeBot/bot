@@ -8,9 +8,10 @@ class Shard {
 		this.worker = worker;
 		this.id = id;
 		this.winston = sharder.winston;
+		this.process.setMaxListeners(0);
 
 		this.process.once("exit", () => {
-			this.winston.verbose(`Shard ${this.id} peacefully passed away. Respawning...`, { id: this.id });
+			this.winston.debug(`Shard ${this.id} peacefully passed away. Respawning...`, { id: this.id });
 			this.sharder.create(this.id);
 		});
 
@@ -37,11 +38,11 @@ class Shard {
 	}
 
 	eval (code) {
-		this.winston.silly("Evaluating code on shard", { code: code });
+		this.winston.verbose("Evaluating code on shard", { code: code });
 		const promise = new Promise((resolve, reject) => {
 			const listener = message => {
 				if (!message || message._Eval !== code) return;
-				this.winston.silly("Recieved eval reply from shard!", { message: message });
+				this.winston.verbose("Recieved eval reply from shard!", { message: message });
 				this.process.removeListener("message", listener);
 				resolve(message._result);
 			};
@@ -80,7 +81,7 @@ class Sharder extends EventEmitter {
 	}
 
 	create (id) {
-		this.winston.silly("Creating new shard instance and process.", { id: id });
+		this.winston.verbose("Creating new shard instance and process.", { id: id });
 		let worker = this.cluster.fork({
 			CLIENT_TOKEN: this.token,
 			SHARD_ID: id,
