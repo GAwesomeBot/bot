@@ -17,8 +17,8 @@ module.exports = class Console {
 			info: 2,
 			debug: 3,
 			verbose: 4,
-			silly: 5
-		}
+			silly: 5,
+		};
 		return new winston.Logger({
 			levels: levels,
 			transports: [

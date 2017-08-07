@@ -1,11 +1,9 @@
 /* eslint-disable max-len */
-const database 		= require("./Database/Driver.js");
-const auth 				= require("./Configurations/auth.js");
-const configJS 		= require("./Configurations/config.js");
+const database = require("./Database/Driver.js");
+const auth = require("./Configurations/auth.js");
+const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
-const Discord			= require("discord.js");
-const { Console, SharderIPC, Sharder } = require("./Modules/");
-const cluster			= require("cluster");
+const { Console, Sharder } = require("./Modules/");
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -53,8 +51,15 @@ database.initialize(configJS.databaseURL).catch(err => {
 		sharder.IPC.once("warnDefaultSecret", () => {
 			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
 		});
-		function shardFinished() {
-			const ascii = `
+		sharder.IPC.on("finished", () => {
+			shardFinished(sharder);
+		});
+		sharder.spawn();
+	}
+});
+
+function shardFinished (sharder) {
+	const ascii = `
   _____                                               ____        _   
  / ____|   /\\                                        |  _ \\      | |  
 | |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
@@ -62,16 +67,12 @@ database.initialize(configJS.databaseURL).catch(err => {
 | |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
  \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
 			`;
-			sharder.finished++
-			if (sharder.finished === sharder.count) {
-				// Print startup ascii message
-				winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
-				// Use console.log because winston never lets us have anything fun, MOM
-				console.log(ascii);
-				sharder.removeListener("finished", shardFinished);
-			}
-		};
-		sharder.IPC.on("finished", shardFinished);
-		sharder.spawn();
+	sharder.finished++;
+	if (sharder.finished === sharder.count) {
+		// Print startup ascii message
+		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
+		// Use console.log because winston never lets us have anything fun, MOM
+		console.log(ascii);
+		sharder.removeListener("finished", shardFinished);
 	}
-});
+}

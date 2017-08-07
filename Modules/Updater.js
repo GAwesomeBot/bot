@@ -35,8 +35,6 @@ module.exports = {
 	update: async (bot, config, io) => {
 		winston.info(`Preparing for update...`);
 
-		// TODO: bot.shard.send(`[UPDATER] Shutdown`);
-
 		config.isUpdating = true;
 
 		io.emit("update", "metadata");
@@ -64,9 +62,9 @@ module.exports = {
 			const files = [];
 
 			/* eslint-disable no-await-in-loop*/
-			// TODO: Gilbert make this use await Promise.all pls
+			// Gilbert make this use await Promise.all pls
 			for (let i = 0; i < body.files.length; i++) {
-				// TODO: Gilbert check this pls
+				// Gilbert check this pls
 				if (body.files[i].substring(0, 13) === "Configurations/") {
 					const dataNew = await fs.readFile(`${tempPath}/${body.files[i]}`, "utf8");
 					const dataOld = await fs.readFile(`./${body.files[i]}`, "utf8");

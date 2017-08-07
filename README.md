@@ -1,9 +1,11 @@
 # GAwesomeBot
 
 *Welcome to GAwesomeBot, the community revival of AwesomeBot!*
-The official GAwesomeBot instance, [GAwesomeBot](https://bot.gilbertgobbels.xyz), will always run the latest code from this repo.
 
-## Contributing
-Contributions are always appreciated; however, we use a special branching model to keep in mind when creating pull requests. For example, any PRs pointing at the `master` branch will be deleted or edited to point at the `development` branch instead. If you want to create a PR for a new feature that is currently being worked on, point it to the correct feature branch, most likely named something along the lines of `feature-music`, if the feature is music.
+## indev-4.0.2
+This branch, against all odds, tracks a rewrite of GAB that will ultimately lead to GAB v4.1.
+You can contribute by opening pull requests as long as your commits follow our [eslint rules](https://github.com/GilbertGobbels/GAwesomeBot/blob/development/.eslintrc.json). Remember that this version is in development, and as such code or features currently in the repo are unstable and may be modified and/or removed at any time in the future. To talk and discuss v4.1, go to [its pull request](https://github.com/GilbertGobbels/GAwesomeBot/pull/184).
 
-Want to learn more about our branching model? It's heavily inspired by [nvie's model](http://nvie.com/posts/a-successful-git-branching-model).
+### Stability Status
+[![Build Status](https://travis-ci.org/GilbertGobbels/GAwesomeBot.svg?branch=indev-4.0.2)](https://travis-ci.org/GilbertGobbels/GAwesomeBot)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f84f588e498f4447b68ba16b03989eb7)](https://www.codacy.com/app/GAwesomeBot/GAwesomeBot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GilbertGobbels/GAwesomeBot&amp;utm_campaign=Badge_Grade)

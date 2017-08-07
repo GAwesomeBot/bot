@@ -7,7 +7,7 @@ const {
 
 module.exports = async (bot, db, configJS, configJSON, msg) => {
 	// Reload commands, dumb idea but whatever
-	// TODO: Can we remove this after we are sure everything works?
+	// Can we remove this after we are sure everything works?
 	// Put it in ready or something
 	bot.reloadAllCommands();
 
@@ -214,6 +214,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					}
 				}
 				// Get user data
+				// eslint-disable-next-line no-unused-vars
 				const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
 					winston.error("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 				});

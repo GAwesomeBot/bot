@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
-const defaultRSSFeeds 	= require("../Configurations/rss_feeds.json");
-const defaultTags 			= require("../Configurations/tags.json");
-const defaultRanksList 	= require("../Configurations/ranks.json");
+const defaultRSSFeeds = require("../Configurations/rss_feeds.json");
+const defaultTags = require("../Configurations/tags.json");
+const defaultRanksList = require("../Configurations/ranks.json");
 const defStatusMessages = require("../Configurations/status_messages.json");
-const defTagReactions		= require("../Configurations/tag_reactions.json");
+const defTagReactions = require("../Configurations/tag_reactions.json");
 const Utils = require("./Utils/");
 
 // Set defaults for new server document
