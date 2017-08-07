@@ -48,7 +48,7 @@ module.exports = async (bot, server, serverDocument) => {
 				url: bot.user.displayAvatarURL,
 			},
 			footer: {
-				text: `${await Utils.GetValue(bot, "guilds.size", "int") % 1000 === 0 ? `*Wow, you're server #${await Utils.GetValue(bot, "guilds.size", "int")} for me!*` : ""}`,
+				text: `${await Utils.GetValue(bot, "guilds.size", "int") % 1000 === 0 ? `*Wow, you're server #${await Utils.GetValue(bot, "guilds.size", "int")} for me!* 🎉` : ""}`,
 			},
 		},
 	});

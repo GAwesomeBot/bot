@@ -19,7 +19,7 @@ module.exports = async bot => {
 				},
 			});
 		} catch (err) {
-			winston.error(`Failed to pot to CarboniteEx...`, err);
+			winston.error(`Failed to post to CarboniteEx...`, err);
 		}
 		if (res.statusCode === 200) {
 			winston.info(`Succesfully POSTed to CarboniteEx`);

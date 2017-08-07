@@ -562,12 +562,11 @@ bot.isMuted = (channel, member) => !channel.permissionsFor(member).has("SEND_MES
 
 /**
  * Mutes a member of a server in a channel
- * Doesn't account for READ_MESSAGES
  * @param channel The channel to unmute
  * @param member The member to unmute
  */
 bot.muteMember = async (channel, member) => {
-	if (bot.isMuted(channel, member) && channel.type === 0) {
+	if (!bot.isMuted(channel, member) && channel.type === 0) {
 		try {
 			await channel.overwritePermissions(member.id, {
 				SEND_MESSAGES: false,
@@ -580,7 +579,6 @@ bot.muteMember = async (channel, member) => {
 
 /**
  * Unmute a member of a server in a channel
- * Doesn't account for READ_MESSAGES
  * @param channel The channel to unmute
  * @param member The member to unmute
  */
@@ -603,13 +601,13 @@ process.on("unhandledRejection", reason => {
 	console.log(reason);
 });
 
-winston.debug("Logging in to discord gateway.");
+winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
 	bot.IPC.listen();
 	winston.debug("Listening for incoming IPC messages.");
 }).catch(err => {
-	winston.error("Failed to connect to discord :/\n", { err: err });
+	winston.error("Failed to connect to Discord :/\n", { err: err });
 });
 
 bot.on("error", error => {
@@ -621,6 +619,7 @@ bot.on("guildUnavailable", guild => {
 });
 
 bot.on("guildMembersChunk", (members, guild) => {
+	// Hey ho, for Discord.js v12, change members.length to members.size kthx
 	winston.verbose(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.length });
 });
 
