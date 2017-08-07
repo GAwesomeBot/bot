@@ -4,6 +4,7 @@ const {
 	Gist,
 	FilterChecker: checkFiltered,
 } = Utils;
+const levenshtein = require("fast-levenshtein");
 
 module.exports = async (bot, db, configJS, configJSON, msg) => {
 	// Reload commands, dumb idea but whatever
@@ -89,9 +90,9 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 		}
 		const command_func = bot.getPMCommand(command);
 		if (command_func) {
-			winston.info(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
+			winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
 			const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
-				winston.error("Failed to find or create user data for message", { usrid: msg.author.id }, err);				
+				winston.warn("Failed to find or create user data for message", { usrid: msg.author.id }, err);
 			});
 			const userDocument = findDocument.doc;
 			try {
@@ -215,7 +216,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 				}
 				// Get user data
 				const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
-					winston.error("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);						
+					winston.warn("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 				});
 				const userDocument = findDocument.doc;
 				if (userDocument) {
@@ -224,7 +225,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					if (!isNaN(serverDocument.config.moderation.filters.custom_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.custom_filter.violator_role_id)) {
 						violatorRoleID = serverDocument.config.moderation.filters.custom_filter.violator_role_id;
 					}
-					await bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered work in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${mdg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
+					await bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered work in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 				}
 			}
 
@@ -238,8 +239,22 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					spamDocument.message_count++;
 					spamDocument.last_message_content = msg.cleanContent;
 					setTimeout(async () => {
-
+						const newServerDocument = await db.servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
+							winston.warn(`Failed to get server document for spam filter..`, err);
+						});
+						if (newServerDocument) {
+							channelDocument = newServerDocument.channels.id(msg.channel.id);
+							spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
+							if (spamDocument) {
+								spamDocument.remove();
+								await newServerDocument.save().catch(err => {
+									winston.warn("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);									
+								});
+							}
+						}
 					}, 45000);
+				// Add this message to spamDocument if similar to the last one
+				} else if (levenshtein.get(spamDocument.last_message_content, msg.cleanContent) <= 3) {
 				}
 			}
 		}
