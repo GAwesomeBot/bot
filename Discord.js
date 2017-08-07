@@ -40,7 +40,7 @@ bot.isReady = false;
 let db;
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 database.initialize(configJS.databaseURL).catch(err => {
-	winston.error(`An error occurred while connecting to MongoDB! Is the database online?\n`, err);
+	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
 }).then(() => {
 	winston.info("Successfully connected to MongoDB!");
@@ -329,13 +329,13 @@ bot.checkRank = async (server, serverDocument, member, memberDocument, override)
 						// Add 100 AwesomePoints as reward
 						if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
 							const findDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {
-								winston.error(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
+								winston.warn(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 							});
 							const userDocument = findDocument.doc;
 							if (userDocument) {
 								userDocument.points += 100;
 								await userDocument.save().catch(usrErr => {
-									winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
+									winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
 								});
 							}
 						}
@@ -346,7 +346,7 @@ bot.checkRank = async (server, serverDocument, member, memberDocument, override)
 								try {
 									await member.addRole(role);
 								} catch (err) {
-									winston.error(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
+									winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 										svrid: server.id,
 										usrid: member.id,
 										roleid: role.id,
@@ -369,7 +369,7 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 	if (serverDocument.config.commands.points.isEnabled) {
 		userDocument.points -= 50;
 		userDocument.save().catch(userErr => {
-			winston.error(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
+			winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
 		});
 	}
 
@@ -386,7 +386,7 @@ bot.handleViolation = async (server, serverDocument, channel, member, userDocume
 			try {
 				await member.addRole(role);
 			} catch (err) {
-				winston.error(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
+				winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
 			}
 		}
 	}
@@ -597,8 +597,11 @@ bot.unmuteMember = async (channel, member) => {
 bot.IPC = shardIPC;
 
 process.on("unhandledRejection", reason => {
-	winston.error(`Unhandled Promise Rejection. Please report to github x.x\n`);
-	console.log(reason);
+	winston.error(`An unexpected and unknown error occurred, which we should've been able to handle. Please report to github x.x\n`, reason);
+});
+
+process.on("uncaughtException", err => {
+	winston.error(`An unexpected and unknown error occured, and we failed to handle it. x.x\n`, err);
 });
 
 winston.debug("Logging in to Discord Gateway.");
@@ -631,7 +634,7 @@ bot.once("ready", async () => {
 		WebServer(bot, db, auth, configJS, configJSON, winston);
 		bot.IPC.send("ready", { id: bot.shard.id });
 	} catch (err) {
-		winston.error(`A critical and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
+		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 	}
 });
 
@@ -641,7 +644,7 @@ bot.on("message", async msg => {
 		try {
 			await Events.onMessage(bot, db, configJS, configJSON, msg);
 		} catch (err) {
-			winston.error(`An unexpected error happened while handling a MESSAGE event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
 		}
 	}
 });
