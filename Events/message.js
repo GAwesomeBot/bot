@@ -122,7 +122,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 			}
 		} else {
 			// Process chatterbot prompt
-			winston.info(`Treating "${msg.cleanContent}" as a PM chatterbot prompt`, { usrid: msg.author.id });
+			winston.verbose(`Treating "${msg.cleanContent}" as a PM chatterbot prompt`, { usrid: msg.author.id });
 			const m = await msg.channel.send({
 				embed: {
 					color: 0x3669FA,
