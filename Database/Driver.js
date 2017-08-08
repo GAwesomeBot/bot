@@ -16,7 +16,6 @@ const wikiSchema = require("./Schemas/wikiSchema");
 // Connect and setup the database
 module.exports = {
 	initialize: url => new Promise((resolve, reject) => {
-		if (process.env.DATABASE_URL) url = process.env.DATABASE_URL;
 		mongoose.connect(url, {
 			autoReconnect: true,
 			connectTimeoutMS: 30000,
