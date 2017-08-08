@@ -3,7 +3,7 @@
   "version": "4.1.0",
   "description": "Still the best Discord Bot!",
   "license": "GPL v2",
-  "author": "Gilbert Gobbels, Frangu Vlad, Hilbert Gilbertson",
+  "author": "Gilbert Gobbels",
   "main": "bot.js",
   "repository": {
     "type": "git",

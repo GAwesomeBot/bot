@@ -16,8 +16,14 @@ if (process.argv.includes("--build")) winston.warn("Travis build launched. Proce
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
-if (process.env.DATABASE_URL) winston.info(`We have db url!`);
-database.initialize(process.env.DATABASE_URL ? process.env.DATABASE_URL : configJS.databaseURL).catch(err => {
+if (process.argv.indexOf("--db") > -1) {
+	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1]	
+}
+if (process.argv.indexOf("--token") > -1) {
+	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1]
+}
+
+database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 	process.exit(-1);
 }).then(async () => {

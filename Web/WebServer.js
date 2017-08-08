@@ -113,9 +113,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		bot.IPC.send("warnDefaultSecret", {});
 	}
 	
-	if (process.argv.includes("--build")) {
-		auth.discord.clientID = process.env.CLIENT_ID;
-		auth.discord.clientSecret = process.env.CLIENT_SECRET;
+	if (process.argv.includes("--CID")) {
+		auth.discord.clientID = process.argv[process.argv.indexOf("--CID") + 1]
+		auth.discord.clientSecret = process.argv[process.argv.indexOf("--CID") + 2]
 	}
 	passport.use(new discordStrategy({
 		clientID: auth.discord.clientID,

@@ -42,7 +42,7 @@ bot.isReady = false;
 
 let db;
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
-database.initialize(process.env.DATABASE_URL ? process.env.DATABASE_URL : configJS.databaseURL).catch(err => {
+database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
 }).then(() => {
