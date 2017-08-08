@@ -24,4 +24,5 @@ fi
 echo -e "Test triggered using client ID \"${CLIENT_ID}\"."
 
 # Run the tests
-npm test
+node bot --build
+npm run lint
