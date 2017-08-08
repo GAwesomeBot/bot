@@ -12,6 +12,8 @@ winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawe
 
 process.setMaxListeners(0);
 
+if (process.argv.includes("--build")) winston.warn("Travis build launched. Process will exit after successfully starting.")
+
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
@@ -76,10 +78,15 @@ function shardFinished (sharder) {
 		// Use console.log because winston never lets us have anything fun, MOM
 		console.log(ascii);
 		sharder.IPC.removeListener("finished", shardFinished);
+		if (process.argv.includes("--build")) {
+			winston.warn("Shutting down travis build with code 0");
+			sharder.cluster.disconnect();
+			process.exit(0);
+		}
 	}
 }
 
 process.on("uncaughtException", err => {
 	winston.error("An unknown, and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
-	process.exit(0);
+	process.exit(1);
 });

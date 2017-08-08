@@ -38,11 +38,10 @@ class Shard {
 	}
 
 	eval (code) {
-		this.winston.verbose("Evaluating code on shard", { code: code });
 		const promise = new Promise((resolve, reject) => {
 			const listener = message => {
 				if (!message || message._Eval !== code) return;
-				this.winston.verbose("Recieved eval reply from shard!", { message: message });
+				this.winston.silly("Recieved eval reply from shard!", { message: message, shard: this.id });
 				this.process.removeListener("message", listener);
 				resolve(message._result);
 			};
@@ -92,14 +91,14 @@ class Sharder extends EventEmitter {
 	}
 
 	broadcast (message) {
-		this.winston.verbose("Broadcasting message to all shards.", { msg: message });
+		this.winston.silly("Broadcasting message to all shards.", { msg: message });
 		const promises = [];
 		for (const shard of this.shards.values()) promises.push(shard.send(message));
 		return Promise.all(promises);
 	}
 
 	broadcastEval (val) {
-		this.winston.verbose("Broadcasting eval to all shards.", { code: val });
+		this.winston.verbose("Evaluating code on shards", { code: val });
 		const promises = [];
 		for (const shard of this.shards.values()) promises.push(shard.eval(val));
 		return Promise.all(promises);

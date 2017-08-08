@@ -31,6 +31,7 @@ const bot = new Discord.Client({
 	disabledEvents: [
 		"MESSAGE_DELETE_BULK",
 		"TYPING_START",
+		(process.argv.includes("--nm") || process.argv.includes("--build")) ? "MESSAGE_CREATE" : undefined,
 	],
 });
 
@@ -598,10 +599,12 @@ bot.IPC = shardIPC;
 
 process.on("unhandledRejection", reason => {
 	winston.error(`An unexpected and unknown error occurred, which we should've been able to handle. Please report to github x.x\n`, reason);
+	process.exit(1);
 });
 
 process.on("uncaughtException", err => {
 	winston.error(`An unexpected and unknown error occured, and we failed to handle it. x.x\n`, err);
+	process.exit(1);
 });
 
 winston.debug("Logging in to Discord Gateway.");
@@ -612,6 +615,7 @@ bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.debug("Listening for incoming IPC messages.");
 }).catch(err => {
 	winston.error("Failed to connect to Discord :/\n", { err: err });
+	process.exit(1);
 });
 
 bot.on("error", error => {
@@ -636,6 +640,7 @@ bot.once("ready", async () => {
 		bot.IPC.send("ready", { id: bot.shard.id });
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
+		process.exit(1);
 	}
 });
 
