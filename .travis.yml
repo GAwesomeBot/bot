@@ -10,4 +10,4 @@ jobs:
     - stage: test
       script: bash ./travis/test.sh
 dist: trusty
-sudo: false
+sudo: true

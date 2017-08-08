@@ -12,7 +12,7 @@ winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawe
 
 process.setMaxListeners(0);
 
-if (process.argv.includes("--build")) winston.warn("Travis build launched. Process will exit after successfully starting.")
+if (process.argv.includes("--build")) winston.warn("Travis build launched. Process will exit after successfully starting.");
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 database.initialize(configJS.databaseURL).catch(err => {
