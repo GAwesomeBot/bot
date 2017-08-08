@@ -16,7 +16,6 @@ if (process.argv.includes("--build")) winston.warn("Travis build launched. Proce
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
-winston.warn(process.env.DATABASE_URL);
 database.initialize(process.env.DATABASE_URL ? process.env.DATABASE_URL : configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 	process.exit(-1);
