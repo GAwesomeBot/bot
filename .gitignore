@@ -3,5 +3,4 @@ Configurations/config.js
 Configurations/auth.js
 node_modules/
 bot-out.log
-logs/
 .idea/
