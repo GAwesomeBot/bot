@@ -21,5 +21,7 @@ else
   echo -e "\e[36m\e[1mTest triggered for branch \"${TRAVIS_BRANCH}\"."
 fi
 
+echo -e "Test triggered using client ID \"${CLIENT_ID}\"."
+
 # Run the tests
-DATABASE_URL=$DATABASE_URL CLIENT_ID=$CLIENT_ID CLIENT_SECRET=$CLIENT_SECRET CLIENT_TOKEN=$CLIENT_TOKEN npm test
+npm test
