@@ -129,7 +129,9 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					description: `The chatter bot is thinking...`,
 				},
 			});
-			const response = await chatterPrompt(msg.author.id, msg.cleanContent);
+			const response = await chatterPrompt(msg.author.id, msg.cleanContent).catch(err => {
+				winston.verbose(`Failed to get chatter prompt.`, err);
+			});
 			await m.edit({
 				embed: {
 					title: `The Program-O Chatter Bot replied with:`,
@@ -254,7 +256,30 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 						}
 					}, 45000);
 				// Add this message to spamDocument if similar to the last one
-				} else if (levenshtein.get(spamDocument.last_message_content, msg.cleanContent) <= 3) {
+				} else if (levenshtein.get(spamDocument.last_message_content, msg.cleanContent) < 3) {
+					spamDocument.message_count++;
+					spamDocument.last_message_content = msg.cleanContent;
+
+					// First-time spam filter violation
+					if (spamDocument.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
+						winston.verbose(`Handling first-time spam from member "${msg.author.tag}" on server "${msg.guild}" in channel "${msg.channel.name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+
+						// Message user and tell them to stop
+						msg.author.send({
+							embed: {
+								color: 0xFF0000,
+								description: `Stop spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.\nThe chat moderators have been notified about this.`,
+							},
+						});
+
+						// Message bot admins about user spamming
+						await bot.messageBotAdmins(msg.guild, serverDocument, {
+							embed: {
+								color: 0xFF0000,
+								description: ``,
+							},
+						});
+					}
 				}
 			}
 		}
