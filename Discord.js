@@ -22,17 +22,19 @@ GlobalDefines();
 
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
+const disabledEvents = [
+	"MESSAGE_DELETE_BULK",
+	"TYPING_START",
+];
+if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledEvents.push("MESSAGE_CREATE");
+
 const Discord = require("discord.js");
 winston.silly("Creating discord.js client.");
 const bot = new Discord.Client({
 	shardId: Number(process.env.SHARD_ID),
 	shardCount: Number(process.env.SHARD_COUNT),
 	fetchAllMembers: true,
-	disabledEvents: [
-		"MESSAGE_DELETE_BULK",
-		"TYPING_START",
-		(process.argv.includes("--nm") || process.argv.includes("--build")) ? "MESSAGE_CREATE" : undefined,
-	],
+	disabledEvents: disabledEvents,
 });
 
 // Value set once READY triggers
@@ -600,10 +602,18 @@ bot.IPC = shardIPC;
 process.on("unhandledRejection", reason => {
 	winston.error(`An unexpected and unknown error occurred, which we should've been able to handle. Please report to github x.x\n`, reason);
 	process.exit(1);
+	/*
+	 * Just saying, this won't close the process in the future
+	 * but if the bot.isReady is true
+	 * It'll go in the specified logging channels from configJS.discord
+	 */
 });
 
 process.on("uncaughtException", err => {
 	winston.error(`An unexpected and unknown error occured, and we failed to handle it. x.x\n`, err);
+	/*
+	 * Read above 
+	 */
 	process.exit(1);
 });
 
@@ -645,8 +655,8 @@ bot.once("ready", async () => {
 });
 
 bot.on("message", async msg => {
-	winston.silly("Recieved message from discord!", { msg: msg });
 	if (bot.isReady) {
+		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
 		try {
 			await Events.onMessage(bot, db, configJS, configJSON, msg);
 		} catch (err) {
@@ -654,23 +664,3 @@ bot.on("message", async msg => {
 		}
 	}
 });
-//
-// bot.on("", event => {
-//
-// });
-//
-// bot.on("", event => {
-//
-// });
-//
-// bot.on("", event => {
-//
-// });
-//
-// bot.on("", event => {
-//
-// });
-//
-// bot.on("", event => {
-//
-// });
