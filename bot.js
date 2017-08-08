@@ -15,6 +15,7 @@ process.setMaxListeners(0);
 if (process.argv.includes("--build")) winston.warn("Travis build launched. Process will exit after successfully starting.");
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
+
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 	process.exit(-1);
