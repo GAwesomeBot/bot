@@ -17,10 +17,10 @@ if (process.argv.includes("--build")) winston.warn("Travis build launched. Proce
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
 if (process.argv.indexOf("--db") > -1) {
-	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1]	
+	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1];
 }
 if (process.argv.indexOf("--token") > -1) {
-	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1]
+	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1];
 }
 
 database.initialize(configJS.databaseURL).catch(err => {
