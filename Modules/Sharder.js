@@ -64,7 +64,7 @@ class Sharder extends EventEmitter {
 			exec: "Discord.js",
 		});
 		this.winston = winston;
-		this.token = token;
+		this.token = token ? token : process.env.CLIENT_TOKEN;
 		this.count = count;
 		this.SharderIPC = require("./").SharderIPC;
 		this.Collection = require("discord.js").Collection;
