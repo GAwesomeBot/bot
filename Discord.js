@@ -104,7 +104,7 @@ bot.reloadPrivateCommand = command => {
 	try {
 		privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
 	} catch (err) {
-		return err;
+		winston.verbose(`Failed to reload private command "${command}"`, err);
 	}
 };
 
@@ -112,7 +112,7 @@ bot.reloadPublicCommand = command => {
 	try {
 		commandModules[command] = reload(`./Commands/Public/${command}.js`);
 	} catch (err) {
-		return err;
+		winston.verbose(`Failed to reload public command "${command}"`, err);
 	}
 };
 
