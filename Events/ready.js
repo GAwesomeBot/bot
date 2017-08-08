@@ -17,12 +17,13 @@ const {
 module.exports = async (bot, db, configJS, configJSON) => {
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = async () => {
+		winston.debug("Collecting stats for servers.")
 		const promiseArray = [];
 		const countServerStats = async server => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
-			winston.debug(`Collecting stats for server ${server}.`, { svrid: server.id });
+			winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
 			if (serverDocument) {
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {

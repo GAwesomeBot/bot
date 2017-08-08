@@ -151,6 +151,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	app.use("/", (req, res, next) => {
+		winston.silly(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
 		if (configJSON.isUpdating) {
 			res.status(503).render("pages/503.ejs", {});
 		}	else {
@@ -195,13 +196,13 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	}
 	const server = http.createServer(app);
 	server.on("error", (err) => {
-		winston.error("We failed to listen to your incoming memes on the WebServer x/\n", { "err": err })
+		winston.error("We failed to listen to your incoming memes on the WebServer x/\n", { "err": err });
 	})
 	server.listen(configJS.httpPort, configJS.serverIP, () => {
 		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
 		process.setMaxListeners(0);
 	});
-
+	
 	// Setup socket.io for dashboard
 	const io = sio(typeof httpsServer !== "undefined" ? httpsServer : server);
 	io.use(passportSocketIo.authorize({
@@ -210,16 +211,21 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		store: sessionStore,
 		passport,
 	}));
+	
+	Object.defineProperty(bot.guilds, 'count', { get: async function() { return Utils.GetValue(bot, "guilds.size", "int") } });
+	Object.defineProperty(bot.users, 'count', { get: async function() { return Utils.GetValue(bot, "users.size", "int") } });
 
 	// Landing page
-	app.get("/", (req, res) => {
+	app.get("/", async (req, res) => {
 		const uptime = process.uptime();
+		const guildSize = await bot.guilds.count;
+		const userSize = await bot.users.count;
 		res.render("pages/landing.ejs", {
 			authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 			bannerMessage: configJSON.homepageMessageHTML,
-			rawServerCount: bot.guilds.size,
-			roundedServerCount: Math.floor(bot.guilds.size / 100) * 100,
-			rawUserCount: `${Math.floor(bot.users.size / 1000)}K`,
+			rawServerCount: await guildSize,
+			roundedServerCount: Math.floor(await guildSize / 100) * 100,
+			rawUserCount: `${Math.floor(await userSize / 1000)}K`,
 			rawUptime: moment.duration(uptime, "seconds").humanize(),
 			roundedUptime: getRoundedUptime(uptime),
 		});
@@ -236,26 +242,28 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		max: 150,
 		delayMs: 0,
 	}));
-	app.get("/api", (req, res) => {
+	app.get("/api", async (req, res) => {
 		res.json({
-			server_count: bot.guilds.size,
-			user_count: bot.users.size,
+			server_count: await bot.guilds.count,
+			user_count: await bot.users.count,
 		});
 	});
-	const getServerData = serverDocument => {
+	const getServerData = async serverDocument => {
 		let data;
-		const svr = bot.guilds.get(serverDocument._id);
+		let svrRaw = await Utils.GetValue(bot, `guilds.get(${serverDocument._id})`, "map");
+		svrRaw.spliceNullElements();
+		const svr = svrRaw[0];
 		if (svr) {
-			const owner = svr.members.get(svr.ownerID);
+			const owner = await bot.fetchUser(svr.ownerID, true);
 			data = {
 				name: svr.name,
 				id: svr.id,
 				icon: svr.iconURL || "/static/img/discord-icon.png",
 				owner: {
-					username: owner.user.username,
+					username: owner.username,
 					id: owner.id,
-					avatar: owner.user.avatarURL || "/static/img/discord-icon.png",
-					name: owner.nick || owner.user.username,
+					avatar: owner.avatarURL || "/static/img/discord-icon.png",
+					name: owner.username,
 				},
 				members: svr.members.size,
 				messages: serverDocument.messages_today,
