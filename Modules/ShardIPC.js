@@ -56,7 +56,7 @@ class ShardIPC extends EventEmitter {
 		this.winston.verbose("Started shard listener.");
 		this.proc.on("message", msg => {
 			try {
-				this.winston.silly("Recieved message from sharder.", { msg: msg });
+				this.winston.silly("Received message from sharder.", { msg: msg });
 				if (msg._Eval) {
 					let result = this.client._eval(msg._Eval);
 					if (result instanceof Map) result = Array.from(result.entries());
