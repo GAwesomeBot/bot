@@ -104,6 +104,7 @@ const getAuthUser = user => ({
 
 const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400)}d` : `${Math.floor(uptime / 3600)}h`;
 
+
 /* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
 module.exports = (bot, db, auth, configJS, configJSON, winston) => {
@@ -112,6 +113,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		bot.IPC.send("warnDefaultSecret", {});
 	}
 	
+	if (process.argv.includes("--build")) {
+		auth.discord.clientID = process.env.CLIENT_ID;
+		auth.discord.clientSecret = process.env.CLIENT_SECRET;
+	}
 	passport.use(new discordStrategy({
 		clientID: auth.discord.clientID,
 		clientSecret: auth.discord.clientSecret,

@@ -29,7 +29,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 		winston.silly("Confirming clientToken config value.");
-		if (!auth.discord.clientToken) {
+		if (!auth.discord.clientToken && !process.argv.includes("--build")) {
 			winston.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! -.-");
 			return;
 		}
