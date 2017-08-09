@@ -14,7 +14,7 @@ class SharderIPC extends EventEmitter {
 			this.winston.silly("Recieved message from shard.", { msg: msg, shard: shard.id });
 			try {
 				const payload = JSON.parse(msg);
-				this.emit(payload.subject, payload, shard.id);
+				this.emit(payload.subject, payload, shard);
 			} catch (err) {
 				if (!msg._Eval && !msg.sEval) this.winston.warn("Unable to handle message from shard :C\n", { msg: msg, shard: shard.id, err: err });
 			}

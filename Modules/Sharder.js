@@ -54,6 +54,22 @@ class Shard {
 		});
 		return promise;
 	}
+	
+	getGuild (guildID, settings) {
+		return new Promise((resolve, reject) => {
+			const listener = msg => {
+				if (!msg || msg.subject !== "getGuildRes" || msg.guild !== guildID) return;
+				this.process.removeListener("message", listener);
+				resolve(msg.result);
+			};
+			this.process.on("message",  listener);
+			
+			this.send({ guild: guildID, settings: settings, subject: "getGuild" }).catch(err => {
+				this.process.removeListener("message", listener);
+				reject(err);
+			})
+		});
+	}
 }
 
 class Sharder extends EventEmitter {
@@ -70,6 +86,7 @@ class Sharder extends EventEmitter {
 		this.Collection = require("discord.js").Collection;
 		this.IPC = new this.SharderIPC(this, winston);
 		this.shards = new this.Collection();
+		this.guilds = new this.Collection();
 	}
 
 	spawn () {

@@ -1,7 +1,7 @@
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
-const { Console, Utils, ShardIPC } = require("./Modules/");
+const { Console, Utils, ShardIPC, GetGuild: GG } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDefines } = Utils;
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
@@ -616,6 +616,10 @@ process.on("uncaughtException", err => {
 	 */
 	process.exit(1);
 });
+
+bot.IPC.on("getGuild", (msg) => {
+	let payload = JSON.parse(msg);
+})
 
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
