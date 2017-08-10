@@ -56,7 +56,7 @@ const shardIPC = new ShardIPC(bot, winston, process);
 // Get the command prefix for a server
 bot.getCommandPrefix = (server, serverDocument) => new Promise(resolve => {
 	if (serverDocument.config.command_prefix === "@mention") {
-		resolve(`@${server.members.get(bot.user.id).nickname || bot.user.username}`);
+		resolve(`@${server.members[bot.user.id].nickname || bot.user.username}`);
 	} else {
 		resolve(serverDocument.config.command_prefix);
 	}
@@ -617,9 +617,12 @@ process.on("uncaughtException", err => {
 	process.exit(1);
 });
 
-bot.IPC.on("getGuild", (msg) => {
-	let payload = JSON.parse(msg);
-})
+bot.IPC.on("getGuild", msg => {
+	let payload = msg;
+	let guild = bot.guilds.get(payload.guild);
+	let val = GG.generate(guild, payload.settings);
+	bot.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
+});
 
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {

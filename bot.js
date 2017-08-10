@@ -17,10 +17,10 @@ if (process.argv.includes("--build")) winston.warn("Travis build launched. Proce
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
 if (process.argv.indexOf("--db") > -1) {
-	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1]	
+	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1];
 }
 if (process.argv.indexOf("--token") > -1) {
-	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1]
+	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1];
 }
 
 database.initialize(configJS.databaseURL).catch(err => {
@@ -68,13 +68,24 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 		sharder.IPC.on("getGuild", async (msg, shard) => {
 			try {
-				let payload = JSON.parse(msg);
-				let shard = sharder.guilds.get(payload.guild);
-				if (!shard) return sharder.IPC.send("getGuildRes", { err: 404 }, shard.id);
-				let result = await sharder.shards.get(shard).getGuild(payload.guild, payload.settings);
-				sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result });
+				let payload = msg;
+				let shardid = sharder.guilds.get(payload.guild);
+				if (!shardid) {
+					console.log(msg);
+					sharder.IPC.send("getGuildRes", { err: 404, guild: payload.guild, settings: payload.settings }, shard.id);
+					return;
+				}
+				let result = await sharder.shards.get(shardid).getGuild(payload.guild, payload.settings);
+				sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result }, shard.id);
 			} catch (err) {
-				sharder.IPC.send("getGuildRes", { err: err, guild: payload.guild, settings: payload.settings }, shard.id)
+				let payload = JSON.parse(msg);
+				sharder.IPC.send("getGuildRes", { err: err, guild: payload.guild, settings: payload.settings }, shard.id);
+			}
+		});
+		sharder.IPC.on("guilds", async (msg, shard) => {
+			let guilds = msg.latest;
+			for (let guild of guilds) {
+				sharder.guilds.set(guild, shard.id);
 			}
 		});
 		sharder.spawn();

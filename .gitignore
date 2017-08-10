@@ -1,6 +1,8 @@
 Configurations/config.json
 Configurations/config.js
 Configurations/auth.js
+Configurations/
 node_modules/
 bot-out.log
 .idea/
+Temp/

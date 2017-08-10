@@ -42,7 +42,8 @@ const Polls = require("./../Modules/Polls.js");
 const Trivia = require("./../Modules/Trivia.js");
 const Updater = require("./../Modules/Updater.js");
 */
-const Utils = require("./../Modules/Utils")
+const Utils = require("./../Modules/Utils");
+const getGuild = require("./../Modules").GetGuild;
 
 
 const app = express();
@@ -202,7 +203,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
 		process.setMaxListeners(0);
 	});
-	
+
 	// Setup socket.io for dashboard
 	const io = sio(typeof httpsServer !== "undefined" ? httpsServer : server);
 	io.use(passportSocketIo.authorize({
@@ -250,20 +251,18 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 	const getServerData = async serverDocument => {
 		let data;
-		let svrRaw = await Utils.GetValue(bot, `guilds.get(${serverDocument._id})`, "map");
-		svrRaw.spliceNullElements();
-		const svr = svrRaw[0];
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["iconURL", "createdAt", "owner"], members: ["nickname"]});
 		if (svr) {
-			const owner = await bot.fetchUser(svr.ownerID, true);
+			const owner = svr.owner;
 			data = {
 				name: svr.name,
 				id: svr.id,
 				icon: svr.iconURL || "/static/img/discord-icon.png",
 				owner: {
-					username: owner.username,
-					id: owner.id,
-					avatar: owner.avatarURL || "/static/img/discord-icon.png",
-					name: owner.username,
+					username: owner.user.username,
+					id: owner.user.id,
+					avatar: owner.user.avatarURL || "/static/img/discord-icon.png",
+					name: owner.nickname || owner.user.username,
 				},
 				members: svr.members.size,
 				messages: serverDocument.messages_today,
@@ -285,9 +284,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			params._id = req.query.id;
 		}
 		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : bot.guilds.size)
-			.exec((err, serverDocuments) => {
+			.exec(async (err, serverDocuments) => {
 				if (!err && serverDocuments) {
-					const data = serverDocuments.map(serverDocument => getServerData(serverDocument) || serverDocument._id);
+					const data = await Promise.all(serverDocuments.map(async serverDocument => await getServerData(serverDocument) || serverDocument._id));
 					res.json(data);
 				} else {
 					res.sendStatus(400);

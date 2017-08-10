@@ -32,7 +32,7 @@ class SharderIPC extends EventEmitter {
 				});
 			} else {
 				shard = this.sharder.shards.get(shard);
-				shard.send(JSON.stringify(payload)).catch(err => {
+				shard.send(payload).catch(err => {
 					throw err;
 				});
 			}
@@ -62,10 +62,10 @@ class ShardIPC extends EventEmitter {
 					if (result instanceof Map) result = Array.from(result.entries());
 					this.shardClient.send({ _Eval: msg._Eval, _result: result });
 				}
-				const payload = JSON.parse(payload);
+				const payload = msg;
 				this.emit(payload.subject, payload);
 			} catch (err) {
-				if (!msg._Eval && !msg._SEval) this.winston.warn("Unable to handle message from master :C\n", { msg: msg, err: err });
+				if (!msg._Eval && !msg._SEval) this.winston.warn("Unable to handle message from master :C\n", err);
 			}
 		});
 	}

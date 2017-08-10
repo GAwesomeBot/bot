@@ -54,20 +54,22 @@ class Shard {
 		});
 		return promise;
 	}
-	
+
 	getGuild (guildID, settings) {
 		return new Promise((resolve, reject) => {
 			const listener = msg => {
-				if (!msg || msg.subject !== "getGuildRes" || msg.guild !== guildID) return;
+				let payload = msg;
+				if (typeof msg !== "object") payload = JSON.parse(msg);
+				if (!msg || payload.subject !== "getGuildRes" || payload.guild !== guildID || JSON.stringify(payload.settings) !== JSON.stringify(settings)) return; // eslint-disable-line max-len
 				this.process.removeListener("message", listener);
-				resolve(msg.result);
+				resolve(payload.result);
 			};
-			this.process.on("message",  listener);
-			
+			this.process.on("message", listener);
+
 			this.send({ guild: guildID, settings: settings, subject: "getGuild" }).catch(err => {
 				this.process.removeListener("message", listener);
 				reject(err);
-			})
+			});
 		});
 	}
 }

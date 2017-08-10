@@ -17,7 +17,7 @@ const {
 module.exports = async (bot, db, configJS, configJSON) => {
 	// Count a server's stats (games, clearing, etc.);
 	const statsCollector = async () => {
-		winston.debug("Collecting stats for servers.")
+		winston.debug("Collecting stats for servers.");
 		const promiseArray = [];
 		const countServerStats = async server => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
@@ -293,6 +293,17 @@ module.exports = async (bot, db, configJS, configJSON) => {
 		bot.IPC.send("finished", { id: bot.shard.id });
 	};
 
+	// Send over guild cache for master
+	const sendGuilds = async () => {
+		try {
+			winston.debug("Sending list of guild ID's to master.");
+			let guilds = Array.from(bot.guilds.keys());
+			bot.IPC.send("guilds", { latest: guilds });
+		} catch (err) {
+			throw err;
+		}
+	};
+
 	// Set messages_today to 0 for all servers
 	// And start a chain of events..
 	const startMessageCount = async () => {
@@ -304,7 +315,7 @@ module.exports = async (bot, db, configJS, configJSON) => {
 			db.servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
 		setInterval(clearMessageCount, 86400000);
-		await Promise.all([statsCollector(), setReminders(), setCountdowns(), setGiveaways(), startStreamingRSS(), checkStreamers(), startMessageOfTheDay()]);
+		await Promise.all([statsCollector(), setReminders(), setCountdowns(), setGiveaways(), startStreamingRSS(), checkStreamers(), startMessageOfTheDay(), sendGuilds()]);
 		await winston.debug("Posting stats data to Discord bot lists.");
 		PostData(bot);
 		showStartupMessage();
