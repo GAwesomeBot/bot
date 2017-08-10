@@ -87,6 +87,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			for (let guild of guilds) {
 				sharder.guilds.set(guild, shard.id);
 			}
+			if (msg.remove) {
+				for (let guild of msg.remove) {
+					sharder.guilds.delete(guild);
+				}
+			}
 		});
 		sharder.spawn();
 	}
