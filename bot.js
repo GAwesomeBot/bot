@@ -74,7 +74,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 				let payload = msg;
 				if (payload.guild !== "*") {
 					let shardid = sharder.guilds.get(payload.guild);
-					if (!shardid) {
+					if (!shardid && shardid !== 0) {
 						sharder.IPC.send("getGuildRes", { err: 404, guild: payload.guild, settings: payload.settings }, shard.id);
 						return;
 					}
