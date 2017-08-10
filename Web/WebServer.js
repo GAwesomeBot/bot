@@ -109,15 +109,22 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 /* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
 module.exports = (bot, db, auth, configJS, configJSON, winston) => {
-	// Setup passport and express-session
+	// Notify the maintainer of possible issues
 	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
 		bot.IPC.send("warnDefaultSecret", {});
 	}
-	
+
+	if (app.get('env') !== "production") {
+		bot.IPC.send("warnNotProduction", {});
+	}
+
+	// Set the clientID and clientSecret from argv if needed
 	if (process.argv.includes("--CID")) {
 		auth.discord.clientID = process.argv[process.argv.indexOf("--CID") + 1]
 		auth.discord.clientSecret = process.argv[process.argv.indexOf("--CID") + 2]
 	}
+
+	// Setup passport and express-session
 	passport.use(new discordStrategy({
 		clientID: auth.discord.clientID,
 		clientSecret: auth.discord.clientSecret,
@@ -162,13 +169,6 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Serve public dir
 	app.use("/static", express.static(`${__dirname}/public`, { maxAge: 86400000 }));
-
-	// Handle errors (redirect to error page)
-	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
-		winston.error(error);
-		res.sendStatus(500);
-		res.render("pages/error.ejs", { error });
-	});
 
 	// Open web interface
 	function requireHTTPS(req, res, next) {
@@ -276,14 +276,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		}
 		return data;
 	};
-	app.get("/api/servers", (req, res) => {
+	app.get("/api/servers", async (req, res) => {
 		const params = {
 			"config.public_data.isShown": true,
 		};
 		if (req.query.id) {
 			params._id = req.query.id;
 		}
-		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : bot.guilds.size)
+		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : await bot.guilds.count)
 			.exec(async (err, serverDocuments) => {
 				if (!err && serverDocuments) {
 					const data = await Promise.all(serverDocuments.map(async serverDocument => await getServerData(serverDocument) || serverDocument._id));
@@ -293,9 +293,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			});
 	});
-	const getUserData = (usr, userDocument) => {
-		const sampleMember = bot.getFirstMember(usr);
-		const mutualServers = bot.guilds.filter(svr => svr.members.has(usr.id)).sort((a, b) => a.name.localeCompare(b.name));
+	const getUserData = async (usr, userDocument) => {
+		const botServers = await getGuild.get(bot, "*", {});
+		console.log(botServers);
+		const mutualServers = bot.guilds.filter(svr => usr.id in svr.members).sort((a, b) => a.name.localeCompare(b.name));
 		const userProfile = {
 			username: usr.username,
 			discriminator: usr.discriminator,
@@ -3997,6 +3998,12 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// 404 page
 	app.use((req, res, next) => {
 		res.status(404).render("pages/404.ejs");
+	});
+
+	// Handle errors (redirect to error page)
+	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
+		winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, error, { params: req.params, query: req.query });
+		res.status(500).render("pages/error.ejs", { error });
 	});
 };
 

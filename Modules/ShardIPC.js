@@ -74,7 +74,9 @@ class ShardIPC extends EventEmitter {
 		try {
 			this.winston.silly("Sending message to master", { subject: subject, payload: payload });
 			payload.subject = subject;
-			this.shardClient.send(JSON.stringify(payload));
+			this.proc.send(JSON.stringify(payload), err => {
+				if (err) throw err;
+			});
 		} catch (err) {
 			this.winston.warn("Failed to send message to master :C\n", { payload: payload, subject: subject, err: err });
 		}

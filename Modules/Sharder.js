@@ -72,6 +72,24 @@ class Shard {
 			});
 		});
 	}
+
+	getGuilds (settings) {
+		return new Promise((resolve, reject) => {
+			const listener = msg => {
+				let payload = msg;
+				if (typeof msg !== "object") payload = JSON.parse(msg);
+				if (!msg || payload.subject !== "getGuildRes" || payload.guild !== "*" || JSON.stringify(payload.settings) !== JSON.stringify(settings)) return; // eslint-disable-line max-len
+				this.process.removeListener("message", listener);
+				resolve(payload.result);
+			};
+			this.process.on("message", listener);
+
+			this.send({ guild: "*", settings: settings, subject: "getGuild" }).catch(err => {
+				this.process.removeListener("message", listener);
+				reject(err);
+			});
+		});
+	}
 }
 
 class Sharder extends EventEmitter {

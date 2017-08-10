@@ -63,22 +63,34 @@ database.initialize(configJS.databaseURL).catch(err => {
 		sharder.IPC.once("warnDefaultSecret", () => {
 			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
 		});
+		sharder.IPC.once("warnNotProduction", () => {
+			winston.warn("Your GAB is running in development mode. This might impact performence. In order to run GAB in production mode, please set the NODE_ENV environment variable to production.");
+		});
 		sharder.IPC.on("finished", () => {
 			shardFinished(sharder);
 		});
 		sharder.IPC.on("getGuild", async (msg, shard) => {
 			try {
 				let payload = msg;
-				let shardid = sharder.guilds.get(payload.guild);
-				if (!shardid) {
-					console.log(msg);
-					sharder.IPC.send("getGuildRes", { err: 404, guild: payload.guild, settings: payload.settings }, shard.id);
-					return;
+				if (payload.guild !== "*") {
+					let shardid = sharder.guilds.get(payload.guild);
+					if (!shardid) {
+						sharder.IPC.send("getGuildRes", { err: 404, guild: payload.guild, settings: payload.settings }, shard.id);
+						return;
+					}
+					let result = await sharder.shards.get(shardid).getGuild(payload.guild, payload.settings);
+					sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result }, shard.id);
+				} else {
+					let results = [];
+					sharder.shards.forEach(async shardd => {
+						results.push(shardd.getGuilds(payload.settings));
+					});
+					let result = await Promise.all(results);
+					sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result }, shard.id);
 				}
-				let result = await sharder.shards.get(shardid).getGuild(payload.guild, payload.settings);
-				sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result }, shard.id);
 			} catch (err) {
-				let payload = JSON.parse(msg);
+				let payload = msg;
+				winston.warn("An error occured while fetching guild data from Discord l.l\n", err);
 				sharder.IPC.send("getGuildRes", { err: err, guild: payload.guild, settings: payload.settings }, shard.id);
 			}
 		});

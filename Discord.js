@@ -619,9 +619,17 @@ process.on("uncaughtException", err => {
 
 bot.IPC.on("getGuild", msg => {
 	let payload = msg;
-	let guild = bot.guilds.get(payload.guild);
-	let val = GG.generate(guild, payload.settings);
-	bot.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
+	if (payload.guild === "*") {
+		let result = {};
+		bot.guilds.forEach((val, key) => {
+			result[key] = GG.generate(val, payload.settings);
+		});
+		bot.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
+	} else {
+		let guild = bot.guilds.get(payload.guild);
+		let val = GG.generate(guild, payload.settings);
+		bot.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
+	}
 });
 
 winston.debug("Logging in to Discord Gateway.");
