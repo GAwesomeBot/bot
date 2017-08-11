@@ -91,7 +91,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 		const command_func = bot.getPMCommand(command);
 		if (command_func) {
 			winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
-			const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+			const findDocument = await db.users.findOrCreate({ _id: msg.author.id, username: msg.author.tag }).catch(err => {
 				winston.warn("Failed to find or create user data for message", { usrid: msg.author.id }, err);
 			});
 			const userDocument = findDocument.doc;
@@ -217,7 +217,7 @@ module.exports = async (bot, db, configJS, configJSON, msg) => {
 					}
 				}
 				// Get user data
-				const findDocument = await db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+				const findDocument = await db.users.findOrCreate({ _id: msg.author.id, username: msg.author.tag }).catch(err => {
 					winston.warn("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 				});
 				const userDocument = findDocument.doc;

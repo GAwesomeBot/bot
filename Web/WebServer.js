@@ -64,21 +64,6 @@ app.engine("ejs", ejs.renderFile);
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "ejs");
 
-const findQueryUser = (query, list) => {
-	let usr = list.get(query);
-	if (!usr) {
-		const usernameQuery = query.substring(0, query.lastIndexOf("#") > -1 ? query.lastIndexOf("#") : query.length);
-		const discriminatorQuery = query.indexOf("#") > -1 ? query.substring(query.lastIndexOf("#") + 1) : "";
-		const usrs = list.filter(a => (a.user || a).username === usernameQuery);
-		if (discriminatorQuery) {
-			usr = usrs.find(a => (a.user || a).discriminator === discriminatorQuery);
-		} else if (usrs.length > 0) {
-			usr = usrs[0];
-		}
-	}
-	return usr;
-};
-
 const getUserList = list => list.filter(usr => usr.bot !== true).map(usr => `${usr.username}#${usr.discriminator}`).sort();
 
 const getChannelData = (svr, type) => svr.channels.filter(ch => ch.type === (type || 0)).map(ch => ({
@@ -311,7 +296,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			rawLastSeen: userDocument.last_seen ? moment(userDocument.last_seen).format(configJS.moment_date_format) : null,
 			mutualServerCount: mutualServers.length,
 			pastNameCount: (userDocument.past_names || {}).length || 0,
-			isAfk: userDocument.afk_message !== null && userDocument.afk_message !== "",
+			isAfk: userDocument.afk_message !== undefined && userDocument.afk_message !== "" && userDocument.afk_message !== null,
 			mutualServers: [],
 		};
 		switch (userProfile.status) {
@@ -323,6 +308,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				break;
 			case "dnd":
 				userProfile.statusColor = "is-danger";
+				userProfile.status = "Do Not Disturb";
 				break;
 			case "offline":
 			default:
@@ -342,17 +328,23 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			userProfile.pastNames = userDocument.past_names;
 			userProfile.afkMessage = userDocument.afk_message;
 			for (let svr of mutualServers) {
+				const owner = await bot.fetchUser(svr.ownerID, true);
 				userProfile.mutualServers.push({
 					name: svr.name,
 					id: svr.id,
-					owner: await bot.fetchUser(svr.ownerID, false).username,
+					icon: svr.icon ? `https://cdn.discordapp.com/icons/${svr.id}/${svr.icon}.jpg` : "/static/img/discord-icon.png",
+					owner: owner.username,
 				});
 			}
 		}
 		return userProfile;
 	};
 	app.get("/api/users", async (req, res) => {
-		const usr = await bot.fetchUser(req.query.id, false);
+		if (!req.query.id) {
+			res.sendStatus(400);
+			return;
+		}
+		const usr = await bot.fetchUser(req.query.id, true);
 		if (usr) {
 			db.users.findOrCreate({ _id: usr.id }, async (err, userDocument) => {
 				if (err || !userDocument) {
@@ -619,23 +611,19 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (!req.query.q) {
 					req.query.q = "";
 				}
-
 				if (req.query.q) {
-					const usr = findQueryUser(req.query.q, bot.users);
-					if (usr) {
-						db.users.findOrCreate({ _id: usr.id }, (err, userDocument) => {
-							if (err || !userDocument) {
-								userDocument = {};
-							}
-							const userProfile = getUserData(usr, userDocument);
+					db.users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err, userDocument) => {
+						if (!err && userDocument) {
+							const usr = await bot.fetchUser(userDocument._id, true);
+							const userProfile = await getUserData(usr, userDocument);
 							renderPage({
 								pageTitle: `${userProfile.username}'s Profile`,
 								userProfile,
 							});
-						});
-					} else {
-						renderPage({ pageTitle: `Search for user "${req.query.q}"` });
-					}
+						} else {
+							renderPage({ pageTitle: `Lookup for user "${req.query.q}"` });
+						}
+					});
 				} else {
 					db.users.aggregate({
 						$group: {
@@ -699,7 +687,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Check authentication for console
 	const checkAuth = (req, res, next) => {
 		if (req.isAuthenticated()) {
-			const usr = bot.users.get(req.user.id);
+			const usr = bot.fetchUser(req.user.id, false);
 			if (usr) {
 				if (req.query.svrid === "maintainer") {
 					if (configJSON.maintainers.indexOf(req.user.id) > -1) {
@@ -741,7 +729,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				res.json(getUserList(svr.members.map(member => member.user)));
 			});
 		} else {
-			res.json(getUserList(bot.users));
+			db.users.aggregate()
+			res.json(result);
 		}
 	});
 

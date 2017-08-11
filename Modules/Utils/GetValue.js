@@ -1,3 +1,5 @@
+const Discord = require("discord.js");
+
 module.exports = (bot, val, merge, func) => {
 	try {
 		let code = `this.${val}`;
@@ -26,8 +28,10 @@ module.exports = (bot, val, merge, func) => {
 					return res.reduce((prev, value) => Object.assign(prev, value), {});
 				case "arr":
 					return res.reduce((prev, value) => prev.concat(value), []);
-				case "map":
-					return res.map(value => new Map(value));
+				case "map": {
+					let ress = res.map(value => new Discord.Collection(value));
+					return ress.reduce((prev, value) => prev.concat(value), new Discord.Collection());
+				}
 				default:
 					return res;
 			}

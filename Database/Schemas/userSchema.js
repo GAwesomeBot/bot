@@ -43,4 +43,8 @@ module.exports = new mongoose.Schema({
 		default: true,
 	},
 	upvoted_gallery_extensions: [String],
+	username: {
+		type: String,
+		required: true,
+	},
 });
