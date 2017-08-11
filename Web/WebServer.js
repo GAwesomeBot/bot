@@ -48,7 +48,7 @@ const getGuild = require("./../Modules").GetGuild;
 
 const app = express();
 app.use(compression());
-app.enable("trust proxy");
+if (process.argv.includes("-p") || process.argv.includes("--proxy")) app.enable("trust proxy");
 app.use(bodyParser.urlencoded({
 	extended: true,
 	parameterLimit: 10000,
@@ -264,10 +264,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					avatar: owner.user.avatarURL || "/static/img/discord-icon.png",
 					name: owner.nickname || owner.user.username,
 				},
-				members: svr.members.size,
+				members: Object.keys(svr.members).length,
 				messages: serverDocument.messages_today,
 				rawCreated: moment(svr.createdAt).format(configJS.moment_date_format),
-				relativeCreated: Math.ceil((Date.now() - svr.createdAt) / 86400000),
+				relativeCreated: Math.ceil((Date.now() - new Date(svr.createdAt)) / 86400000),
 				command_prefix: bot.getCommandPrefix(svr, serverDocument),
 				category: serverDocument.config.public_data.server_listing.category,
 				description: serverDocument.config.public_data.server_listing.isEnabled ? md.makeHtml(xssFilters.inHTMLData(serverDocument.config.public_data.server_listing.description || "No description provided.")) : null,
@@ -294,16 +294,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 	});
 	const getUserData = async (usr, userDocument) => {
-		const botServers = await getGuild.get(bot, "*", {});
-		console.log(botServers);
-		const mutualServers = bot.guilds.filter(svr => usr.id in svr.members).sort((a, b) => a.name.localeCompare(b.name));
+		const botServers = await Utils.GetValue(bot, `guilds.filterArray(svr => svr.members.has("${usr.id}"))`, "arr");
+		const mutualServers = botServers.sort((a, b) => a.name.localeCompare(b.name));
 		const userProfile = {
 			username: usr.username,
 			discriminator: usr.discriminator,
 			avatar: usr.avatarURL || "/static/img/discord-icon.png",
 			id: usr.id,
-			status: sampleMember.status,
-			game: bot.getGame(sampleMember),
+			status: usr.presence.status,
+			game: await bot.getGame(usr),
 			roundedAccountAge: moment(usr.createdAt).fromNow(),
 			rawAccountAge: moment(usr.createdAt).format(configJS.moment_date_format),
 			backgroundImage: userDocument.profile_background_image || "http://i.imgur.com/8UIlbtg.jpg",
@@ -320,8 +319,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				userProfile.statusColor = "is-success";
 				break;
 			case "idle":
-			case "away":
 				userProfile.statusColor = "is-warning";
+				break;
+			case "dnd":
+				userProfile.statusColor = "is-danger";
 				break;
 			case "offline":
 			default:
@@ -340,32 +341,31 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			userProfile.profileFields = profileFields;
 			userProfile.pastNames = userDocument.past_names;
 			userProfile.afkMessage = userDocument.afk_message;
-			mutualServers.forEach(svr => {
+			for (let svr of mutualServers) {
 				userProfile.mutualServers.push({
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
-					owner: svr.members.get(svr.ownerID).user.username,
+					owner: await bot.fetchUser(svr.ownerID, false).username,
 				});
-			});
+			}
 		}
 		return userProfile;
 	};
-	app.get("/api/users", (req, res) => {
-		const usr = bot.users.get(req.query.id);
+	app.get("/api/users", async (req, res) => {
+		const usr = await bot.fetchUser(req.query.id, false);
 		if (usr) {
-			db.users.findOrCreate({ _id: usr.id }, (err, userDocument) => {
+			db.users.findOrCreate({ _id: usr.id }, async (err, userDocument) => {
 				if (err || !userDocument) {
 					userDocument = {};
 				}
-				res.json(getUserData(usr, userDocument));
+				res.json(await getUserData(usr, userDocument));
 			});
 		} else {
 			res.sendStatus(400);
 		}
 	});
-	const getExtensionData = galleryDocument => {
-		const owner = bot.users.get(galleryDocument.owner_id) || {};
+	const getExtensionData = async galleryDocument => {
+		const owner = await bot.fetchUser(galleryDocument.owner_id, false) || {};
 		let typeIcon, typeDescription;
 		switch (galleryDocument.type) {
 			case "command":
@@ -406,7 +406,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),
 		};
 	};
-	app.get("/api/extensions", (req, res) => {
+	app.get("/api/extensions", async (req, res) => {
 		const params = {};
 		if (req.query.id) {
 			params._id = req.query.id;
@@ -463,10 +463,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				},
 			},
 		}, async (err, result) => {
-			const guildAmount = await Utils.GetValue(bot, "guilds.size", "int");
-			const userAmount = await Utils.GetValue(bot, "users.size", "int");
+			const guildAmount = await bot.guilds.count;
+			const userAmount = await bot.users.count;
 			let messageCount = 0;
-			let activeServers = guildAmount
+			let activeServers = guildAmount;
 			if (!err && result) {
 				messageCount = result[0].total;
 				activeServers = result[0].active;
@@ -516,8 +516,13 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				};
 				if (req.query.q) {
 					const query = req.query.q.toLowerCase();
+					const servers = await getGuild.get(bot, "*", { only: true, resolve: ["id", "name"] });
 					matchCriteria._id = {
-						$in: await Utils.GetValue(bot, `guilds.filter(svr => svr.name.toLowerCase().indexOf(${query}) > -1 || svr.id === ${query}).map(svr => svr.id)`, "arr"),
+						$in: Object.keys(servers).map(k => servers[k]).filter(svr => {
+							return svr.name.toLowerCase().indexOf(query)>-1 || svr.id === query;
+						}).map(svr => {
+							return svr.id;
+						}),
 					};
 				} else {
 					matchCriteria._id = {
@@ -536,22 +541,26 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					case "members-asc":
 						sortParams = {
 							member_count: 1,
+							added_timestamp: 1,
 						};
 						break;
 					case "members-des":
 						sortParams = {
 							member_count: -1,
+							added_timestamp: -1,
 						};
 						break;
 					case "messages-asc":
 						sortParams = {
 							messages_today: 1,
+							added_timestamp: 1,
 						};
 						break;
 					case "messages-des":
 					default:
 						sortParams = {
 							messages_today: -1,
+							added_timestamp: -1,
 						};
 						break;
 				}
@@ -572,6 +581,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 								member_count: {
 									$size: "$members",
 								},
+								added_timestamp: 1,
 							},
 						},
 						{
@@ -583,12 +593,12 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						{
 							$limit: count,
 						},
-					], (err, serverDocuments) => {
+					], async (err, serverDocuments) => {
 						let serverData = [];
 						if (!err && serverDocuments) {
 							serverData = serverDocuments.map(serverDocument => getServerData(serverDocument));
 						}
-
+						serverData = await Promise.all(serverData);
 						let pageTitle = "Servers";
 						if (req.query.q) {
 							pageTitle = `Search for server "${req.query.q}"`;

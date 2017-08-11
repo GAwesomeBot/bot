@@ -287,12 +287,13 @@ bot.roleSearch = (string, server) => new Promise((resolve, reject) => {
 });
 
 // Gets the game a member is playing
-bot.getGame = member => new Promise(resolve => {
-	let presence = member.presence;
+bot.getGame = usr => new Promise(resolve => {
+	let presence = usr.presence;
 	if (presence.game && presence.game !== null && presence.game.name) {
 		resolve(presence.game.name);
+	} else {
+		resolve("");
 	}
-	resolve("");
 });
 
 // Check if a user has leveled up a rank

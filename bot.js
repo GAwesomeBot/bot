@@ -64,7 +64,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
 		});
 		sharder.IPC.once("warnNotProduction", () => {
-			winston.warn("Your GAB is running in development mode. This might impact performence. In order to run GAB in production mode, please set the NODE_ENV environment variable to production.");
+			winston.warn("GAB is running in development mode. This might impact performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
 		});
 		sharder.IPC.on("finished", () => {
 			shardFinished(sharder);
@@ -86,7 +86,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 						results.push(shardd.getGuilds(payload.settings));
 					});
 					let result = await Promise.all(results);
-					sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result }, shard.id);
+					sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result.reduce((prev, value) => Object.assign(prev, value), {}) }, shard.id);
 				}
 			} catch (err) {
 				let payload = msg;
