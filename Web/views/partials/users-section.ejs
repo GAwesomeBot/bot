@@ -22,6 +22,18 @@ document.getElementById("search-input").onkeydown = function() {
 	}
 };
 mediaStyle(mq);
+$.getJSON("/userlist", function(data) {
+	searchInputAutocomplete = new autoComplete({
+		selector: "#search-input",
+		minChars: 2,
+		source: function(q, res) {
+			q = q.toLowerCase();
+			res(data.filter(function(a) {
+				return a.toLowerCase().indexOf(q)>-1;
+			}));
+		}
+	});
+});
 </script>
 
 <% if((activeSearchQuery && data.userProfile) || !activeSearchQuery) { %>

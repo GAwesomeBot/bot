@@ -113,7 +113,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	passport.use(new discordStrategy({
 		clientID: auth.discord.clientID,
 		clientSecret: auth.discord.clientSecret,
-		callbackURL: `${configJS.hosting_url}login/callback`,
+		callbackURL: `${configJS.hostingURL}login/callback`,
 		scope: discordOAuthScopes,
 	}, (accessToken, refreshToken, profile, done) => {
 		process.nextTick(() => done(null, profile));
@@ -678,16 +678,16 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Server list provider for typeahead
-	app.get("/serverlist", (req, res) => {
-		const servers = bot.guilds.map(svr => svr.name);
+	app.get("/serverlist", async (req, res) => {
+		const servers = Object.values(await getGuild.get(bot, "*", { only: true, resolve: ["name"] })).map(val => val.name);
 		servers.sort();
 		res.json(servers);
 	});
 
 	// Check authentication for console
-	const checkAuth = (req, res, next) => {
+	const checkAuth = async (req, res, next) => {
 		if (req.isAuthenticated()) {
-			const usr = bot.fetchUser(req.user.id, false);
+			const usr = bot.fetchUser(req.user.id, true);
 			if (usr) {
 				if (req.query.svrid === "maintainer") {
 					if (configJSON.maintainers.indexOf(req.user.id) > -1) {
@@ -696,11 +696,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						res.redirect("/dashboard");
 					}
 				} else {
-					const svr = bot.guilds.get(req.query.svrid);
+					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles"], convert: { id_only: true } });
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
-								const member = svr.members.get(usr.id);
+								const member = svr.members[usr.id];
 								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3) {
 									next(member, svr, serverDocument);
 								} else {
@@ -729,8 +729,17 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				res.json(getUserList(svr.members.map(member => member.user)));
 			});
 		} else {
-			db.users.aggregate()
-			res.json(result);
+			db.users.aggregate({
+				$project: {
+					username: 1
+				}
+			}, (err, users) => {
+				if (!err && users) {
+					res.json(users.sort().map(usr => usr.username));
+				} else {
+					next(err);
+				}
+			});
 		}
 	});
 
@@ -1217,7 +1226,6 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						return data;
 					});
 				}
-				console.log(blogPosts)
 				await res.render("pages/blog.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
@@ -1672,7 +1680,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.get("/login/callback", passport.authenticate("discord", {
 		failureRedirect: "/error",
 	}), (req, res) => {
-		if (configJSON.globalBlocklist.indexOf(req.user.id) > -1 || !req.user.verified) {
+		if (configJSON.globalBlockList.indexOf(req.user.id) > -1 || !req.user.verified) {
 			res.redirect("/error");
 		} else {
 			res.redirect("/dashboard");

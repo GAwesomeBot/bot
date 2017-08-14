@@ -531,7 +531,8 @@ bot.getUserBotAdmin = (server, serverDocument, member) => {
 	if (server.ownerID === member.id) return 3;
 
 	let adminLevel = 0;
-	let roles = member.roles.array();
+	let roles = member.roles;
+	if (!(roles instanceof Array)) roles = roles.array();
 	for (const role of roles) {
 		const adminDocument = serverDocument.config.admins.id(role.id);
 		if (adminDocument && adminDocument.level > adminLevel) {
@@ -596,6 +597,21 @@ bot.unmuteMember = async (channel, member) => {
 			winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 		}
 	}
+};
+
+bot.findQueryUser = (query, list) => {
+	let usr = list.get(query);
+	if (!usr) {
+		const usernameQuery = query.substring(0, query.lastIndexOf("#") > -1 ? query.lastIndexOf("#") : query.length);
+		const discriminatorQuery = query.indexOf("#") > -1 ? query.substring(query.lastIndexOf("#") + 1) : "";
+		const usrs = list.filter(a => (a.user || a).username === usernameQuery);
+		if (discriminatorQuery) {
+			usr = usrs.find(a => (a.user || a).discriminator === discriminatorQuery);
+		} else if (usrs.length > 0) {
+			usr = usrs[0];
+		}
+	}
+	return usr;
 };
 
 bot.IPC = shardIPC;

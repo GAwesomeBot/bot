@@ -12,10 +12,9 @@ const generateGuild = (guild, settings) => {
 			gguild.roles[key] = {};
 			for (let getter of settings.roles) {
 				gguild.roles[key][getter] = val[getter];
-			}
-			if (settings.exclude && settings.exclude.roles instanceof Array) {
-				for (let exc of settings.exclude.roles) {
-					delete gguild.roles[key][exc];
+				if (settings.convert && val[getter] instanceof Map) {
+					gguild.roles[key][getter] = gguild.roles[key][getter].array();
+					if (settings.convert.id_only) gguild.roles[key][getter] = gguild.roles[key][getter].map(obj => obj.id);
 				}
 			}
 		});
@@ -26,10 +25,9 @@ const generateGuild = (guild, settings) => {
 			gguild.channels[key] = {};
 			for (let getter of settings.channels) {
 				gguild.channels[key][getter] = val[getter];
-			}
-			if (settings.exclude && settings.exclude.channels instanceof Array) {
-				for (let exc of settings.exclude.channels) {
-					delete gguild.channels[key][exc];
+				if (settings.convert && val[getter] instanceof Map) {
+					gguild.channels[key][getter] = gguild.channels[key][getter].array();
+					if (settings.convert.id_only) gguild.channels[key][getter] = gguild.channels[key][getter].map(obj => obj.id);
 				}
 			}
 		});
@@ -40,10 +38,9 @@ const generateGuild = (guild, settings) => {
 			gguild.members[key] = {};
 			for (let getter of settings.members) {
 				gguild.members[key][getter] = val[getter];
-			}
-			if (settings.exclude && settings.exclude.members instanceof Array) {
-				for (let exc of settings.exclude.members) {
-					delete gguild.members[key][exc];
+				if (settings.convert && val[getter] instanceof Map) {
+					gguild.members[key][getter] = gguild.members[key][getter].array();
+					if (settings.convert.id_only) gguild.members[key][getter] = gguild.members[key][getter].map(obj => obj.id);
 				}
 			}
 		});
@@ -58,6 +55,13 @@ const generateGuild = (guild, settings) => {
 	return gguild;
 };
 
+/**
+ * Fetches a guild from other shards if required, resolving getters as specified.
+ * @param {Object} bot The discord.js client instance containing the IPC instance used to communicate with the master.
+ * @param {string} guildID The ID of the guild to be fetched, or "*" to fetch all guils.
+ * @param {getGuildSettings} settings The settings to apply on generateGuild() when a guild was found.
+ * @returns {Promise} Promise object representing the fetched guild object or array of guilds. Or, when no guild was found, 404.
+ */
 const getGuild = (bot, guildID, settings) =>
 	new Promise((resolve, reject) => {
 		if (bot.guilds.has(guildID)) {
