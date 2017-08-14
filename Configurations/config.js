@@ -40,7 +40,7 @@ const configs = {
    */
 	maxVoiceChannels: 2,
 	/*
-   * Direct Discord link to invite your bot. Replace "<REPLACE HERE>" (including the "<>") with your bots ID.
+   * Direct Discord link to invite your bot. Replace "<REPLACE HERE>" (including the "<>") with your Application Client ID.
    */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
 	/*
@@ -104,6 +104,23 @@ const configs = {
 		"okay",
 		"fine",
 		"sure",
+	],
+	errorLines: [
+		"<strong>Help!</strong> My GAB's on fire!",
+		"<strong>Uh-oh</strong>, something went wrong.",
+		"<strong>Snap!</strong> Something hit a snag.",
+		"<strong>Yaikes</strong>, this isn't good.",
+		"<strong>Well</strong>, at least we still have eachother.",
+		"<strong>Grr!</strong> I hate it when this happens.",
+		"<strong>x.x</strong>, (-_-*) o.O :/",
+		"<strong>Argh!</strong> Something went horribly wrong.",
+		"<strong>Sigh</strong>, did you break it again?",
+		"<strong>Hmm</strong>, this does indeed appear to be bad.",
+		"<strong>Yup</strong>, that's an error!",
+		"<strong>Hey</strong>, I'm broken!",
+		"<strong>Woops</strong>, that one was me.",
+		"<strong>Sorry!</strong> I really tried my best!",
+		"<strong>Welp</strong>, this is embarrassing."
 	],
 };
 

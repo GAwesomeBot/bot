@@ -78,7 +78,7 @@ class ShardIPC extends EventEmitter {
 				if (err) throw err;
 			});
 		} catch (err) {
-			this.winston.warn("Failed to send message to master :C\n", { payload: payload, subject: subject, err: err });
+			this.winston.warn("Failed to send message to master :C\n", err, { payload: payload, subject: subject });
 		}
 	}
 }

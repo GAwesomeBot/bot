@@ -90,10 +90,11 @@ const getAuthUser = user => ({
 
 const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400)}d` : `${Math.floor(uptime / 3600)}h`;
 
-
 /* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
 module.exports = (bot, db, auth, configJS, configJSON, winston) => {
+	const renderError = (res, text, line) => res.status(500).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
+
 	// Notify the maintainer of possible issues
 	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
 		bot.IPC.send("warnDefaultSecret", {});
@@ -687,7 +688,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Check authentication for console
 	const checkAuth = async (req, res, next) => {
 		if (req.isAuthenticated()) {
-			const usr = bot.fetchUser(req.user.id, true);
+			const usr = await bot.fetchUser(req.user.id, true);
 			if (usr) {
 				if (req.query.svrid === "maintainer") {
 					if (configJSON.maintainers.indexOf(req.user.id) > -1) {
@@ -696,7 +697,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						res.redirect("/dashboard");
 					}
 				} else {
-					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles"], convert: { id_only: true } });
+					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user"], convert: { id_only: true } });
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
@@ -707,15 +708,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 									res.redirect("/dashboard");
 								}
 							} else {
-								res.redirect("/error");
+								renderError(res, "We failed to fetch your server from our database.");
 							}
 						});
 					} else {
-						res.redirect("/error");
+						renderError(res, "Wait a second, that server doesn't exist!<br>We failed to fetch your server from Discord.");
 					}
 				}
 			} else {
-				res.redirect("/error");
+				renderError(res, "Wait, do you exist?<br> We failed to fetch your user from Discord.");
 			}
 		} else {
 			res.redirect("/login");
@@ -726,7 +727,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.get("/userlist", (req, res) => {
 		if (req.query.svrid) {
 			checkAuth(req, res, (usr, svr) => {
-				res.json(getUserList(svr.members.map(member => member.user)));
+				res.json(getUserList(Object.keys(svr.members).map(member => svr.members[member].user)));
 			});
 		} else {
 			db.users.aggregate({
@@ -1028,7 +1029,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					io.of(req.path).emit("update", req.user.id);
 					res.redirect(req.originalUrl);
 				} else {
-					res.redirect("/error");
+					renderError(res, "Something went wrong while we tried to fetch your extensions.");
 				}
 			});
 		} else {
@@ -1147,7 +1148,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					saveExtensionData(new db.gallery(), false);
 				}
 			} else {
-				res.redirect("/error");
+				renderError(res, "Failed to verify extension data!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1268,7 +1269,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					renderPage({});
 				}
 			} else {
-				res.redirect("/error");
+				renderError(res, "You must be a maintainer to access this page!", "<strong>Hey</strong> you! Stop right there!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1280,7 +1281,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (req.query.id) {
 					db.blog.findOne({ _id: req.query.id }, (err, blogDocument) => {
 						if (err || !blogDocument) {
-							res.redirect("/error");
+							renderError(res, "Sorry, that blog post was not found.");
 						} else {
 							blogDocument.title = req.body.title;
 							blogDocument.category = req.body.category;
@@ -1303,7 +1304,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					});
 				}
 			} else {
-				res.redirect("/error");
+				renderError(res, "Cool maintainer dudes only.", "<strong>You!</strong> I demand you to stop!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1314,7 +1315,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			_id: req.params.id,
 		}, (err, blogDocument) => {
 			if (err || !blogDocument) {
-				res.redirect("/error");
+				renderError(res, "Sorry, that blog doesn't exist!");
 			} else {
 				const data = getBlogData(blogDocument);
 				const getReactionCount = value => blogDocument.reactions.reduce((count, reactionDocument) => count + (reactionDocument.value === value), 0);
@@ -1373,7 +1374,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					res.sendStatus(err ? 500 : 200);
 				});
 			} else {
-				res.redirect("/error");
+				renderError(res, "Only maintainers are allowed in this club.", "<strong>Hey</strong> you! Stop right there!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1386,7 +1387,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			_id: 1,
 		}).exec((err, wikiDocuments) => {
 			if (err || !wikiDocuments) {
-				res.redirect("/error");
+				renderError(res, "An error occurred while fetching wiki documents.");
 			} else if (req.query.q) {
 				req.query.q = req.query.q.toLowerCase().trim();
 
@@ -1467,7 +1468,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					renderPage({});
 				}
 			} else {
-				res.redirect("/error");
+				renderError(res, "Hah! You thought you could fool me? Maintainers only!", "<strong>You</strong> shall not pass!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1479,7 +1480,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (req.query.id) {
 					db.wiki.findOne({ _id: req.query.id }, (err, wikiDocument) => {
 						if (err || !wikiDocument) {
-							res.redirect("/error");
+							renderError(res, "An error occurred while saving wiki documents!");
 						} else {
 							wikiDocument._id = req.body.title;
 							wikiDocument.updates.push({
@@ -1506,7 +1507,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					});
 				}
 			} else {
-				res.redirect("/error");
+				renderError(res, "Only maintainers are allowed to post on me.");
 			}
 		} else {
 			res.redirect("/login");
@@ -1517,7 +1518,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			_id: 1,
 		}).exec((err, wikiDocuments) => {
 			if (err || !wikiDocuments) {
-				res.redirect("/error");
+				renderError(res, "Failed to fetch wiki pages!");
 			} else {
 				const page = wikiDocuments.find(wikiDocument => wikiDocument._id === req.params.id) || {
 					_id: req.params.id,
@@ -1554,7 +1555,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			_id: 1,
 		}).exec((err, wikiDocuments) => {
 			if (err || !wikiDocuments) {
-				res.redirect("/error");
+				renderError(res, "Failed to fetch wiki data!");
 			} else {
 				const page = wikiDocuments.find(wikiDocument => wikiDocument._id === req.params.id) || {
 					_id: req.params.id,
@@ -1630,7 +1631,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					res.sendStatus(err ? 500 : 200);
 				});
 			} else {
-				res.redirect("/error");
+				renderError(res, "You should know this by now. You're not a maintainer.", "<strong>Get</strong> out of here now!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1678,10 +1679,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Callback for Discord OAuth2
 	app.get("/login/callback", passport.authenticate("discord", {
-		failureRedirect: "/error",
+		failureRedirect: "/error?err=discord",
 	}), (req, res) => {
 		if (configJSON.globalBlockList.indexOf(req.user.id) > -1 || !req.user.verified) {
-			res.redirect("/error");
+			renderError(res, "You must have a verified discord email, or not be globally blocked!", "<strong>Hah!</strong> Thought you were close, didn'tcha?")
 		} else {
 			res.redirect("/dashboard");
 		}
@@ -1741,7 +1742,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				res.render("pages/dashboard.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					serverData,
-					rawJoinLink: `https://discordapp.com/oauth2/authorize?&client_id=${auth.platform.client_id}&scope=bot&permissions=470019135`,
+					rawJoinLink: `https://discordapp.com/oauth2/authorize?&client_id=${auth.discord.clientID}&scope=bot&permissions=470019135`,
 				});
 			});
 		}
@@ -2228,7 +2229,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (triviaSetDocument) {
 					res.json(triviaSetDocument.items);
 				} else {
-					res.redirect("/error");
+					renderError(res, "Failed to find that trivia set!");
 				}
 			} else {
 				res.render("pages/admin-trivia-sets.ejs", {
@@ -3095,7 +3096,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				order: "desc",
 			}, (err, results) => {
 				if (err) {
-					res.redirect("/error");
+					renderError(res, "Failed to fetch all the trees and their logs.");
 				} else {
 					results = results.file;
 					const logs = [];
@@ -3448,7 +3449,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			if (req.query.extid) {
 				extensionData = serverDocument.extensions.id(req.query.extid);
 				if (!extensionData) {
-					res.redirect("/error");
+					renderError(res, "Failed to fetch extension data.");
 					return;
 				} else {
 					try {
@@ -3509,7 +3510,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
 				});
 			} else {
-				res.redirect("/error");
+				renderError(res, "Failed to verify extension data!");
 			}
 		});
 	});
@@ -3669,10 +3670,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							req.query.q = "";
 							renderPage();
 						} else {
-							res.redirect("/error");
+							renderError(res, "That channel doesn't exist!");
 						}
 					} else {
-						res.redirect("/error");
+						renderError(res, "That server doesn't exist!");
 					}
 				} else if (req.query.leave !== undefined) {
 					const svr = bot.guilds.get(data[parseInt(req.query.i)].id);
@@ -3681,10 +3682,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							req.query.q = "";
 							renderPage();
 						}).catch(() => {
-							res.redirect("/error");
+							renderError(res, "Failed to leave guild! They got lucky, this time.");
 						});
 					} else {
-						res.redirect("/error");
+						renderError(res, "That server doesn't exist!");
 					}
 				} else {
 					renderPage(data);
@@ -3986,9 +3987,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		});
 	});
 
-	// Under construction for v4
-	app.get("/under-construction", (req, res) => {
-		res.render("pages/uc.ejs");
+	// 503 testing page
+	app.get("/503", (req, res) => {
+		res.render("pages/503.ejs");
 	});
 
 	// Logout of admin console
@@ -3999,7 +4000,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Error page
 	app.get("/error", (req, res) => {
-		res.status(500).render("pages/error.ejs");
+		renderError(res, "I AM ERROR");
 	});
 
 	// 404 page
@@ -4010,7 +4011,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Handle errors (redirect to error page)
 	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
 		winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, error, { params: req.params, query: req.query });
-		res.status(500).render("pages/error.ejs", { error });
+		renderError(res, "An unexpected and unknown error occurred!<br>Please contact your GAB maintainer asap!")
 	});
 };
 

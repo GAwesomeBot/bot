@@ -1,3 +1,12 @@
+class SafeUser {
+	constructor (user) {
+		this.avatar = user.avatar;
+		this.bot = user.bot;
+		this.tag = user.tag;
+		this.discriminator = user.discriminator;
+		this.username = user.username;
+	}
+}
 const generateGuild = (guild, settings) => {
 	let gguild = {};
 	if (!settings.only) gguild = JSON.parse(JSON.stringify(guild));
@@ -38,6 +47,7 @@ const generateGuild = (guild, settings) => {
 			gguild.members[key] = {};
 			for (let getter of settings.members) {
 				gguild.members[key][getter] = val[getter];
+				if (getter === "user") gguild.members[key][getter] = new SafeUser(val[getter]);
 				if (settings.convert && val[getter] instanceof Map) {
 					gguild.members[key][getter] = gguild.members[key][getter].array();
 					if (settings.convert.id_only) gguild.members[key][getter] = gguild.members[key][getter].map(obj => obj.id);

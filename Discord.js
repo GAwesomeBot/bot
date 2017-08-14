@@ -534,7 +534,7 @@ bot.getUserBotAdmin = (server, serverDocument, member) => {
 	let roles = member.roles;
 	if (!(roles instanceof Array)) roles = roles.array();
 	for (const role of roles) {
-		const adminDocument = serverDocument.config.admins.id(role.id);
+		const adminDocument = serverDocument.config.admins.id(role.id || role);
 		if (adminDocument && adminDocument.level > adminLevel) {
 			adminLevel = adminDocument.level;
 		}
