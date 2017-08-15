@@ -12,7 +12,7 @@
   "scripts": {
     "first-time": "npm install -g --production windows-build-tools && npm install --production",
     "test": "npm run lint",
-    "lint": "eslint --fix .",
+    "lint": "eslint .",
     "preinstall": "echo If you encounter any errors, please run \"npm run first-time\"! && echo If you still are having issues, submit the error log on GitHub!"
   },
   "dependencies": {
