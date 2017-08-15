@@ -73,8 +73,14 @@ const configs = {
    */
 	discordLink: "",
 	donateCharities: [
-
+		{
+			icon_url: "http://i.imgur.com/1C08tFT.png",
+			donate_url: "https://github.com/GilbertGobbels/GAwesomeBot",
+			name: "Star us on GitHub!",
+			country: "WW",
+		},
 	],
+	donateSubtitle: "The GAwesomeBot team currently doesn't accept direct payments. (<a href='/wiki/FAQs#donations'>here's why</a>) Instead, you can use the following methods to support the project!",
 	/*
    * These last values should remain untouched.
    */

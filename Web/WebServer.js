@@ -223,7 +223,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		res.redirect(configJS.oauthLink);
 	});
 
-	// AwesomeBot data API
+	// GAwesomeBot data API
 	app.use("/api/", new RateLimit({
 		windowMs: 3600000,
 		max: 150,
@@ -674,7 +674,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Header image provider
 	app.get("/header-image", (req, res) => {
 			res.sendFile(`${__dirname}/public/img/${configJSON.headerImage}`, err => {
-				if (err) winston.warn("It seems your headerImage value is invalid!", { "err": err })
+				if (err) winston.warn("It seems your headerImage value is invalid!", err)
 			});
 	});
 
@@ -810,7 +810,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						break;
 					case "accept":
 						getGalleryDocument(galleryDocument => {
-							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been accepted to the AwesomeBot extension gallery! 🎉 ${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id}`);
+							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉 ${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id}`);
 							galleryDocument.state = "gallery";
 							galleryDocument.save(err => {
 								res.sendStatus(err ? 500 : 200);
@@ -838,7 +838,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					case "feature":
 						getGalleryDocument(galleryDocument => {
 							if (!galleryDocument.featured) {
-								messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been featured on the AwesomeBot extension gallery! 🌟 ${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id}`);
+								messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been featured on the GAwesomeBot extension gallery! 🌟 ${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id}`);
 							}
 							galleryDocument.featured = galleryDocument.featured !== true;
 							galleryDocument.save(err => {
@@ -849,7 +849,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					case "reject":
 					case "remove":
 						getGalleryDocument(galleryDocument => {
-							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been ${req.body.action}${req.body.action === "reject" ? "e" : ""}d from the AwesomeBot extension gallery for the following reason:\`\`\`${req.body.reason}\`\`\``);
+							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been ${req.body.action}${req.body.action === "reject" ? "e" : ""}d from the GAwesomeBot extension gallery for the following reason:\`\`\`${req.body.reason}\`\`\``);
 							db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
 								if (!err && ownerUserDocument) {
 									ownerUserDocument.points -= galleryDocument.points * 10;
@@ -920,7 +920,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 
 				db.gallery.find(matchCriteria).sort("-featured -points -last_updated").skip(count * (page - 1)).limit(count).exec((err, galleryDocuments) => {
-					const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - AwesomeBot Extensions`;
+					const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
 					const extensionData = galleryDocuments.map(getExtensionData);
 
 					res.render("pages/extensions.ejs", {
@@ -1156,8 +1156,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Blog (updates + announcements)
-	const getBlogData = async (blogDocument) => {
-		const author = await Utils.GetValue(bot, `users.get(${blogDocument.author_id})`, "obj") || {
+	const getBlogData = async blogDocument => {
+		const author = await bot.fetchUser(blogDocument.author_id, true) || {
 			id: "invalid-user",
 			username: "invalid-user",
 		};
@@ -1179,15 +1179,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				categoryColor = "is-primary";
 				break;
 		}
-		const avatarURL = await Utils.GetValue(bot, `users.get("${blogDocument.author_id}").avatarURL`);
-		avatarURL.spliceNullElements();
+		const avatarURL = (await bot.fetchUser(blogDocument.author_id, true)).avatarURL;
 		return {
 			id: blogDocument._id,
 			title: blogDocument.title,
 			author: {
 				name: author.username,
 				id: author.id,
-				avatar: avatarURL[0] || "/static/img/discord-icon.png",
+				avatar: avatarURL || "/static/img/discord-icon.png",
 			},
 			category: blogDocument.category,
 			categoryColor,
@@ -1218,14 +1217,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			db.blog.find({}).sort("-published_timestamp").skip(count * (page - 1)).limit(count).exec(async (err, blogDocuments) => {
 				let blogPosts = [];
 				if (!err && blogDocuments) {
-					blogPosts = blogDocuments.map(async blogDocument => {
+					blogPosts = Promise.all(blogDocuments.map(async blogDocument => {
 						const data = await getBlogData(blogDocument);
 						data.isPreview = true;
 						if (data.content.length > 1000) {
 							data.content = `${data.content.slice(0, 1000)}...`;
 						}
 						return data;
-					});
+					}));
 				}
 				await res.render("pages/blog.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -1233,8 +1232,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					mode: "list",
 					currentPage: page,
 					numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
-					pageTitle: "AwesomeBot Blog",
-					data: blogPosts,
+					pageTitle: "GAwesomeBot Blog",
+					data: await blogPosts,
 				});
 			});
 		});
@@ -1246,7 +1245,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					res.render("pages/blog.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 						isMaintainer: true,
-						pageTitle: `${data.title ? `Edit ${data.title}` : "New Post"} - AwesomeBot Blog`,
+						pageTitle: `${data.title ? `Edit ${data.title}` : "New Post"} - GAwesomeBot Blog`,
 						mode: "compose",
 						data,
 					});
@@ -1269,7 +1268,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					renderPage({});
 				}
 			} else {
-				renderError(res, "You must be a maintainer to access this page!", "<strong>Hey</strong> you! Stop right there!");
+				renderError(res, "You must be a maintainer to access this page!", "<strong>Hey</strong>! Don't think I didn't see you!");
 			}
 		} else {
 			res.redirect("/login");
@@ -1313,11 +1312,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.get("/blog/:id", (req, res) => {
 		db.blog.findOne({
 			_id: req.params.id,
-		}, (err, blogDocument) => {
+		}, async (err, blogDocument) => {
 			if (err || !blogDocument) {
 				renderError(res, "Sorry, that blog doesn't exist!");
 			} else {
-				const data = getBlogData(blogDocument);
+				const data = await getBlogData(blogDocument);
 				const getReactionCount = value => blogDocument.reactions.reduce((count, reactionDocument) => count + (reactionDocument.value === value), 0);
 				data.reactions = {};
 				[-1, 0, 1].forEach(reaction => {
@@ -1330,7 +1329,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
 					mode: "article",
-					pageTitle: `${blogDocument.title} - AwesomeBot Blog`,
+					pageTitle: `${blogDocument.title} - GAwesomeBot Blog`,
 					blogPost: data,
 				});
 			}
@@ -1425,7 +1424,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				res.render("pages/wiki.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isContributor: req.isAuthenticated() ? configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					pageTitle: `Search for "${req.query.q}" - AwesomeBot Wiki`,
+					pageTitle: `Search for "${req.query.q}" - GAwesomeBot Wiki`,
 					pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
 					mode: "search",
 					data: {
@@ -1445,7 +1444,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				const renderPage = data => {
 					res.render("pages/wiki.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						pageTitle: `${data.title ? `Edit ${data.title}` : "New Page"} - AwesomeBot Wiki`,
+						pageTitle: `${data.title ? `Edit ${data.title}` : "New Page"} - GAwesomeBot Wiki`,
 						mode: "edit",
 						data,
 					});
@@ -1537,7 +1536,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				res.render("pages/wiki.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isContributor: req.isAuthenticated() ? configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					pageTitle: `${page._id} - AwesomeBot Wiki`,
+					pageTitle: `${page._id} - GAwesomeBot Wiki`,
 					pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
 					mode: "page",
 					data: {
@@ -1582,7 +1581,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				res.render("pages/wiki.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isContributor: req.isAuthenticated() ? configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					pageTitle: `Edit history for ${page._id} - AwesomeBot Wiki`,
+					pageTitle: `Edit history for ${page._id} - GAwesomeBot Wiki`,
 					pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
 					mode: "history",
 					data: {
@@ -1643,6 +1642,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		res.render("pages/donate.ejs", {
 			authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 			charities: configJS.donateCharities,
+			donate_subtitle: configJS.donateSubtitle,
 		});
 	});
 
@@ -4011,7 +4011,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Handle errors (redirect to error page)
 	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
 		winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, error, { params: req.params, query: req.query });
-		renderError(res, "An unexpected and unknown error occurred!<br>Please contact your GAB maintainer asap!")
+		renderError(res, "An unexpected and unknown error occurred!<br>Please contact your GAB maintainer for support.")
 	});
 };
 
