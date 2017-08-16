@@ -1,7 +1,8 @@
 const Discord = require("discord.js");
+const Utils = require("./");
 
 module.exports = bot => {
-	const properties = 8;
+	const properties = 9;
 	/**
 	 * Removes null objects from an array
 	 * @returns {Array} The array without the null objects
@@ -90,6 +91,7 @@ module.exports = bot => {
 
 	/**
 	 * Gets the "default channel" for the guild
+	 * Won't account for READ_MESSAGES
 	 * @returns {?TextChannel}
 	 */
 	Object.defineProperty(Discord.Guild.prototype, "defaultChannel", {
@@ -102,8 +104,20 @@ module.exports = bot => {
 	});
 
 	/**
-	 * 
+	 * Total count of users or guilds across all shards.
+	 * @returns {Number}
 	 */
+	Object.defineProperty(bot.guilds, "totalCount", {
+		get: async function get () {
+			return Utils.GetValue(bot, "guilds.size", "int");
+		},
+	});
 
-	winston.debug(`Loaded ${properties} Object.assigns`);
+	Object.defineProperty(bot.users, "totalCount", {
+		get: async function get () {
+			return Utils.GetValue(bot, "users.size", "int");
+		},
+	});
+
+	winston.silly(`Loaded ${properties} Object.assigns`);
 };

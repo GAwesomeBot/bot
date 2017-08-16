@@ -198,15 +198,12 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		store: sessionStore,
 		passport,
 	}));
-	
-	Object.defineProperty(bot.guilds, 'count', { get: async function() { return Utils.GetValue(bot, "guilds.size", "int") } });
-	Object.defineProperty(bot.users, 'count', { get: async function() { return Utils.GetValue(bot, "users.size", "int") } });
 
 	// Landing page
 	app.get("/", async (req, res) => {
 		const uptime = process.uptime();
-		const guildSize = await bot.guilds.count;
-		const userSize = await bot.users.count;
+		const guildSize = await bot.guilds.totalCount;
+		const userSize = await bot.users.totalCount;
 		res.render("pages/landing.ejs", {
 			authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 			bannerMessage: configJSON.homepageMessageHTML,
@@ -231,8 +228,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	}));
 	app.get("/api", async (req, res) => {
 		res.json({
-			server_count: await bot.guilds.count,
-			user_count: await bot.users.count,
+			server_count: await bot.guilds.totalCount,
+			user_count: await bot.users.totalCount,
 		});
 	});
 	const getServerData = async serverDocument => {
@@ -269,7 +266,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		if (req.query.id) {
 			params._id = req.query.id;
 		}
-		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : await bot.guilds.count)
+		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : await bot.guilds.totalCount)
 			.exec(async (err, serverDocuments) => {
 				if (!err && serverDocuments) {
 					const data = await Promise.all(serverDocuments.map(async serverDocument => await getServerData(serverDocument) || serverDocument._id));
@@ -456,8 +453,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				},
 			},
 		}, async (err, result) => {
-			const guildAmount = await bot.guilds.count;
-			const userAmount = await bot.users.count;
+			const guildAmount = await bot.guilds.totalCount;
+			const userAmount = await bot.users.totalCount;
 			let messageCount = 0;
 			let activeServers = guildAmount;
 			if (!err && result) {
