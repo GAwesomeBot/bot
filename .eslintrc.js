@@ -74,7 +74,7 @@ module.exports = {
 		"key-spacing": "error",
 		"keyword-spacing": "error",
 		"max-depth": ["error", 8],
-		"max-len": ["error", 150, 2],
+		"max-len": ["error", 200, 2],
 		"max-nested-callbacks": ["error", { "max": 4 }],
 		"max-statements-per-line": ["error", { "max": 2 }],
 		"new-cap": "off",

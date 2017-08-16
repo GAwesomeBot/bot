@@ -1,5 +1,7 @@
-module.exports = () => {
-	const properties = 6;
+const Discord = require("discord.js");
+
+module.exports = bot => {
+	const properties = 8;
 	/**
 	 * Removes null objects from an array
 	 * @returns {Array} The array without the null objects
@@ -85,6 +87,23 @@ module.exports = () => {
 			return this.replace(matchOperators, "\\$&");
 		},
 	});
+
+	/**
+	 * Gets the "default channel" for the guild
+	 * @returns {?TextChannel}
+	 */
+	Object.defineProperty(Discord.Guild.prototype, "defaultChannel", {
+		get: function get () {
+			if (this.channels.filter(c => c.type === 0).length === 0) return null;
+			const defaultChannel = this.channels.filter(c => c.type === 0 && c.permissionsFor(this.me).has("READ_MESSAGES")).sort((a, b) => a.position - b.position)[0];
+			if (!defaultChannel) return null;
+			return this.channels.get(defaultChannel.id);
+		},
+	});
+
+	/**
+	 * 
+	 */
 
 	winston.debug(`Loaded ${properties} Object.assigns`);
 };

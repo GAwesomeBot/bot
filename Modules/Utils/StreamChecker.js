@@ -3,7 +3,7 @@ const { StreamerUtils: isStreaming } = require("./");
 // Checks if a user is streaming on Twitch, YouTube Gaming, and posts message in server channel if necessary
 /* eslint-disable require-await*/
 module.exports = async (server, serverDocument, streamerDocument) => {
-	isStreaming(streamerDocument.type, streamerDocument._id).then(data => {
+	isStreaming(streamerDocument.type, streamerDocument._id).then(async data => {
 		let updated = false;
 		// Send status message if stream started
 		if (data && !streamerDocument.live_state) {
@@ -32,7 +32,7 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 
 		// Save serverDocument if necessary
 		if (updated) {
-			serverDocument.save().catch(err => {
+			await serverDocument.save().catch(err => {
 				winston.error(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
 			});
 		}
