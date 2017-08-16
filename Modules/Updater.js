@@ -6,7 +6,7 @@ module.exports = {
 		let res;
 		try {
 			res = await rp.get({
-				uri: `https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`,
+				uri: `https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`,
 			});
 		} catch (err) {
 			reject(err);
@@ -22,7 +22,7 @@ module.exports = {
 		let res;
 		try {
 			res = await rp.get({
-				uri: `https://status.gilbertgobbels.xyz/versions/${branch}/${version}`,
+				uri: `https://status.gawesomebot.com/versions/${branch}/${version}`,
 			});
 		} catch (err) {
 			reject(err);
@@ -43,7 +43,7 @@ module.exports = {
 		let res;
 		try {
 			res = await rp.get({
-				uri: `https://status.gilbertgobbels.xyz/versions/${config.branch}/check?v=${config.version}`,
+				uri: `https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`,
 			});
 		} catch (err) {
 			throw err;
