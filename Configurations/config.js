@@ -126,7 +126,7 @@ const configs = {
 		"<strong>Hey</strong>, I'm broken!",
 		"<strong>Woops</strong>, that one was me.",
 		"<strong>Sorry!</strong> I really tried my best!",
-		"<strong>Welp</strong>, this is embarrassing."
+		"<strong>Welp</strong>, this is embarrassing.",
 	],
 };
 
