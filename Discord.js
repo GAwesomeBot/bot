@@ -17,7 +17,6 @@ const commandModules = {};
 // Set up a global instance of Winston for this Shard
 global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
 
-ObjectDefines();
 GlobalDefines();
 
 /* eslint-disable max-len */
@@ -36,6 +35,8 @@ const bot = new Discord.Client({
 	fetchAllMembers: true,
 	disabledEvents: disabledEvents,
 });
+
+ObjectDefines(bot);
 
 // Value set once READY triggers
 bot.isReady = false;
