@@ -94,7 +94,7 @@ module.exports = bot => {
 	 * Won't account for READ_MESSAGES
 	 * @returns {?TextChannel}
 	 */
-	Object.defineProperty(Discord.Guild.prototype, "defaultChannel", {
+	Object.defineProperty(Discord.Guild.prototype, "newDefaultChannel", {
 		get: function get () {
 			if (this.channels.filter(c => c.type === 0).length === 0) return null;
 			const defaultChannel = this.channels.filter(c => c.type === 0 && c.permissionsFor(this.me).has("READ_MESSAGES")).sort((a, b) => a.position - b.position)[0];
