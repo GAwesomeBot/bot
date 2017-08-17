@@ -615,7 +615,7 @@ class Client extends Discord.Client {
  	* @param channel The channel to unmute
  	* @param member The member to unmute
 	 */
-	 // eslint-disable-next-line no-unused-vars
+	// eslint-disable-next-line no-unused-vars
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
 		if (!bot.isMuted(channel, member) && channel.type === 0) {
 			try {
