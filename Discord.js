@@ -30,7 +30,7 @@ if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledE
 const Discord = require("discord.js");
 winston.silly("Creating discord.js client.");
 class Client extends Discord.Client {
-	constructor(options) {
+	constructor (options) {
 		super(options);
 		// Value set once READY triggers
 		this.isReady = false;
@@ -42,18 +42,18 @@ class Client extends Discord.Client {
 	}
 
 	// Gets the command prefix
-	getCommandPrefix(server, serverDocument) {
+	getCommandPrefix (server, serverDocument) {
 		return new Promise(resolve => {
 			if (serverDocument.config.command_prefix === "@mention") {
 				resolve(`@${server.members[this.user.id].nickname || this.user.username}`);
 			} else {
 				resolve(serverDocument.config.command_prefix);
 			}
-		})
+		});
 	}
 
 	// Checks if message contains a command tag, returning the command and suffix
-	checkCommandTag(message, serverDocument) {
+	checkCommandTag (message, serverDocument) {
 		return new Promise(resolve => {
 			message = message.trim();
 			let cmdstr;
@@ -79,7 +79,7 @@ class Client extends Discord.Client {
 	}
 
 	// Gets the name of a user on a server in accordance with config
-	getName(server, serverDocument, member, ignoreNick = false) {
+	getName (server, serverDocument, member, ignoreNick = false) {
 		// Cleans a string (strip markdown, prevent @everyone or @here)
 		const cleanName = str => {
 			str = removeMd(str).replace(/_/g, "\\_")
@@ -92,26 +92,26 @@ class Client extends Discord.Client {
 		};
 		// eslint-disable-next-line max-len
 		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) + serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : "");
-	};
+	}
 
 	// Bot Command Handlers
-	reloadPrivateCommand(command) {
+	reloadPrivateCommand (command) {
 		try {
 			privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload private command "${command}"`, err);
 		}
-	};
+	}
 
-	reloadPublicCommand(command) {
+	reloadPublicCommand (command) {
 		try {
 			commandModules[command] = reload(`./Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
 		}
-	};
+	}
 
-	reloadAllPrivateCommands() {
+	reloadAllPrivateCommands () {
 		let command_keys = Object.keys(privateCommandModules);
 		if (!command_keys.length) {
 			command_keys = Object.keys(commands.pm);
@@ -119,9 +119,9 @@ class Client extends Discord.Client {
 		command_keys.forEach(cmd => {
 			this.reloadPrivateCommand(cmd);
 		});
-	};
+	}
 
-	reloadAllPublicCommands() {
+	reloadAllPublicCommands () {
 		let command_keys = Object.keys(commandModules);
 		if (!command_keys.length) {
 			command_keys = Object.keys(commands.public);
@@ -129,26 +129,26 @@ class Client extends Discord.Client {
 		command_keys.forEach(cmd => {
 			this.reloadPublicCommand(cmd);
 		});
-	};
+	}
 
-	reloadAllCommands() {
+	reloadAllCommands () {
 		this.reloadAllPrivateCommands();
 		this.reloadAllPublicCommands();
-	};
+	}
 
-	getPMCommandList() {
-		return Object.keys(commands.pm)
-	};
+	getPMCommandList () {
+		return Object.keys(commands.pm);
+	}
 
-	getPublicCommandList() {
+	getPublicCommandList () {
 		return Object.keys(commands.public);
 	}
 
-	getPMCommand(command) {
+	getPMCommand (command) {
 		return privateCommandModules[command];
 	}
 
-	getPublicCommand(command) {
+	getPublicCommand (command) {
 		if (commandModules[command]) {
 			return commandModules[command];
 		} else {
@@ -160,9 +160,9 @@ class Client extends Discord.Client {
 				}
 			}
 		}
-	};
+	}
 
-	getPublicCommandMetadata(command) {
+	getPublicCommandMetadata (command) {
 		if (commands.public[command]) {
 			return commands.public[command];
 		} else {
@@ -174,14 +174,14 @@ class Client extends Discord.Client {
 				}
 			}
 		}
-	};
+	}
 
-	getPMCommandMetadata(command) {
+	getPMCommandMetadata (command) {
 		return commands.pm[command];
 	}
 
 	// Finds a member on a server (by username, ID, etc.)
-	memberSearch(string, server) {
+	memberSearch (string, server) {
 		return new Promise((resolve, reject) => {
 			let foundMember;
 			string = string.trim();
@@ -209,11 +209,11 @@ class Client extends Discord.Client {
 			} else {
 				reject(new Error(`Couldn't find a member in ${server} using string "${string}"`));
 			}
-		})
-	};
+		});
+	}
 
 	// Finds a server (by name, ID, server nick, etc.) for a user
-	serverSearch(string, user, userDocument) {
+	serverSearch (string, user, userDocument) {
 		return new Promise((resolve, reject) => {
 			let foundServer;
 			const checkServer = server => server && server.members.has(user.id);
@@ -246,7 +246,7 @@ class Client extends Discord.Client {
 	}
 
 	// Finds a channel (by name or ID) in a server
-	channelSearch(string, server) {
+	channelSearch (string, server) {
 		return new Promise((resolve, reject) => {
 			string = string.toLowerCase().replace(/ /g, "-");
 
@@ -271,7 +271,7 @@ class Client extends Discord.Client {
 	}
 
 	// Finds a role (by name or ID) in a server
-	roleSearch(string, server) {
+	roleSearch (string, server) {
 		return new Promise((resolve, reject) => {
 			if (string.startsWith("<@&") && string.endsWith(">")) {
 				string = string.substring(3, string.length - 1);
@@ -295,7 +295,7 @@ class Client extends Discord.Client {
 	}
 
 	// Gets the game a member is playing
-	getGame(usr) {
+	getGame (usr) {
 		return new Promise(resolve => {
 			let presence = usr.presence;
 			if (presence.game && presence.game !== null && presence.game.name) {
@@ -303,12 +303,12 @@ class Client extends Discord.Client {
 			} else {
 				resolve("");
 			}
-		})
-	};
+		});
+	}
 
 	// Check if a user has leveled up a rank
 	/* eslint-disable max-depth, no-await-in-loop */
-	async checkRank(server, serverDocument, member, memberDocument, override) {
+	async checkRank (server, serverDocument, member, memberDocument, override) {
 		if (member && member.id !== this.user.id && !member.user.bot && server) {
 			const currentRankScore = memberDocument.rank_score + override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice);
 			for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
@@ -374,10 +374,10 @@ class Client extends Discord.Client {
 				}
 			}
 		}
-	};
+	}
 	/* eslint-enable max-depth */
 	// Handle a spam or filter violation on a server
-	async handleViolation(server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
+	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
 			userDocument.points -= 50;
@@ -529,10 +529,10 @@ class Client extends Discord.Client {
 		serverDocument.save().catch(err => {
 			winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err);
 		});
-	};
+	}
 
 	// Check if user has a bot admin role on a server / is a bot admin on the server
-	getUserBotAdmin(server, serverDocument, member) {
+	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
 
 		if (configJSON.maintainers.includes(member.id)) return 4;
@@ -550,11 +550,11 @@ class Client extends Discord.Client {
 			if (adminLevel >= 3) break;
 		}
 		return adminLevel;
-	};
+	}
 
 	// Message the bot admins for a server
 	// eslint-disable-next-line require-await
-	async messageBotAdmins(server, serverDocument, messageObject) {
+	async messageBotAdmins (server, serverDocument, messageObject) {
 		let content = "";
 		if (messageObject.content) {
 			content = messageObject.content;
@@ -569,19 +569,19 @@ class Client extends Discord.Client {
 				}
 			}
 		});
-	};
+	}
 
 
 	// Check if a user is muted on a server, with or without overwrites
-	isMuted(channel, member) {
-		return !channel.permissionsFor(member).has("SEND_MESSAGES")
-	};
+	isMuted (channel, member) {
+		return !channel.permissionsFor(member).has("SEND_MESSAGES");
+	}
 	/**
  	* Mutes a member of a server in a channel
  	* @param channel The channel to unmute
  	* @param member The member to unmute
  	*/
-	async muteMember(channel, member) {
+	async muteMember (channel, member) {
 		if (!bot.isMuted(channel, member) && channel.type === 0) {
 			try {
 				await channel.overwritePermissions(member.id, {
@@ -591,14 +591,14 @@ class Client extends Discord.Client {
 				winston.verbose(`Probably missing permissions to mute member in "${channel.guild}".`, err);
 			}
 		}
-	};
+	}
 
 	/**
  	* Unmute a member of a server in a channel
  	* @param channel The channel to unmute
  	* @param member The member to unmute
  	*/
-	async unmuteMember(channel, member) {
+	async unmuteMember (channel, member) {
 		if (bot.isMuted(channel, member) && channel.type === 0) {
 			try {
 				await channel.overwritePermissions(member.id, {
@@ -608,9 +608,9 @@ class Client extends Discord.Client {
 				winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 			}
 		}
-	};
+	}
 
-	findQueryUser(query, list) {
+	findQueryUser (query, list) {
 		let usr = list.get(query);
 		if (!usr) {
 			const usernameQuery = query.substring(0, query.lastIndexOf("#") > -1 ? query.lastIndexOf("#") : query.length);
@@ -623,7 +623,7 @@ class Client extends Discord.Client {
 			}
 		}
 		return usr;
-	};
+	}
 }
 const bot = new Client({
 	shardId: Number(process.env.SHARD_ID),
