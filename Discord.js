@@ -37,7 +37,7 @@ class Client extends Discord.Client {
 
 		// Bot IPC
 		winston.verbose("Creating ShardIPC instance.");
-		const shardIPC = new ShardIPC(bot, winston, process);
+		const shardIPC = new ShardIPC(this, winston, process);
 		this.IPC = shardIPC;
 	}
 
