@@ -573,8 +573,43 @@ class Client extends Discord.Client {
 
 	// Check if a user is muted on a server, with or without overwrites
 	isMuted (channel, member) {
+		// Uncomment this in Discord.js 12.0
+		// return !channel.permissionsFor(member).has("VIEW_CHANNEL");
 		return !channel.permissionsFor(member).has("SEND_MESSAGES");
 	}
+
+	/**
+	 * Check if a permission overwrite has any permissions related to channels
+	 * @param {PermissionOverwrite} allowedOrDenied The allowed or deny value of a permission overwrite for a member or role
+	 * @returns {Boolean} True if it has any of the perms, false if default
+	 */ 
+	hasOverwritePerms (allowedOrDenied) {
+		const PERMS = [
+			"CREATE_INSTANT_INVITE",
+			"MANAGE_CHANNELS",
+			"MANAGE_ROLES",
+			"MANAGE_WEBHOOKS",
+			"VIEW_CHANNEL",
+			"SEND_TTS_MESSAGES",
+			"MANAGE_MESSAGES",
+			"EMBED_LINKS",
+			"ATTACH_FILES",
+			"READ_MESSAGE_HISTORY",
+			"MENTION_EVERYONE",
+			"USE_EXTERNAL_EMOJIS",
+			"ADD_REACTIONS",
+		];
+		const howMany = [];
+		for (const perm of PERMS) {
+			if (allowedOrDenied.has(perm)) howMany.push(perm);
+		}
+		if (howMany.length >= 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
  	* Mutes a member of a server in a channel
  	* @param channel The channel to unmute
@@ -583,6 +618,11 @@ class Client extends Discord.Client {
 	async muteMember (channel, member) {
 		if (!bot.isMuted(channel, member) && channel.type === 0) {
 			try {
+				/* Uncomment this in Discord.js 12.0
+				await channel.overwritePermissions(member.id, {
+					VIEW_CHANNEL: false,
+				}, `Muted ${member.user.tag} in #${channel.name}`);
+				*/
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: false,
 				});
@@ -596,9 +636,34 @@ class Client extends Discord.Client {
  	* Unmute a member of a server in a channel
  	* @param channel The channel to unmute
  	* @param member The member to unmute
- 	*/
+	 */
+	/*
+	* TODO for Discord.js version 12.0
+	* replace code with the commented one
+	*/
 	async unmuteMember (channel, member) {
 		if (bot.isMuted(channel, member) && channel.type === 0) {
+			/* Skyrider#0702 be happy!
+			const overwrite = channel.permissionOverwrites.get(member.id);
+			if (overwrite) {
+				const allowedPerms = overwrite.allowed;
+				const deniedPerms = overwrite.denied;
+				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
+					try {
+						await channel.overwritePermissions(member.id, {
+							VIEW_CHANNEL: true,
+						}, `Unmuted ${member.user.tag} in #${channel.name}`);
+					} catch (err) {
+						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+					}
+				} else {
+					try {
+						await overwrite.delete(`Unmuted ${member.user.tag} in #${channel.name}`);
+					} catch (err) {
+						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+					}
+				}
+			} */
 			try {
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: true,
