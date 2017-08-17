@@ -614,14 +614,15 @@ class Client extends Discord.Client {
  	* Mutes a member of a server in a channel
  	* @param channel The channel to unmute
  	* @param member The member to unmute
- 	*/
-	async muteMember (channel, member) {
+	 */
+	 // eslint-disable-next-line no-unused-vars
+	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
 		if (!bot.isMuted(channel, member) && channel.type === 0) {
 			try {
 				/* Uncomment this in Discord.js 12.0
 				await channel.overwritePermissions(member.id, {
 					VIEW_CHANNEL: false,
-				}, `Muted ${member.user.tag} in #${channel.name}`);
+				}, reason);
 				*/
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: false,
@@ -641,7 +642,8 @@ class Client extends Discord.Client {
 	* TODO for Discord.js version 12.0
 	* replace code with the commented one
 	*/
-	async unmuteMember (channel, member) {
+	// eslint-disable-next-line no-unused-vars
+	async unmuteMember (channel, member, reason = `Unmuted ${member.user.tag} in #${channel.name}`) {
 		if (bot.isMuted(channel, member) && channel.type === 0) {
 			/* Skyrider#0702 be happy!
 			const overwrite = channel.permissionOverwrites.get(member.id);
@@ -652,13 +654,13 @@ class Client extends Discord.Client {
 					try {
 						await channel.overwritePermissions(member.id, {
 							VIEW_CHANNEL: true,
-						}, `Unmuted ${member.user.tag} in #${channel.name}`);
+						}, reason);
 					} catch (err) {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 					}
 				} else {
 					try {
-						await overwrite.delete(`Unmuted ${member.user.tag} in #${channel.name}`);
+						await overwrite.delete(reason);
 					} catch (err) {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 					}
