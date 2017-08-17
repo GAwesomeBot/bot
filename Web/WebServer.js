@@ -234,7 +234,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 	const getServerData = async serverDocument => {
 		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["iconURL", "createdAt", "owner"], members: ["nickname"]});
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["iconURL", "createdAt", "owner", "me"], members: ["nickname"]});
 		if (svr) {
 			const owner = svr.owner;
 			data = {

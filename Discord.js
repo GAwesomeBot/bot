@@ -57,7 +57,7 @@ const shardIPC = new ShardIPC(bot, winston, process);
 // Get the command prefix for a server
 bot.getCommandPrefix = (server, serverDocument) => new Promise(resolve => {
 	if (serverDocument.config.command_prefix === "@mention") {
-		resolve(`@${server.members[bot.user.id].nickname || bot.user.username}`);
+		resolve(`@${server.me.nickname || bot.user.username}`);
 	} else {
 		resolve(serverDocument.config.command_prefix);
 	}
