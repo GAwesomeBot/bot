@@ -1648,7 +1648,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		serverDocument.save(err => {
 			io.of(req.path).emit("update", svr.id);
 			if (err) {
-				winston.error(`Failed to update settings at ${req.path}`, { svrid: svr.id, usrid: consolemember.id }, err);
+				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
+				renderError(res, "Failed to save admin console settings!");
+				return;
 			}
 			if (override) {
 				res.sendStatus(200);
