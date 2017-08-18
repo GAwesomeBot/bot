@@ -60,6 +60,7 @@
     "string": "*",
     "text-diff": "*",
     "urban": "*",
+    "uws": "*",
     "vm2": "*",
     "weather-js": "*",
     "wikijs": "*",
