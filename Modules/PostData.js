@@ -1,8 +1,7 @@
 const { tokens } = require("../Configurations/auth.js");
-const { GetValue } = require("./Utils/");
 
 module.exports = async bot => {
-	const totalAmount = await GetValue(bot, "guilds.size", "int");
+	const totalAmount = await bot.guilds.totalCount;
 	if (tokens.carboniteEx) {
 		let res;
 		try {
