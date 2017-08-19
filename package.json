@@ -13,11 +13,10 @@
     "first-time": "npm install -g --production windows-build-tools && npm install --production",
     "test": "npm run lint",
     "lint": "eslint .",
-    "preinstall": "echo If you encounter any errors, please run \"npm run first-time\"! && echo If you still are having issues, submit the error log on GitHub!"
+    "preinstall": "echo If you encounter any errors on Windows, please run \"npm run first-time\"! && echo If you still are having issues, submit the error log on GitHub! && echo This is only for Windows Machines! Don't run \"npm run first-time\" on a Linux or a Mac Machine!"
   },
   "dependencies": {
     "body-parser": "*",
-    "bufferutil": "*",
     "chalk": "^1.1.3",
     "compression": "*",
     "connect-mongo": "*",
