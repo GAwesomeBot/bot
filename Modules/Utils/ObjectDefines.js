@@ -92,7 +92,6 @@ module.exports = bot => {
 
 	/**
 	 * Gets the "default channel" for the guild
-	 * Won't account for SEND_MESSAGES
 	 * @returns {(TextChannel|GuildChannel)}
 	 */
 	Object.defineProperty(Discord.Guild.prototype, "newDefaultChannel", {
