@@ -573,8 +573,6 @@ class Client extends Discord.Client {
 
 	// Check if a user is muted on a server, with or without overwrites
 	isMuted (channel, member) {
-		// Uncomment this in Discord.js 12.0
-		// return !channel.permissionsFor(member).has("VIEW_CHANNEL");
 		return !channel.permissionsFor(member).has("SEND_MESSAGES");
 	}
 
@@ -611,9 +609,10 @@ class Client extends Discord.Client {
 	}
 
 	/**
- 	* Mutes a member of a server in a channel
- 	* @param channel The channel to unmute
- 	* @param member The member to unmute
+ 	 * Mutes a member of a server in a channel
+ 	 * @param channel The channel to unmute
+	 * @param member The member to unmute
+	 * @param {?String} [reason] Optional reason for the mute
 	 */
 	// eslint-disable-next-line no-unused-vars
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
@@ -621,7 +620,7 @@ class Client extends Discord.Client {
 			try {
 				/* Uncomment this in Discord.js 12.0
 				await channel.overwritePermissions(member.id, {
-					VIEW_CHANNEL: false,
+					SEND_MESSAGES: false,
 				}, reason);
 				*/
 				await channel.overwritePermissions(member.id, {
@@ -634,9 +633,10 @@ class Client extends Discord.Client {
 	}
 
 	/**
- 	* Unmute a member of a server in a channel
- 	* @param channel The channel to unmute
- 	* @param member The member to unmute
+ 	 * Unmute a member of a server in a channel
+ 	 * @param channel The channel to unmute
+	 * @param member The member to unmute
+	 * @param {?String} [reason] Optional reason for the unmute
 	 */
 	/*
 	* TODO for Discord.js version 12.0
@@ -653,7 +653,7 @@ class Client extends Discord.Client {
 				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
 					try {
 						await channel.overwritePermissions(member.id, {
-							VIEW_CHANNEL: true,
+							SEND_MESSAGES: true,
 						}, reason);
 					} catch (err) {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
