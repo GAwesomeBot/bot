@@ -4011,7 +4011,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Error page
 	app.get("/error", (req, res) => {
-		renderError(res, "I AM ERROR");
+		if (req.query.err === "discord") renderError(res, "The Discord OAuth flow could not be completed. Contact your GAB maintainer for more help.");
+		else renderError(res, "I AM ERROR");
 	});
 
 	// 404 page
