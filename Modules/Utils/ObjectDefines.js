@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const Utils = require("./");
+const GetValue = require("./GetValue.js");
 
 module.exports = bot => {
 	const properties = 9;
@@ -109,13 +109,13 @@ module.exports = bot => {
 	 */
 	Object.defineProperty(bot.guilds, "totalCount", {
 		get: async function get () {
-			return Utils.GetValue(bot, "guilds.size", "int");
+			return GetValue(bot, "guilds.size", "int");
 		},
 	});
 
 	Object.defineProperty(bot.users, "totalCount", {
 		get: async function get () {
-			return Utils.GetValue(bot, "users.size", "int");
+			return GetValue(bot, "users.size", "int");
 		},
 	});
 
