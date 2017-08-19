@@ -3415,7 +3415,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						extensionDocument.last_updated = galleryDocument.last_updated;
 
 						if (isUpdate) {
-							dashboardUpdate("/dashboard/other/extension-builder, svr.id);
+							dashboardUpdate("/dashboard/other/extension-builder", svr.id);
 						} else {
 							extensionDocument.admin_level = ["command", "keyword"].indexOf(galleryDocument.type) > -1 ? 0 : null;
 							extensionDocument.enabled_channel_ids = [svr.defaultChannel.id];
