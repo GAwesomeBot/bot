@@ -58,7 +58,7 @@ const generateGuild = (guild, settings) => {
 	if (settings.custom && settings.custom instanceof Array) {
 		for (let obj of settings.custom) {
 			if (obj.to && obj.from) {
-				gguild[obj.to] = eval(`guild.${obj.from}`);
+				gguild[obj.to] = eval(obj.from);
 			}
 		}
 	}

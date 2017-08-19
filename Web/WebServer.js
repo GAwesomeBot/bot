@@ -95,6 +95,8 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	const renderError = (res, text, line) => res.status(500).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
 
+	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
+
 	// Notify the maintainer of possible issues
 	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
 		bot.IPC.send("warnDefaultSecret", {});
@@ -199,6 +201,16 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		passport,
 	}));
 
+	bot.IPC.on("dashboardUpdate", msg => {
+		const path = msg.namespace;
+		const param = msg.location;
+		try {
+			io.of(path).emit("update", param);
+		} catch (err) {
+			winston.warn("An error occurred while handling a dashboard WebSocket!", err);
+		}
+	});
+
 	// Landing page
 	app.get("/", async (req, res) => {
 		const uptime = process.uptime();
@@ -234,7 +246,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 	const getServerData = async serverDocument => {
 		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["iconURL", "createdAt", "owner", "me"], members: ["nickname"]});
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["iconURL", "createdAt", "owner"], members: ["nickname"] });
 		if (svr) {
 			const owner = svr.owner;
 			data = {
@@ -1023,7 +1035,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							}
 						}
 					}
-					io.of(req.path).emit("update", req.user.id);
+					updateDashboard(req.path, req.user.id);
 					res.redirect(req.originalUrl);
 				} else {
 					renderError(res, "Something went wrong while we tried to fetch your extensions.");
@@ -1095,7 +1107,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		if (req.isAuthenticated()) {
 			if (validateExtensionData(req.body)) {
 				const sendResponse = () => {
-					io.of(req.path).emit("update", req.user.id);
+					dashboardUpdate(req.path, req.user.id);
 					if (req.query.external === "true") {
 						res.sendStatus(200);
 					} else {
@@ -1120,7 +1132,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 					if (!isUpdate) {
 						galleryDocument.owner_id = req.user.id;
-						io.of("/extensions/my").emit("update", req.user.id);
+						dashboardUpdate("/extensions/my", req.user.id);
 					}
 					galleryDocument.save(err => {
 						if (!err && !req.query.extid) {
@@ -1646,7 +1658,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Save serverDocument after admin console form data is received
 	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
 		serverDocument.save(err => {
-			io.of(req.path).emit("update", svr.id);
+			dashboardUpdate(req.path, svr.id);
 			if (err) {
 				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
 				renderError(res, "Failed to save admin console settings!");
@@ -1662,7 +1674,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Save config.json after maintainer console form data is received
 	const saveMaintainerConsoleOptions = (consolemember, req, res) => {
-		io.of(req.path).emit("update", "maintainer");
+		dashboardUpdate(req.path, "maintainer");
 		writeFile(`${__dirname}/../Configuration/config.json`, JSON.stringify(configJSON, null, 4), err => {
 			if (err) {
 				winston.error(`Failed to update settings at ${req.path}`, { usrid: consolemember.id }, err);
@@ -3403,7 +3415,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						extensionDocument.last_updated = galleryDocument.last_updated;
 
 						if (isUpdate) {
-							io.of("/dashboard/other/extension-builder").emit("update", svr.id);
+							dashboardUpdate("/dashboard/other/extension-builder, svr.id);
 						} else {
 							extensionDocument.admin_level = ["command", "keyword"].indexOf(galleryDocument.type) > -1 ? 0 : null;
 							extensionDocument.enabled_channel_ids = [svr.defaultChannel.id];
@@ -3502,7 +3514,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					if (!req.query.extid) {
 						req.originalUrl += `&extid=${extensionDocument._id}`;
 					}
-					io.of("/dashboard/other/extensions").emit("update", svr.id);
+					dashboardUpdate("/dashboard/other/extensions", svr.id);
 				}
 
 				writeFile(`${__dirname}/../Extensions/${svr.id}-${extensionDocument._id}.abext`, req.body.code, () => {

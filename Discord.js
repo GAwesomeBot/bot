@@ -36,16 +36,15 @@ class Client extends Discord.Client {
 		this.isReady = false;
 
 		// Bot IPC
-		winston.verbose("Creating ShardIPC instance.");
-		const shardIPC = new ShardIPC(this, winston, process);
-		this.IPC = shardIPC;
+		winston.silly("Creating ShardIPC instance.");
+		this.IPC = new ShardIPC(this, winston, process);
 	}
 
 	// Gets the command prefix
 	getCommandPrefix (server, serverDocument) {
 		return new Promise(resolve => {
 			if (serverDocument.config.command_prefix === "@mention") {
-				resolve(`@${server.me.nickname || this.user.username}`);
+				resolve(`@${server.members[bot.user.id].nickname || this.user.username}`);
 			} else {
 				resolve(serverDocument.config.command_prefix);
 			}

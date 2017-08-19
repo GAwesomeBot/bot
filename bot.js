@@ -30,27 +30,32 @@ database.initialize(configJS.databaseURL).catch(err => {
 	const db = database.getConnection();
 	if (db) {
 		await winston.info(`Connected to the database successfully.`);
+
 		winston.verbose("Confirming MongoDB config values... ~(˘▾˘~)");
 		await db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 			}
 		});
+
 		winston.silly("Confirming clientToken config value.");
 		if (!auth.discord.clientToken && !process.argv.includes("--build")) {
 			winston.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! -.-");
 			return;
 		}
+
 		winston.silly("Confirming shardTotal config value.");
 		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
 			winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
 		}
+
 		winston.debug("Creating sharder instance.");
 		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, winston);
 		sharder.cluster.on("online", worker => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
 		await sharder.IPC.listen();
+
 		// Sharder events
 		sharder.ready = 0;
 		sharder.finished = 0;
@@ -60,15 +65,19 @@ database.initialize(configJS.databaseURL).catch(err => {
 				winston.info("All shards connected.");
 			}
 		});
+
 		sharder.IPC.once("warnDefaultSecret", () => {
 			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
 		});
+
 		sharder.IPC.once("warnNotProduction", () => {
 			winston.warn("GAB is running in development mode. This might impact performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
 		});
+
 		sharder.IPC.on("finished", () => {
 			shardFinished(sharder);
 		});
+
 		sharder.IPC.on("getGuild", async (msg, shard) => {
 			try {
 				let payload = msg;
@@ -94,6 +103,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 				sharder.IPC.send("getGuildRes", { err: err, guild: payload.guild, settings: payload.settings }, shard.id);
 			}
 		});
+
 		sharder.IPC.on("guilds", async (msg, shard) => {
 			let guilds = msg.latest;
 			for (let guild of guilds) {
@@ -105,6 +115,12 @@ database.initialize(configJS.databaseURL).catch(err => {
 				}
 			}
 		});
+
+		sharder.IPC.on("dashboardUpdate", async msg => {
+			winston.silly(`Broadcasting update to dashboard at ${msg.location}.`);
+			sharder.IPC.send("dashboardUpdate", { namespace: msg.namespace, location: msg.location }, "*");
+		});
+
 		sharder.spawn();
 	}
 });
