@@ -75,9 +75,14 @@ class Client extends Discord.Client {
 					suffix: "",
 				});
 			} else {
+				const command = cmdstr.split(" ")[0].toLowerCase();
+				const suffix = cmdstr.split(" ")
+					.splice(1)
+					.join(" ")
+					.trim();
 				resolve({
-					command: cmdstr.substring(0, cmdstr.indexOf(" ")).toLowerCase(),
-					suffix: cmdstr.substring(cmdstr.indexOf(" ") + 1).trim(),
+					command: command,
+					suffix: suffix,
 				});
 			}
 		});
