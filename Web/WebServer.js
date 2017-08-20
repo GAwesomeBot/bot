@@ -1692,7 +1692,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.get("/login/callback", passport.authenticate("discord", {
 		failureRedirect: "/error?err=discord",
 	}), (req, res) => {
-		if (configJSON.globalBlockList.indexOf(req.user.id) > -1 || !req.user.verified) {
+		if (configJSON.globalBlocklist.indexOf(req.user.id) > -1 || !req.user.verified) {
 			renderError(res, "You must have a verified discord email, or not be globally blocked!", "<strong>Hah!</strong> Thought you were close, didn'tcha?")
 		} else {
 			res.redirect("/dashboard");
@@ -3749,7 +3749,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				},
 				currentPage: req.path,
 				config: {
-					global_blocklist: configJSON.globalBlockList.map(a => {
+					global_blocklist: configJSON.globalBlocklist.map(a => {
 						const usr = bot.users.get(a) || {};
 						return {
 							name: usr.username,
@@ -3768,11 +3768,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, consolemember => {
 			if (req.body["new-user"]) {
 				const usr = findQueryUser(req.body["new-user"], bot.users);
-				if (usr && configJSON.globalBlockList.indexOf(usr.id) === -1 && configJSON.maintainers.indexOf(usr.id) === -1) {
+				if (usr && configJSON.globalBlocklist.indexOf(usr.id) === -1 && configJSON.maintainers.indexOf(usr.id) === -1) {
 					configJSON.globalBlocklist.push(usr.id);
 				}
 			} else {
-				for (let i = 0; i < configJSON.globalBlockList.length; i++) {
+				for (let i = 0; i < configJSON.globalBlocklist.length; i++) {
 					if (req.body[`block-${i}-removed`] !== null) {
 						configJSON.globalBlocklist[i] = null;
 					}
