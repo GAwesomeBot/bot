@@ -46,11 +46,11 @@ class Client extends Discord.Client {
 		return new Promise(resolve => {
 			if (serverDocument.config.command_prefix === "@mention") {
 				if (server.me) {
-					resolve(`@${server.me.nickname || this.user.username}`);
+					resolve(`@${server.me.nickname || this.user.username} `);
 				} else if (Array.isArray(server.members)) {
-					resolve(`@${server.members[bot.user.id].nickname || this.user.username}`);
+					resolve(`@${server.members[bot.user.id].nickname || this.user.username} `);
 				} else {
-					resolve(`@${server.members.get(bot.user.id).nickname || this.user.username}`);
+					resolve(`@${server.members.get(bot.user.id).nickname || this.user.username} `);
 				}
 			} else {
 				resolve(serverDocument.config.command_prefix);
