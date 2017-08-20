@@ -1705,10 +1705,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			res.redirect("/login");
 		} else {
 			const serverData = [];
-			const usr = bot.users.get(req.user.id);
+			const usr = bot.fetchUser(req.user.id, true);
 			const addServerData = (i, callback) => {
 				if (req.user.guilds && i < req.user.guilds.length) {
-					const svr = bot.guilds.get(req.user.guilds[i].id);
+					const svr = getGuild.get(bot, req.user.guilds[i].id, { });
 					if (!svr && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
 						addServerData(++i, callback);
 						return;
