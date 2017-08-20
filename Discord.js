@@ -7,7 +7,8 @@ const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 const database = require("./Database/Driver.js");
-const Events = require("./Events/");
+const RawEvents = require("./Events/");
+const Events = {};
 const WebServer = require("./Web/WebServer");
 const process = require("process");
 
@@ -721,6 +722,15 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	db = database.get();
 });
 
+for (const Event in RawEvents.Events) {
+	try {
+		let EventFile = require(RawEvents.EventFilePath(Event));
+		Events[Event] = new EventFile(bot, db, configJS, configJSON);
+	} catch (err) {
+		winston.warn(`Failed to find an event file! This is bad >.>`, { event: Event }, err);
+	}
+}
+
 process.on("unhandledRejection", reason => {
 	winston.error(`An unexpected and unknown error occurred, which we should've been able to handle. Please report to github x.x\n`, reason);
 	process.exit(1);
@@ -781,7 +791,7 @@ bot.on("guildMembersChunk", (members, guild) => {
 bot.once("ready", async () => {
 	try {
 		await winston.debug("Running event READY");
-		Events.onceReady(bot, db, configJS, configJSON);
+		await Events.Ready.handle();
 		await winston.debug("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
 		bot.IPC.send("ready", { id: bot.shard.id });
@@ -795,7 +805,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
 		try {
-			await Events.onMessage(bot, db, configJS, configJSON, msg);
+			// Await Events.onMessage(bot, db, configJS, configJSON, msg);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
 		}
