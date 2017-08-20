@@ -1700,15 +1700,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Admin console dashboard
-	app.get("/dashboard", (req, res) => {
+	app.get("/dashboard", async (req, res) => {
 		if (!req.isAuthenticated()) {
 			res.redirect("/login");
 		} else {
 			const serverData = [];
-			const usr = bot.fetchUser(req.user.id, true);
-			const addServerData = (i, callback) => {
+			const usr = await bot.fetchUser(req.user.id, true);
+			const addServerData = async (i, callback) => {
 				if (req.user.guilds && i < req.user.guilds.length) {
-					const svr = getGuild.get(bot, req.user.guilds[i].id, { });
+					const svr = await getGuild.get(bot, req.user.guilds[i].id, { members: ["id", "roles"], convert: { id_only: true } });
 					if (!svr && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
 						addServerData(++i, callback);
 						return;
@@ -1723,7 +1723,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
-								const member = svr.members.get(usr.id);
+								const member = svr.members[usr.id];
 								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3) {
 									data.isAdmin = true;
 								}

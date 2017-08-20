@@ -43,7 +43,7 @@ module.exports = async (bot, server, serverDocument) => {
 		embed: {
 			color: 0x00FF00,
 			title: `Hello! ${bot.user.tag} (that's me) has been added to "${server}", a server you moderate!`,
-			description: `Use ${await bot.getCommandPrefix(server, serverDocument)}help to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
+			description: `Use ${await bot.getCommandPrefix(server, serverDocument)} help to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
 			thumbnail: {
 				url: bot.user.displayAvatarURL,
 			},
