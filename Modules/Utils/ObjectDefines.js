@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const GetValue = require("./GetValue.js");
 
+/* eslint-disable max-len */
 module.exports = bot => {
 	const properties = 9;
 	/**
@@ -91,15 +92,16 @@ module.exports = bot => {
 
 	/**
 	 * Gets the "default channel" for the guild
-	 * Won't account for READ_MESSAGES
-	 * @returns {?TextChannel}
+	 * @returns {(TextChannel|GuildChannel)}
 	 */
 	Object.defineProperty(Discord.Guild.prototype, "newDefaultChannel", {
 		get: function get () {
-			if (this.channels.filter(c => c.type === 0).length === 0) return null;
-			const defaultChannel = this.channels.filter(c => c.type === 0 && c.permissionsFor(this.me).has("READ_MESSAGES")).sort((a, b) => a.position - b.position)[0];
+			if (this.channels.filter(c => c.type === "text").size === 0) return null;
+			const defaultChannel = this.channels.filter(c => c.type === "text" && c.permissionsFor(this.me).has("VIEW_CHANNEL") && c.permissionsFor(this.me).has("SEND_MESSAGES"))
+				.sort((a, b) => a.position - b.position)
+				.first();
 			if (!defaultChannel) return null;
-			return this.channels.get(defaultChannel.id);
+			return defaultChannel;
 		},
 	});
 

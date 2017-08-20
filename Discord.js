@@ -44,7 +44,13 @@ class Client extends Discord.Client {
 	getCommandPrefix (server, serverDocument) {
 		return new Promise(resolve => {
 			if (serverDocument.config.command_prefix === "@mention") {
-				resolve(`@${server.members[bot.user.id].nickname || this.user.username}`);
+				if (server.me) {
+					resolve(`@${server.me.nickname || this.user.username}`);
+				} else if (Array.isArray(server.members)) {
+					resolve(`@${server.members[bot.user.id].nickname || this.user.username}`);
+				} else {
+					resolve(`@${server.members.get(bot.user.id).nickname || this.user.username}`);
+				}
 			} else {
 				resolve(serverDocument.config.command_prefix);
 			}
@@ -69,9 +75,14 @@ class Client extends Discord.Client {
 					suffix: "",
 				});
 			} else {
+				const command = cmdstr.split(" ")[0].toLowerCase();
+				const suffix = cmdstr.split(" ")
+					.splice(1)
+					.join(" ")
+					.trim();
 				resolve({
-					command: cmdstr.substring(0, cmdstr.indexOf(" ")).toLowerCase(),
-					suffix: cmdstr.substring(cmdstr.indexOf(" ") + 1).trim(),
+					command: command,
+					suffix: suffix,
 				});
 			}
 		});
