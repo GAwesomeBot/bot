@@ -3,6 +3,7 @@ module.exports = {
 	ConvertCurrency: require("./ConvertCurrency.js"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
 	GetGuild: require("./GetGuild.js"),
+	MicrosoftTranslate: require("./MicrosoftTranslate.js"),
 	NewServer: require("./NewServer.js"),
 	PostData: require("./PostData.js"),
 	Sharder: require("./Sharder.js"),
