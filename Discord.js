@@ -47,7 +47,7 @@ class Client extends Discord.Client {
 			if (serverDocument.config.command_prefix === "@mention") {
 				if (server.me) {
 					resolve(`@${server.me.nickname || this.user.username} `);
-				} else if (Array.isArray(server.members)) {
+				} else if (!(server.members instanceof Discord.Collection)) {
 					resolve(`@${server.members[bot.user.id].nickname || this.user.username} `);
 				} else {
 					resolve(`@${server.members.get(bot.user.id).nickname || this.user.username} `);
