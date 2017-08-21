@@ -7,8 +7,8 @@ const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 const database = require("./Database/Driver.js");
-const RawEvents = require("./Events/");
-const Events = {};
+const rawEvents = require("./Events/");
+const events = {};
 const WebServer = require("./Web/WebServer");
 const process = require("process");
 
@@ -720,16 +720,16 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 }).then(() => {
 	winston.info("Successfully connected to MongoDB!");
 	db = database.get();
-});
-
-for (const Event in RawEvents.Events) {
-	try {
-		let EventFile = require(RawEvents.EventFilePath(Event));
-		Events[Event] = new EventFile(bot, db, configJS, configJSON);
-	} catch (err) {
-		winston.warn(`Failed to find an event file! This is bad >.>`, { event: Event }, err);
+	winston.debug("Initializing Discord Events.");
+	for (const event in rawEvents.events) {
+		try {
+			let EventFile = require(rawEvents.eventFilePath(event));
+			events[event] = new EventFile(bot, db, configJS, configJSON);
+		} catch (err) {
+			winston.warn(`An error occurred while handling a ${event} Discord event. >.>`, { event: event }, err);
+		}
 	}
-}
+});
 
 process.on("unhandledRejection", reason => {
 	winston.error(`An unexpected and unknown error occurred, which we should've been able to handle. Please report to github x.x\n`, reason);
@@ -767,6 +767,7 @@ bot.IPC.on("getGuild", msg => {
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
+	bot.IPC.send("ready", { id: bot.shard.id });
 	bot.IPC.listen();
 	process.setMaxListeners(0);
 	winston.debug("Listening for incoming IPC messages.");
@@ -791,10 +792,9 @@ bot.on("guildMembersChunk", (members, guild) => {
 bot.once("ready", async () => {
 	try {
 		await winston.debug("Running event READY");
-		await Events.Ready.handle();
+		await events.Ready.handle();
 		await winston.debug("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
-		bot.IPC.send("ready", { id: bot.shard.id });
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 		process.exit(1);
