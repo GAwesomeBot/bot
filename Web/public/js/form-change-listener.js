@@ -5,6 +5,25 @@ function saveFormState() {
 	} catch(err) {}
 	hide_update_modal = true;
 	initial_form_state = $('#form').serialize();
+	$("#form-submit span:nth-child(2)").html("Save")
+}
+
+function submitForm() {
+	$("#form-submit").addClass("is-loading");
+	$.ajax({
+		method: "POST",
+		url: location.pathname + location.search,
+		data: $("#form").serialize()
+	})
+		.always(function(data) {
+			const form = $("#form-submit");
+			form.removeClass("is-loading");
+			if (data !== "OK" && data.status !== 200 && data.status !== 302) {
+				form.find("span:nth-child(1)").html("<i class='fa fa-exclamation'></i>");
+				form.find("span:nth-child(2)").html("Error!");
+			}
+			else form.find("span:nth-child(2)").html("Saved!");
+		});
 }
 
 $(window).bind("beforeunload", function(e) {

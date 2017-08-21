@@ -1858,7 +1858,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.command_fetch_properties.default_count = parseInt(req.body.default_count);
 			serverDocument.config.command_fetch_properties.max_count = parseInt(req.body.max_count);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
