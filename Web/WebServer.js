@@ -706,7 +706,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						res.redirect("/dashboard");
 					}
 				} else {
-					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user"], convert: { id_only: true } });
+					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user", "nickname"], convert: { id_only: true } });
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
@@ -1824,23 +1824,23 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Admin console command options
 	app.get("/dashboard/commands/command-options", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument) => {
+		checkAuth(req, res, async (consolemember, svr, serverDocument) => {
 			res.render("pages/admin-command-options.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
 					chatterbot: serverDocument.config.chatterbot,
 					command_cooldown: serverDocument.config.command_cooldown,
 					command_fetch_properties: serverDocument.config.command_fetch_properties,
-					command_prefix: bot.getCommandPrefix(svr, serverDocument),
+					command_prefix: await bot.getCommandPrefix(svr, serverDocument),
 					delete_command_messages: serverDocument.config.delete_command_messages,
 				},
-				botName: svr.members.get(bot.user.id).nick || bot.user.username,
+				botName: svr.members[bot.user.id].nickname || bot.user.username,
 			});
 		});
 	});

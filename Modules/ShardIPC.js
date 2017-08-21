@@ -62,7 +62,8 @@ class ShardIPC extends EventEmitter {
 					if (result instanceof Map) result = Array.from(result.entries());
 					this.shardClient.send({ _Eval: msg._Eval, _result: result });
 				}
-				const payload = msg;
+				let payload = msg;
+				if (typeof msg === "string") payload = JSON.parse(msg);
 				this.emit(payload.subject, payload);
 			} catch (err) {
 				if (!msg._Eval && !msg._SEval) this.winston.warn("Unable to handle message from master :C\n", err);

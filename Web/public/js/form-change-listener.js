@@ -24,8 +24,9 @@ $(window).scroll(function() {
 	}
 });
 setInterval(function() {
+	var form_state = $("#form").serialize();
+	if (initial_form_state !== form_state) hide_update_modal = false;
 	if($(window).scrollTop() + $(window).height() <= $(document).height() - 150) {
-		var form_state = $("#form").serialize();
 		if(initial_form_state!=form_state && $("#form-buttons").css("display")=="none") {
 			$("#form-buttons").fadeIn(86);
 		} else if(initial_form_state==form_state && $("#form-buttons").css("display")!="none") {
