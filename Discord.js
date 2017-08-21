@@ -305,10 +305,13 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Gets the game a member is playing
-	getGame (usr) {
+	/**
+	 * Gets the game string from a user
+	 * @param {GuildMember|User} userOrMember The user or GuildMember to get the game from 
+	 */
+	getGame (userOrMember) {
 		return new Promise(resolve => {
-			let presence = usr.presence;
+			let presence = userOrMember.presence;
 			if (presence.game && presence.game !== null && presence.game.name) {
 				resolve(presence.game.name);
 			} else {
