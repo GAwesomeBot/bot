@@ -701,6 +701,10 @@ class Client extends Discord.Client {
 		}
 		return usr;
 	}
+
+	getAvatarURL (id, hash, type = "avatars") {
+		return `${this.options.http.cdn}/${type}/${id}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=2048`;
+	}
 }
 
 const bot = new Client({

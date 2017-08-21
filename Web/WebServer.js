@@ -1775,8 +1775,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					}
 				}
 				const topMemberID = serverDocument.members.sort((a, b) => b.messages - a.messages)[0];
-				const topMember = svr.members.get(topMemberID ? topMemberID._id : null);
-				const memberIDs = svr.members.map(a => a.id);
+				const topMember = svr.members[topMemberID ? topMemberID._id : null];
+				const memberIDs = Object.values(svr.members).map(a => a.id);
 				db.users.find({
 					_id: {
 						$in: memberIDs,
@@ -1786,7 +1786,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}).limit(1).exec((err, userDocuments) => {
 					let richestMember;
 					if (!err && userDocuments && userDocuments.length > 0) {
-						richestMember = svr.members.get(userDocuments[0]._id);
+						richestMember = svr.members[userDocuments[0]._id];
 					}
 					const topGame = serverDocument.games.sort((a, b) => b.time_played - a.time_played)[0];
 					res.render("pages/admin-overview.ejs", {
@@ -1794,27 +1794,27 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						serverData: {
 							name: svr.name,
 							id: svr.id,
-							icon: svr.iconURL || "/static/img/discord-icon.png",
+							icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 							owner: {
-								username: svr.members.get(svr.ownerID).user.username,
-								id: svr.members.get(svr.ownerID).id,
-								avatar: svr.members.get(svr.ownerID).user.avatarURL || "/static/img/discord-icon.png",
+								username: svr.members[svr.ownerID].user.username,
+								id: svr.members[svr.ownerID].id,
+								avatar: bot.getAvatarURL(svr.members[svr.ownerID].id, svr.members[svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
 							},
 						},
 						currentPage: req.path,
 						messagesToday: serverDocument.messages_today,
 						topCommand,
-						memberCount: svr.members.size,
+						memberCount: Object.keys(svr.members).length,
 						topMember: topMember ? {
 							username: topMember.user.username,
 							id: topMember.id,
-							avatar: topMember.user.avatarURL || "/static/img/discord-icon.png",
+							avatar: bot.getAvatarURL(topMember.id, topMember.user.avatar) || "/static/img/discord-icon.png",
 						} : null,
 						topGame: topGame ? topGame._id : null,
 						richestMember: richestMember ? {
 							username: richestMember.user.username,
 							id: richestMember.id,
-							avatar: richestMember.user.avatarURL || "/static/img/discord-icon.png",
+							avatar: bot.getAvatarURL(richestMember.id, richestMember.user.avatar) || "/static/img/discord-icon.png",
 						} : null,
 					});
 				});
