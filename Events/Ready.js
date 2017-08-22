@@ -215,7 +215,7 @@ class Ready extends BaseEvent {
 						await checkIfStreaming(0);
 					}
 				} else {
-					setTimeout(async () => {
+					this.bot.setTimeout(async () => {
 						await this.checkStreamers();
 					}, 600000);
 				}
@@ -255,7 +255,7 @@ class Ready extends BaseEvent {
 						await sendStreamingRSSFeed(0);
 					}
 				} else {
-					setTimeout(async () => {
+					this.bot.setTimeout(async () => {
 						await this.startStreamingRSS();
 					}, 600000);
 				}

@@ -10,7 +10,7 @@ module.exports = async (bot, serverDocument, countdownDocument) => {
 	if (svr) {
 		const ch = svr.channels.get(countdownDocument.channel_id);
 		if (ch) {
-			setTimeout(async () => {
+			bot.setTimeout(async () => {
 				ch.send({
 					embed: {
 						color: 0x3669FA,

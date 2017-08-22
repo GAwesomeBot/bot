@@ -15,7 +15,7 @@ module.exports = async (bot, db, server, motdDocument) => {
 				});
 				channel.send(serverDocument.message_of_the_day.message_content);
 			}
-			setTimeout(async () => {
+			bot.setTimeout(async () => {
 				const newServerDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 					winston.warn(`Failed to set timeout for MOTD.. x(\n`, err);
 				});
@@ -24,7 +24,7 @@ module.exports = async (bot, db, server, motdDocument) => {
 		}
 	};
 	if (motdDocument.isEnabled) {
-		setTimeout(async () => {
+		bot.setTimeout(async () => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.info(`Failed to find server document for motd..\n`, err);
 			});
