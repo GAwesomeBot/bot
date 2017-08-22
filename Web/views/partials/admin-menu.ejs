@@ -49,7 +49,7 @@
 								<a href="/dashboard/commands/auto-translation?svrid=<%= serverData.id %>">Auto Translation</a>
 							<% } %>
 					</li>
-					<% if(configData.commands.trivia.isEnabled) { %>
+					<% if(configData.commands.trivia && configData.commands.trivia.isEnabled) { %>
 						<li>
 							<% if(currentPage=="/dashboard/commands/trivia-sets") { %>
 								<a class="is-active" href="#">Trivia Sets</a>

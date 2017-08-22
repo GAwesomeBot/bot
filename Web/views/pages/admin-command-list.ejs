@@ -38,7 +38,7 @@
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<a class="button modal-button" data-target="#command-preset-modal">
 								<span class="icon is-small">
 									<i class="fa fa-cog"></i>

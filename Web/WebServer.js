@@ -66,7 +66,7 @@ app.set("view engine", "ejs");
 
 const getUserList = list => list.filter(usr => usr.bot !== true).map(usr => `${usr.username}#${usr.discriminator}`).sort();
 
-const getChannelData = (svr, type) => svr.channels.filter(ch => ch.type === (type || 0)).map(ch => ({
+const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => ch.type === (type || "text")).map(ch => ({
 	name: ch.name,
 	id: ch.id,
 	position: ch.position,
@@ -706,7 +706,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						res.redirect("/dashboard");
 					}
 				} else {
-					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user", "nickname"], convert: { id_only: true } });
+					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user", "nickname"], channels: ["id", "type", "name", "position"], convert: { id_only: true } });
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
@@ -1693,7 +1693,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		failureRedirect: "/error?err=discord",
 	}), (req, res) => {
 		if (configJSON.globalBlocklist.indexOf(req.user.id) > -1 || !req.user.verified) {
-			renderError(res, "You must have a verified discord email, or not be globally blocked!", "<strong>Hah!</strong> Thought you were close, didn'tcha?")
+			req.session.destroy(err => {
+				if (!err) renderError(res, "Your Discord account must have a verified email.", "<strong>Hah!</strong> Thought you were close, didn'tcha?");
+				else renderError(res, "Failed to destroy your session.");
+			});
 		} else {
 			res.redirect("/dashboard");
 		}
@@ -1877,7 +1880,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -1903,7 +1906,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverDocument.config.commands[command].admin_level = data[`${command}-admin_level`] || 0;
 				serverDocument.config.commands[command].disabled_channel_ids = [];
 				svr.channels.forEach(ch => {
-					if (ch.type === 0) {
+					if (ch.type === "text") {
 						if (data[`${command}-disabled_channel_ids-${ch.id}`] === null) {
 							serverDocument.config.commands[command].disabled_channel_ids.push(ch.id);
 						}
@@ -1916,8 +1919,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			if (req.body["preset-applied"] !== null) {
 				const disabled_channel_ids = [];
-				svr.channels.forEach(ch => {
-					if (ch.type === 0) {
+				Object.values(svr.channels).forEach(ch => {
+					if (ch.type === "text") {
 						if (req.body[`preset-disabled_channel_ids-${ch.id}`] === null) {
 							disabled_channel_ids.push(ch.id);
 						}
@@ -1933,7 +1936,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
