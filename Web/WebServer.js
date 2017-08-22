@@ -147,7 +147,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	app.use("/", (req, res, next) => {
-		winston.silly(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
+		winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
 		if (configJSON.isUpdating) {
 			res.status(503).render("pages/503.ejs", {});
 		}	else {

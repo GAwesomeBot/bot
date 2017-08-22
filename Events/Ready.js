@@ -43,7 +43,7 @@ class Ready extends BaseEvent {
 		let newServerDocuments = [];
 		const makeNewDocument = async guild => {
 			const serverDocument = await this.db.servers.findOne({ _id: guild.id }).exec().catch(err => {
-				winston.verbose(`Failed to find server data.. Sorry!`, err);
+				winston.debug(`Failed to find server data for server ${guild.id}!`, err);
 			});
 			if (serverDocument) {
 				const channelIDs = guild.channels.map(a => a.id);
@@ -329,7 +329,7 @@ class Ready extends BaseEvent {
 		winston.debug("Setting existing reminders for all users.");
 		if (userDocuments) {
 			for (let i = 0; i < userDocuments.length; i++) {
-				winston.verbose("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
+				winston.silly("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
 				for (let j = 0; j < userDocuments[i].reminders.length; j++) {
 					promiseArray.push(setReminder(this.bot, userDocuments[i], userDocuments[i].reminders[j]));
 				}
@@ -357,10 +357,10 @@ class Ready extends BaseEvent {
 					// Iterate through all members
 					server.members.forEach(async member => {
 						if (member.id !== this.bot.user.id && !member.user.bot) {
-							await winston.verbose(`Collecting member stats from guild ${server} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
+							await winston.silly(`Collecting member stats from guild ${server} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
 							const game = await this.bot.getGame(member);
 							if (game !== "" && member.presence.status === "online") {
-								await winston.verbose(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
+								await winston.silly(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
 								let gameDocument = serverDocument.games.id(game);
 								if (!gameDocument) {
 									serverDocument.games.push({ _id: game });
