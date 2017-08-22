@@ -372,7 +372,7 @@ class Client extends Discord.Client {
 								const role = server.roles.get(serverDocument.config.ranks_list[i].role_id);
 								if (role) {
 									try {
-										await member.addRole(role);
+										await member.addRole(role, `Added member to the role for leveling up in ranks.`);
 									} catch (err) {
 										winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 											svrid: server.id,
@@ -412,7 +412,7 @@ class Client extends Discord.Client {
 			const role = server.roles.get(roleID);
 			if (role) {
 				try {
-					await member.addRole(role);
+					await member.addRole(role, `Added the role to the member due to a violation.`);
 				} catch (err) {
 					winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
 				}
@@ -628,18 +628,12 @@ class Client extends Discord.Client {
 	 * @param member The member to unmute
 	 * @param {?String} [reason] Optional reason for the mute
 	 */
-	// eslint-disable-next-line no-unused-vars
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
 		if (!bot.isMuted(channel, member) && channel.type === 0) {
 			try {
-				/* Uncomment this in Discord.js 12.0
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: false,
 				}, reason);
-				*/
-				await channel.overwritePermissions(member.id, {
-					SEND_MESSAGES: false,
-				});
 			} catch (err) {
 				winston.verbose(`Probably missing permissions to mute member in "${channel.guild}".`, err);
 			}
@@ -656,7 +650,6 @@ class Client extends Discord.Client {
 	* TODO for Discord.js version 12.0
 	* replace code with the commented one
 	*/
-	// eslint-disable-next-line no-unused-vars
 	async unmuteMember (channel, member, reason = `Unmuted ${member.user.tag} in #${channel.name}`) {
 		if (bot.isMuted(channel, member) && channel.type === 0) {
 			/* Skyrider#0702 be happy!
@@ -683,7 +676,7 @@ class Client extends Discord.Client {
 			try {
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: true,
-				});
+				}, reason);
 			} catch (err) {
 				winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 			}
