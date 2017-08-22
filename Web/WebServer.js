@@ -256,7 +256,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				owner: {
 					username: owner.user.username,
 					id: owner.user.id,
-					avatar: owner.user.avatarURL || "/static/img/discord-icon.png",
+					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar) || "/static/img/discord-icon.png",
 					name: owner.nickname || owner.user.username,
 				},
 				members: Object.keys(svr.members).length,
@@ -1901,13 +1901,13 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			if (!serverDocument.config.commands[command]) {
 				serverDocument.config.commands[command] = {};
 			}
-			if (commandData.defaults.admin_level < 4) {
+			if (commandData.defaults.adminLevel < 4) {
 				serverDocument.config.commands[command].isEnabled = data[`${command}-isEnabled`] === "on";
-				serverDocument.config.commands[command].admin_level = data[`${command}-admin_level`] || 0;
+				serverDocument.config.commands[command].admin_level = data[`${command}-adminLevel`] || 0;
 				serverDocument.config.commands[command].disabled_channel_ids = [];
-				svr.channels.forEach(ch => {
+				Object.values(svr.channels).forEach(ch => {
 					if (ch.type === "text") {
-						if (data[`${command}-disabled_channel_ids-${ch.id}`] === null) {
+						if (!data[`${command}-disabled_channel_ids-${ch.id}`]) {
 							serverDocument.config.commands[command].disabled_channel_ids.push(ch.id);
 						}
 					}
@@ -1917,11 +1917,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	};
 	app.post("/dashboard/commands/command-list", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
-			if (req.body["preset-applied"] !== null) {
+			if (req.body["preset-applied"]) {
 				const disabled_channel_ids = [];
 				Object.values(svr.channels).forEach(ch => {
 					if (ch.type === "text") {
-						if (req.body[`preset-disabled_channel_ids-${ch.id}`] === null) {
+						if (!req.body[`preset-disabled_channel_ids-${ch.id}`]) {
 							disabled_channel_ids.push(ch.id);
 						}
 					}
@@ -2908,7 +2908,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			const filteredCommands = [];
 			for (const command in serverDocument.toObject().config.commands) {
 				const commandData = bot.getPublicCommandMetadata(command);
-				if (commandData && commandData.defaults.is_nsfw_filtered) {
+				if (commandData && commandData.defaults.isNSFWFiltered) {
 					filteredCommands.push(command);
 				}
 			}

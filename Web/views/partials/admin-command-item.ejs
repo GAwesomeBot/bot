@@ -28,7 +28,7 @@ function toggleChannels(classname, value) {
 				<label class="label">Permissions</label>
 				<p class="control">
 					<span class="select">
-						<select name="<%= commandData.name %>-admin_level">
+						<select name="<%= commandData.name %>-adminLevel">
 							<option value="0" <%= commandData.admin_level==0 ? "" : "selected" %>>@everyone</option>
 							<option value="1" <%= commandData.admin_level==1 ? "selected" : "" %>>Admin level &ge;1</option>
 							<option value="2" <%= commandData.admin_level==2 ? "selected" : "" %>>Admin level &ge;2</option>

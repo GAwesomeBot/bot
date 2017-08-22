@@ -83,7 +83,8 @@
 											</p>
 											<span class="help">Commands will run only in these channels.</span>
 											<br>
-											<button name="preset-applied" class="button is-primary" onclick="saveFormState();">
+											<input type="checkbox" id="preset-applied" name="preset-applied" style="display: none;">
+											<button name="preset-applied" class="button is-primary" onclick="$('#preset-applied').attr('checked', true); saveFormState(); location.reload();">
 												<span class="icon is-small">
 													<i class="fa fa-asterisk"></i>
 												</span>
