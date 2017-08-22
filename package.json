@@ -38,7 +38,7 @@
     "goo.gl": "*",
     "google": "*",
     "google-play-scraper": "*",
-    "mathjs": "*",
+    "mathjs": "^3.16.2",
     "moment": "*",
     "mongoose": "4.10.8",
     "mongoose-findorcreate": "*",
@@ -66,11 +66,11 @@
     "winston": "*",
     "winston-daily-rotate-file": "*",
     "wolfram-node": "*",
-    "write-file-atomic": "*",
+    "write-file-atomic": "^2.3.0",
     "xml-parser": "*",
     "xss-filters": "*"
   },
   "devDependencies": {
-    "eslint": "^4.4.0"
+    "eslint": "^4.5.0"
   }
 }
