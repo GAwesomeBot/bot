@@ -87,7 +87,7 @@ module.exports = class Giveaways {
 	}
 	// eslint-disable-next-line require-await
 	static async endTimedGiveaway (bot, db, server, channel, timer) {
-		setTimeout(async () => {
+		bot.setTimeout(async () => {
 			await this.end(bot, db, server, channel);
 		}, timer - Date.now());
 	}

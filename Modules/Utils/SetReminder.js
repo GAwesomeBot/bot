@@ -12,7 +12,7 @@ module.exports = async (bot, userDocument, reminderDocument) => {
 		usr = await bot.fetchUser(userDocument._id, false);
 	}
 	if (usr) {
-		setTimeout(async () => {
+		bot.setTimeout(async () => {
 			usr.send({
 				embed: {
 					color: 0x3669FA,
