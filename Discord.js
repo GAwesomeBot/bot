@@ -786,9 +786,12 @@ bot.on("guildUnavailable", guild => {
 
 bot.on("guildMembersChunk", (members, guild) => {
 	// Hey ho, for Discord.js v12, change members.length to members.size kthx
-	winston.verbose(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.length });
+	winston.silly(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.length });
 });
 
+/**
+ * READY payload received
+ */
 bot.once("ready", async () => {
 	try {
 		await winston.debug("Running event READY");
@@ -801,6 +804,9 @@ bot.once("ready", async () => {
 	}
 });
 
+/**
+ * Message Received by the bot
+ */
 bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
@@ -808,6 +814,20 @@ bot.on("message", async msg => {
 			await events.MessageCreate._handle({ msg: msg });
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * Bot added to a server
+ */
+bot.on("guildCreate", async guild => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_CREATE event from Discord`, { guild: guild.id });
+		try {
+			await events.GuildCreate._handle({ guild: guild });
+		} catch (err) {
+			winston.error(`An unexpected error occured while handling a GUILD_CREATE event! x.x\n`, err);
 		}
 	}
 });

@@ -1,0 +1,24 @@
+const BaseEvent = require("./BaseEvent.js");
+const { NewServer: getNewServerData, PostData } = require("../Modules");
+
+class GuildCreate extends BaseEvent {
+	async handle ({ guild }) {
+		await Promise.all(guild.fetchMembers(), PostData(this.bot));
+		let serverDocument, shouldMakeDocument = false;
+		try {
+			serverDocument = await this.db.servers.findOne({ _id: guild.id }).exec();
+		} catch (err) {
+			shouldMakeDocument = true;
+		}
+		if (shouldMakeDocument || !serverDocument) {
+			winston.info(`Joined server ${guild}`, { svrid: guild.id });
+			try {
+				await this.db.servers.create(await getNewServerData(this.bot, guild, new this.db.servers({ _id: guild.id })));
+			} catch (err) {
+				winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
+			}
+		}
+	}
+}
+
+module.exports = GuildCreate;

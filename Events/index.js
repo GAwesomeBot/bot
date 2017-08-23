@@ -1,6 +1,7 @@
 exports.events = keyMirror([
-	"Ready",
+	"GuildCreate",
 	"MessageCreate",
+	"Ready",
 ]);
 
 exports.eventFilePath = event => `./Events/${event}.js`;
