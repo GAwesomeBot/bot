@@ -82,11 +82,13 @@ class Ready extends BaseEvent {
 		let gameObject = {
 			name: this.configJSON.game.name,
 			url: this.configJSON.game.twitchURL,
+			type: this.configJSON.game.twitchURL ? 1 : 0,
 		};
 		if (this.configJSON.game.name === "default") {
 			gameObject = {
 				name: "https://gawesomebot.com",
 				url: "",
+				type: 0,
 			};
 		}
 		this.bot.user.setPresence({

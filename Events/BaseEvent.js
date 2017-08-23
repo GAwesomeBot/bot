@@ -12,21 +12,32 @@ class BaseEvent {
 		this.configJS = configJS;
 		this.configJSON = configJSON;
 	}
+
 	/**
-	 * Runs the event if requirement is true.
+	 * Public handler for events
+	 * @param {*} args The args that the event emitted
 	 */
-	handle () {
-		if (this.requirement()) {
-			return true;
-		} else {
-			return false;
+	async handle () {
+		throw new Error(`${this.constructor.name} doesn't have a handle method!`);
+	}
+
+	/**
+	 * Call this function to handle events if the requirement is set
+	 * @param {*} args Params to hand over to the requirement check, and to the event
+	 * @private
+	 */
+	async _handle (values = {}) {
+		if (this.requirements(values)) {
+			return this.handle(values);
 		}
 	}
+
 	/**
-	 * Getter if the requirement passes.
-	 * Can take any amount of params required.
+	 * Simple logic for checking if the event should run or not.
+	 * @param {*} args The args object that the event emitted
+	 * @returns {Boolean}
 	 */
-	requirement () {
+	requirements () {
 		return true;
 	}
 }

@@ -781,7 +781,7 @@ bot.on("error", error => {
 });
 
 bot.on("guildUnavailable", guild => {
-	winston.debug(`${guild} was / is unavailable`, { date: Date.now() });
+	winston.debug(`${guild} was / is unavailable`, { svrid: guild.id, date: Date.now() });
 });
 
 bot.on("guildMembersChunk", (members, guild) => {
@@ -792,7 +792,7 @@ bot.on("guildMembersChunk", (members, guild) => {
 bot.once("ready", async () => {
 	try {
 		await winston.debug("Running event READY");
-		await events.Ready.handle();
+		await events.Ready._handle();
 		await winston.debug("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
 	} catch (err) {
@@ -805,7 +805,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
 		try {
-			// Await Events.onMessage(bot, db, configJS, configJSON, msg);
+			await events.MessageCreate._handle({ msg: msg });
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
 		}
