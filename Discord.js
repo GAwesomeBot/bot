@@ -831,3 +831,17 @@ bot.on("guildCreate", async guild => {
 		}
 	}
 });
+
+/**
+ * A member joins a guild
+ */
+bot.on("guildMemberAdd", async member => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_MEMBER_ADD event from Discord`, { svrid: member.guild.id, usrid: member.id });
+		try {
+			await events.GuildMemberAdd._handle({ member: member });
+		} catch (err) {
+			winston.error(`An unexpected error occured while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
+		}
+	}
+});

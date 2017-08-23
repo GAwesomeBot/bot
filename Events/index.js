@@ -1,5 +1,6 @@
 exports.events = keyMirror([
 	"GuildCreate",
+	"GuildMemberAdd",
 	"MessageCreate",
 	"Ready",
 ]);
