@@ -87,7 +87,6 @@ class Ready extends BaseEvent {
 		if (this.configJSON.game.name === "default") {
 			gameObject = {
 				name: "https://gawesomebot.com",
-				url: "",
 				type: 0,
 			};
 		}

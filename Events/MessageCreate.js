@@ -25,9 +25,7 @@ class MessageCreate extends BaseEvent {
 	 * @param {Message} msg The received message from Discord 
 	 */
 	async handle ({ msg }) {
-		// Reload commands, dumb idea but whatever
-		// Can we remove this after we are sure everything works?
-		// Put it in ready or something
+		// Reload commands
 		this.bot.reloadAllCommands();
 		// Handle private messages
 		if (!msg.guild) {
