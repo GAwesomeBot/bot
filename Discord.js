@@ -811,7 +811,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
 		try {
-			await events.MessageCreate._handle({ msg: msg });
+			// Await events.MessageCreate._handle({ msg: msg });
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
 		}
