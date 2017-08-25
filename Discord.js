@@ -41,7 +41,12 @@ class Client extends Discord.Client {
 		this.IPC = new ShardIPC(this, winston, process);
 	}
 
-	// Gets the command prefix
+	/**
+	 * Gets the command prefix for a server
+	 * @param {Guild} server The guild to search for
+	 * @param {Document} serverDocument The database server document for the server
+	 * @returns {Promise<?String>} The prefix of the server
+	 */
 	getCommandPrefix (server, serverDocument) {
 		return new Promise(resolve => {
 			if (serverDocument.config.command_prefix === "@mention") {
@@ -58,7 +63,12 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Checks if message contains a command tag, returning the command and suffix
+	/**
+	 * Checks if message contains a command tag, returning the command and suffix
+	 * @param {Message} message The message object from Discord
+	 * @param {Document} serverDocument The database server document for the server assigned with the message
+	 * @returns {Promise<?Object>} Object containing the command and the suffix (if present)
+	 */
 	checkCommandTag (message, serverDocument) {
 		return new Promise(resolve => {
 			message = message.trim();
@@ -89,7 +99,13 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Gets the name of a user on a server in accordance with config
+	/**
+	 * Gets the name of a user on a server in accordance with config
+	 * @param {Guild} server The guild that contains the member
+	 * @param {Document} serverDocument The database server document
+	 * @param {GuildMember} member The guild member to get the name from
+	 * @param {Boolean} [ignoreNick=false] If it should ignore nicknames 
+	 */
 	getName (server, serverDocument, member, ignoreNick = false) {
 		// Cleans a string (strip markdown, prevent @everyone or @here)
 		const cleanName = str => {
@@ -191,7 +207,12 @@ class Client extends Discord.Client {
 		return commands.pm[command];
 	}
 
-	// Finds a member on a server (by username, ID, etc.)
+	/**
+	 * Finds a member on a server (by username, ID, etc.)
+	 * @param {String} string The string to search from
+	 * @param {Guild} server The guild to search the member in
+	 * @returns {Promise<?GuildMember>} The guild member 
+	 */
 	memberSearch (string, server) {
 		return new Promise((resolve, reject) => {
 			let foundMember;
@@ -223,7 +244,13 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Finds a server (by name, ID, server nick, etc.) for a user
+	/**
+	 * Finds a server (by name, ID, server nick, etc.) for a user
+	 * @param {String} string The string to search servers with
+	 * @param {User|GuildMember} user The user to search the guild for
+	 * @param {Document} userDocument The database document for the user
+	 * @returns {Promise<?Guild>} The first guild found with the user
+	 */
 	serverSearch (string, user, userDocument) {
 		return new Promise((resolve, reject) => {
 			let foundServer;
@@ -256,7 +283,12 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Finds a channel (by name or ID) in a server
+	/**
+	 * Finds a channel (by name or ID) in a server
+	 * @param {String} string The string to search the channel for
+	 * @param {Guild} server The guild to search the channel in
+	 * @returns {Promise<?TextChannel>} The text channel from the guild, if found. 
+	 */
 	channelSearch (string, server) {
 		return new Promise((resolve, reject) => {
 			string = string.toLowerCase().replace(/ /g, "-");
@@ -281,7 +313,12 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Finds a role (by name or ID) in a server
+	/**
+	 * Finds a role (by name or ID) in a server
+	 * @param {String} string The string to search the role for
+	 * @param {Guild} server The guild to search the role in
+	 * @returns {Promise<?Role>} The role, if found.
+	 */
 	roleSearch (string, server) {
 		return new Promise((resolve, reject) => {
 			if (string.startsWith("<@&") && string.endsWith(">")) {
@@ -308,6 +345,7 @@ class Client extends Discord.Client {
 	/**
 	 * Gets the game string from a user
 	 * @param {GuildMember|User} userOrMember The user or GuildMember to get the game from 
+	 * @returns {Promise<?String>} A string containing the game, or an empty string otherwise
 	 */
 	getGame (userOrMember) {
 		return new Promise(resolve => {
@@ -320,9 +358,17 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Check if a user has leveled up a rank
 	/* eslint-disable max-depth */
-	async checkRank (server, serverDocument, member, memberDocument, override) {
+	/**
+	 * Check if a user has leveled up a rank.
+	 * @param {Guild} server The guild containing the member.
+	 * @param {Document} serverDocument The database server document for the guild.
+	 * @param {GuildMember} member The GuildMember to check if he leveled up.
+	 * @param {Document} memberDocument The database member document from the guild.
+	 * @param {Boolean} [override=false] A boolean that represents if the rank score should be calculated with the new scores or not.
+	 * @returns {?Promise<?String>} String containing the new role ID for leveling up.
+	 */
+	async checkRank (server, serverDocument, member, memberDocument, override = false) {
 		if (member && member.id !== this.user.id && !member.user.bot && server) {
 			const currentRankScore = memberDocument.rank_score + override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice);
 			for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
@@ -391,7 +437,20 @@ class Client extends Discord.Client {
 	}
 
 	/* eslint-enable max-depth */
-	// Handle a spam or filter violation on a server
+	/**
+	 * Handle a spam or filter violation on a server
+	 * @param {Guild} server The guild that should handle this violation
+	 * @param {Document} serverDocument The database document for the guild
+	 * @param {TextChannel} channel The channel the violation occured
+	 * @param {GuildMember} member The member that did the violation
+	 * @param {Document} userDocument The database user document for the member
+	 * @param {Document} memberDocument The database member document from the server document
+	 * @param {String} userMessage A string that should be given to the user about the violation
+	 * @param {String} adminMessage A string that should be given to the admins about what the user violated
+	 * @param {String} strikeMessage The strike message that should appear in the mod logs and the audit logs
+	 * @param {String} action What action should be taken.
+	 * @param {String} roleIDThe role ID that the user should get due to the violation
+	 */
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
@@ -546,7 +605,13 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Check if user has a bot admin role on a server / is a bot admin on the server
+	/**
+	 * Check if user has a bot admin role on a server / is a bot admin on the server
+	 * @param {Guild} server The server to check on 
+	 * @param {Document} serverDocument The database guild document
+	 * @param {GuildMember} member The member to check the admin level
+	 * @returns {Number} The admin level of the user 
+	 */
 	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
 
@@ -567,7 +632,13 @@ class Client extends Discord.Client {
 		return adminLevel;
 	}
 
-	// Message the bot admins for a server
+	/**
+	 * Message the bot admins for a server
+	 * @param {Guild} server The server that should have its admins messaged
+	 * @param {Document} serverDocument The database guild document for the guild.
+	 * @param {?Object|String} messageObject A string or a message object.
+	 * To send both a content and an embed, you can provide the content in the messageObject.
+	 */
 	async messageBotAdmins (server, serverDocument, messageObject) {
 		let content = "";
 		if (messageObject.content) {
@@ -585,7 +656,12 @@ class Client extends Discord.Client {
 		});
 	}
 
-	// Check if a user is muted on a server, with or without overwrites
+	/**
+	 * Check if a user is muted on a server, with or without overwrites
+	 * @param {TextChannel} channel The channel to check this on
+	 * @param {GuildMember} member The member to check this on
+	 * @returns {Boolean} A boolean depending if the member is muted.
+	 */
 	isMuted (channel, member) {
 		return !channel.permissionsFor(member).has("SEND_MESSAGES");
 	}
@@ -698,6 +774,13 @@ class Client extends Discord.Client {
 		return usr;
 	}
 
+	/**
+	 * Gets the avatar for a user by his ID and hash
+	 * @param {String} id The user or mebmer ID
+	 * @param {?String} hash The avatar hash returned from Discord
+	 * @param {String} [type="avatar"] A currently unused variable 
+	 * @returns {String} A string containing either the Discord URL to the avatar or a static reference to the generic avatar
+	 */
 	getAvatarURL (id, hash, type = "avatars") {
 		return hash ? `${this.options.http.cdn}/${type}/${id}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=2048` : "/static/img/discord-icon.png";
 	}
