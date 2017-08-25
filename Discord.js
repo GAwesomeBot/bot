@@ -778,7 +778,7 @@ class Client extends Discord.Client {
 	 * Gets the avatar for a user by his ID and hash
 	 * @param {String} id The user or mebmer ID
 	 * @param {?String} hash The avatar hash returned from Discord
-	 * @param {String} [type="avatar"] A currently unused variable 
+	 * @param {String} [type="avatar"] Type of avatar to fetch, set to "icons" for servers
 	 * @returns {String} A string containing either the Discord URL to the avatar or a static reference to the generic avatar
 	 */
 	getAvatarURL (id, hash, type = "avatars") {
