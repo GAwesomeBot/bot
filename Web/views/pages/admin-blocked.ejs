@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Blocked - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Blocked - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<link rel="stylesheet" href="/static/css/auto-complete.css">
@@ -24,7 +24,7 @@
 					"new-member": newBlockMember.val()
 				},
 				success: function() {
-					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
