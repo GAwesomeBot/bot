@@ -2068,7 +2068,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2099,14 +2099,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						const id = content.substring(1, content.indexOf(">"));
 						if (!isNaN(id)) {
 							if (type === "@") {
-								const usr = svr.members.get(id);
+								const usr = svr.members[id];
 								if (usr) {
 									cleanContent += `<b>@${usr.username}</b>`;
 									content = content.substring(content.indexOf(">") + 1);
 									continue;
 								}
 							} else if (type === "#") {
-								const ch = svr.channels.get(id);
+								const ch = svr.channels[id];
 								if (ch) {
 									cleanContent += `<b>#${ch.name}</b>`;
 									content = content.substring(content.indexOf(">") + 1);
@@ -2148,7 +2148,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverDocument.config.tags.removingIsAdminOnly = req.body.removingIsAdminOnly === "true";
 				serverDocument.config.tags.removingCommandIsAdminOnly = req.body.removingCommandIsAdminOnly === "true";
 				for (let i = 0; i < serverDocument.config.tags.list.length; i++) {
-					if (req.body[`tag-${i}-removed`] !== null) {
+					if (req.body[`tag-${i}-removed`]) {
 						serverDocument.config.tags.list[i] = null;
 					} else {
 						serverDocument.config.tags.list[i].isCommand = req.body[`tag-${i}-isCommand`] === "command";
@@ -2158,7 +2158,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverDocument.config.tags.list.spliceNullElements();
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Tags - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Tags - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 	<script src="/static/js/form-change-listener.js"></script>
 	<script>
@@ -34,6 +34,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
@@ -57,19 +58,19 @@
 					<div class="container">
 						<article class="message is-primary">
 							<div class="message-body">
-								AwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax.
+								GAwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax. Locking a tag prevents the tag from being removed using the <code>tag</code> command, admins excluded.
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<h4 class="subtitle is-4">
 								General
 							</h4>
 							<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
 							<% include ../partials/admin-command-item %>
-							<span class="tag-options<% configData.commands.tag.isEnabled ? '' : ' is-hidden' %>">
+							<span class="tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
 								<p class="control">
 									List all tags:
 									<span class="select is-small">
@@ -159,7 +160,8 @@
 														</p>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="tag-<%= configData.tags.list[i].index %>-removed" onclick="saveFormState();">
+														<input type="checkbox" id="tag-<%= configData.tags.list[i].index %>-removed" name="tag-<%= configData.tags.list[i].index %>-removed" style="display: none;">
+														<button class="button is-small is-danger" name="tag-<%= configData.tags.list[i].index %>-removed" onclick="$('#tag-<%= configData.tags.list[i].index %>-removed').attr('checked', true); saveFormState(); location.reload();">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>
