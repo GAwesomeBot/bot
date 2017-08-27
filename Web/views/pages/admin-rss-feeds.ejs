@@ -32,6 +32,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
@@ -77,7 +78,7 @@
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<% var commandData = configData.commands.rss;commandData.name = "rss";commandData.description = commandDescriptions.rss;commandData.category = commandCategories.rss; %>
 							<% include ../partials/admin-command-item %>
 							<div style="overflow-x: scroll;">
@@ -106,7 +107,8 @@
 															</span>
 															<span>Updates</span>
 														</a>
-														<button class="button is-small is-danger" name="rss-<%= i %>-removed" onclick="saveFormState();">
+                                                        <input type="checkbox" id="rss-<%= i %>-removed" name="rss-<%= i %>-removed" style="display: none;">
+                                                        <button class="button is-small is-danger" name="rss-<%= i %>-removed" onclick="$('#rss-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>
@@ -204,9 +206,9 @@
 								</div>
 							</div>
 							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
+                            <% var formButtonsUnsaved = false; %>
+                            <% include ../partials/form-buttons %>
+                            <% include ../partials/form-buttons-bar %>
 						</form>
 					</div>
 				</div>

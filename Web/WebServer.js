@@ -1948,7 +1948,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -1957,7 +1957,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					commands: {
 						rss: serverDocument.config.commands.rss,
 						trivia: {
-							isEnabled: serverDocument.config.commands.trivia.isEnabled,
+							isEnabled: serverDocument.config.commands.trivia ? serverDocument.config.commands.trivia.isEnabled : null,
 						},
 					},
 				},
@@ -1983,13 +1983,13 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			} else {
 				parseCommandOptions(svr, serverDocument, "rss", req.body);
 				for (let i = 0; i < serverDocument.config.rss_feeds.length; i++) {
-					if (req.body[`rss-${i}-removed`] !== null) {
+					if (req.body[`rss-${i}-removed`]) {
 						serverDocument.config.rss_feeds[i] = null;
 					} else {
 						serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${i}-streaming-isEnabled`] === "on";
 						serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
-						svr.channels.forEach(ch => {
-							if (ch.type === 0) {
+						Object.values(svr.channels).forEach(ch => {
+							if (ch.type === "text") {
 								if (req.body[`rss-${i}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
 									serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
 								}
@@ -2000,7 +2000,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverDocument.config.rss_feeds.spliceNullElements();
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -2012,7 +2012,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
