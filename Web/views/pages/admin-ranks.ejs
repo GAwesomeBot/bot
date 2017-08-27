@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Ranks - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Ranks - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -33,6 +33,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
@@ -62,7 +63,7 @@
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<div style="overflow-x: scroll;">
 								<% if(configData.ranks_list.length>0) { %>
 									<table class="table">
@@ -102,7 +103,8 @@
 														<%= configData.ranks_list[i].members %>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="rank-<%= i %>-removed" onclick="saveFormState();">
+                                                        <input type="checkbox" id="rank-<%= i %>-removed" name="rank-<%= i %>-removed" style="display: none;">
+                                                        <button class="button is-small is-danger" name="rank-<%= i %>-removed" onclick="$('#rank-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>
@@ -113,7 +115,8 @@
 											<% } %>
 										</tbody>
 									</table>
-									<button class="button is-danger" name="ranks_list-reset" onclick="saveFormState();">
+                                <input type="checkbox" id="ranks_list-reset" name="ranks_list-reset" style="display: none;">
+                                <button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); saveFormState(); location.reload();">
 										<span>Reset Everyone's Rank</span>
 										<span class="icon is-small">
 											<i class="fa fa-times"></i>

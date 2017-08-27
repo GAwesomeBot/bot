@@ -91,7 +91,7 @@ const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => c
 	position: ch.position,
 })).sort((a, b) => a.position - b.position);
 
-const getRoleData = svr => svr.roles.filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => {
+const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => {
 	const color = role.color.toString(16);
 	return {
 		name: role.name,
@@ -725,7 +725,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						res.redirect("/dashboard");
 					}
 				} else {
-					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user", "nickname"], channels: ["id", "type", "name", "position"], convert: { id_only: true } });
+					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user", "nickname"], channels: ["id", "type", "name", "position"], roles: ["name", "id", "position", "color"], convert: { id_only: true } });
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
@@ -2434,7 +2434,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -2461,7 +2461,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				});
 			} else {
 				for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
-					if (req.body[`rank-${i}-removed`] !== null) {
+					if (req.body[`rank-${i}-removed`]) {
 						serverDocument.config.ranks_list[i] = null;
 					} else {
 						serverDocument.config.ranks_list[i].max_score = parseInt(req.body[`rank-${i}-max_score`]);
@@ -2470,7 +2470,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						}
 					}
 				}
-				if (req.body["ranks_list-reset"] !== null) {
+				if (req.body["ranks_list-reset"]) {
 					for (let i = 0; i < serverDocument.members.length; i++) {
 						if (serverDocument.members[i].rank && serverDocument.members[i].rank !== serverDocument.config.ranks_list[0]._id) {
 							serverDocument.members[i].rank = serverDocument.config.ranks_list[0]._id;
@@ -2481,7 +2481,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.ranks_list.spliceNullElements();
 			serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
