@@ -24,6 +24,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
@@ -42,18 +43,18 @@
 				</div>
 				<div class="column">
 					<h1 class="title">
-						AwesomeBot Tag Reaction
+						GAwesomeBot Tag Reaction
 					</h1>
 					<div class="container">
 						<article class="message is-primary">
 							<div class="message-body">
-								This is what happens when <strong>AwesomeBot is @mentioned</strong> in chat. You can disable the response altogether or create a list of possible responses that will be chosen from randomly.
+								This is what happens when <strong>GAwesomeBot is @mentioned</strong> in chat. You can disable the response altogether or create a list of possible responses that will be chosen from randomly.
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<p class="control">
 								<label class="checkbox">
 								<input name="isEnabled" type="checkbox" onclick="$('#tag_reaction-options').toggleClass('is-hidden');" <%= configData.tag_reaction.isEnabled ? "checked" : "" %>>
@@ -63,7 +64,8 @@
 							<ul id="tag_reaction-options" class="<%= configData.tag_reaction.isEnabled ? '' : 'is-hidden' %>">
 								<% for(var i=0; i<configData.tag_reaction.messages.length; i++) { %>
 									<li>
-										<button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="saveFormState();">
+                                        <input type="checkbox" id="tag_reaction-<%= i %>-removed" name="tag_reaction-<%= i %>-removed" style="display: none;">
+                                        <button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="$('#tag_reaction-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 											<span class="icon is-small" style="margin-left: -2px;">
 												<i class="fa fa-times"></i>
 											</span>

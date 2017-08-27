@@ -2351,7 +2351,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
@@ -2370,14 +2370,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			} else {
 				serverDocument.config.tag_reaction.isEnabled = req.body.isEnabled === "on";
 				for (let i = 0; i < serverDocument.config.tag_reaction.messages.length; i++) {
-					if (req.body[`tag_reaction-${i}-removed`] !== null) {
+					if (req.body[`tag_reaction-${i}-removed`]) {
 						serverDocument.config.tag_reaction.messages[i] = null;
 					}
 				}
 				serverDocument.config.tag_reaction.messages.spliceNullElements();
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
