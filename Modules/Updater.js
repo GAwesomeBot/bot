@@ -35,6 +35,9 @@ module.exports = {
 	update: async (bot, config, io) => {
 		winston.info(`Preparing for update...`);
 
+		// TODO: Emit this to all shards
+		bot.emit("pre-update");
+
 		config.isUpdating = true;
 
 		io.emit("update", "metadata");
