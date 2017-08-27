@@ -859,6 +859,15 @@ bot.login(process.env.CLIENT_TOKEN).then(() => {
 	process.exit(1);
 });
 
+bot.once("pre-update", async () => {
+	try {
+		winston.verbose(`Preparing to update.. Shutting down Discord connections!`);
+		await bot.destroy();
+	} catch (err) {
+		winston.error(`We were unable to destroy the client! This is bad..`);
+	}
+});
+
 bot.on("error", error => {
 	winston.warn(`The Client WebSocket encountered an error.. ._.`, error);
 });
