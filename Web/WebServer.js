@@ -2486,14 +2486,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Admin console AwesomePoints
-	app.get("/dashboard/stats-points/awesome-points", (req, res) => {
+	app.get("/dashboard/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
-			res.render("pages/admin-awesome-points.ejs", {
+			res.render("pages/admin-gawesome-points.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2514,15 +2514,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 		});
 	});
-	io.of("/dashboard/stats-points/awesome-points").on("connection", socket => {
+	io.of("/dashboard/stats-points/gawesome-points").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/stats-points/awesome-points", (req, res) => {
+	app.post("/dashboard/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			parseCommandOptions(svr, serverDocument, "points", req.body);
 			parseCommandOptions(svr, serverDocument, "lottery", req.body);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
