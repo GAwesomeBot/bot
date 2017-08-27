@@ -615,8 +615,6 @@ class Client extends Discord.Client {
 	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
 
-		if (configJSON.maintainers.includes(member.id)) return 4;
-
 		if (server.ownerID === member.id) return 3;
 
 		let adminLevel = 0;
@@ -629,6 +627,9 @@ class Client extends Discord.Client {
 			}
 			if (adminLevel >= 3) break;
 		}
+
+		if (adminLevel !== 3 && configJSON.maintainers.includes(member.id)) return 4;
+
 		return adminLevel;
 	}
 

@@ -6,7 +6,7 @@
 
 	<link rel="stylesheet" href="/static/css/auto-complete.css">
 	<script src="/static/js/auto-complete.min.js"></script>
-	<script>
+    <script>
 	function newAdmin() {
 		var newAdminRole = $("#new-admin-role_id");
 		if(newAdminRole.val()) {
@@ -72,6 +72,7 @@
 											Login to and edit items in the admin console (you are here)
 										</li>
 									</ol>
+									The server owner always has all admin permissions.
 								</div>
 							</div>
 						</article>
@@ -99,7 +100,8 @@
 														<%= configData.admins[i].level %>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="admin-<%= i %>-removed" onclick="hide_update_modal = true;">
+														<input type="checkbox" id="admin-<%= i %>-removed" name="admin-<%= i %>-removed" style="display: none;">
+														<button class="button is-small is-danger" name="admin-<%= i %>-removed" onclick="hide_update_modal = true; $('#admin-<%= i %>-removed').attr('checked', true);">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>

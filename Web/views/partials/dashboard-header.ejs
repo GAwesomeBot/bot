@@ -28,6 +28,32 @@
 	            </span>
 	            <span>Help</span>
 	        </a>
+
+			<% if (isMaintainer) { %>
+			<a class="is-pulled-right button is-small is-warning" target="_blank" onclick="$('#sudo-modal').addClass('is-active')">
+	            <span class="icon is-small">
+	                <i class="fa fa-exclamation"></i>
+	            </span>
+				<span>Sudo Mode</span>
+			</a>
+
+			<div class="modal" id="sudo-modal">
+				<div class="modal-background" onclick="$('#sudo-modal').removeClass('is-active')"></div>
+				<div class="modal-content">
+					<div class="modal-container">
+						<div class="modal-content">
+							<div class="box has-text-centered">
+								<p class="title is-4" style="color: #4a4a4a;">You are editing this admin console in sudo mode.</p>
+								<br>
+								<p class="subtitle is-5" style="color: #4a4a4a;">As a sudo maintainer, you can access admin consoles for servers you do not have admin roles on. To disable this behavior for certain maintainers, visit the maintainer console.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<button class="modal-close is-large" aria-label="close" onclick="$('#sudo-modal').removeClass('is-active')"></button>
+			</div>
+			<% } %>
+
 	        <br><br>
 		</div>
 	</div>
