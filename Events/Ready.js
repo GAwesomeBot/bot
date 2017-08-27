@@ -109,7 +109,7 @@ class Ready extends BaseEvent {
 		const clearMessageCount = () => {
 			this.db.servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
-		setInterval(clearMessageCount, 86400000);
+		this.bot.setInterval(clearMessageCount, 86400000);
 		// TODO: Add to array this.startTimerExtensions()
 		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
@@ -349,8 +349,8 @@ class Ready extends BaseEvent {
 			const serverDocument = await this.db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
 			});
-			winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
 			if (serverDocument) {
+				winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
 					await clearStats(this.bot, this.db, server, serverDocument);
@@ -395,6 +395,9 @@ class Ready extends BaseEvent {
 			promiseArray.push(countServerStats(guild));
 		});
 		await Promise.all(promiseArray);
+		this.bot.setInterval(async () => {
+			await this.statsCollector();
+		}, 900000);
 	}
 
 	// TODO: async runTimerExtensions
