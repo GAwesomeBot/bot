@@ -1,5 +1,5 @@
-const GuildChannel = require("./GuildChannel.js");
-const VoiceChannel = require("./VoiceChannel.js");
+const TextChannel = require("../Channels/TextChannel");
+const VoiceChannel = require("../Channels/VoiceChannel");
 let _rawOverwrites;
 
 class PermissionOverwrites {
@@ -16,7 +16,7 @@ class PermissionOverwrites {
 		if (_rawOverwrites.type === "voice") {
 			return new VoiceChannel(_rawOverwrites.channel);
 		} else if (_rawOverwrites.type === "text") {
-			return new GuildChannel(_rawOverwrites.channel);
+			return new TextChannel(_rawOverwrites.channel);
 		}
 	}
 
