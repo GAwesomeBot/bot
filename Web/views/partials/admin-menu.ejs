@@ -9,7 +9,10 @@
 		</li>
 	</ul>
 	<p class="menu-label">
-		Commands
+        <span class="icon is-small">
+            <i class="fa fa-cogs"></i>
+        </span>
+		<span>Commands</span>
 	</p>
 	<ul class="menu-list">
 		<li>
@@ -75,7 +78,10 @@
 		</li>
 	</ul>
 	<p class="menu-label">
-		Stats &amp; Points
+        <span class="icon is-small">
+            <i class="fa fa-star"></i>
+        </span>
+        <span>Stats &amp; Points</span>
 	</p>
 	<ul class="menu-list">
 		<li>
@@ -89,15 +95,18 @@
 			<% } else { %>
 				<a href="/dashboard/stats-points/ranks?svrid=<%= serverData.id %>">Ranks</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/stats-points/awesome-points") { %>
-				<a class="is-active" href="#">AwesomePoints</a>
+			<% if(currentPage=="/dashboard/stats-points/gawesome-points") { %>
+				<a class="is-active" href="#">GAwesomePoints</a>
 			<% } else { %>
-				<a href="/dashboard/stats-points/awesome-points?svrid=<%= serverData.id %>">AwesomePoints</a>
+				<a href="/dashboard/stats-points/gawesome-points?svrid=<%= serverData.id %>">GAwesomePoints</a>
 			<% } %>
 		</li>
 	</ul>
 	<p class="menu-label">
-		Management
+        <span class="icon is-small">
+            <i class="fa fa-wrench"></i>
+        </span>
+        <span>Management</span>
 	</p>
 	<ul class="menu-list">
 		<li>
@@ -173,7 +182,10 @@
 		</li>
 	</ul>
 	<p class="menu-label">
-		Other
+        <span class="icon is-small">
+            <i class="fa fa-list"></i>
+        </span>
+        <span>Other</span>
 	</p>
 	<ul class="menu-list">
 		<li>

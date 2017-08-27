@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Trivia Sets - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Trivia Sets - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -34,9 +34,10 @@
 					success: function() {
 						saveFormState();
 						$("#form").submit();
+						location.reload();
 					}
-				});
-	        };
+				}).fail(data => location.href = "/error?err=json")
+            };
 	        reader.readAsText(newTriviaFile);
 		}
 	}
@@ -59,13 +60,13 @@
 					<div class="container">
 						<article class="message is-primary">
 							<div class="message-body">
-								AwesomeBot's built-in trivia set is great, but you might want to add a <strong>custom question bank</strong> specific to your server. Trivia sets can be accessed from the <code>trivia</code> command and are uploaded as <strong>JSON</strong> files.
+								GAwesomeBot's built-in trivia set is great, but you might want to add a <strong>custom question bank</strong> specific to your server. Trivia sets can be accessed from the <code>trivia</code> command and are uploaded as <strong>JSON</strong> files.
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<div style="overflow-x: scroll;">
 								<% if(configData.trivia_sets.length>0) { %>
 									<table class="table">
@@ -78,6 +79,7 @@
 										</thead>
 										<tbody>
 											<% for(var i=0; i<configData.trivia_sets.length; i++) { %>
+                                            <tr>
 												<td>
 													<%= configData.trivia_sets[i]._id %>
 												</td>
@@ -85,20 +87,22 @@
 													<%= configData.trivia_sets[i].items.length %>
 												</td>
 												<td>
-													<a class="button is-small" href="<%= currentPage %>?svrid=<%= serverData.id %>&i=<%= i %>" target="_blank">
+													<a class="button is-small" href="<%= currentPage %>?svrid=<%= serverData.id %>&i=<%= i %>" target="_blank" download="<%= configData.trivia_sets[i]._id %>.json">
 														<span>Download</span>
 														<span class="icon is-small">
 															<i class="fa fa-download"></i>
 														</span>
 													</a>
 													&nbsp;
-													<button class="button is-small is-danger" name="trivia_set-<%= i %>-removed" onclick="saveFormState();">
+                                                    <input type="checkbox" id="trivia_set-<%= i %>-removed" name="trivia_set-<%= i %>-removed" style="display: none;">
+                                                    <button class="button is-small is-danger" onclick="$('#trivia_set-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
 														</span>
 													</button>
 												</td>
+                                            </tr>
 											<% } %>
 										</tbody>
 									</table>

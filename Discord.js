@@ -615,8 +615,6 @@ class Client extends Discord.Client {
 	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
 
-		if (configJSON.maintainers.includes(member.id)) return 4;
-
 		if (server.ownerID === member.id) return 3;
 
 		let adminLevel = 0;
@@ -629,6 +627,9 @@ class Client extends Discord.Client {
 			}
 			if (adminLevel >= 3) break;
 		}
+
+		if (adminLevel !== 3 && configJSON.maintainers.includes(member.id)) return 4;
+
 		return adminLevel;
 	}
 
@@ -825,7 +826,7 @@ process.on("unhandledRejection", reason => {
 });
 
 process.on("uncaughtException", err => {
-	winston.error(`An unexpected and unknown error occured, and we failed to handle it. x.x\n`, err);
+	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
 	/*
 	 * Read above 
 	 */
@@ -919,7 +920,7 @@ bot.on("guildCreate", async guild => {
 		try {
 			await events.GuildCreate._handle({ guild: guild });
 		} catch (err) {
-			winston.error(`An unexpected error occured while handling a GUILD_CREATE event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
 		}
 	}
 });
@@ -933,7 +934,7 @@ bot.on("guildMemberAdd", async member => {
 		try {
 			await events.GuildMemberAdd._handle({ member: member });
 		} catch (err) {
-			winston.error(`An unexpected error occured while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
 		}
 	}
 });

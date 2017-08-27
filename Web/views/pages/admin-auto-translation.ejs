@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Auto Translation - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Auto Translation - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<link rel="stylesheet" href="/static/css/auto-complete.css">
@@ -37,13 +37,14 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState();setUserAutocomplete('<%= serverData.id %>');">
+<body onload="saveFormState(); setUserAutocomplete('<%= serverData.id %>');">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -60,13 +61,13 @@
 					<div class="container">
 						<article class="message is-primary">
 							<div class="message-body">
-								AwesomeBot's <code>translate</code> command can be set to automatically <strong>translate messages from certain members to English</strong>. This is useful for users that don't speak English. The bot will <strong>automatically and instantaneously</strong> post a translated version of each message in the channels you specify.
+								GAwesomeBot's <code>translate</code> command can be set to automatically <strong>translate messages from certain members to English</strong>. This is useful for users that don't speak English. The bot will <strong>automatically and instantaneously</strong> post a translated version of each message in the channels you specify.
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<div style="overflow-x: scroll;">
 								<% if(configData.translated_messages.length>0) { %>
 									<table class="table">
@@ -101,7 +102,8 @@
 														<% } %>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="translated_messages-<%= i %>-removed" onclick="saveFormState();">
+														<input type="checkbox" id="translated_messages-<%= i %>-removed" name="translated_messages-<%= i %>-removed" style="display: none;">
+														<button class="button is-small is-danger" name="translated_messages-<%= i %>-removed" onclick="$('#translated_messages-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>
@@ -127,6 +129,7 @@
 									<br>
 								<% } %>
 							</div>
+							<br>
 							<div class="columns">
 								<div id="new-translated-enabled_channel_ids" class="column is-narrow">
 									<% for(var i=0; i<channelData.length; i++) { %>
