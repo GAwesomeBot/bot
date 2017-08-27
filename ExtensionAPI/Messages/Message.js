@@ -1,5 +1,5 @@
 const { Collection } = require("discord.js");
-const Embed = require("./Embed.js");
+const Embed = require("../Utils/Embed.js");
 const MessageMentions = require("./MessageMentions.js");
 const MessageReaction = require("./MessageReaction.js");
 let message;
