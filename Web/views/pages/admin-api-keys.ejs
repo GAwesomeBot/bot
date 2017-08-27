@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Command Options - GAwesomeBot Admin Console</title>
+	<title><%= serverData.name %> API Keys - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
@@ -22,13 +22,13 @@
 					<div class="container">
 						<article class="message is-primary">
 							<div class="message-body">
-								Many of AwesomeBot's commands (e.g. <code>image</code>, <code>youtube</code>, etc.) rely on APIs to fetch data from online sources. Our global API key is rate limited and we often exceed the limit. You can set your own API keys here to avoid being rate limited because people on other servers used certain commands.
+								Many of GAwesomeBot's commands (e.g. <code>image</code>, <code>youtube</code>, etc.) rely on APIs to fetch data from online sources. Our global API key is rate limited and we often exceed the limit. You can set your own API keys here to avoid being rate limited because people on other servers used certain commands.
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<label class="label">Google API Key</label>
 							<p class="control">
 								<input name="google_api_key" class="input" type="text" value="<%= configData.custom_api_keys.google_api_key %>" placeholder="Custom key not set; using default">

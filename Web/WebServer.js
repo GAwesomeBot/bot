@@ -2322,7 +2322,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
@@ -2339,7 +2339,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.custom_api_keys.google_api_key = req.body.google_api_key;
 			serverDocument.config.custom_api_keys.google_cse_id = req.body.google_cse_id;
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
