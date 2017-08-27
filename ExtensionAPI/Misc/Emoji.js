@@ -1,6 +1,6 @@
 const { Collection, SnowflakeUtil: Snowflake } = require("discord.js");
 const Guild = require("../Guilds/Guild");
-const Role = require("../Guilds/Role");
+const Role = require("../Guilds/GuildRole");
 let _rawEmoji;
 
 class Emoji {
