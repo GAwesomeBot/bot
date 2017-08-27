@@ -1,3 +1,11 @@
+const PATHS = exports.PATHS = {
+	Channels: file => require(`./Channels/${file}`),
+	Guilds: file => require(`./Guilds/${file}`),
+	Messages: file => require(`./Messages/${file}`),
+	Misc: file => require(`./Misc/${file}`),
+	Utils: file => require(`./Utils/${file === "Utils" ? `${file}.js` : ""}`),
+};
+
 module.exports = {
 	// Channels
 	GuildChannel: PATHS.Channels("GuildChannel"),
@@ -28,12 +36,4 @@ module.exports = {
 	// Other stuff
 	Bot: require("./Bot"),
 	User: require("./User"),
-};
-
-const PATHS = exports.PATHS = {
-	Channels: file => require(`./Channels/${file}`),
-	Guilds: file => require(`./Guilds/${file}`),
-	Messages: file => require(`./Messages/${file}`),
-	Misc: file => require(`./Misc/${file}`),
-	Utils: file => require(`./Utils/${file === "Utils" ? `${file}.js` : ""}`),
 };
