@@ -2389,7 +2389,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2422,7 +2422,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			parseCommandOptions(svr, serverDocument, "games", req.body);
 			parseCommandOptions(svr, serverDocument, "messages", req.body);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

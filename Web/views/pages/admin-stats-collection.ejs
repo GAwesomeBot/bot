@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Stats Collection - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Stats Collection - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -23,13 +23,13 @@
 					<div class="container">
 						<article class="message is-primary">
 							<div class="message-body">
-								AwesomeBot constantly records information about <strong>message, voice, and game activity</strong> on your server. You can view this data in the <code>stats</code> command, on the <a href="/dashboard/overview?svrid=<%= serverData.id %>">overview page</a>, and more.
+								GAwesomeBot constantly records information about <strong>message, voice, and game activity</strong> on your server. You can view this data in the <code>stats</code> command, on the <a href="/dashboard/overview?svrid=<%= serverData.id %>">overview page</a>, and more.
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<% var commandData = configData.commands.stats;commandData.name = "stats";commandData.description = commandDescriptions.stats;commandData.category = commandCategories.stats; %>
 							<% include ../partials/admin-command-item %>
 							<% var commandData = configData.commands.games;commandData.name = "games";commandData.description = commandDescriptions.games;commandData.category = commandCategories.games; %>
