@@ -64,6 +64,25 @@ app.engine("ejs", ejs.renderFile);
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "ejs");
 
+const findQueryUser = (query, list) => {
+	let usr = list[query];
+	if(!usr) {
+		const usernameQuery = query.substring(0, query.lastIndexOf("#")>-1 ? query.lastIndexOf("#") : query.length);
+		const discriminatorQuery = query.indexOf("#")>-1 ? query.substring(query.lastIndexOf("#")+1) : "";
+		const usrs = Object.values(list).filter(a => {
+			return (a.user || a).username === usernameQuery;
+		});
+		if(discriminatorQuery) {
+			usr = usrs.find(a => {
+				return (a.user || a).discriminator === discriminatorQuery;
+			});
+		} else if(usrs.length>0) {
+			usr = usrs[0];
+		}
+	}
+	return usr;
+};
+
 const getUserList = list => list.filter(usr => usr.bot !== true).map(usr => `${usr.username}#${usr.discriminator}`).sort();
 
 const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => ch.type === (type || "text")).map(ch => ({
@@ -2170,7 +2189,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2184,9 +2203,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				},
 			};
 			for (let i = 0; i < data.configData.translated_messages.length; i++) {
-				const member = svr.members.get(data.configData.translated_messages[i]._id) || {};
+				const member = svr.members[data.configData.translated_messages[i]._id] || {};
 				data.configData.translated_messages[i].username = member.user.username;
-				data.configData.translated_messages[i].avatar = member.user.avatarURL || "/static/img/discord-icon.png";
+				data.configData.translated_messages[i].avatar = bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png";
 			}
 			res.render("pages/admin-auto-translation.ejs", data);
 		});
@@ -2199,9 +2218,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			if (req.body["new-member"] && req.body["new-source_language"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
 				if (member && !serverDocument.config.translated_messages.id(member.id)) {
+					console.log(req.body);
 					const enabled_channel_ids = [];
-					svr.channels.forEach(ch => {
-						if (ch.type === 0) {
+					Object.values(svr.channels).forEach(ch => {
+						if (ch.type === "text") {
 							if (req.body[`new-enabled_channel_ids-${ch.id}`] === "true") {
 								enabled_channel_ids.push(ch.id);
 							}
@@ -2215,12 +2235,12 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			} else {
 				for (let i = 0; i < serverDocument.config.translated_messages.length; i++) {
-					if (req.body[`translated_messages-${i}-removed`] !== null) {
+					if (req.body[`translated_messages-${i}-removed`]) {
 						serverDocument.config.translated_messages[i] = null;
 					} else {
 						serverDocument.config.translated_messages[i].enabled_channel_ids = [];
-						svr.channels.forEach(ch => {
-							if (ch.type === 0) {
+						Object.values(svr.channels).forEach(ch => {
+							if (ch.type === "text") {
 								if (req.body[`translated_messages-${i}-enabled_channel_ids-${ch.id}`] === "on") {
 									serverDocument.config.translated_messages[i].enabled_channel_ids.push(ch.id);
 								}
@@ -2231,7 +2251,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverDocument.config.translated_messages.spliceNullElements();
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
