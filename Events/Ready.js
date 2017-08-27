@@ -395,7 +395,7 @@ class Ready extends BaseEvent {
 			promiseArray.push(countServerStats(guild));
 		});
 		await Promise.all(promiseArray);
-		this.bot.setInterval(async () => {
+		this.bot.setTimeout(async () => {
 			await this.statsCollector();
 		}, 900000);
 	}
