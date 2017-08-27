@@ -825,7 +825,7 @@ process.on("unhandledRejection", reason => {
 });
 
 process.on("uncaughtException", err => {
-	winston.error(`An unexpected and unknown error occured, and we failed to handle it. x.x\n`, err);
+	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
 	/*
 	 * Read above 
 	 */
@@ -910,7 +910,7 @@ bot.on("guildCreate", async guild => {
 		try {
 			await events.GuildCreate._handle({ guild: guild });
 		} catch (err) {
-			winston.error(`An unexpected error occured while handling a GUILD_CREATE event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
 		}
 	}
 });
@@ -924,7 +924,7 @@ bot.on("guildMemberAdd", async member => {
 		try {
 			await events.GuildMemberAdd._handle({ member: member });
 		} catch (err) {
-			winston.error(`An unexpected error occured while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
 		}
 	}
 });

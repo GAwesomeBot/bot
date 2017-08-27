@@ -2263,7 +2263,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (triviaSetDocument) {
 					res.json(triviaSetDocument.items);
 				} else {
-					renderError(res, "Failed to find that trivia set!");
+					renderError(res, "Are you sure that trivia set exists?");
 				}
 			} else {
 				res.render("pages/admin-trivia-sets.ejs", {
@@ -2271,7 +2271,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					serverData: {
 						name: svr.name,
 						id: svr.id,
-						icon: svr.iconURL || "/static/img/discord-icon.png",
+						icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 					},
 					currentPage: req.path,
 					configData: {
@@ -2292,20 +2292,25 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.post("/dashboard/commands/trivia-sets", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			if (req.body["new-name"] && req.body["new-items"] && !serverDocument.config.trivia_sets.id(req.body["new-name"])) {
-				serverDocument.config.trivia_sets.push({
-					_id: req.body["new-name"],
-					items: JSON.parse(req.body["new-items"]),
-				});
+				try {
+					serverDocument.config.trivia_sets.push({
+						_id: req.body["new-name"],
+						items: JSON.parse(req.body["new-items"]),
+					});
+				} catch (err) {
+					renderError(res, "That doesn't look like valid JSON to me!");
+					return;
+				}
 			} else {
 				for (let i = 0; i < serverDocument.config.trivia_sets.length; i++) {
-					if (req.body[`trivia_set-${i}-removed`] !== null) {
+					if (req.body[`trivia_set-${i}-removed`]) {
 						serverDocument.config.trivia_sets[i] = null;
 					}
 				}
 				serverDocument.config.trivia_sets.spliceNullElements();
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -4035,6 +4040,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Error page
 	app.get("/error", (req, res) => {
 		if (req.query.err === "discord") renderError(res, "The Discord OAuth flow could not be completed. Contact your GAB maintainer for more help.");
+		else if (req.query.err === "json") renderError(res, "That doesn't look like a valid trivia set to me!")
 		else renderError(res, "I AM ERROR");
 	});
 
