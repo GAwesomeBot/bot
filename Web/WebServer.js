@@ -2047,7 +2047,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			} else {
 				parseCommandOptions(svr, serverDocument, "streamers", req.body);
 				for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
-					if (req.body[`streamer-${i}-removed`] !== null) {
+					if (req.body[`streamer-${i}-removed`]) {
 						serverDocument.config.streamers_data[i] = null;
 					} else {
 						serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${i}-channel_id`];
@@ -2056,7 +2056,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverDocument.config.streamers_data.spliceNullElements();
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
