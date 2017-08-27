@@ -1,8 +1,10 @@
 const { Collection } = require("discord.js");
-const GuildMember = require("./GuildMember.js");
-const GuildChannel = require("./GuildChannel.js");
-const User = require("./User.js");
-const Role = require("./Role.js");
+const GuildMember = require("../Guilds/GuildMember");
+const GuildChannel = require("../Channels/GuildChannel");
+const VoiceChannel = require("../Channels/VoiceChannel");
+const TextChannel = require("../Channels/TextChannel");
+const User = require("../User");
+const GuildRole = require("../Guilds/GuildRole");
 let _content, _guild, _message;
 
 class MessageMentions {
@@ -22,7 +24,7 @@ class MessageMentions {
 		if (message.mentions.roles) {
 			this.roles = new Collection();
 			message.mentions.roles.forEach(role => {
-				this.roles.set(role.id, new Role(role));
+				this.roles.set(role.id, new GuildRole(role));
 			});
 		}
 		_message = message;
@@ -70,7 +72,21 @@ class MessageMentions {
 		let matches;
 		while ((matches = this.constructor.CHANNELS_PATTERN.exec(_content)) !== null) {
 			const channel = _guild.channels.get(matches[1]);
-			if (channel) this._channels.set(channel.id, new GuildChannel(channel));
+			if (channel) {
+				switch (channel.type) {
+					case "voice": {
+						this._channels.set(channel.id, new VoiceChannel(channel));
+						break;
+					}
+					case "text": {
+						this._channels.set(channel.id, new TextChannel(channel));
+						break;
+					}
+					default: {
+						this._channels.set(channel.id, new GuildChannel(channel));
+					}
+				}
+			}
 		}
 		return this._channels;
 	}
