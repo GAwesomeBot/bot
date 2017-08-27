@@ -1,7 +1,7 @@
-const GuildChannel = require("./GuildChannel.js");
-const Guild = require("./Guild.js");
-const VoiceChannel = require("./VoiceChannel.js");
-const User = require("./User.js");
+const TextChannel = require("../Guilds/TextChannel");
+const Guild = require("../Guilds/Guild");
+const VoiceChannel = require("./VoiceChannel");
+const User = require("../User");
 let _rawInvite;
 
 class Invite {
@@ -32,7 +32,7 @@ class Invite {
 					return new VoiceChannel(_rawInvite.channel);
 				}
 				case "text": {
-					return new GuildChannel(_rawInvite.channel);
+					return new TextChannel(_rawInvite.channel);
 				}
 			}
 		}
