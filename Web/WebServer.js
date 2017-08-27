@@ -2226,7 +2226,6 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			if (req.body["new-member"] && req.body["new-source_language"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
 				if (member && !serverDocument.config.translated_messages.id(member.id)) {
-					console.log(req.body);
 					const enabled_channel_ids = [];
 					Object.values(svr.channels).forEach(ch => {
 						if (ch.type === "text") {
@@ -2647,20 +2646,20 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
-					blocked: svr.members.filter(member => serverDocument.config.blocked.indexOf(member.id) > -1).map(member => ({
+					blocked: Object.values(svr.members).filter(member => serverDocument.config.blocked.indexOf(member.id) > -1).map(member => ({
 						name: member.user.username,
 						id: member.id,
-						avatar: member.user.avatarURL || "/static/img/discord-icon.png",
-					})).concat(configJSON.globalBlocklist.filter(usrid => svr.members.has(usrid)).map(usrid => {
-						const member = svr.members.get(usrid);
+						avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
+					})).concat(configJSON.globalBlocklist.filter(usrid => svr.members.hasOwnProperty(usrid)).map(usrid => {
+						const member = svr.members[usrid];
 						return {
 							name: member.user.username,
 							id: member.id,
-							avatar: member.user.avatarURL || "/static/img/discord-icon.png",
+							avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
 							isGlobal: true,
 						};
 					})),
@@ -2683,13 +2682,12 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			} else {
 				for (let i = 0; i < serverDocument.config.blocked.length; i++) {
-					if (req.body[`block-${i}-removed`] !== null) {
+					if (req.body[`block-${i}-removed`] !== undefined) {
 						serverDocument.config.blocked[i] = null;
 					}
 				}
 				serverDocument.config.blocked.spliceNullElements();
 			}
-
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
 		});
 	});
