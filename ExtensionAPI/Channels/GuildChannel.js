@@ -1,5 +1,5 @@
 const { Collection } = require("discord.js");
-const Guild = require("../Guild.js");
+const Guild = require("../Guilds/Guild.js");
 const Invite = require("../Misc/Invite.js");
 const PermissionOverwrites = require("../Misc/PermissionOverwrites.js");
 const TextChannel = require("./TextChannel.js");
