@@ -1814,7 +1814,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					const topGame = serverDocument.games.sort((a, b) => b.time_played - a.time_played)[0];
 					res.render("pages/admin-overview.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        		isMaintainer: adminLvl === 4,
+        		sudoMode: adminLvl === 4,
 						serverData: {
 							name: svr.name,
 							id: svr.id,
@@ -1851,7 +1851,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, async (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-command-options.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1899,7 +1899,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 			res.render("pages/admin-command-list.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1968,7 +1968,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-rss-feeds.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2033,7 +2033,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-streamers.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2090,7 +2090,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const data = {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2193,7 +2193,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const data = {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2276,7 +2276,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			} else {
 				res.render("pages/admin-trivia-sets.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-          isMaintainer: adminLvl === 4,
+          sudoMode: adminLvl === 4,
 					serverData: {
 						name: svr.name,
 						id: svr.id,
@@ -2328,7 +2328,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-api-keys.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2358,7 +2358,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-tag-reaction.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2397,7 +2397,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-stats-collection.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2443,7 +2443,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-ranks.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2503,7 +2503,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-gawesome-points.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2545,7 +2545,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-admins.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2592,11 +2592,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-moderation.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -2624,7 +2624,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.moderation.autokick_members.isEnabled = req.body["autokick_members-isEnabled"] === "on";
 			serverDocument.config.moderation.autokick_members.max_inactivity = parseInt(req.body["autokick_members-max_inactivity"]);
 			serverDocument.config.moderation.new_member_roles = [];
-			svr.roles.forEach(role => {
+			Object.values(svr.roles).forEach(role => {
 				if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 					if (req.body[`new_member_roles-${role.id}`] === "on") {
 						serverDocument.config.moderation.new_member_roles.push(role.id);
@@ -2634,7 +2634,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.modlog.isEnabled = req.body["modlog-isEnabled"] === "on";
 			serverDocument.modlog.channel_id = req.body["modlog-channel_id"];
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -2643,7 +2643,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-blocked.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2717,7 +2717,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
 			res.render("pages/admin-muted.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2771,7 +2771,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-strikes.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2866,7 +2866,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			}
 			res.render("pages/admin-status-messages.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2959,7 +2959,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			}
 			res.render("pages/admin-filters.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3022,7 +3022,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-message-of-the-day.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3061,7 +3061,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-voicetext-channels.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3098,7 +3098,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-roles.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3195,7 +3195,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 					res.render("pages/admin-logs.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 						serverData: {
 							name: svr.name,
 							id: svr.id,
@@ -3217,7 +3217,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-name-display.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3307,7 +3307,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 			res.render("pages/admin-ongoing-activities.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3363,7 +3363,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-public-data.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3427,7 +3427,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 			res.render("pages/admin-extensions.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3529,7 +3529,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			}
 			res.render("pages/admin-extension-builder.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -3611,7 +3611,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				Updater.check(configJSON, version => {
 					res.render("pages/maintainer.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 						serverData: {
 							name: bot.user.username,
 							id: bot.user.id,
@@ -3643,7 +3643,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						version: configJSON.version,
 						branch: configJSON.branch,
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 						serverData: {
 							name: bot.user.username,
 							id: bot.user.id,
@@ -3661,7 +3661,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						versionn: JSON.stringify(version.latest),
 						utd: false,
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 						serverData: {
 							name: bot.user.username,
 							id: bot.user.id,
@@ -3678,7 +3678,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						versionn: JSON.stringify(version.latest),
 						utd: true,
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 						serverData: {
 							name: bot.user.username,
 							id: bot.user.id,
@@ -3712,7 +3712,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			const renderPage = data => {
 				res.render("pages/maintainer-server-list.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 					serverData: {
 						name: bot.user.username,
 						id: bot.user.id,
@@ -3775,7 +3775,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, () => {
 			res.render("pages/maintainer-big-message.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -3805,7 +3805,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, () => {
 			res.render("pages/maintainer-blocklist.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -3855,7 +3855,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			const sampleBotMember = bot.getFirstMember(bot.user);
 			res.render("pages/maintainer-bot-user.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -3921,7 +3921,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, () => {
 			res.render("pages/maintainer-homepage.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -3954,7 +3954,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, consolemember => {
 			res.render("pages/maintainer-maintainers.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -4007,7 +4007,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, consolemember => {
 			res.render("pages/maintainer-wiki-contributors.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        isMaintainer: adminLvl === 4,
+        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,

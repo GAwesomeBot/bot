@@ -29,7 +29,7 @@
 	            <span>Help</span>
 	        </a>
 
-			<% if (isMaintainer) { %>
+			<% if (sudoMode) { %>
 			<a class="is-pulled-right button is-small is-warning" target="_blank" onclick="$('#sudo-modal').addClass('is-active')">
 	            <span class="icon is-small">
 	                <i class="fa fa-exclamation"></i>

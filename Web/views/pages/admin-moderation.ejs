@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Moderation - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Moderation - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
@@ -23,14 +23,14 @@
 						<article class="message is-primary">
 							<div class="message-body">
 								<div class="content">
-									All of AwesomeBot's <strong>moderation features</strong> can be toggled below, including member messages and filters. There are also some miscellaneous moderation options in this section.
+									All of GAwesomeBot's <strong>moderation features</strong> can be toggled below, including member messages and filters. There are also some miscellaneous moderation options in this section.
 								</div>
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<p class="control">
 								<label class="checkbox" >
 								<input name="isEnabled" type="checkbox" onclick="$('.moderation-feature').toggleClass('is-hidden');" <%= configData.moderation.isEnabled ? "checked" : "" %>>
@@ -84,14 +84,14 @@
 								<article class="message is-primary">
 									<div class="message-body">
 										<div class="content">
-											AwesomeBot's modlog feature makes it easy for moderators to keep track of why members have been muted, kicked, and banned. It is integrated with other AwesomeBot moderation commands: <code>ban</code>, <code>kick</code>, <code>mute</code>, <code>reason</code>, <code>softban</code>, <code>unban</code>, <code>unmute</code>, <code>warn</code>. Moderation logging works as a full replacement for kick/ban status messages, and stores incidents as cases with reasons for each action.
+											GAwesomeBot's modlog feature makes it easy for moderators to keep track of why members have been muted, kicked, and banned. It is integrated with other GAwesomeBot moderation commands: <code>ban</code>, <code>kick</code>, <code>mute</code>, <code>reason</code>, <code>softban</code>, <code>unban</code>, <code>unmute</code>, <code>warn</code>. Moderation logging works as a full replacement for kick/ban status messages, and stores incidents as cases with reasons for each action.
 										</div>
 									</div>
 								</article>
 								<p class="control">
 									<label class="checkbox" >
 									<input name="modlog-isEnabled" type="checkbox" onclick="$('.modlog-options').toggleClass('is-hidden');" <%= configData.modlog.isEnabled ? "checked" : "" %>>
-										Enable AwesomeBot moderation logging&nbsp;
+										Enable GAwesomeBot moderation logging&nbsp;
 										<span class="select is-small modlog-options <%= configData.modlog.isEnabled ? '' : 'is-hidden' %>">
 											<select name="modlog-channel_id">
 												<% for(var i=0; i<channelData.length; i++) { %>
