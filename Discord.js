@@ -49,7 +49,7 @@ class Client extends Discord.Client {
 				});
 				this.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
 			} else {
-				let guild = bot.guilds.get(payload.guild);
+				let guild = this.guilds.get(payload.guild);
 				let val = GG.generate(guild, payload.settings);
 				this.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
 			}
@@ -60,7 +60,7 @@ class Client extends Discord.Client {
 			const channel = guild.channels.get(msg.channel);
 			const member = guild.members.get(msg.member);
 
-			await bot.muteMember(channel, member);
+			await this.muteMember(channel, member);
 		});
 
 		this.IPC.on("unmuteMember", async msg => {
@@ -68,7 +68,7 @@ class Client extends Discord.Client {
 			const channel = guild.channels.get(msg.channel);
 			const member = guild.members.get(msg.member);
 
-			await bot.unmuteMember(channel, member);
+			await this.unmuteMember(channel, member);
 		});
 	}
 
