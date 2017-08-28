@@ -17,8 +17,7 @@ module.exports = new mongoose.Schema({
 	},
 	rank: {
 		type: String,
-		default: 0,
-		min: 0,
+		default: "No Rank",
 	},
 	rank_score: {
 		type: Number,
@@ -47,4 +46,14 @@ module.exports = new mongoose.Schema({
 		},
 	})],
 	profile_fields: mongoose.Schema.Types.Mixed,
+	muted: [new mongoose.Schema({
+		_id: {
+			type: String,
+			required: true,
+		},
+		since: {
+			type: Date,
+			default: Date.now,
+		},
+	})],
 });

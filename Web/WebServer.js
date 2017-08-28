@@ -2695,23 +2695,16 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Admin console muted
 	app.get("/dashboard/management/muted", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			const mutedMembers = [];
-			svr.members.forEach(member => {
-				const mutedChannels = [];
-				svr.channels.filter(ch => ch.type === 0).forEach(ch => {
-					if (bot.isMuted(ch, member)) {
-						mutedChannels.push(ch.id);
-					}
-				});
-				if (mutedChannels.length > 0) {
-					mutedMembers.push({
+			const mutedMembers = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.members.hasOwnProperty(memberDocument._id))
+				.map(memberDocument => {
+					const member = svr.members[memberDocument._id];
+					return {
 						name: member.user.username,
 						id: member.id,
-						avatar: member.user.avatarURL || "/static/img/discord-icon.png",
-						channels: mutedChannels,
-					});
-				}
-			});
+						avatar: bot.getAvatarURL(member.id, member.user.avatar),
+						channels: memberDocument.muted.map(memberMutedDocument => memberMutedDocument._id),
+					}
+				});
 			mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
 			res.render("pages/admin-muted.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2719,7 +2712,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2739,28 +2732,49 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-member"] && req.body["new-channel_id"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
-				const ch = svr.channels.get(req.body["new-channel_id"]);
-				if (member && bot.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !bot.isMuted(ch, member)) {
-					bot.muteMember(ch, member, () => {
-						res.redirect(req.originalUrl);
-					});
-				} else {
-					res.redirect(req.originalUrl);
+				const ch = svr.channels[req.body["new-channel_id"]];
+
+				let memberDocument = serverDocument.members.id(member.id);
+				if (!memberDocument) {
+					serverDocument.members.push({ _id: member.id });
+					memberDocument = serverDocument.members.id(member.id);
+				}
+
+				if (member && bot.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !memberDocument.muted.id(ch.id)) {
+					bot.IPC.send("muteMember", { guild: svr.id, channel: ch.id, member: member.id });
+					memberDocument.muted.push({ _id: ch.id });
 				}
 			} else {
-				svr.members.forEach(member => {
-					svr.channels.forEach(ch => {
-						if (ch.type === 0) {
-							if (bot.isMuted(ch, member) && (!req.body[`muted-${member.id}-${ch.id}`] || req.body[`muted-${member.id}-removed`] !== null)) {
-								bot.unmuteMember(ch, member);
-							} else if (!bot.isMuted(ch, member) && req.body[`muted-${member.id}-${ch.id}`] === "on") {
-								bot.muteMember(ch, member);
+				let memberDocuments = serverDocument.members;
+				Object.keys(req.body).forEach(key => {
+					const parameters = key.split("-");
+					if (parameters.length === 3 && parameters[0] === "muted" && svr.members.hasOwnProperty(parameters[1]) && memberDocuments.id(parameters[1])) {
+						const memberDocument = memberDocuments.id(parameters[1]);
+						if (parameters[2] === "removed") {
+							// Muted member removed
+							for (let memberMutedDocument of memberDocument.muted) {
+								bot.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: parameters[1] });
 							}
+							memberDocument.muted = [];
+						} else if (svr.channels.hasOwnProperty(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
+							// Muted member new channels
+							bot.IPC.send("muteMember", { guild: svr.id, channel: parameters[2], member: parameters[1] });
+							memberDocument.muted.push({ _id: parameters[2] });
+						}
+					}
+				});
+				// Muted members channels removed
+				memberDocuments = serverDocument.members.filter(member => member.muted && member.muted.length > 0 && svr.members.hasOwnProperty(member._id));
+				memberDocuments.forEach(memberDocument => {
+					memberDocument.muted.forEach(memberMutedDocument => {
+						if (!req.body[`muted-${memberDocument._id}-${memberMutedDocument._id}`]) {
+							bot.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: memberDocument._id });
+							memberDocument.muted.pull(memberMutedDocument._id);
 						}
 					});
 				});
-				res.redirect(req.originalUrl);
 			}
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
