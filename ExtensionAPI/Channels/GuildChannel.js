@@ -1,13 +1,18 @@
 const { Collection } = require("discord.js");
-const Guild = require("../Guild.js");
-const Invite = require("../Misc/Invite.js");
-const PermissionOverwrites = require("../Misc/PermissionOverwrites.js");
-const TextChannel = require("./TextChannel.js");
-const VoiceChannel = require("./VoiceChannel.js");
+let Guild;
+let Invite;
+let PermissionOverwrites;
+let TextChannel;
+let VoiceChannel;
 let raw;
 
 class GuildChannel {
 	constructor (rawGuildCh) {
+		Guild = require("../Guilds/Guild");
+		Invite = require("../Misc/Invite");
+		PermissionOverwrites = require("../Misc/PermissionOverwrites");
+		TextChannel = require("./TextChannel");
+		VoiceChannel = require("./VoiceChannel");
 		this.calculatedPosition = rawGuildCh.calculatedPosition;
 		this.createdAt = rawGuildCh.createdAt;
 		this.createdTimestamp = rawGuildCh.createdTimestamp;

@@ -1,8 +1,8 @@
 const { Collection } = require("discord.js");
-const Message = require("./Message.js");
-const ReactionEmoji = require("./ReactionEmoji.js");
-const Emoji = require("./Emoji.js");
-const User = require("./User.js");
+const Message = require("./Message");
+const ReactionEmoji = require("../Misc/ReactionEmoji");
+const Emoji = require("../Misc/Emoji");
+const User = require("../User");
 let _client, _rawReaction;
 
 class MessageReaction {
