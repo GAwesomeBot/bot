@@ -34,14 +34,14 @@ const xssFilters = require("xss-filters");
 const removeMd = require("remove-markdown");
 
 const database = require("./../Database/Driver.js");
-/*
-const createMessageOfTheDay = require("./../Modules/MessageOfTheDay.js");
-const Giveaways = require("./../Modules/Giveaways.js");
-const Lotteries = require("./../Modules/Lotteries.js");
-const Polls = require("./../Modules/Polls.js");
-const Trivia = require("./../Modules/Trivia.js");
-const Updater = require("./../Modules/Updater.js");
-*/
+
+const createMessageOfTheDay = require("./../Modules/Utils/MessageOfTheDay.js");
+// const Giveaways = require("./../Modules/Giveaways.js");
+// const Lotteries = require("./../Modules/Lotteries.js");
+// const Polls = require("./../Modules/Polls.js");
+// const Trivia = require("./../Modules/Trivia.js");
+// const Updater = require("./../Modules/Updater.js");
+
 const Utils = require("./../Modules/Utils");
 const getGuild = require("./../Modules").GetGuild;
 
@@ -1679,6 +1679,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
 		serverDocument.save(err => {
 			dashboardUpdate(req.path, svr.id);
+			bot.logMessage(serverDocument, "save", `Changes were saved in the admin console at section ${req.path}.`, null, consolemember.id);
 			if (err) {
 				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
 				renderError(res, "Failed to save admin console settings!");
@@ -2695,23 +2696,16 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Admin console muted
 	app.get("/dashboard/management/muted", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			const mutedMembers = [];
-			svr.members.forEach(member => {
-				const mutedChannels = [];
-				svr.channels.filter(ch => ch.type === 0).forEach(ch => {
-					if (bot.isMuted(ch, member)) {
-						mutedChannels.push(ch.id);
-					}
-				});
-				if (mutedChannels.length > 0) {
-					mutedMembers.push({
+			const mutedMembers = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.members.hasOwnProperty(memberDocument._id))
+				.map(memberDocument => {
+					const member = svr.members[memberDocument._id];
+					return {
 						name: member.user.username,
 						id: member.id,
-						avatar: member.user.avatarURL || "/static/img/discord-icon.png",
-						channels: mutedChannels,
-					});
-				}
-			});
+						avatar: bot.getAvatarURL(member.id, member.user.avatar),
+						channels: memberDocument.muted.map(memberMutedDocument => memberMutedDocument._id),
+					}
+				});
 			mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
 			res.render("pages/admin-muted.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2719,7 +2713,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2739,28 +2733,49 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-member"] && req.body["new-channel_id"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
-				const ch = svr.channels.get(req.body["new-channel_id"]);
-				if (member && bot.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !bot.isMuted(ch, member)) {
-					bot.muteMember(ch, member, () => {
-						res.redirect(req.originalUrl);
-					});
-				} else {
-					res.redirect(req.originalUrl);
+				const ch = svr.channels[req.body["new-channel_id"]];
+
+				let memberDocument = serverDocument.members.id(member.id);
+				if (!memberDocument) {
+					serverDocument.members.push({ _id: member.id });
+					memberDocument = serverDocument.members.id(member.id);
+				}
+
+				if (member && bot.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !memberDocument.muted.id(ch.id)) {
+					bot.IPC.send("muteMember", { guild: svr.id, channel: ch.id, member: member.id });
+					memberDocument.muted.push({ _id: ch.id });
 				}
 			} else {
-				svr.members.forEach(member => {
-					svr.channels.forEach(ch => {
-						if (ch.type === 0) {
-							if (bot.isMuted(ch, member) && (!req.body[`muted-${member.id}-${ch.id}`] || req.body[`muted-${member.id}-removed`] !== null)) {
-								bot.unmuteMember(ch, member);
-							} else if (!bot.isMuted(ch, member) && req.body[`muted-${member.id}-${ch.id}`] === "on") {
-								bot.muteMember(ch, member);
+				let memberDocuments = serverDocument.members;
+				Object.keys(req.body).forEach(key => {
+					const parameters = key.split("-");
+					if (parameters.length === 3 && parameters[0] === "muted" && svr.members.hasOwnProperty(parameters[1]) && memberDocuments.id(parameters[1])) {
+						const memberDocument = memberDocuments.id(parameters[1]);
+						if (parameters[2] === "removed") {
+							// Muted member removed
+							for (let memberMutedDocument of memberDocument.muted) {
+								bot.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: parameters[1] });
 							}
+							memberDocument.muted = [];
+						} else if (svr.channels.hasOwnProperty(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
+							// Muted member new channels
+							bot.IPC.send("muteMember", { guild: svr.id, channel: parameters[2], member: parameters[1] });
+							memberDocument.muted.push({ _id: parameters[2] });
+						}
+					}
+				});
+				// Muted members channels removed
+				memberDocuments = serverDocument.members.filter(member => member.muted && member.muted.length > 0 && svr.members.hasOwnProperty(member._id));
+				memberDocuments.forEach(memberDocument => {
+					memberDocument.muted.forEach(memberMutedDocument => {
+						if (!req.body[`muted-${memberDocument._id}-${memberMutedDocument._id}`]) {
+							bot.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: memberDocument._id });
+							memberDocument.muted.pull(memberMutedDocument._id);
 						}
 					});
 				});
-				res.redirect(req.originalUrl);
 			}
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -2773,7 +2788,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
@@ -2781,14 +2796,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						isEnabled: serverDocument.config.moderation.isEnabled,
 					},
 				},
-				strikes: serverDocument.members.filter(memberDocument => svr.members.has(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
-					const member = svr.members.get(memberDocument._id);
+				strikes: serverDocument.members.filter(memberDocument => svr.members.hasOwnProperty(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
+					const member = svr.members[memberDocument._id];
 					return {
 						name: member.user.username,
 						id: member.id,
-						avatar: member.user.avatarURL || "/static/img/discord-icon.png",
+						avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
 						strikes: memberDocument.strikes.map(strikeDocument => {
-							const creator = svr.members.get(strikeDocument._id) || {
+							const creator = svr.members[strikeDocument._id] || {
 								id: "invalid-user",
 								user: {
 									username: "invalid-user",
@@ -2799,9 +2814,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 								creator: {
 									name: creator.user.username,
 									id: creator.id,
-									avatar: creator.user.avatarURL || "/static/img/discord-icon.png",
+									avatar: bot.getAvatarURL(creator.id, creator.user.avatar) || "/static/img/discord-icon.png",
 								},
-								reason: md.makeHtml(strikeDocument.reason),
+								reason: md.makeHtml(xssFilters.inHTMLData(strikeDocument.reason)),
 								rawDate: moment(strikeDocument.timestamp).format(configJS.moment_date_format),
 								relativeDate: moment(strikeDocument.timestamp).fromNow(),
 							};
@@ -2846,7 +2861,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -2855,11 +2870,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
 			for (let i = 0; i < statusMessagesData.member_streaming_message.enabled_user_ids.length; i++) {
-				const member = svr.members.get(statusMessagesData.member_streaming_message.enabled_user_ids[i]) || { user: {} };
+				const member = svr.members[statusMessagesData.member_streaming_message.enabled_user_ids[i]] || { user: {} };
 				statusMessagesData.member_streaming_message.enabled_user_ids[i] = {
 					name: member.user.username,
 					id: member.id,
-					avatar: member.user.avatarURL || "/static/img/discord-icon.png",
+					avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
 				};
 			}
 			res.render("pages/admin-status-messages.ejs", {
@@ -2868,7 +2883,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2886,35 +2901,33 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 	app.post("/dashboard/management/status-messages", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (Object.keys(req.body).length === 1) {
-				const args = Object.keys(req.body)[0].split("-");
-				if (args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
-					if (args[1] === "member_streaming_message") {
-						const member = findQueryUser(req.body[Object.keys(req.body)[0]], svr.members);
-						if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
-							serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
-						}
-					} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
-						serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
+			const args = Object.keys(req.body)[0].split("-");
+			if (Object.keys(req.body).length === 1 && args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
+				if (args[1] === "member_streaming_message") {
+					const member = findQueryUser(req.body[Object.keys(req.body)[0]], svr.members);
+					if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
+						serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
 					}
+				} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
+					serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
 				}
 			} else {
 				for (const status_message in serverDocument.toObject().config.moderation.status_messages) {
-					if (["new_member_pm", "member_removed_pm"].indexOf(status_message) === -1) {
+					if (["new_member_pm", "member_removed_pm"].indexOf(status_message) === -1 && Object.keys(req.body).length > 1) {
 						serverDocument.config.moderation.status_messages[status_message].channel_id = "";
-					} else {
+					} else if (Object.keys(req.body).length > 1) {
 						serverDocument.config.moderation.status_messages[status_message].message_content = req.body[`${status_message}-message_content`];
 					}
-					for (const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
+					if (Object.keys(req.body).length > 1) for (const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
 						switch (key) {
 							case "isEnabled":
 								serverDocument.config.moderation.status_messages[status_message][key] = req.body[`${status_message}-${key}`] === "on";
 								break;
 							case "enabled_channel_ids":
 								serverDocument.config.moderation.status_messages[status_message][key] = [];
-								svr.channels.forEach(ch => {
-									if (ch.type === 0) {
-										if (req.body[`${status_message}-${key}-${ch.id}`] !== null) {
+								Object.values(svr.channels).forEach(ch => {
+									if (ch.type === "text") {
+										if (req.body[`${status_message}-${key}-${ch.id}`]) {
 											serverDocument.config.moderation.status_messages[status_message][key].push(ch.id);
 										}
 									}
@@ -2932,7 +2945,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					const key = status_message === "member_streaming_message" ? "enabled_user_ids" : "messages";
 					if (serverDocument.config.moderation.status_messages[status_message][key]) {
 						for (let i = 0; i < serverDocument.config.moderation.status_messages[status_message][key].length; i++) {
-							if (req.body[`${status_message}-${i}-removed`] !== null) {
+							if (req.body[`${status_message}-${i}-removed`]) {
 								serverDocument.config.moderation.status_messages[status_message][key][i] = null;
 							}
 						}
@@ -2941,7 +2954,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -2961,7 +2974,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -2993,8 +3006,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							break;
 						case "disabled_channel_ids":
 							serverDocument.config.moderation.filters[filter][key] = [];
-							svr.channels.forEach(ch => {
-								if (ch.type === 0) {
+							Object.values(svr.channels).forEach(ch => {
+								if (ch.type === "text") {
 									if (req.body[`${filter}-${key}-${ch.id}`] !== "on") {
 										serverDocument.config.moderation.filters[filter][key].push(ch.id);
 									}
@@ -3011,7 +3024,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -3024,7 +3037,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -3047,10 +3060,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.message_of_the_day.interval = parseInt(req.body.interval);
 
 			if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
-				createMessageOfTheDay(bot, winston, svr, serverDocument.config.message_of_the_day);
+				createMessageOfTheDay(bot, db, svr, serverDocument.config.message_of_the_day);
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -3063,9 +3076,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				voiceChannelData: getChannelData(svr, 2),
+				voiceChannelData: getChannelData(svr, "voice"),
 				currentPage: req.path,
 				configData: {
 					voicetext_channels: serverDocument.config.voicetext_channels,
@@ -3079,15 +3092,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.post("/dashboard/management/voicetext-channels", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.voicetext_channels = [];
-			svr.channels.forEach(ch => {
-				if (ch.type === 2) {
+			Object.values(svr.channels).forEach(ch => {
+				if (ch.type === "voice") {
 					if (req.body[`voicetext_channels-${ch.id}`] === "on") {
 						serverDocument.config.voicetext_channels.push(ch.id);
 					}
 				}
 			});
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -3100,7 +3113,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -3134,7 +3147,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			parseCommandOptions(svr, serverDocument, "roleinfo", req.body);
 			parseCommandOptions(svr, serverDocument, "role", req.body);
 			serverDocument.config.custom_roles = [];
-			svr.roles.forEach(role => {
+			Object.values(svr.roles).forEach(role => {
 				if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 					if (req.body[`custom_roles-${role.id}`] === "on") {
 						serverDocument.config.custom_roles.push(role.id);
@@ -3143,13 +3156,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 			parseCommandOptions(svr, serverDocument, "perms", req.body);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
 	// Admin console logs
-	app.get("/dashboard/management/logs", (req, res) => {
-		checkAuth(req, res, (consolemember, svr) => {
+	app.get("/dashboard/management/logs", async (req, res) => {
+		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
+			/*
 			winston.query({
 				from: new Date - 48 * 60 * 60 * 1000,
 				until: new Date,
@@ -3190,23 +3204,59 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							logs.push(results[i]);
 						}
 					}
+					*/
+			try {
+				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.slice(serverDocument.logs.length - 500) : serverDocument.logs;
+				serverLogs = serverLogs.filter(serverLog => ((!req.query.q || serverLog.content.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || serverLog.channelid === req.query.chid)));
+				serverLogs.map(serverLog => {
+					const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
+					if (serverLog.channelid) serverLog.ch = ch ? ch.name : "invalid-channel";
 
-					res.render("pages/admin-logs.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-						serverData: {
-							name: svr.name,
-							id: svr.id,
-							icon: svr.iconURL || "/static/img/discord-icon.png",
-						},
-						channelData: getChannelData(svr),
-						currentPage: req.path,
-						logData: logs,
-						searchQuery: req.query.q,
-						channelQuery: req.query.chid,
-					});
-				}
-			});
+					const member = serverLog.userid ? svr.members[serverLog.userid] : null;
+					if (serverLog.userid) serverLog.usr = member ? `${member.user.username}#${member.user.discriminator}` : "invalid-user";
+
+					switch (serverLog.level) {
+						case "warn":
+							serverLog.level = "exclamation";
+							serverLog.levelColor = "#ffdd57";
+							break;
+						case "error":
+							serverLog.level = "times";
+							serverLog.levelColor = "#ff3860";
+							break;
+						case "save":
+							serverLog.level = "file-text";
+							serverLog.levelColor = "#ffae35";
+							break;
+						default:
+							serverLog.level = "info";
+							serverLog.levelColor = "#3273dc";
+							break;
+					}
+
+					serverLog.timestamp = moment(serverLog._id).format(configJS.moment_date_format);
+
+					return serverLog;
+				});
+
+				res.render("pages/admin-logs.ejs", {
+					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					sudoMode: adminLvl === 4,
+					serverData: {
+						name: svr.name,
+						id: svr.id,
+						icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+					},
+					channelData: getChannelData(svr),
+					currentPage: req.path,
+					logData: serverLogs.reverse(),
+					searchQuery: req.query.q,
+					channelQuery: req.query.chid,
+				});
+			} catch (err) {
+				winston.warn(`Failed to fetch logs for server ${svr.name} (*-*)\n`, err);
+				renderError(res, "Failed to fetch all the trees and their logs.");
+			}
 		});
 	});
 

@@ -71,7 +71,7 @@ class ShardIPC extends EventEmitter {
 		});
 	}
 
-	send (subject, payload) {
+	async send (subject, payload) {
 		try {
 			this.winston.silly("Sending message to master", { subject: subject, payload: payload });
 			payload.subject = subject;

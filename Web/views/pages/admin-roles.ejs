@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Roles - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Roles - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -24,14 +24,14 @@
 						<article class="message is-primary">
 							<div class="message-body">
 								<div class="content">
-									There are a few super-useful commands in AwesomeBot to manage roles and their permissions on your server - they are listed below. You'll love being able to use these commands to manage roles even when you're not on your computer.
+									There are a few super-useful commands in GAwesomeBot to manage roles and their permissions on your server - they are listed below. You'll love being able to use these commands to manage roles without having to use the annoying mobile client.
 								</div>
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<% var commandData = configData.commands.roleinfo;commandData.name = "roleinfo";commandData.description = commandDescriptions.roleinfo;commandData.category = commandCategories.roleinfo; %>
 							<% include ../partials/admin-command-item %>
 							<% var commandData = configData.commands.role;commandData.name = "role";commandData.description = commandDescriptions.role;commandData.category = commandCategories.role; %>

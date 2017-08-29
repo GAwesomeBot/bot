@@ -121,6 +121,16 @@ database.initialize(configJS.databaseURL).catch(err => {
 			sharder.IPC.send("dashboardUpdate", { namespace: msg.namespace, location: msg.location }, "*");
 		});
 
+		sharder.IPC.on("muteMember", async msg => {
+			const shardid = sharder.guilds.get(msg.guild);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("muteMember", msg, shardid);
+		});
+
+		sharder.IPC.on("unmuteMember", async msg => {
+			const shardid = sharder.guilds.get(msg.guild);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("unmuteMember", msg, shardid);
+		});
+
 		sharder.spawn();
 	}
 });

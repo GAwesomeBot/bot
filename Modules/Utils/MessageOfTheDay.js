@@ -5,30 +5,31 @@
  * @param motdDocument The message_of_the_day document
  */
 module.exports = async (bot, db, server, motdDocument) => {
-	const sendMOTD = async serverDocument => {
-		if (serverDocument.message_of_the_day.isEnabled && serverDocument.message_of_the_day.message_content) {
-			const channel = server.channels.get(serverDocument.message_of_the_day.channel_id);
+	if (!motdDocument.last_run) motdDocument.last_run = Date.now();
+	const sendMOTD = async serverConfigDocument => {
+		if (serverConfigDocument.message_of_the_day.isEnabled && serverConfigDocument.message_of_the_day.message_content) {
+			const channel = server.channels.get(serverConfigDocument.message_of_the_day.channel_id);
 			if (channel) {
-				serverDocument.message_of_the_day.last_run = Date.now();
-				await serverDocument.message_of_the_day.save().catch(err => {
-					winston.warn(`Failed to save message of the day data.. 😞\n`, err);
+				serverConfigDocument.message_of_the_day.last_run = Date.now();
+				await serverConfigDocument.message_of_the_day.save().catch(err => {
+					winston.warn(`Failed to save message of the day data... 😞\n`, err);
 				});
-				channel.send(serverDocument.message_of_the_day.message_content);
+				channel.send(serverConfigDocument.message_of_the_day.message_content);
 			}
 			bot.setTimeout(async () => {
-				const newServerDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
-					winston.warn(`Failed to set timeout for MOTD.. x(\n`, err);
+				const newserverConfigDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
+					winston.warn(`Failed to set timeout for MOTD... (*-*)\n`, err);
 				});
-				await sendMOTD(newServerDocument);
-			}, serverDocument.message_of_the_day.interval);
+				await sendMOTD(newserverConfigDocument);
+			}, serverConfigDocument.message_of_the_day.interval);
 		}
 	};
 	if (motdDocument.isEnabled) {
 		bot.setTimeout(async () => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
-				winston.info(`Failed to find server document for motd..\n`, err);
+				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});
-			await sendMOTD(serverDocument);
-		}, (motdDocument.last_run + motdDocument.interval) - Date.now());
+			await sendMOTD(serverDocument.config);
+		}, Math.abs((motdDocument.last_run + motdDocument.interval) - Date.now()));
 	}
 };

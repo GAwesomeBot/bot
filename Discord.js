@@ -39,6 +39,37 @@ class Client extends Discord.Client {
 		// Bot IPC
 		winston.silly("Creating ShardIPC instance.");
 		this.IPC = new ShardIPC(this, winston, process);
+
+		this.IPC.on("getGuild", msg => {
+			let payload = msg;
+			if (payload.guild === "*") {
+				let result = {};
+				this.guilds.forEach((val, key) => {
+					result[key] = GG.generate(val, payload.settings);
+				});
+				this.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
+			} else {
+				let guild = this.guilds.get(payload.guild);
+				let val = GG.generate(guild, payload.settings);
+				this.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
+			}
+		});
+
+		this.IPC.on("muteMember", async msg => {
+			const guild = bot.guilds.get(msg.guild);
+			const channel = guild.channels.get(msg.channel);
+			const member = guild.members.get(msg.member);
+
+			await this.muteMember(channel, member);
+		});
+
+		this.IPC.on("unmuteMember", async msg => {
+			const guild = bot.guilds.get(msg.guild);
+			const channel = guild.channels.get(msg.channel);
+			const member = guild.members.get(msg.member);
+
+			await this.unmuteMember(channel, member);
+		});
 	}
 
 	/**
@@ -659,17 +690,17 @@ class Client extends Discord.Client {
 
 	/**
 	 * Check if a user is muted on a server, with or without overwrites
-	 * @param {TextChannel} channel The channel to check this on
-	 * @param {GuildMember} member The member to check this on
+	 * @param {Discord.GuildChannel} channel The channel to check this on
+	 * @param {Discord.GuildMember} member The member to check this on
 	 * @returns {Boolean} A boolean depending if the member is muted.
 	 */
-	isMuted (channel, member) {
-		return !channel.permissionsFor(member).has("SEND_MESSAGES");
+	async isMuted (channel, member) {
+		return !channel.permissionsFor(member).has("SEND_MESSAGES", false);
 	}
 
 	/**
 	 * Check if a permission overwrite has any permissions related to channels
-	 * @param {PermissionOverwrite} allowedOrDenied The allowed or deny value of a permission overwrite for a member or role
+	 * @param {Discord.PermissionOverwrites} allowedOrDenied The allowed or deny value of a permission overwrite for a member or role
 	 * @returns {Boolean} True if it has any of the perms, false if default
 	 */ 
 	hasOverwritePerms (allowedOrDenied) {
@@ -701,12 +732,12 @@ class Client extends Discord.Client {
 
 	/**
  	 * Mutes a member of a server in a channel
- 	 * @param channel The channel to unmute
-	 * @param member The member to unmute
-	 * @param {?String} [reason] Optional reason for the mute
+ 	 * @param {Discord.GuildChannel} channel The channel to mute in
+	 * @param {Discord.GuildMember} member The member to mute
+	 * @param {String} [reason] Optional reason for the mute
 	 */
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
-		if (!bot.isMuted(channel, member) && channel.type === 0) {
+		if (!await this.isMuted(channel, member) && channel.type === "text") {
 			try {
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: false,
@@ -719,16 +750,16 @@ class Client extends Discord.Client {
 
 	/**
  	 * Unmute a member of a server in a channel
- 	 * @param channel The channel to unmute
-	 * @param member The member to unmute
-	 * @param {?String} [reason] Optional reason for the unmute
+ 	 * @param {Discord.GuildChannel} channel The channel to unmute in
+	 * @param {Discord.GuildMember} member The member to unmute
+	 * @param {String} [reason] Optional reason for the unmute
 	 */
 	/*
 	* TODO for Discord.js version 12.0
 	* replace code with the commented one
 	*/
 	async unmuteMember (channel, member, reason = `Unmuted ${member.user.tag} in #${channel.name}`) {
-		if (bot.isMuted(channel, member) && channel.type === 0) {
+		if (await this.isMuted(channel, member) && channel.type === "text") {
 			/* Skyrider#0702 be happy!
 			const overwrite = channel.permissionOverwrites.get(member.id);
 			if (overwrite) {
@@ -752,7 +783,7 @@ class Client extends Discord.Client {
 			} */
 			try {
 				await channel.overwritePermissions(member.id, {
-					SEND_MESSAGES: true,
+					SEND_MESSAGES: null,
 				}, reason);
 			} catch (err) {
 				winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
@@ -778,12 +809,38 @@ class Client extends Discord.Client {
 	/**
 	 * Gets the avatar for a user by his ID and hash
 	 * @param {String} id The user or mebmer ID
-	 * @param {?String} hash The avatar hash returned from Discord
-	 * @param {String} [type="avatar"] Type of avatar to fetch, set to "icons" for servers
+	 * @param {String} hash The avatar hash returned from Discord
+	 * @param {String} [type="avatars"] Type of avatar to fetch, set to "icons" for servers
 	 * @returns {String} A string containing either the Discord URL to the avatar or a static reference to the generic avatar
 	 */
 	getAvatarURL (id, hash, type = "avatars") {
 		return hash ? `${this.options.http.cdn}/${type}/${id}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=2048` : "/static/img/discord-icon.png";
+	}
+
+	/**
+	 * Logs a message to the serverDocument, for the admin console's logs section
+	 * @param {serverDocument} serverDocument The server's mongoose document
+	 * @param {String} level The level of severity
+	 * @param {String} content The content of the log message
+	 * @param {String} [chid] The optional channel ID
+	 * @param {String} [usrid] The optional user ID
+	 * @returns {Promise} A promise representing the new serverDocument
+	 */
+	async logMessage (serverDocument, level, content, chid, usrid) {
+		try {
+			if (serverDocument && level && content) {
+				serverDocument.logs.push({
+					level: level,
+					content: content,
+					channelid: chid ? chid : undefined,
+					userid: usrid ? usrid : undefined,
+				});
+				await serverDocument.save();
+			}
+		} catch (err) {
+			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
+		}
+		return serverDocument;
 	}
 }
 
@@ -831,21 +888,6 @@ process.on("uncaughtException", err => {
 	 * Read above 
 	 */
 	process.exit(1);
-});
-
-bot.IPC.on("getGuild", msg => {
-	let payload = msg;
-	if (payload.guild === "*") {
-		let result = {};
-		bot.guilds.forEach((val, key) => {
-			result[key] = GG.generate(val, payload.settings);
-		});
-		bot.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
-	} else {
-		let guild = bot.guilds.get(payload.guild);
-		let val = GG.generate(guild, payload.settings);
-		bot.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
-	}
 });
 
 winston.debug("Logging in to Discord Gateway.");
