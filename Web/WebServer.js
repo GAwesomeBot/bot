@@ -2787,7 +2787,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
@@ -2795,14 +2795,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						isEnabled: serverDocument.config.moderation.isEnabled,
 					},
 				},
-				strikes: serverDocument.members.filter(memberDocument => svr.members.has(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
-					const member = svr.members.get(memberDocument._id);
+				strikes: serverDocument.members.filter(memberDocument => svr.members.hasOwnProperty(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
+					const member = svr.members[memberDocument._id];
 					return {
 						name: member.user.username,
 						id: member.id,
-						avatar: member.user.avatarURL || "/static/img/discord-icon.png",
+						avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
 						strikes: memberDocument.strikes.map(strikeDocument => {
-							const creator = svr.members.get(strikeDocument._id) || {
+							const creator = svr.members[strikeDocument._id] || {
 								id: "invalid-user",
 								user: {
 									username: "invalid-user",
@@ -2813,9 +2813,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 								creator: {
 									name: creator.user.username,
 									id: creator.id,
-									avatar: creator.user.avatarURL || "/static/img/discord-icon.png",
+									avatar: bot.getAvatarURL(creator.id, creator.user.avatar) || "/static/img/discord-icon.png",
 								},
-								reason: md.makeHtml(strikeDocument.reason),
+								reason: md.makeHtml(xssFilters.inHTMLData(strikeDocument.reason)),
 								rawDate: moment(strikeDocument.timestamp).format(configJS.moment_date_format),
 								relativeDate: moment(strikeDocument.timestamp).fromNow(),
 							};
@@ -2860,7 +2860,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

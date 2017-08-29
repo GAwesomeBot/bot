@@ -690,8 +690,8 @@ class Client extends Discord.Client {
 
 	/**
 	 * Check if a user is muted on a server, with or without overwrites
-	 * @param {Discord.GuildChannel} channel The channel ID to check this on
-	 * @param {Discord.GuildMember} member The member ID to check this on
+	 * @param {Discord.GuildChannel} channel The channel to check this on
+	 * @param {Discord.GuildMember} member The member to check this on
 	 * @returns {Boolean} A boolean depending if the member is muted.
 	 */
 	async isMuted (channel, member) {
@@ -732,7 +732,7 @@ class Client extends Discord.Client {
 
 	/**
  	 * Mutes a member of a server in a channel
- 	 * @param {Discord.GuildChannel} channel The channel to mute
+ 	 * @param {Discord.GuildChannel} channel The channel to mute in
 	 * @param {Discord.GuildMember} member The member to mute
 	 * @param {String} [reason] Optional reason for the mute
 	 */
@@ -750,7 +750,7 @@ class Client extends Discord.Client {
 
 	/**
  	 * Unmute a member of a server in a channel
- 	 * @param {Discord.GuildChannel} channel The channel to unmute
+ 	 * @param {Discord.GuildChannel} channel The channel to unmute in
 	 * @param {Discord.GuildMember} member The member to unmute
 	 * @param {String} [reason] Optional reason for the unmute
 	 */
@@ -809,8 +809,8 @@ class Client extends Discord.Client {
 	/**
 	 * Gets the avatar for a user by his ID and hash
 	 * @param {String} id The user or mebmer ID
-	 * @param {?String} hash The avatar hash returned from Discord
-	 * @param {String} [type="avatar"] Type of avatar to fetch, set to "icons" for servers
+	 * @param {String} hash The avatar hash returned from Discord
+	 * @param {String} [type="avatars"] Type of avatar to fetch, set to "icons" for servers
 	 * @returns {String} A string containing either the Discord URL to the avatar or a static reference to the generic avatar
 	 */
 	getAvatarURL (id, hash, type = "avatars") {
