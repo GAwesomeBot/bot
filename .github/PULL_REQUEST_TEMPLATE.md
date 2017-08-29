@@ -4,5 +4,5 @@
 - [ ] This PR changes internal functions
 - [ ] This PR adds or removes commands
   - [ ] This PR changes command functions
-    - [ ] This PR changes parameters for the command, updated in `commands.json`
-- [ ] This PR **only** includes non-code changes, like changes to `commands.json`, README, typos, etc.
+    - [ ] This PR changes parameters for the command, updated in `commands.js`
+- [ ] This PR **only** includes non-code changes, like changes to `commands.js`, README, typos, etc.
