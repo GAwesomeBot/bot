@@ -23,7 +23,7 @@
     "convert-units": "*",
     "cookie-parser": "*",
     "currency-converter": "*",
-    "discord.js": "github:hydrabolt/discord.js#11.1-dev",
+    "discord.js": "github:hydrabolt/discord.js",
     "domain": "*",
     "download-github-repo": "*",
     "ejs": "*",

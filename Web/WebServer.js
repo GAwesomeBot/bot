@@ -357,7 +357,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			userProfile.pastNames = userDocument.past_names;
 			userProfile.afkMessage = userDocument.afk_message;
 			for (let svr of mutualServers) {
-				const owner = await bot.fetchUser(svr.ownerID, true);
+				const owner = await bot.users.fetch(svr.ownerID, true);
 				userProfile.mutualServers.push({
 					name: svr.name,
 					id: svr.id,
@@ -373,7 +373,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			res.sendStatus(400);
 			return;
 		}
-		const usr = await bot.fetchUser(req.query.id, true);
+		const usr = await bot.users.fetch(req.query.id, true);
 		if (usr) {
 			db.users.findOrCreate({ _id: usr.id }, async (err, userDocument) => {
 				if (err || !userDocument) {

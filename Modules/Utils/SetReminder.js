@@ -9,7 +9,7 @@ module.exports = async (bot, userDocument, reminderDocument) => {
 	try {
 		usr = bot.users.get(userDocument._id);
 	} catch (err) {
-		usr = await bot.fetchUser(userDocument._id, false);
+		usr = await bot.users.fetch(userDocument._id, false);
 	}
 	if (usr) {
 		bot.setTimeout(async () => {
