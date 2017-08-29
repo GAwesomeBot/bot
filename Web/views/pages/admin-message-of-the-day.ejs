@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Message of the Day - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Message of the Day - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -24,14 +24,14 @@
 						<article class="message is-primary">
 							<div class="message-body">
 								<div class="content">
-									You can set a <strong>custom message</strong> that AwesomeBot will send in chat, and the message <strong>interval</strong> is customizable. This is useful for recurring announcements or reminders.
+									You can set a <strong>custom message</strong> that GAwesomeBot will send in chat, and the message <strong>interval</strong> is customizable. This is useful for recurring announcements or reminders.
 								</div>
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<p class="control">
 								<label class="checkbox">
 								<input name="isEnabled" type="checkbox" onclick="$('#message_of_the_day-options').toggleClass('is-hidden');" <%= configData.message_of_the_day.isEnabled ? "checked" : "" %>>

@@ -34,14 +34,14 @@ const xssFilters = require("xss-filters");
 const removeMd = require("remove-markdown");
 
 const database = require("./../Database/Driver.js");
-/*
-const createMessageOfTheDay = require("./../Modules/MessageOfTheDay.js");
-const Giveaways = require("./../Modules/Giveaways.js");
-const Lotteries = require("./../Modules/Lotteries.js");
-const Polls = require("./../Modules/Polls.js");
-const Trivia = require("./../Modules/Trivia.js");
-const Updater = require("./../Modules/Updater.js");
-*/
+
+const createMessageOfTheDay = require("./../Modules/Utils/MessageOfTheDay.js");
+// const Giveaways = require("./../Modules/Giveaways.js");
+// const Lotteries = require("./../Modules/Lotteries.js");
+// const Polls = require("./../Modules/Polls.js");
+// const Trivia = require("./../Modules/Trivia.js");
+// const Updater = require("./../Modules/Updater.js");
+
 const Utils = require("./../Modules/Utils");
 const getGuild = require("./../Modules").GetGuild;
 
@@ -3036,7 +3036,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -3059,10 +3059,10 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.message_of_the_day.interval = parseInt(req.body.interval);
 
 			if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
-				createMessageOfTheDay(bot, winston, svr, serverDocument.config.message_of_the_day);
+				createMessageOfTheDay(bot, db, svr, serverDocument.config.message_of_the_day);
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
