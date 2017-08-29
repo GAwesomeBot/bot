@@ -3075,9 +3075,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				voiceChannelData: getChannelData(svr, 2),
+				voiceChannelData: getChannelData(svr, "voice"),
 				currentPage: req.path,
 				configData: {
 					voicetext_channels: serverDocument.config.voicetext_channels,
@@ -3091,15 +3091,15 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.post("/dashboard/management/voicetext-channels", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.voicetext_channels = [];
-			svr.channels.forEach(ch => {
-				if (ch.type === 2) {
+			Object.values(svr.channels).forEach(ch => {
+				if (ch.type === "voice") {
 					if (req.body[`voicetext_channels-${ch.id}`] === "on") {
 						serverDocument.config.voicetext_channels.push(ch.id);
 					}
 				}
 			});
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
