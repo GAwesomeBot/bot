@@ -2973,7 +2973,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -3005,8 +3005,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							break;
 						case "disabled_channel_ids":
 							serverDocument.config.moderation.filters[filter][key] = [];
-							svr.channels.forEach(ch => {
-								if (ch.type === 0) {
+							Object.values(svr.channels).forEach(ch => {
+								if (ch.type === "text") {
 									if (req.body[`${filter}-${key}-${ch.id}`] !== "on") {
 										serverDocument.config.moderation.filters[filter][key].push(ch.id);
 									}
@@ -3023,7 +3023,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

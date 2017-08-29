@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Filters - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Filters - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -24,14 +24,14 @@
 						<article class="message is-primary">
 							<div class="message-body">
 								<div class="content">
-									AwesomeBot provides <strong>filters</strong> for <strong>spam</strong>, <strong> excessive member/role mentions</strong>, <strong>NSFW content</strong>, and <strong>custom words</strong>. You can change which channels the filters work in, what happens to violators, and the role (if any) they are assigned.
+									GAwesomeBot provides <strong>filters</strong> for <strong>spam</strong>, <strong> excessive member/role mentions</strong>, <strong>NSFW content</strong>, and <strong>custom words</strong>. You can change which channels the filters work in, what happens to violators, and the role (if any) they are assigned.
 								</div>
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<h4 class="subtitle is-4">
 								Spam
 							</h4>
