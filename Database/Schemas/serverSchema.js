@@ -34,5 +34,28 @@ module.exports = new mongoose.Schema({
 			required: true,
 		},
 	})],
+	logs: [new mongoose.Schema({
+		_id: {
+			type: Date,
+			required: false,
+			default: Date.now(),
+		},
+		level: {
+			type: String,
+			required: true,
+		},
+		content: {
+			type: String,
+			required: true,
+		},
+		userid: {
+			type: String,
+			required: false,
+		},
+		channelid: {
+			type: String,
+			required: false,
+		},
+	})],
 	modlog: require("./serverModlogSchema.js"),
 });

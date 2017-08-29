@@ -1679,6 +1679,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
 		serverDocument.save(err => {
 			dashboardUpdate(req.path, svr.id);
+			bot.logMessage(serverDocument, "save", `Changes were saved in the admin console at section ${req.path}.`, null, consolemember.id);
 			if (err) {
 				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
 				renderError(res, "Failed to save admin console settings!");
@@ -3160,8 +3161,9 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Admin console logs
-	app.get("/dashboard/management/logs", (req, res) => {
-		checkAuth(req, res, (consolemember, svr) => {
+	app.get("/dashboard/management/logs", async (req, res) => {
+		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
+			/*
 			winston.query({
 				from: new Date - 48 * 60 * 60 * 1000,
 				until: new Date,
@@ -3202,23 +3204,59 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							logs.push(results[i]);
 						}
 					}
+					*/
+			try {
+				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.slice(serverDocument.logs.length - 500) : serverDocument.logs;
+				serverLogs = serverLogs.filter(serverLog => ((!req.query.q || serverLog.content.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || serverLog.channelid === req.query.chid)));
+				serverLogs.map(serverLog => {
+					const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
+					if (serverLog.channelid) serverLog.ch = ch ? ch.name : "invalid-channel";
 
-					res.render("pages/admin-logs.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-						serverData: {
-							name: svr.name,
-							id: svr.id,
-							icon: svr.iconURL || "/static/img/discord-icon.png",
-						},
-						channelData: getChannelData(svr),
-						currentPage: req.path,
-						logData: logs,
-						searchQuery: req.query.q,
-						channelQuery: req.query.chid,
-					});
-				}
-			});
+					const member = serverLog.userid ? svr.members[serverLog.userid] : null;
+					if (serverLog.userid) serverLog.usr = member ? `${member.user.username}#${member.user.discriminator}` : "invalid-user";
+
+					switch (serverLog.level) {
+						case "warn":
+							serverLog.level = "exclamation";
+							serverLog.levelColor = "#ffdd57";
+							break;
+						case "error":
+							serverLog.level = "times";
+							serverLog.levelColor = "#ff3860";
+							break;
+						case "save":
+							serverLog.level = "file-text";
+							serverLog.levelColor = "#ffae35";
+							break;
+						default:
+							serverLog.level = "info";
+							serverLog.levelColor = "#3273dc";
+							break;
+					}
+
+					serverLog.timestamp = moment(serverLog._id).format(configJS.moment_date_format);
+
+					return serverLog;
+				});
+
+				res.render("pages/admin-logs.ejs", {
+					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					sudoMode: adminLvl === 4,
+					serverData: {
+						name: svr.name,
+						id: svr.id,
+						icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+					},
+					channelData: getChannelData(svr),
+					currentPage: req.path,
+					logData: serverLogs.reverse(),
+					searchQuery: req.query.q,
+					channelQuery: req.query.chid,
+				});
+			} catch (err) {
+				winston.warn(`Failed to fetch logs for server ${svr.name} (*-*)\n`, err);
+				renderError(res, "Failed to fetch all the trees and their logs.");
+			}
 		});
 	});
 

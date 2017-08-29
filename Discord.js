@@ -816,6 +816,32 @@ class Client extends Discord.Client {
 	getAvatarURL (id, hash, type = "avatars") {
 		return hash ? `${this.options.http.cdn}/${type}/${id}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=2048` : "/static/img/discord-icon.png";
 	}
+
+	/**
+	 * Logs a message to the serverDocument, for the admin console's logs section
+	 * @param {serverDocument} serverDocument The server's mongoose document
+	 * @param {String} level The level of severity
+	 * @param {String} content The content of the log message
+	 * @param {String} [chid] The optional channel ID
+	 * @param {String} [usrid] The optional user ID
+	 * @returns {Promise} A promise representing the new serverDocument
+	 */
+	async logMessage (serverDocument, level, content, chid, usrid) {
+		try {
+			if (serverDocument && level && content) {
+				serverDocument.logs.push({
+					level: level,
+					content: content,
+					channelid: chid ? chid : undefined,
+					userid: usrid ? usrid : undefined,
+				});
+				await serverDocument.save();
+			}
+		} catch (err) {
+			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
+		}
+		return serverDocument;
+	}
 }
 
 const bot = new Client({
