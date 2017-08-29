@@ -1,18 +1,16 @@
 const TextBasedChannel = require("./Channels/TextBasedChannel");
-// eslint-disable-next-line no-unused-vars
 let rawuser;
 
 class User {
 	constructor (rawUser) {
 		this.avatar = rawUser.avatar;
-		this.avatarURL = rawUser.avatarURL;
 		this.bot = rawUser.bot;
 		this.createdAt = rawUser.createdAt;
 		this.createdTimestamp = rawUser.createdTimestamp;
 		this.defaultAvatarURL = rawUser.defaultAvatarURL;
 		this.discriminator = rawUser.discriminator;
-		this.displayAvatarURL = rawUser.displayAvatarURL;
 		this.id = rawUser.id;
+		this.presence = rawUser.presence;
 		this.tag = rawUser.tag;
 		this.username = rawUser.username;
 		rawuser = rawUser;
@@ -27,6 +25,14 @@ class User {
 
 	toString () {
 		return `<@${this.id}>`;
+	}
+
+	avatarURL (options) {
+		return rawuser.avatarURL(options);
+	}
+
+	displayAvatarURL (options) {
+		return rawuser.displayAvatarURL(options);
 	}
 }
 
