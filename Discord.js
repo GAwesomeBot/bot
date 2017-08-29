@@ -74,7 +74,7 @@ class Client extends Discord.Client {
 
 	/**
 	 * Gets the command prefix for a server
-	 * @param {Guild} server The guild to search for
+	 * @param {Discord.Guild} server The guild to search for
 	 * @param {Document} serverDocument The database server document for the server
 	 * @returns {Promise<?String>} The prefix of the server
 	 */
@@ -96,7 +96,7 @@ class Client extends Discord.Client {
 
 	/**
 	 * Checks if message contains a command tag, returning the command and suffix
-	 * @param {Message} message The message object from Discord
+	 * @param {Discord.Message} message The message object from Discord
 	 * @param {Document} serverDocument The database server document for the server assigned with the message
 	 * @returns {Promise<?Object>} Object containing the command and the suffix (if present)
 	 */
@@ -132,9 +132,9 @@ class Client extends Discord.Client {
 
 	/**
 	 * Gets the name of a user on a server in accordance with config
-	 * @param {Guild} server The guild that contains the member
+	 * @param {Discord.Guild} server The guild that contains the member
 	 * @param {Document} serverDocument The database server document
-	 * @param {GuildMember} member The guild member to get the name from
+	 * @param {Discord.GuildMember} member The guild member to get the name from
 	 * @param {Boolean} [ignoreNick=false] If it should ignore nicknames 
 	 */
 	getName (server, serverDocument, member, ignoreNick = false) {
@@ -241,8 +241,8 @@ class Client extends Discord.Client {
 	/**
 	 * Finds a member on a server (by username, ID, etc.)
 	 * @param {String} string The string to search from
-	 * @param {Guild} server The guild to search the member in
-	 * @returns {Promise<?GuildMember>} The guild member 
+	 * @param {Discord.Guild} server The guild to search the member in
+	 * @returns {Promise<?Discord.GuildMember>} The guild member 
 	 */
 	memberSearch (string, server) {
 		return new Promise((resolve, reject) => {
@@ -278,9 +278,9 @@ class Client extends Discord.Client {
 	/**
 	 * Finds a server (by name, ID, server nick, etc.) for a user
 	 * @param {String} string The string to search servers with
-	 * @param {User|GuildMember} user The user to search the guild for
+	 * @param {Discord.User|Discord.GuildMember} user The user to search the guild for
 	 * @param {Document} userDocument The database document for the user
-	 * @returns {Promise<?Guild>} The first guild found with the user
+	 * @returns {Promise<?Discord.Guild>} The first guild found with the user
 	 */
 	serverSearch (string, user, userDocument) {
 		return new Promise((resolve, reject) => {
@@ -317,8 +317,8 @@ class Client extends Discord.Client {
 	/**
 	 * Finds a channel (by name or ID) in a server
 	 * @param {String} string The string to search the channel for
-	 * @param {Guild} server The guild to search the channel in
-	 * @returns {Promise<?TextChannel>} The text channel from the guild, if found. 
+	 * @param {Discord.Guild} server The guild to search the channel in
+	 * @returns {Promise<?Discord.TextChannel>} The text channel from the guild, if found. 
 	 */
 	channelSearch (string, server) {
 		return new Promise((resolve, reject) => {
@@ -347,8 +347,8 @@ class Client extends Discord.Client {
 	/**
 	 * Finds a role (by name or ID) in a server
 	 * @param {String} string The string to search the role for
-	 * @param {Guild} server The guild to search the role in
-	 * @returns {Promise<?Role>} The role, if found.
+	 * @param {Discord.Guild} server The guild to search the role in
+	 * @returns {Promise<?Discord.Role>} The role, if found.
 	 */
 	roleSearch (string, server) {
 		return new Promise((resolve, reject) => {
@@ -375,7 +375,7 @@ class Client extends Discord.Client {
 
 	/**
 	 * Gets the game string from a user
-	 * @param {GuildMember|User} userOrMember The user or GuildMember to get the game from 
+	 * @param {Discord.GuildMember|Discord.User} userOrMember The user or GuildMember to get the game from 
 	 * @returns {Promise<?String>} A string containing the game, or an empty string otherwise
 	 */
 	getGame (userOrMember) {
@@ -392,9 +392,9 @@ class Client extends Discord.Client {
 	/* eslint-disable max-depth */
 	/**
 	 * Check if a user has leveled up a rank.
-	 * @param {Guild} server The guild containing the member.
+	 * @param {Discord.Guild} server The guild containing the member.
 	 * @param {Document} serverDocument The database server document for the guild.
-	 * @param {GuildMember} member The GuildMember to check if he leveled up.
+	 * @param {Discord.GuildMember} member The GuildMember to check if he leveled up.
 	 * @param {Document} memberDocument The database member document from the guild.
 	 * @param {Boolean} [override=false] A boolean that represents if the rank score should be calculated with the new scores or not.
 	 * @returns {?Promise<?String>} String containing the new role ID for leveling up.
@@ -470,10 +470,10 @@ class Client extends Discord.Client {
 	/* eslint-enable max-depth */
 	/**
 	 * Handle a spam or filter violation on a server
-	 * @param {Guild} server The guild that should handle this violation
+	 * @param {Discord.Guild} server The guild that should handle this violation
 	 * @param {Document} serverDocument The database document for the guild
-	 * @param {TextChannel} channel The channel the violation occured
-	 * @param {GuildMember} member The member that did the violation
+	 * @param {Discord.TextChannel} channel The channel the violation occured
+	 * @param {Discord.GuildMember} member The member that did the violation
 	 * @param {Document} userDocument The database user document for the member
 	 * @param {Document} memberDocument The database member document from the server document
 	 * @param {String} userMessage A string that should be given to the user about the violation
@@ -486,7 +486,7 @@ class Client extends Discord.Client {
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
 			userDocument.points -= 50;
-			userDocument.save().catch(userErr => {
+			await userDocument.save().catch(userErr => {
 				winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
 			});
 		}
@@ -638,9 +638,9 @@ class Client extends Discord.Client {
 
 	/**
 	 * Check if user has a bot admin role on a server / is a bot admin on the server
-	 * @param {Guild} server The server to check on 
+	 * @param {Discord.Guild} server The server to check on 
 	 * @param {Document} serverDocument The database guild document
-	 * @param {GuildMember} member The member to check the admin level
+	 * @param {Discord.GuildMember} member The member to check the admin level
 	 * @returns {Number} The admin level of the user 
 	 */
 	getUserBotAdmin (server, serverDocument, member) {
@@ -666,7 +666,7 @@ class Client extends Discord.Client {
 
 	/**
 	 * Message the bot admins for a server
-	 * @param {Guild} server The server that should have its admins messaged
+	 * @param {Discord.Guild} server The server that should have its admins messaged
 	 * @param {Document} serverDocument The database guild document for the guild.
 	 * @param {?Object|String} messageObject A string or a message object.
 	 * To send both a content and an embed, you can provide the content in the messageObject.
@@ -694,7 +694,7 @@ class Client extends Discord.Client {
 	 * @param {Discord.GuildMember} member The member to check this on
 	 * @returns {Boolean} A boolean depending if the member is muted.
 	 */
-	async isMuted (channel, member) {
+	isMuted (channel, member) {
 		return !channel.permissionsFor(member).has("SEND_MESSAGES", false);
 	}
 
@@ -754,13 +754,8 @@ class Client extends Discord.Client {
 	 * @param {Discord.GuildMember} member The member to unmute
 	 * @param {String} [reason] Optional reason for the unmute
 	 */
-	/*
-	* TODO for Discord.js version 12.0
-	* replace code with the commented one
-	*/
 	async unmuteMember (channel, member, reason = `Unmuted ${member.user.tag} in #${channel.name}`) {
 		if (await this.isMuted(channel, member) && channel.type === "text") {
-			/* Skyrider#0702 be happy!
 			const overwrite = channel.permissionOverwrites.get(member.id);
 			if (overwrite) {
 				const allowedPerms = overwrite.allowed;
@@ -780,13 +775,6 @@ class Client extends Discord.Client {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 					}
 				}
-			} */
-			try {
-				await channel.overwritePermissions(member.id, {
-					SEND_MESSAGES: null,
-				}, reason);
-			} catch (err) {
-				winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
 			}
 		}
 	}
@@ -920,8 +908,7 @@ bot.on("guildUnavailable", guild => {
 });
 
 bot.on("guildMembersChunk", (members, guild) => {
-	// Hey ho, for Discord.js v12, change members.length to members.size kthx
-	winston.silly(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.length });
+	winston.silly(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.size });
 });
 
 /**
