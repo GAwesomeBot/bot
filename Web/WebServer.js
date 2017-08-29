@@ -2869,11 +2869,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
 			for (let i = 0; i < statusMessagesData.member_streaming_message.enabled_user_ids.length; i++) {
-				const member = svr.members.get(statusMessagesData.member_streaming_message.enabled_user_ids[i]) || { user: {} };
+				const member = svr.members[statusMessagesData.member_streaming_message.enabled_user_ids[i]] || { user: {} };
 				statusMessagesData.member_streaming_message.enabled_user_ids[i] = {
 					name: member.user.username,
 					id: member.id,
-					avatar: member.user.avatarURL || "/static/img/discord-icon.png",
+					avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
 				};
 			}
 			res.render("pages/admin-status-messages.ejs", {
@@ -2882,7 +2882,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				currentPage: req.path,
@@ -2900,35 +2900,33 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 	app.post("/dashboard/management/status-messages", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (Object.keys(req.body).length === 1) {
-				const args = Object.keys(req.body)[0].split("-");
-				if (args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
-					if (args[1] === "member_streaming_message") {
-						const member = findQueryUser(req.body[Object.keys(req.body)[0]], svr.members);
-						if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
-							serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
-						}
-					} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
-						serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
+			const args = Object.keys(req.body)[0].split("-");
+			if (Object.keys(req.body).length === 1 && args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
+				if (args[1] === "member_streaming_message") {
+					const member = findQueryUser(req.body[Object.keys(req.body)[0]], svr.members);
+					if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
+						serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
 					}
+				} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
+					serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
 				}
 			} else {
 				for (const status_message in serverDocument.toObject().config.moderation.status_messages) {
-					if (["new_member_pm", "member_removed_pm"].indexOf(status_message) === -1) {
+					if (["new_member_pm", "member_removed_pm"].indexOf(status_message) === -1 && Object.keys(req.body).length > 1) {
 						serverDocument.config.moderation.status_messages[status_message].channel_id = "";
-					} else {
+					} else if (Object.keys(req.body).length > 1) {
 						serverDocument.config.moderation.status_messages[status_message].message_content = req.body[`${status_message}-message_content`];
 					}
-					for (const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
+					if (Object.keys(req.body).length > 1) for (const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
 						switch (key) {
 							case "isEnabled":
 								serverDocument.config.moderation.status_messages[status_message][key] = req.body[`${status_message}-${key}`] === "on";
 								break;
 							case "enabled_channel_ids":
 								serverDocument.config.moderation.status_messages[status_message][key] = [];
-								svr.channels.forEach(ch => {
-									if (ch.type === 0) {
-										if (req.body[`${status_message}-${key}-${ch.id}`] !== null) {
+								Object.values(svr.channels).forEach(ch => {
+									if (ch.type === "text") {
+										if (req.body[`${status_message}-${key}-${ch.id}`]) {
 											serverDocument.config.moderation.status_messages[status_message][key].push(ch.id);
 										}
 									}
@@ -2946,7 +2944,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					const key = status_message === "member_streaming_message" ? "enabled_user_ids" : "messages";
 					if (serverDocument.config.moderation.status_messages[status_message][key]) {
 						for (let i = 0; i < serverDocument.config.moderation.status_messages[status_message][key].length; i++) {
-							if (req.body[`${status_message}-${i}-removed`] !== null) {
+							if (req.body[`${status_message}-${i}-removed`]) {
 								serverDocument.config.moderation.status_messages[status_message][key][i] = null;
 							}
 						}
@@ -2955,7 +2953,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
