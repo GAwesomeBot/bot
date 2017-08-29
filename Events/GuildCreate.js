@@ -4,7 +4,7 @@ const { NewServer: getNewServerData, PostData } = require("../Modules");
 class GuildCreate extends BaseEvent {
 	async handle ({ guild }) {
 		this.bot.IPC.send("guilds", { latest: [guild.id] });
-		await Promise.all(guild.fetchMembers(), PostData(this.bot));
+		await Promise.all(guild.members.fetch(), PostData(this.bot));
 		let serverDocument, shouldMakeDocument = false;
 		try {
 			serverDocument = await this.db.servers.findOne({ _id: guild.id }).exec();

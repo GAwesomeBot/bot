@@ -45,14 +45,14 @@ class MessageCreate extends BaseEvent {
 				for (const maintainerID of this.configJSON.maintainers) {
 					let user = this.bot.users.get(maintainerID);
 					if (!user) {
-						user = await this.bot.fetchUser(maintainerID, true);
+						user = await this.bot.users.fetch(maintainerID, true);
 					}
 					user.send({
 						embed: {
 							color: 0x3669FA,
 							author: {
 								name: `${msg.author.tag} just sent me a PM!`,
-								icon_url: msg.author.displayAvatarURL,
+								icon_url: msg.author.displayAvatarURL(),
 							},
 							description: `${url !== "" ? `The message was too large! Please go [here](${url}) to read it. 📨` : `\`\`\`${msg.content}\`\`\``}`,
 						},
@@ -305,7 +305,7 @@ class MessageCreate extends BaseEvent {
 							// Delete spam messages if necessary
 							if (serverDocument.config.moderation.filters.spam_filter.delete_messages) {
 								const filteredMessages = [];
-								const foundMessages = await msg.channel.fetchMessages({ limit: 50 }).catch(err => {
+								const foundMessages = await msg.channel.messages.fetch({ limit: 50 }).catch(err => {
 									winston.debug(`Failed to fetch messages for spam filter..`, err);
 								});
 								foundMessages.forEach(foundMessage => {
@@ -490,7 +490,7 @@ class MessageCreate extends BaseEvent {
 					for (const voteTrigger of this.configJS.voteTriggers) {
 						if (` ${msg.content}`.startsWith(voteTrigger)) {
 							// Get previous message
-							const fetchedMessages = await msg.channel.fetchMessages({ limit: 1, before: msg.id }).catch(err => {
+							const fetchedMessages = await msg.channel.messages.fetch({ limit: 1, before: msg.id }).catch(err => {
 								winston.debug(`Failed to fetch message for voting...`, err);
 							});
 							const message = fetchedMessages.first();
@@ -526,7 +526,7 @@ class MessageCreate extends BaseEvent {
 									msg.channel.send({
 										embed: {
 											thumbnail: {
-												url: member.user.displayAvatarURL,
+												url: member.user.displayAvatarURL(),
 											},
 											color: 0x3669FA,
 											author: {
@@ -544,7 +544,7 @@ class MessageCreate extends BaseEvent {
 										msg.channel.send({
 											embed: {
 												thumbnail: {
-													url: member.user.displayAvatarURL,
+													url: member.user.displayAvatarURL(),
 												},
 												color: 0x3669FA,
 												author: {

@@ -45,7 +45,7 @@ module.exports = async (bot, server, serverDocument) => {
 			title: `Hello! ${bot.user.tag} (that's me) has been added to "${server}", a server you moderate!`,
 			description: `Use ${await bot.getCommandPrefix(server, serverDocument)}help to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
 			thumbnail: {
-				url: bot.user.displayAvatarURL,
+				url: bot.user.displayAvatarURL(),
 			},
 			footer: {
 				text: `${await Utils.GetValue(bot, "guilds.size", "int") % 1000 === 0 ? `*Wow, you're server #${await Utils.GetValue(bot, "guilds.size", "int")} for me!* 🎉` : ""}`,
