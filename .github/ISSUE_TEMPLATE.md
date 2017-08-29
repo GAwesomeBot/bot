@@ -14,6 +14,6 @@ This issue tracker is only for bug reports and enhancement suggestions. You won'
 
 - [ ] The problem happens on the official GAwesomeBot
   - [ ] The problem occurs on a self-host
-- Node.JS version:
-- Operating System:
+- Node.JS version (If applicable):
+- Operating System (If applicable):
 - Priority this issue should have – please be realistic and elaborate if possible:
