@@ -3112,7 +3112,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
@@ -3146,7 +3146,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			parseCommandOptions(svr, serverDocument, "roleinfo", req.body);
 			parseCommandOptions(svr, serverDocument, "role", req.body);
 			serverDocument.config.custom_roles = [];
-			svr.roles.forEach(role => {
+			Object.values(svr.roles).forEach(role => {
 				if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 					if (req.body[`custom_roles-${role.id}`] === "on") {
 						serverDocument.config.custom_roles.push(role.id);
@@ -3155,7 +3155,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 			parseCommandOptions(svr, serverDocument, "perms", req.body);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
