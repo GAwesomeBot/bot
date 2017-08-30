@@ -3164,50 +3164,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Admin console logs
 	app.get("/dashboard/management/logs", async (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			/*
-			winston.query({
-				from: new Date - 48 * 60 * 60 * 1000,
-				until: new Date,
-				limit: 500,
-				order: "desc",
-			}, (err, results) => {
-				if (err) {
-					renderError(res, "Failed to fetch all the trees and their logs.");
-				} else {
-					results = results.file;
-					const logs = [];
-					for (let i = 0; i < results.length; i++) {
-						if (results[i].svrid && svr.id === results[i].svrid && (!req.query.q || results[i].message.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || results[i].chid === req.query.chid)) {
-							delete results[i].svrid;
-							const ch = results[i].chid ? svr.channels.get(results[i].chid) : null;
-							if (results[i].chid) {
-								results[i].ch = ch ? ch.name : "invalid-channel";
-							}
-							const member = results[i].usrid ? svr.members.get(results[i].usrid) : null;
-							if (results[i].usrid) {
-								results[i].usr = member ? `${member.user.username}#${member.user.discriminator}` : "invalid-user";
-							}
-							switch (results[i].level) {
-								case "warn":
-									results[i].level = "exclamation";
-									results[i].levelColor = "#ffdd57";
-									break;
-								case "error":
-									results[i].level = "times";
-									results[i].levelColor = "#ff3860";
-									break;
-								default:
-									results[i].level = "info";
-									results[i].levelColor = "#3273dc";
-									break;
-							}
-							results[i].timestamp = moment(results[i].timestamp).format(configJS.moment_date_format);
-							logs.push(results[i]);
-						}
-					}
-					*/
 			try {
-				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.slice(serverDocument.logs.length - 500) : serverDocument.logs;
+				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 500) : serverDocument.logs.toObject();
 				serverLogs = serverLogs.filter(serverLog => ((!req.query.q || serverLog.content.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || serverLog.channelid === req.query.chid)));
 				serverLogs.map(serverLog => {
 					const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
@@ -3235,7 +3193,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							break;
 					}
 
-					serverLog.timestamp = moment(serverLog._id).format(configJS.moment_date_format);
+					serverLog.moment = moment(serverLog.timestamp).format(configJS.moment_date_format);
 
 					return serverLog;
 				});

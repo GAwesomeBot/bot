@@ -828,7 +828,7 @@ class Client extends Discord.Client {
 	 * @param {String} content The content of the log message
 	 * @param {String} [chid] The optional channel ID
 	 * @param {String} [usrid] The optional user ID
-	 * @returns {Promise} A promise representing the new serverDocument
+	 * @returns {Promise<Document>} A promise representing the new serverDocument
 	 */
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {

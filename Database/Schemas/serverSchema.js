@@ -35,10 +35,10 @@ module.exports = new mongoose.Schema({
 		},
 	})],
 	logs: [new mongoose.Schema({
-		_id: {
+		timestamp: {
 			type: Date,
 			required: false,
-			default: Date.now(),
+			default: Date.now,
 		},
 		level: {
 			type: String,
@@ -56,6 +56,6 @@ module.exports = new mongoose.Schema({
 			type: String,
 			required: false,
 		},
-	})],
+	}, { _id: false })],
 	modlog: require("./serverModlogSchema.js"),
 });

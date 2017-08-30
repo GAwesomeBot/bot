@@ -63,7 +63,7 @@
 												<%- logData[i].ch ? ("<span title=" + logData[i].chid  + ">#" + logData[i].ch + "</span>") : "" %><%- (logData[i].ch && logData[i].usr) ? ", " : "" %><%- logData[i].usr ? ("<span title=" + logData[i].usrid + ">@" + logData[i].usr + "</span>") : "" %><% (!logData[i].ch && !logData[i].usr) ? "General" : "" %>
 											</strong>
 											<small>
-												<%= logData[i].timestamp %>
+												<%= logData[i].moment %>
 											</small>
 											<br>
 											<%= logData[i].content %>
