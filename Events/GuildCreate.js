@@ -19,6 +19,7 @@ class GuildCreate extends BaseEvent {
 				winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
 			}
 		}
+		this.bot.logMessage(await this.db.servers.findOne({ _id: guild.id }).exec(), "info", "I've been added to your server! (^-^)");
 	}
 }
 

@@ -2,7 +2,7 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const { Console, Utils, ShardIPC, GetGuild: GG } = require("./Modules/");
-const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDefines } = Utils;
+const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, GlobalDefines, MessageOfTheDay } = Utils;
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
@@ -35,6 +35,9 @@ class Client extends Discord.Client {
 		super(options);
 		// Value set once READY triggers
 		this.isReady = false;
+
+		// Store MOTD timers, and cancel accordingly
+		this.MOTDTimers = new Discord.Collection();
 
 		// Bot IPC
 		winston.silly("Creating ShardIPC instance.");
@@ -69,6 +72,17 @@ class Client extends Discord.Client {
 			const member = guild.members.get(msg.member);
 
 			await this.unmuteMember(channel, member);
+		});
+
+		this.IPC.on("createMOTD", async msg => {
+			try {
+				const guild = bot.guilds.get(msg.guild);
+				const serverDocument = await db.servers.findOne({ _id: msg.guild }).exec();
+
+				MessageOfTheDay(this, db, guild, serverDocument.config.message_of_the_day);
+			} catch (err) {
+				winston.warn("Failed to create a MOTD timer for server!", { svrid: msg.guild });
+			}
 		});
 	}
 
@@ -149,7 +163,7 @@ class Client extends Discord.Client {
 				.replace(/<@/g, "<@\u200b");
 		};
 		// eslint-disable-next-line max-len
-		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) + serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : "");
+		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) + (serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : ""));
 	}
 
 	// Bot Command Handlers
@@ -480,9 +494,11 @@ class Client extends Discord.Client {
 	 * @param {String} adminMessage A string that should be given to the admins about what the user violated
 	 * @param {String} strikeMessage The strike message that should appear in the mod logs and the audit logs
 	 * @param {String} action What action should be taken.
-	 * @param {String} roleIDThe role ID that the user should get due to the violation
+	 * @param {String} roleID The role ID that the user should get due to the violation
 	 */
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
+		this.logMessage(serverDocument, "info", `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
+
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
 			userDocument.points -= 50;
@@ -812,7 +828,7 @@ class Client extends Discord.Client {
 	 * @param {String} content The content of the log message
 	 * @param {String} [chid] The optional channel ID
 	 * @param {String} [usrid] The optional user ID
-	 * @returns {Promise} A promise representing the new serverDocument
+	 * @returns {Promise<Document>} A promise representing the new serverDocument
 	 */
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {

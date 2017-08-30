@@ -131,6 +131,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (sharder.shards.has(shardid)) sharder.IPC.send("unmuteMember", msg, shardid);
 		});
 
+		sharder.IPC.on("createMOTD", async msg => {
+			const shardid = sharder.guilds.get(msg.guild);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("createMOTD", msg, shardid);
+		});
+
 		sharder.spawn();
 	}
 });

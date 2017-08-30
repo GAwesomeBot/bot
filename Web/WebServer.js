@@ -35,7 +35,6 @@ const removeMd = require("remove-markdown");
 
 const database = require("./../Database/Driver.js");
 
-const createMessageOfTheDay = require("./../Modules/Utils/MessageOfTheDay.js");
 // const Giveaways = require("./../Modules/Giveaways.js");
 // const Lotteries = require("./../Modules/Lotteries.js");
 // const Polls = require("./../Modules/Polls.js");
@@ -115,6 +114,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	const renderError = (res, text, line) => res.status(500).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
 
 	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
+
+	const createMessageOfTheDay = (id) => bot.IPC.send("createMOTD", { guild: id });
 
 	// Notify the maintainer of possible issues
 	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
@@ -3059,11 +3060,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.message_of_the_day.channel_id = req.body.channel_id;
 			serverDocument.config.message_of_the_day.interval = parseInt(req.body.interval);
 
-			if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
-				createMessageOfTheDay(bot, db, svr, serverDocument.config.message_of_the_day);
-			}
-
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
+
+			if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
+				createMessageOfTheDay(svr.id);
+			}
 		});
 	});
 
@@ -3163,50 +3164,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Admin console logs
 	app.get("/dashboard/management/logs", async (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			/*
-			winston.query({
-				from: new Date - 48 * 60 * 60 * 1000,
-				until: new Date,
-				limit: 500,
-				order: "desc",
-			}, (err, results) => {
-				if (err) {
-					renderError(res, "Failed to fetch all the trees and their logs.");
-				} else {
-					results = results.file;
-					const logs = [];
-					for (let i = 0; i < results.length; i++) {
-						if (results[i].svrid && svr.id === results[i].svrid && (!req.query.q || results[i].message.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || results[i].chid === req.query.chid)) {
-							delete results[i].svrid;
-							const ch = results[i].chid ? svr.channels.get(results[i].chid) : null;
-							if (results[i].chid) {
-								results[i].ch = ch ? ch.name : "invalid-channel";
-							}
-							const member = results[i].usrid ? svr.members.get(results[i].usrid) : null;
-							if (results[i].usrid) {
-								results[i].usr = member ? `${member.user.username}#${member.user.discriminator}` : "invalid-user";
-							}
-							switch (results[i].level) {
-								case "warn":
-									results[i].level = "exclamation";
-									results[i].levelColor = "#ffdd57";
-									break;
-								case "error":
-									results[i].level = "times";
-									results[i].levelColor = "#ff3860";
-									break;
-								default:
-									results[i].level = "info";
-									results[i].levelColor = "#3273dc";
-									break;
-							}
-							results[i].timestamp = moment(results[i].timestamp).format(configJS.moment_date_format);
-							logs.push(results[i]);
-						}
-					}
-					*/
 			try {
-				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.slice(serverDocument.logs.length - 500) : serverDocument.logs;
+				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 500) : serverDocument.logs.toObject();
 				serverLogs = serverLogs.filter(serverLog => ((!req.query.q || serverLog.content.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || serverLog.channelid === req.query.chid)));
 				serverLogs.map(serverLog => {
 					const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
@@ -3234,7 +3193,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							break;
 					}
 
-					serverLog.timestamp = moment(serverLog._id).format(configJS.moment_date_format);
+					serverLog.moment = moment(serverLog.timestamp).format(configJS.moment_date_format);
 
 					return serverLog;
 				});
@@ -3269,7 +3228,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
@@ -3287,7 +3246,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.name_display.use_nick = req.body["name_display-use_nick"] === "on";
 			serverDocument.config.name_display.show_discriminator = req.body["name_display-show_discriminator"] === "on";
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

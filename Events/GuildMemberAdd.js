@@ -11,7 +11,7 @@ class GuildMemberAdd extends BaseEvent {
 		try {
 			serverDocument = await this.db.servers.findOne({ _id: member.guild.id }).exec();
 		} catch (err) {
-			winston.warn(`Failed to find server data for GUiLD_MEMBER_ADD >.>`, { svrid: member.guild.id }, err);
+			winston.warn(`Failed to find server data for GUILD_MEMBER_ADD >.>`, { svrid: member.guild.id }, err);
 		}
 		if (serverDocument) {
 			if (serverDocument.config.moderation.isEnabled) {
@@ -37,7 +37,7 @@ class GuildMemberAdd extends BaseEvent {
 										title: `Woops! I was unable to get a member join message!`,
 										description: `Just letting you know, ${member} joined this server!`,
 										footer: {
-											text: `Psst. Can you check the dashboard messages to see if theres any? I need at least one message for this feature to work as intended!`,
+											text: `Psst. Can you check the dashboard messages to see if there are any? I need at least one message for this feature to work as intended!`,
 										},
 									},
 								});
@@ -56,7 +56,7 @@ class GuildMemberAdd extends BaseEvent {
 									url: member.guild.iconURL || "",
 								},
 								title: `Welcome to ${member.guild} Discord Chat!`,
-								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like theres no join message set for new members! Have a banana instead 🍌",
+								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message set for new members! Have a banana instead 🍌",
 								footer: {
 									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${await this.bot.getCommandPrefix(member.guild, serverDocument)}help" in the public chat.`,
 								},
@@ -78,6 +78,7 @@ class GuildMemberAdd extends BaseEvent {
 				if (arrayOfRoles.length > 0) {
 					try {
 						await member.addRoles(arrayOfRoles, `Added set roles for guild member add.`);
+						this.bot.logMessage(serverDocument, "info", `Added new member roles to a new member.`, null, member.id);
 					} catch (err) {
 						winston.verbose(`Failed to add new role(s) to member`, { svrid: member.guild.id, usrid: member.id }, err);
 					}
