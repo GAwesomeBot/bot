@@ -35,7 +35,6 @@ const removeMd = require("remove-markdown");
 
 const database = require("./../Database/Driver.js");
 
-const createMessageOfTheDay = require("./../Modules/Utils/MessageOfTheDay.js");
 // const Giveaways = require("./../Modules/Giveaways.js");
 // const Lotteries = require("./../Modules/Lotteries.js");
 // const Polls = require("./../Modules/Polls.js");
@@ -115,6 +114,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	const renderError = (res, text, line) => res.status(500).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
 
 	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
+
+	const createMessageOfTheDay = (id) => bot.IPC.send("createMOTD", { guild: id });
 
 	// Notify the maintainer of possible issues
 	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
@@ -3059,11 +3060,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.message_of_the_day.channel_id = req.body.channel_id;
 			serverDocument.config.message_of_the_day.interval = parseInt(req.body.interval);
 
-			if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
-				createMessageOfTheDay(bot, db, svr, serverDocument.config.message_of_the_day);
-			}
-
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
+
+			if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
+				createMessageOfTheDay(svr.id);
+			}
 		});
 	});
 
