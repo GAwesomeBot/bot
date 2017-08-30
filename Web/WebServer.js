@@ -3228,7 +3228,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				currentPage: req.path,
 				configData: {
@@ -3246,7 +3246,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.name_display.use_nick = req.body["name_display-use_nick"] === "on";
 			serverDocument.config.name_display.show_discriminator = req.body["name_display-show_discriminator"] === "on";
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

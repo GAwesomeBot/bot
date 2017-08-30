@@ -163,7 +163,7 @@ class Client extends Discord.Client {
 				.replace(/<@/g, "<@\u200b");
 		};
 		// eslint-disable-next-line max-len
-		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) + serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : "");
+		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) + (serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : ""));
 	}
 
 	// Bot Command Handlers
