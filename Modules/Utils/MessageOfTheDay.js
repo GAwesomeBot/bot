@@ -25,11 +25,12 @@ module.exports = async (bot, db, server, motdDocument) => {
 		}
 	};
 	if (motdDocument.isEnabled) {
-		bot.setTimeout(async () => {
+		if (bot.MOTDTimers.has(server.id)) clearTimeout(bot.MOTDTimers.get(server.id));
+		bot.MOTDTimers.set(server.id, bot.setTimeout(async () => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});
 			await sendMOTD(serverDocument.config);
-		}, Math.abs((motdDocument.last_run + motdDocument.interval) - Date.now()));
+		}, Math.abs((motdDocument.last_run + motdDocument.interval) - Date.now())));
 	}
 };

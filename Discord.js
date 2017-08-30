@@ -36,6 +36,9 @@ class Client extends Discord.Client {
 		// Value set once READY triggers
 		this.isReady = false;
 
+		// Store MOTD timers, and cancel accordingly
+		this.MOTDTimers = new Discord.Collection();
+
 		// Bot IPC
 		winston.silly("Creating ShardIPC instance.");
 		this.IPC = new ShardIPC(this, winston, process);
