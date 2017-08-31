@@ -11,6 +11,6 @@
 - [ ] This PR modifies Web processing and/or content
   - [ ] This PR adds/removes new endpoints
   - [ ] This PR modifies static/ejs content
-  - [ ] This PR modifies request processing (route handler functions)
+  - [ ] This PR modifies request processing (endpoint functions)
   - [ ] This PR modifies paths to existing resources
 - [ ] This PR **only** includes non-code changes, like changes to default configurations, README, typos, etc.
