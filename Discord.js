@@ -689,7 +689,7 @@ class Client extends Discord.Client {
 		server.members.forEach(async member => {
 			if (this.getUserBotAdmin(server, serverDocument, member) >= 2 && member.id !== this.user.id && !member.user.bot) {
 				try {
-					await member.send(content, messageObject);
+					await member.send(messageObject);
 				} catch (err) {
 					winston.verbose(`bot.messageBotAdmins error at sending, probably blocked the bot / doesn't have messages from non-friends`, err);
 				}
@@ -772,7 +772,7 @@ class Client extends Discord.Client {
 				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
 					try {
 						await channel.overwritePermissions(member.id, {
-							SEND_MESSAGES: true,
+							SEND_MESSAGES: null,
 						}, reason);
 					} catch (err) {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
