@@ -6,6 +6,7 @@ const {
 	FilterChecker: checkFiltered,
 } = Utils;
 const levenshtein = require("fast-levenshtein");
+const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
 	requirements ({ msg }) {
@@ -760,24 +761,20 @@ class MessageCreate extends BaseEvent {
 	async chatterPrompt (userOrUserID, prompt) {
 		let res;
 		try {
-			res = await rp.get({
-				uri: `http://api.program-o.com/v2/chatbot/`,
-				qs: {
-					bot_id: 6,
-					say: encodeURIComponent(prompt),
-					convo_id: userOrUserID.id ? userOrUserID.id : userOrUserID,
-					format: "json",
-				},
-				headers: {
-					Accept: "application/json",
-					"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
-				},
+			res = await snekfetch.get(`http://api.program-o.com/v2/chatbot/`).query({
+				bot_id: 6,
+				say: encodeURIComponent(prompt),
+				convo_id: userOrUserID.id ? userOrUserID.id : userOrUserID,
+				format: "json",
+			}).set({
+				Accept: "application/json",
+				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
 			});
 		} catch (err) {
 			throw err;
 		}
 		let response;
-		if (res.statusCode === 200 && res.body) {
+		if (res.status === 200 && res.body) {
 			response = JSON.parse(res.body).botsay
 				.replaceAll("Program-O", this.bot.user.username)
 				.replaceAll("<br/>", "\n")

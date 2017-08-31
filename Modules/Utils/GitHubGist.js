@@ -1,17 +1,19 @@
 const RegExpMaker = require("./RegExpMaker.js");
+const snekfetch = require("snekfetch");
 const { discord, tokens } = require("../../Configurations/auth.js");
 const { gistKey } = tokens;
 
 module.exports = class GitHubGist {
 	constructor (bot) {
 		this.bot = bot;
-		this.token = gistKey;
-		this.public = this.token === "";
+		this.public = gistKey === "";
 		this.headers = {
 			"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+			Accept: "application/json",
+			"Content-Type": "application/json",
 		};
-		if (this.token !== "") this.headers.Authorization = `Token ${this.token}`;
-		this.apiURL = "https://api.github.com/gists";
+		if (gistKey !== "") this.headers.Authorization = `Token ${gistKey}`;
+		this.apiURL = "https://api.github.com/gists/";
 	}
 
 	/**
@@ -43,17 +45,12 @@ module.exports = class GitHubGist {
 		const regExp = new RegExpMaker(censor).make("gi");
 		let res;
 		try {
-			res = await rp.post({
-				uri: this.apiURL,
-				headers: this.headers,
-				json: true,
-				body: {
-					description: `GAwesomeBot (${this.bot.user.tag} | ${this.bot.user.id})${title ? ` | ${title}` : ""}`,
-					public: this.public,
-					files: {
-						"text.md": {
-							content: text.replace(regExp, "(╯°□°）╯︵ ┻━┻"),
-						},
+			res = await snekfetch.post(this.apiURL).set(this.headers).send({
+				description: `GAwesomeBot (${this.bot.user.tag} | ${this.bot.user.id})${title ? ` | ${title}` : ""}`,
+				public: this.public,
+				files: {
+					"text.md": {
+						content: text.replace(regExp, "(╯°□°）╯︵ ┻━┻"),
 					},
 				},
 			});
@@ -69,15 +66,12 @@ module.exports = class GitHubGist {
 	async delete (id) {
 		let res;
 		try {
-			res = await rp.delete({
-				uri: `${this.apiURL}/${id}`,
-				headers: this.headers,
-			});
+			res = await snekfetch.delete(`${this.apiURL}${id}`).set(this.headers);
 		} catch (err) {
 			throw err;
 		}
 		return {
-			deleted: res.statusCode === 204,
+			deleted: res.status === 204,
 		};
 	}
 };

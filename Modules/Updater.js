@@ -1,13 +1,12 @@
 const dgr = require("download-github-repo");
 const fs = require("fs-extra");
+const snekfetch = require("snekfetch");
 
 module.exports = {
 	check: config => new Promise(async (resolve, reject) => {
 		let res;
 		try {
-			res = await rp.get({
-				uri: `https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`,
-			});
+			res = await snekfetch.get(`https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`);
 		} catch (err) {
 			reject(err);
 		}
@@ -21,14 +20,12 @@ module.exports = {
 	get: (branch, version) => new Promise(async (resolve, reject) => {
 		let res;
 		try {
-			res = await rp.get({
-				uri: `https://status.gawesomebot.com/versions/${branch}/${version}`,
-			});
+			res = await snekfetch.get(`https://status.gawesomebot.com/versions/${branch}/${version}`);
 		} catch (err) {
 			reject(err);
 		}
 		if (res) {
-			if (res.statusCode === 404) reject(new Error(`Couldn't find the requested version / branch combo.`));
+			if (res.status === 404) reject(new Error(`Couldn't find the requested version / branch combo.`));
 			resolve(res.body);
 		}
 	}),
@@ -45,9 +42,7 @@ module.exports = {
 
 		let res;
 		try {
-			res = await rp.get({
-				uri: `https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`,
-			});
+			res = await snekfetch.get(`https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`);
 		} catch (err) {
 			throw err;
 		}
@@ -65,9 +60,9 @@ module.exports = {
 			const files = [];
 
 			/* eslint-disable no-await-in-loop*/
-			// Gilbert make this use await Promise.all pls
+			// TODO: Gilbert make this use await Promise.all pls
 			for (let i = 0; i < body.files.length; i++) {
-				// Gilbert check this pls
+				// TODO: Gilbert check this pls
 				if (body.files[i].substring(0, 13) === "Configurations/") {
 					const dataNew = await fs.readFile(`${tempPath}/${body.files[i]}`, "utf8");
 					const dataOld = await fs.readFile(`./${body.files[i]}`, "utf8");

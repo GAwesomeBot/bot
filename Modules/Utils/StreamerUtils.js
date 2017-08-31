@@ -1,18 +1,11 @@
 /* eslint-disable max-len */
 const auth = require("../../Configurations/auth.js");
+const snekfetch = require("snekfetch");
 
 const isStreamingTwitch = async username => {
 	let res;
 	try {
-		res = await rp.get({
-			uri: `https://api.twitch.tv/kraken/streams/${username}`,
-			qs: {
-				client_id: auth.tokens.twitchClientID,
-			},
-			headers: {
-				Accept: "application/json",
-			},
-		});
+		res = await snekfetch.get(`https://api.twitch.tv/kraken/streams/${username}`).set("Accept", "application/json").query("client_id", auth.tokens.twitchClientID);
 	} catch (err) {
 		throw err;
 	}
@@ -29,12 +22,7 @@ const isStreamingTwitch = async username => {
 const isStreamingYoutube = async channel => {
 	let res;
 	try {
-		res = await rp.get({
-			uri: `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.google_api_key}`,
-			headers: {
-				Accept: "application/json",
-			},
-		});
+		res = await snekfetch.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.google_api_key}`).set("Accept", "application/json");
 	} catch (err) {
 		throw err;
 	}
