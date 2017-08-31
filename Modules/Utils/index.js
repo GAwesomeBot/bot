@@ -3,7 +3,6 @@ module.exports = {
 	FilterChecker: require("./FilterChecker.js"),
 	GetValue: require("./GetValue.js"),
 	Gist: require("./GitHubGist.js"),
-	Giveaways: require("./Giveaways.js"),
 	// GlobalDefines: require("./GlobalDefines.js"),
 	MessageOfTheDay: require("./MessageOfTheDay.js"),
 	ObjectDefines: require("./ObjectDefines.js"),

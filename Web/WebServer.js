@@ -35,11 +35,11 @@ const removeMd = require("remove-markdown");
 
 const database = require("./../Database/Driver.js");
 
-// const Giveaways = require("./../Modules/Giveaways.js");
+const Giveaways = require("./../Modules/Giveaways.js");
 // const Lotteries = require("./../Modules/Lotteries.js");
 // const Polls = require("./../Modules/Polls.js");
-// const Trivia = require("./../Modules/Trivia.js");
-// const Updater = require("./../Modules/Updater.js");
+const Trivia = require("./../Modules/Trivia.js");
+const Updater = require("./../Modules/Updater.js");
 
 const Utils = require("./../Modules/Utils");
 const getGuild = require("./../Modules").GetGuild;
@@ -3258,7 +3258,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			const ongoingGiveaways = [];
 			const ongoingLotteries = [];
 			serverDocument.channels.forEach(channelDocument => {
-				const ch = svr.channels.get(channelDocument._id);
+				const ch = svr.channels[channelDocument._id];
 				if (ch) {
 					if (channelDocument.trivia.isOngoing) {
 						ongoingTrivia.push({
@@ -3273,7 +3273,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						});
 					}
 					if (channelDocument.poll.isOngoing) {
-						const creator = svr.members.get(channelDocument.poll.creator_id) || { user: "invalid-user" };
+						const creator = svr.members[channelDocument.poll.creator_id] || { user: "invalid-user" };
 						ongoingPolls.push({
 							title: channelDocument.poll.title,
 							channel: {
@@ -3288,7 +3288,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						});
 					}
 					if (channelDocument.giveaway.isOngoing) {
-						const creator = svr.members.get(channelDocument.giveaway.creator_id) || { user: "invalid-user" };
+						const creator = svr.members[channelDocument.giveaway.creator_id] || { user: "invalid-user" };
 						ongoingGiveaways.push({
 							title: channelDocument.giveaway.title,
 							channel: {
@@ -3318,7 +3318,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 					defaultChannel: svr.defaultChannel.name,
 				},
 				currentPage: req.path,
@@ -3336,7 +3336,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.post("/dashboard/other/ongoing-activities", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["end-type"] && req.body["end-id"]) {
-				const ch = svr.channels.get(req.body["end-id"]);
+				const ch = svr.channels[req.body["end-id"]];
 				if (ch) {
 					let channelDocument = serverDocument.channels.id(ch.id);
 					if (!channelDocument) {
