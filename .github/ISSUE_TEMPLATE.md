@@ -17,3 +17,6 @@ This issue tracker is only for bug reports and enhancement suggestions. You won'
 - Node.JS version (If applicable):
 - Operating System (If applicable):
 - Priority this issue should have – please be realistic and elaborate if possible:
+  - [ ] Low
+  - [ ] Medium
+  - [ ] High
