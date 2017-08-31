@@ -686,11 +686,6 @@ class Client extends Discord.Client {
 	 * To send both a content and an embed, you can provide the content in the messageObject.
 	 */
 	async messageBotAdmins (server, serverDocument, messageObject) {
-		let content = "";
-		if (messageObject.content) {
-			content = messageObject.content;
-			delete messageObject.content;
-		}
 		server.members.forEach(async member => {
 			if (this.getUserBotAdmin(server, serverDocument, member) >= 2 && member.id !== this.user.id && !member.user.bot) {
 				try {
