@@ -968,6 +968,20 @@ bot.on("guildCreate", async guild => {
 });
 
 /**
+ * Bot removed from a server
+ */
+bot.on("guildDelete", async guild => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_DELETE event from Discord`, { guild: guild.id });
+		try {
+			await events.GuildDelete._handle({ guild: guild });
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
  * A member joins a guild
  */
 bot.on("guildMemberAdd", async member => {
