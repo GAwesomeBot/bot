@@ -1,5 +1,6 @@
 exports.events = keyMirror([
 	"GuildCreate",
+	"GuildDelete",
 	"GuildMemberAdd",
 	"MessageCreate",
 	"Ready",
