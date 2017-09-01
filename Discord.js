@@ -908,7 +908,7 @@ bot.once("pre-update", async () => {
 	}
 });
 
-bot.on("postAllData", async () => {
+bot.IPC.on("postAllData", async () => {
 	await PostTotalData(bot);
 });
 
