@@ -5,7 +5,7 @@ const auth = {
 		clientToken: "",
 	},
 	tokens: {
-		carboniteEx: "",
+		discordBotsOrg: "",
 		discordList: "",
 		discordBots: "",
 		giphyAPI: "dc6zaTOxFJmzC",
