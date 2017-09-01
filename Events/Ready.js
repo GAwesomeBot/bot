@@ -2,7 +2,7 @@
 const BaseEvent = require("./BaseEvent.js");
 const {
 	NewServer: getNewServerData,
-	PostData,
+	PostShardedData,
 	Utils,
 } = require("../Modules/");
 const {
@@ -113,7 +113,7 @@ class Ready extends BaseEvent {
 		// TODO: Add to array this.startTimerExtensions()
 		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
-		PostData(this.bot);
+		await PostShardedData(this.bot);
 		this.showStartupMessage();
 	}
 

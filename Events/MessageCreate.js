@@ -1,4 +1,4 @@
-/* eslint-disable max-len, no-useless-return, max-depth */
+/* eslint-disable max-len, max-depth */
 const BaseEvent = require("./BaseEvent.js");
 const { MicrosoftTranslate: mstranslate, Utils } = require("../Modules");
 const {

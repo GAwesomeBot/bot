@@ -136,6 +136,8 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (sharder.shards.has(shardid)) sharder.IPC.send("createMOTD", msg, shardid);
 		});
 
+		sharder.IPC.on("sendAllGuilds", () => sharder.IPC.send("postAllData", {}, 0));
+
 		sharder.spawn();
 	}
 });
@@ -156,6 +158,7 @@ function shardFinished (sharder) {
 		// Use console.log because winston never lets us have anything fun, MOM
 		console.log(ascii);
 		sharder.IPC.removeListener("finished", shardFinished);
+		sharder.IPC.send("postAllData", {}, 0);
 		if (process.argv.includes("--build")) {
 			winston.warn("Shutting down travis build with code 0");
 			sharder.cluster.disconnect();

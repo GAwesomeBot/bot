@@ -1,7 +1,7 @@
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
-const { Console, Utils, ShardIPC, GetGuild: GG } = require("./Modules/");
+const { Console, Utils, ShardIPC, GetGuild: GG, PostTotalData } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
@@ -906,6 +906,10 @@ bot.once("pre-update", async () => {
 	} catch (err) {
 		winston.error(`We were unable to destroy the client! This is bad..`);
 	}
+});
+
+bot.on("postAllData", async () => {
+	await PostTotalData(bot);
 });
 
 bot.on("error", error => {
