@@ -746,7 +746,7 @@ class Client extends Discord.Client {
 	 * @param {String} [reason] Optional reason for the mute
 	 */
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
-		if (!await this.isMuted(channel, member) && channel.type === "text") {
+		if (!this.isMuted(channel, member) && channel.type === "text") {
 			try {
 				await channel.overwritePermissions(member.id, {
 					SEND_MESSAGES: false,
