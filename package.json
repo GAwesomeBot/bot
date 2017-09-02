@@ -38,7 +38,7 @@
     "goo.gl": "*",
     "google": "*",
     "google-play-scraper": "*",
-    "mathjs": "^3.16.2",
+    "mathjs": "^3.16.3",
     "moment": "*",
     "mongoose": "4.10.8",
     "mongoose-findorcreate": "*",
@@ -52,16 +52,16 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "searchitunes": "*",
-    "showdown": "*",
+    "showdown": "^1.7.3",
     "snekfetch": "*",
     "socket.io": "*",
     "string": "*",
     "text-diff": "*",
     "urban": "*",
     "uws": "*",
-    "vm2": "*",
+    "vm2": "^3.5.0",
     "weather-js": "*",
-    "wikijs": "*",
+    "wikijs": "^4.1.0",
     "winston": "*",
     "winston-daily-rotate-file": "*",
     "wolfram-node": "*",
@@ -70,6 +70,6 @@
     "xss-filters": "*"
   },
   "devDependencies": {
-    "eslint": "^4.5.0"
+    "eslint": "^4.6.0"
   }
 }
