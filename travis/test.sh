@@ -24,5 +24,5 @@ fi
 echo -e "Test triggered using client ID \"${CLIENT_ID}\"."
 
 # Run the tests
-node bot --build --db "$DATABASE_URL" --token "$CLIENT_TOKEN" --CID "$CLIENT_ID" "$CLIENT_SECRET"
+# node bot --build --db "$DATABASE_URL" --token "$CLIENT_TOKEN" --CID "$CLIENT_ID" "$CLIENT_SECRET"
 npm run test
