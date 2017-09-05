@@ -21,8 +21,9 @@ else
   echo -e "\e[36m\e[1mTest triggered for branch \"${TRAVIS_BRANCH}\"."
 fi
 
-echo -e "Test triggered using client ID \"${CLIENT_ID}\"."
+npm run test
+
+# echo -e "Test triggered using client ID \"${CLIENT_ID}\"."
 
 # Run the tests
 # node bot --build --db "$DATABASE_URL" --token "$CLIENT_TOKEN" --CID "$CLIENT_ID" "$CLIENT_SECRET"
-npm run test
