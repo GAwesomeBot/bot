@@ -8,12 +8,6 @@ const Util = require("../Utils/Utils");
 module.exports = class Embed {
 	constructor (data = {}) {
 		/**
-     * The type of this embed
-     * @type {String}
-     */
-		this.type = data.type;
-
-		/**
 			* The title of this embed
 			* @type {?String}
 			*/
@@ -62,7 +56,7 @@ module.exports = class Embed {
 			*/
 		this.thumbnail = data.thumbnail ? {
 			url: data.thumbnail.url,
-			proxyURL: data.thumbnail.proxy_url,
+			proxyURL: data.thumbnail.proxyURL,
 			height: data.height,
 			width: data.width,
 		} : null;
@@ -77,7 +71,7 @@ module.exports = class Embed {
 			*/
 		this.image = data.image ? {
 			url: data.image.url,
-			proxyURL: data.image.proxy_url,
+			proxyURL: data.image.proxyURL,
 			height: data.height,
 			width: data.width,
 		} : null;
