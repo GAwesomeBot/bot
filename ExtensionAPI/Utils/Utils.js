@@ -14,6 +14,42 @@ module.exports = class Utils {
 		return String(data);
 	}
 
+	/**
+   * Can be a Hex Literal, Hex String, Number, RGB Array, or one of the following
+   * ```
+   * [
+   *   'DEFAULT',
+   *   'AQUA',
+   *   'GREEN',
+   *   'BLUE',
+   *   'PURPLE',
+   *   'GOLD',
+   *   'ORANGE',
+   *   'RED',
+   *   'GREY',
+   *   'DARKER_GREY',
+   *   'NAVY',
+   *   'DARK_AQUA',
+   *   'DARK_GREEN',
+   *   'DARK_BLUE',
+   *   'DARK_PURPLE',
+   *   'DARK_GOLD',
+   *   'DARK_ORANGE',
+   *   'DARK_RED',
+   *   'DARK_GREY',
+   *   'LIGHT_GREY',
+   *   'DARK_NAVY',
+   *   'RANDOM',
+   * ]
+   * ```
+   * or something like
+   * ```
+   * [255, 0, 255]
+   * ```
+   * for purple
+   * @typedef {String|Number|Array} ColorResolvable
+   */
+
 	static resolveColor (color) {
 		if (typeof color === "string") {
 			if (color === "RANDOM" || color.toLowerCase() === "random") return Math.floor(Math.random() * (0xFFFFFF + 1));
@@ -30,7 +66,7 @@ module.exports = class Utils {
 
 		return color;
 	}
-}
+};
 
 exports.Colors = {
 	DEFAULT: 0x000000,

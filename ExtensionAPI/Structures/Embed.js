@@ -42,7 +42,7 @@ module.exports = class Embed {
 			* @type {Object[]}
 			* @property {String} name The name of this field
 			* @property {String} value The value of this field
-			* @property {boolean} inline If this field will be displayed inline
+			* @property {Boolean} inline If this field will be displayed inline
 			*/
 		this.fields = data.fields || [];
 
@@ -163,7 +163,7 @@ module.exports = class Embed {
 
 	/**
    * Sets the author of this embed.
-   * @param {String|Array} name The name of the author
+   * @param {StringResolvable} name The name of the author
    * @param {String} [iconURL] The icon URL of the author
    * @param {String} [url] The URL of the author
    * @returns {Embed}
@@ -175,7 +175,7 @@ module.exports = class Embed {
 
 	/**
    * Sets the color of this embed.
-   * @param {Number|String|Array} color The color of the embed
+   * @param {ColorResolvable} color The color of the embed
    * @returns {Embed}
    */
 	setColor (color) {
@@ -185,7 +185,7 @@ module.exports = class Embed {
 
 	/**
    * Sets the description of this embed.
-   * @param {String|Array} description The description
+   * @param {StringResolvable} description The description
    * @returns {Embed}
    */
 	setDescription (description) {
@@ -197,7 +197,7 @@ module.exports = class Embed {
 
 	/**
    * Sets the footer of this embed.
-   * @param {String|Array} text The text of the footer
+   * @param {StringResolvable} text The text of the footer
    * @param {String} [iconURL] The icon URL of the footer
    * @returns {Embed}
    */
@@ -240,7 +240,7 @@ module.exports = class Embed {
 
 	/**
    * Sets the title of this embed.
-   * @param {String|Array} title The title
+   * @param {StringResolvable} title The title
    * @returns {Embed}
    */
 	setTitle (title) {
