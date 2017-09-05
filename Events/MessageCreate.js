@@ -167,7 +167,7 @@ class MessageCreate extends BaseEvent {
 					// Set now as the last active time for member
 					memberDocument.last_active = Date.now();
 					// Check if the user has leveled up a rank
-					await this.bot.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
+					this.bot.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
 					// Save changes to serverDocument
 					await serverDocument.save().catch(err => {
 						winston.warn(`Failed to save server data for MESSAGE`, { svrid: msg.guild.id }, err);
@@ -647,6 +647,7 @@ class MessageCreate extends BaseEvent {
 						} else if (commandObject && serverDocument.config.tags.list.id(commandObject.command) && serverDocument.config.tags.list.id(commandObject.command).isCommand) {
 							winston.verbose(`Treating "${msg.cleanContent}" as a tag command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 							this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
+							this.deleteCommandMessage(serverDocument, channelDocument, msg);
 							msg.channel.send(`${serverDocument.config.tags.list.id(commandObject.command).content}`, {
 								disableEveryone: true,
 							});
