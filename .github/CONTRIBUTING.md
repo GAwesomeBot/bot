@@ -21,4 +21,4 @@ Once your PR or Issue has been submitted, GAB Maintainers will check it out, and
 2. If you submitted an idea, suggestion or minor bug report, it's waiting time until either a maintainer or another community member submits a PR including the changes you proposed. When enough maintainers approve it, the PR is merged into the development branch and your Issue is moved to the *Backlog*.
 3. If you submitted a major bug report, and enough maintainers approve it, your issue is moved to the section *High Priority / Next Patch*. Here, a maintainer will often create a new hotfix branch, where they fix your issue. After this, the hotfix branch is merged into the development branch, and the experimental/stable branch, which creates a new patch which is then pushed to all GAB instances. After this, your issue is removed.
 
-Good luck GAwesomeUsers!
+You can check your submission's status [here](https://github.com/GilbertGobbels/GAwesomeBot/projects/1). Good luck GAwesomeUsers!
