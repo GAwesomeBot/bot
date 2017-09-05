@@ -8,7 +8,7 @@
   "globalBlocklist": [
 
   ],
-  "game": {
+  "activity": {
     "name": "default",
     "twitchURL": ""
   },

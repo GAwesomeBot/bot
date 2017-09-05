@@ -73,25 +73,25 @@ class Ready extends BaseEvent {
 			.exec()
 			.catch(err => winston.warn(`Failed to prune old server documents -_-`, err))
 			.then(() => winston.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`));
-		await this.setBotGame();
+		await this.setBotActivity();
 	}
 
-	// Set bot's "now playing" game
-	async setBotGame () {
-		winston.debug("Setting bots playing game.");
-		let gameObject = {
-			name: this.configJSON.game.name,
-			url: this.configJSON.game.twitchURL,
-			type: this.configJSON.game.twitchURL ? 1 : 0,
+	// Set bot's "now playing" activity
+	async setBotActivity () {
+		winston.debug("Setting bots playing activity.");
+		let activity = {
+			name: this.configJSON.activity.name,
+			url: this.configJSON.activity.twitchURL,
+			type: this.configJSON.activity.twitchURL ? 1 : 0,
 		};
-		if (this.configJSON.game.name === "default") {
-			gameObject = {
+		if (this.configJSON.activity.name === "default") {
+			activity = {
 				name: "https://gawesomebot.com",
 				type: 0,
 			};
 		}
 		this.bot.user.setPresence({
-			game: gameObject,
+			activity,
 			status: this.configJSON.status,
 		});
 		await this.startMessageCount();
