@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-# Credit to Discord.JS <3
-
 # For revert branches, do nothing
 if [[ "$TRAVIS_BRANCH" == revert-* ]]; then
   echo -e "\e[36m\e[1mTest triggered for reversion branch \"${TRAVIS_BRANCH}\" - doing nothing."
@@ -21,9 +19,5 @@ else
   echo -e "\e[36m\e[1mTest triggered for branch \"${TRAVIS_BRANCH}\"."
 fi
 
-npm run test
-
-# echo -e "Test triggered using client ID \"${CLIENT_ID}\"."
-
 # Run the tests
-# node bot --build --db "$DATABASE_URL" --token "$CLIENT_TOKEN" --CID "$CLIENT_ID" "$CLIENT_SECRET"
+npm test
