@@ -30,6 +30,7 @@ const md = new showdown.Converter({
 	smoothLivePreview: true,
 	smartIndentationFix: true,
 });
+md.setFlavor("github");
 const xssFilters = require("xss-filters");
 const removeMd = require("remove-markdown");
 
