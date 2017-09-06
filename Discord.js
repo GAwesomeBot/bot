@@ -496,6 +496,7 @@ class Client extends Discord.Client {
 	 * @param {String} roleID The role ID that the user should get due to the violation
 	 */
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
+		roleID = roleID.id || roleID;
 		this.logMessage(serverDocument, "info", `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
 
 		// Deduct 50 GAwesomePoints if necessary
