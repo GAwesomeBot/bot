@@ -568,7 +568,7 @@ class MessageCreate extends BaseEvent {
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {
 						// Check if message is a command, tag command, or extension trigger
-						const commandObject = await this.bot.checkCommandTag(msg, serverDocument);
+						const commandObject = await this.bot.checkCommandTag(msg.content, serverDocument);
 
 						if (commandObject && this.bot.getPublicCommandMetadata(commandObject.command)	&&
 								serverDocument.config.commands[commandObject.command].isEnabled &&
@@ -587,7 +587,7 @@ class MessageCreate extends BaseEvent {
 									// Delete offending message if necessary
 									if (serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 										try {
-											msg.delete();
+											await msg.delete();
 										} catch (err) {
 											winston.debug(`Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 											this.bot.logMessage(serverDocument, "info", `Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}"`, msg.channel.id, msg.author.id);

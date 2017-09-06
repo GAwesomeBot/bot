@@ -114,7 +114,7 @@ class Client extends Discord.Client {
 	 */
 	checkCommandTag (message, serverDocument) {
 		return new Promise(resolve => {
-			message = message.content.trim();
+			message = message.trim();
 			let cmdstr;
 			if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
 				cmdstr = message.substring(this.user.toString() + 1);
@@ -123,12 +123,12 @@ class Client extends Discord.Client {
 			} else if (message.startsWith(serverDocument.config.command_prefix)) {
 				cmdstr = message.substring(serverDocument.config.command_prefix.length);
 			}
-			if (!cmdstr.includes(" ")) {
+			if (cmdstr && !cmdstr.includes(" ")) {
 				resolve({
 					command: cmdstr.toLowerCase(),
 					suffix: "",
 				});
-			} else {
+			} else if (cmdstr) {
 				const command = cmdstr.split(" ")[0].toLowerCase();
 				const suffix = cmdstr.split(" ")
 					.splice(1)
