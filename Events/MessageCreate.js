@@ -422,9 +422,9 @@ class MessageCreate extends BaseEvent {
 
 					// Vote by mention
 					if (serverDocument.config.commands.points.isEnabled && msg.guild.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(msg.channel.id) && msg.content.startsWith("<@") && msg.content.indexOf(">") < msg.content.indexOf(" ") && msg.content.includes(" ") && msg.content.indexOf(" ") < msg.content.length - 1) {
-						const member = this.bot.memberSearch(msg.content.split(" ")[0].trim(), msg.guild);
+						const member = await this.bot.memberSearch(msg.content.split(" ")[0].trim(), msg.guild);
 						const voteString = msg.content.split(" ").splice(1).join(" ");
-						if (await member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
+						if (member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 							// Get target user data
 							const findDocument = await this.db.users.findOrCreate({ _id: member.id }).catch(err => {
 								winston.verbose(`Failed to get user document for votes..`, err);
@@ -523,7 +523,7 @@ class MessageCreate extends BaseEvent {
 					}
 
 					// Check if message mentions AFK user (server and global)
-					if (msg.mentions.members.size()) {
+					if (msg.mentions.members.size) {
 						msg.mentions.members.forEach(async member => {
 							if (![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 								// Server AFK message
@@ -568,7 +568,7 @@ class MessageCreate extends BaseEvent {
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {
 						// Check if message is a command, tag command, or extension trigger
-						const commandObject = await this.bot.checkCommandTag(msg.content, serverDocument);
+						const commandObject = await this.bot.checkCommandTag(msg, serverDocument);
 
 						if (commandObject && this.bot.getPublicCommandMetadata(commandObject.command)	&&
 								serverDocument.config.commands[commandObject.command].isEnabled &&
