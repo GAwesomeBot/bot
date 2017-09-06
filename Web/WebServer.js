@@ -387,7 +387,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		}
 	});
 	const getExtensionData = async galleryDocument => {
-		const owner = await bot.fetchUser(galleryDocument.owner_id, false) || {};
+		const owner = await bot.users.fetch(galleryDocument.owner_id, false) || {};
 		let typeIcon, typeDescription;
 		switch (galleryDocument.type) {
 			case "command":
@@ -644,7 +644,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				if (req.query.q) {
 					db.users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err, userDocument) => {
 						if (!err && userDocument) {
-							const usr = await bot.fetchUser(userDocument._id, true);
+							const usr = await bot.users.fetch(userDocument._id, true);
 							const userProfile = await getUserData(usr, userDocument);
 							renderPage({
 								pageTitle: `${userProfile.username}'s Profile`,
@@ -717,7 +717,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	// Check authentication for console
 	const checkAuth = async (req, res, next) => {
 		if (req.isAuthenticated()) {
-			const usr = await bot.fetchUser(req.user.id, true);
+			const usr = await bot.users.fetch(req.user.id, true);
 			if (usr) {
 				if (req.query.svrid === "maintainer") {
 					if (configJSON.maintainers.indexOf(req.user.id) > -1) {
@@ -1187,7 +1187,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Blog (updates + announcements)
 	const getBlogData = async blogDocument => {
-		const author = await bot.fetchUser(blogDocument.author_id, true) || {
+		const author = await bot.users.fetch(blogDocument.author_id, true) || {
 			id: "invalid-user",
 			username: "invalid-user",
 		};
@@ -1209,7 +1209,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				categoryColor = "is-primary";
 				break;
 		}
-		const avatarURL = (await bot.fetchUser(blogDocument.author_id, true)).avatarURL;
+		const avatarURL = (await bot.users.fetch(blogDocument.author_id, true)).avatarURL;
 		return {
 			id: blogDocument._id,
 			title: blogDocument.title,
@@ -1730,7 +1730,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			res.redirect("/login");
 		} else {
 			const serverData = [];
-			const usr = await bot.fetchUser(req.user.id, true);
+			const usr = await bot.users.fetch(req.user.id, true);
 			const addServerData = async (i, callback) => {
 				if (req.user.guilds && i < req.user.guilds.length) {
 					const svr = await getGuild.get(bot, req.user.guilds[i].id, { members: ["id", "roles"], convert: { id_only: true } });
