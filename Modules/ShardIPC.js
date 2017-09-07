@@ -1,3 +1,5 @@
+const cJSON = require("circular-json");
+
 const EventEmitter = require("events");
 
 class SharderIPC extends EventEmitter {
@@ -13,7 +15,7 @@ class SharderIPC extends EventEmitter {
 		this.sharder.on("message", (shard, msg) => {
 			this.winston.silly("Recieved message from shard.", { msg: msg, shard: shard.id });
 			try {
-				const payload = JSON.parse(msg);
+				const payload = cJSON.parse(msg);
 				this.emit(payload.subject, payload, shard);
 			} catch (err) {
 				if (!msg._Eval && !msg.sEval) this.winston.warn("Unable to handle message from shard :C\n", { msg: msg, shard: shard.id, err: err });
@@ -27,7 +29,7 @@ class SharderIPC extends EventEmitter {
 			payload.subject = subject;
 
 			if (shard === "*") {
-				this.sharder.broadcast(JSON.stringify(payload)).catch(err => {
+				this.sharder.broadcast(cJSON.stringify(payload)).catch(err => {
 					throw err;
 				});
 			} else {
@@ -63,7 +65,7 @@ class ShardIPC extends EventEmitter {
 					this.shardClient.send({ _Eval: msg._Eval, _result: result });
 				}
 				let payload = msg;
-				if (typeof msg === "string") payload = JSON.parse(msg);
+				if (typeof msg === "string") payload = cJSON.parse(msg);
 				this.emit(payload.subject, payload);
 			} catch (err) {
 				if (!msg._Eval && !msg._SEval) this.winston.warn("Unable to handle message from master :C\n", err);
@@ -75,7 +77,7 @@ class ShardIPC extends EventEmitter {
 		try {
 			this.winston.silly("Sending message to master", { subject: subject, payload: payload });
 			payload.subject = subject;
-			this.proc.send(JSON.stringify(payload), err => {
+			this.proc.send(cJSON.stringify(payload), err => {
 				if (err) throw err;
 			});
 		} catch (err) {

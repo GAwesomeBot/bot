@@ -45,9 +45,11 @@ class Client extends Discord.Client {
 			let payload = msg;
 			if (payload.guild === "*") {
 				let result = {};
-				this.guilds.forEach((val, key) => {
+				let guilds = payload.settings.mutual ? this.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : this.guilds;
+				guilds.forEach((val, key) => {
 					result[key] = GG.generate(val, payload.settings);
 				});
+
 				this.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
 			} else {
 				let guild = this.guilds.get(payload.guild);

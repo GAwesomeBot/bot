@@ -267,24 +267,24 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 	const getServerData = async serverDocument => {
 		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["iconURL", "createdAt", "owner"], members: ["nickname"] });
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "owner", "id", "name"], members: ["nickname"] });
 		if (svr) {
 			const owner = svr.owner;
 			data = {
 				name: svr.name,
 				id: svr.id,
-				icon: svr.iconURL || "/static/img/discord-icon.png",
+				icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 				owner: {
 					username: owner.user.username,
 					id: owner.user.id,
-					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar) || "/static/img/discord-icon.png",
+					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar),
 					name: owner.nickname || owner.user.username,
 				},
 				members: Object.keys(svr.members).length,
 				messages: serverDocument.messages_today,
 				rawCreated: moment(svr.createdAt).format(configJS.moment_date_format),
 				relativeCreated: Math.ceil((Date.now() - new Date(svr.createdAt)) / 86400000),
-				command_prefix: bot.getCommandPrefix(svr, serverDocument),
+				command_prefix: await bot.getCommandPrefix(svr, serverDocument),
 				category: serverDocument.config.public_data.server_listing.category,
 				description: serverDocument.config.public_data.server_listing.isEnabled ? md.makeHtml(xssFilters.inHTMLData(serverDocument.config.public_data.server_listing.description || "No description provided.")) : null,
 				invite_link: serverDocument.config.public_data.server_listing.isEnabled ? serverDocument.config.public_data.server_listing.invite_link || "javascript:alert('Invite link not available');" : null,
@@ -310,12 +310,12 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			});
 	});
 	const getUserData = async (usr, userDocument) => {
-		const botServers = await Utils.GetValue(bot, `guilds.filterArray(svr => svr.members.has("${usr.id}"))`, "arr");
+		const botServers = Object.values(await getGuild.get(bot, "*", { resolve: ["name", "id", "icon", "ownerID"], mutual: usr.id }));
 		const mutualServers = botServers.sort((a, b) => a.name.localeCompare(b.name));
 		const userProfile = {
 			username: usr.username,
 			discriminator: usr.discriminator,
-			avatar: usr.avatarURL || "/static/img/discord-icon.png",
+			avatar: usr.avatarURL() || "/static/img/discord-icon.png",
 			id: usr.id,
 			status: usr.presence.status,
 			game: await bot.getGame(usr),
@@ -325,7 +325,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			points: userDocument.points || 1,
 			lastSeen: userDocument.last_seen ? moment(userDocument.last_seen).fromNow() : null,
 			rawLastSeen: userDocument.last_seen ? moment(userDocument.last_seen).format(configJS.moment_date_format) : null,
-			mutualServerCount: mutualServers.length,
+			mutualServerCount: Object.keys(mutualServers).length,
 			pastNameCount: (userDocument.past_names || {}).length || 0,
 			isAfk: userDocument.afk_message !== undefined && userDocument.afk_message !== "" && userDocument.afk_message !== null,
 			mutualServers: [],
@@ -351,7 +351,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			if (userDocument.profile_fields) {
 				profileFields = {};
 				for (const key in userDocument.profile_fields) {
-					profileFields[key] = md.makeHtml(userDocument.profile_fields[key]);
+					profileFields[key] = md.makeHtml(xssFilters.inHTMLData(userDocument.profile_fields[key]));
 					profileFields[key] = profileFields[key].substring(3, profileFields[key].length - 4);
 				}
 			}
@@ -363,7 +363,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				userProfile.mutualServers.push({
 					name: svr.name,
 					id: svr.id,
-					icon: svr.icon ? `https://cdn.discordapp.com/icons/${svr.id}/${svr.icon}.jpg` : "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 					owner: owner.username,
 				});
 			}
@@ -727,7 +727,13 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						res.redirect("/dashboard");
 					}
 				} else {
-					const svr = await getGuild.get(bot, req.query.svrid, { members: ["id", "roles", "user", "nickname"], channels: ["id", "type", "name", "position"], roles: ["name", "id", "position", "color"], convert: { id_only: true } });
+					const svr = await getGuild.get(bot, req.query.svrid, {
+							resolve: ["id", "ownerID", "name", "icon"],
+							members: ["id", "roles", "user", "nickname"],
+							channels: ["id", "type", "name", "position"],
+							roles: ["name", "id", "position", "color"],
+							convert: { id_only: true },
+						});
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
@@ -739,7 +745,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 									res.redirect("/dashboard");
 								}
 							} else {
-								renderError(res, "We failed to fetch your server from our database.");
+								renderError(res, "Something went wrong while fetching your server data.");
 							}
 						});
 					} else {
@@ -747,7 +753,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 					}
 				}
 			} else {
-				renderError(res, "Wait, do you exist?<br> We failed to fetch your user from Discord.");
+				renderError(res, "Wait, do you exist?<br>We failed to fetch your user from Discord.");
 			}
 		} else {
 			res.redirect("/login");
@@ -1209,8 +1215,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			case "Random":
 				categoryColor = "is-primary";
 				break;
-		}
-		const avatarURL = (await bot.users.fetch(blogDocument.author_id, true)).avatarURL;
+				}
+		const avatarURL = (await bot.users.fetch(blogDocument.author_id, true)).avatarURL();
 		return {
 			id: blogDocument._id,
 			title: blogDocument.title,
@@ -1583,7 +1589,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.get("/wiki/:id/history", (req, res) => {
 		db.wiki.find({}).sort({
 			_id: 1,
-		}).exec((err, wikiDocuments) => {
+		}).exec(async (err, wikiDocuments) => {
 			if (err || !wikiDocuments) {
 				renderError(res, "Failed to fetch wiki data!");
 			} else {
@@ -1592,8 +1598,8 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				};
 				let updates;
 				if (page.updates && page.reactions) {
-					updates = page.updates.map(updateDocument => {
-						const author = bot.users.get(updateDocument._id) || {
+					updates = page.updates.map(async updateDocument => {
+						const author = await bot.users.fetch(updateDocument._id, true) || {
 							id: "invalid-user",
 							username: "invalid-user",
 						};
@@ -1601,13 +1607,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 							responsibleUser: {
 								name: author.username,
 								id: author.id,
-								avatar: author.avatarURL || "/static/img/discord-icon.png",
+								avatar: author.avatarURL() || "/static/img/discord-icon.png",
 							},
 							relativeTimestamp: moment(updateDocument.timestamp).fromNow(),
 							rawTimestamp: moment(updateDocument.timestamp).format(configJS.moment_date_format),
 							diffHtml: updateDocument.diff,
 						};
 					});
+					updates = await Promise.all(updates);
 				}
 				res.render("pages/wiki.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -1747,7 +1754,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 						isAdmin: false,
 					};
 					if (svr && usr) {
-						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
+						db.servers.findOne({ _id: req.user.guilds[i].id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
 								const member = svr.members[usr.id];
 								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3) {

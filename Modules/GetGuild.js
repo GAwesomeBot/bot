@@ -10,7 +10,6 @@ class SafeUser {
 const generateGuild = (guild, settings) => {
 	let gguild = {};
 	if (!guild) return gguild;
-	if (!settings.only) gguild = JSON.parse(JSON.stringify(guild));
 	if (settings.resolve && settings.resolve instanceof Array) {
 		for (let getter of settings.resolve) {
 			gguild[getter] = guild[getter];

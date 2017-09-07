@@ -36,7 +36,7 @@
 							<% include ../partials/admin-command-item %>
 							<% var commandData = configData.commands.role;commandData.name = "role";commandData.description = commandDescriptions.role;commandData.category = commandCategories.role; %>
 							<% include ../partials/admin-command-item %>
-							<span class="role-options">
+							<span class="role-options <%= commandData.isEnabled ? '' : 'is-hidden' %>">
 								Allow users to join these roles with the <code>role</code> command:
 								<p class="control">
 									<% for(var i=0; i<roleData.length; i++) { %>
