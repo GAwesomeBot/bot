@@ -22,9 +22,10 @@ module.exports = bot => {
 	/**
 	 * Randomised output from an array
 	 * @returns {*} Random output from the array
+	 * @readonly
 	 */
-	Object.assign(Array.prototype, {
-		random () {
+	Object.defineProperty(Array.prototype, "random", {
+		get: function get () {
 			return this[Math.floor(Math.random() * this.length)];
 		},
 	});
@@ -91,10 +92,32 @@ module.exports = bot => {
 	});
 
 	/**
-	 * Gets the "default channel" for the guild
-	 * @returns {(TextChannel|GuildChannel)}
+	 * Formats a string based on the information given
+	 * @param {String[]|Array|Object} arguments the arguments
+	 * @example
+	 * // You can add as many as you want
+	 * "{0} {1}...".format(1, "strings", ...);
+	 * @example
+	 * // Or use arrays
+	 * "{0} {1}...".format([1, "strings too!"]);
+	 * @example
+	 * // With an object
+	 * "{var} {var with spaces}".format({ var: 123, "var with spaces": "this works too!" })
 	 */
-	Object.defineProperty(Discord.Guild.prototype, "newDefaultChannel", {
+	String.prototype.format = function format () {
+		let original = this.toString();
+		if (!arguments.length) return original;
+		// eslint-disable-next-line prefer-rest-params
+		let type = typeof arguments[0], options = type === "string" || type === "number" ? Array.prototype.slice.call(arguments) : arguments[0];
+		for (let text in options) original = original.replace(new RegExp(`\\{${text}\\}`, "gi"), options[text]);
+		return original;
+	};
+
+	/**
+	 * Gets the "default channel" for the guild
+	 * @returns {?TextChannel}
+	 */
+	Object.defineProperty(Discord.Guild.prototype, "defaultChannel", {
 		get: function get () {
 			if (this.channels.filter(c => c.type === "text").size === 0) return null;
 			const defaultChannel = this.channels.filter(c => c.type === "text" && c.permissionsFor(this.me).has("VIEW_CHANNEL") && c.permissionsFor(this.me).has("SEND_MESSAGES"))

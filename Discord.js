@@ -841,6 +841,20 @@ class Client extends Discord.Client {
 		}
 		return serverDocument;
 	}
+
+	/**
+	 * Gets you a langauge translation for a server.
+	 * TODO: 4.2: Implement this
+	 * @param {Document} serverDocument The document to get the file for
+	 */
+	getTranslateFile (serverDocument) {
+		if (serverDocument.config.localization) {
+			switch (serverDocument.config.localization) {
+				case "fr": return require("./Languages/fr.js");
+				default: return require("./Languages/en_us.js");
+			}
+		}
+	}
 }
 
 const bot = new Client({
