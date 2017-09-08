@@ -161,9 +161,7 @@ module.exports = class Trivia {
 			let info = `Thanks for playing! 🏆 Y'all got a score of **${channelDocument.trivia.score}** out of ${channelDocument.trivia.past_questions.length}.`;
 
 			if (channelDocument.trivia.responders.length > 0) {
-				const topResponders = channelDocument.trivia.responders.sort((a, b) => {
-					return b.score - a.score;
-				});
+				const topResponders = channelDocument.trivia.responders.sort((a, b) => b.score - a.score);
 				let member;
 
 				while (!member && topResponders.length > 0) {
