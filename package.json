@@ -16,7 +16,7 @@
     "preinstall": "echo If you encounter any errors on Windows, please run \"npm run first-time\"! && echo If you are still having issues, submit the error log on GitHub! && echo This only applies to Windows machines, don't try that command on Linux or Mac as it won't work!"
   },
   "dependencies": {
-    "body-parser": "*",
+    "body-parser": "^1.18.0",
     "chalk": "^1.1.3",
     "circular-json": "^0.3.3",
     "compression": "*",
@@ -53,7 +53,7 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "searchitunes": "*",
-    "showdown": "^1.7.3",
+    "showdown": "^1.7.4",
     "snekfetch": "^3.3.0",
     "socket.io": "*",
     "string": "*",
