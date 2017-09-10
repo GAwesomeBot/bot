@@ -570,7 +570,7 @@ class MessageCreate extends BaseEvent {
 						// Check if message is a command, tag command, or extension trigger
 						const commandObject = await this.bot.checkCommandTag(msg.content, serverDocument);
 
-						if (commandObject && this.bot.getPublicCommandMetadata(commandObject.command)	&&
+						if (commandObject && commandObject.command !== null && this.bot.getPublicCommandMetadata(commandObject.command)	&&
 								serverDocument.config.commands[commandObject.command].isEnabled &&
 								(this.bot.getPublicCommandMetadata(commandObject.command).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[commandObject.command].admin_level) &&
 								!serverDocument.config.commands[commandObject.command].disabled_channel_ids.includes(msg.channel.id)) {

@@ -117,7 +117,10 @@ class Client extends Discord.Client {
 	checkCommandTag (message, serverDocument) {
 		message = message.trim();
 		let cmdstr;
-		let commandObject = {};
+		let commandObject = {
+			command: null,
+			suffix: null,
+		};
 		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
 			cmdstr = message.substring(this.user.toString() + 1);
 		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
@@ -172,6 +175,7 @@ class Client extends Discord.Client {
 			privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload private command "${command}"`, err);
+			return err;
 		}
 	}
 
@@ -180,6 +184,7 @@ class Client extends Discord.Client {
 			commandModules[command] = reload(`./Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
+			return err;
 		}
 	}
 
