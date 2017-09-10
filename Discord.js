@@ -596,7 +596,7 @@ class Client extends Discord.Client {
 						embed: {
 							color: 0x3669FA,
 							description: `${adminMessage}, so I kicked them from the server.`,
-						}
+						},
 					});
 					ModLog.create(server, serverDocument, "Kick", member, null, strikeMessage);
 				} catch (err) {
