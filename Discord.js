@@ -115,33 +115,33 @@ class Client extends Discord.Client {
 	 * @returns {Promise<?Object>} Object containing the command and the suffix (if present)
 	 */
 	checkCommandTag (message, serverDocument) {
-		return new Promise(resolve => {
-			message = message.trim();
-			let cmdstr;
-			if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
-				cmdstr = message.substring(this.user.toString() + 1);
-			} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
-				cmdstr = message.substring(`<@!${this.user.id}>`.length + 1);
-			} else if (message.startsWith(serverDocument.config.command_prefix)) {
-				cmdstr = message.substring(serverDocument.config.command_prefix.length);
-			}
-			if (cmdstr && !cmdstr.includes(" ")) {
-				resolve({
-					command: cmdstr.toLowerCase(),
-					suffix: "",
-				});
-			} else if (cmdstr) {
-				const command = cmdstr.split(" ")[0].toLowerCase();
-				const suffix = cmdstr.split(" ")
-					.splice(1)
-					.join(" ")
-					.trim();
-				resolve({
-					command: command,
-					suffix: suffix,
-				});
-			}
-		});
+		message = message.trim();
+		let cmdstr;
+		let commandObject = {};
+		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
+			cmdstr = message.substring(this.user.toString() + 1);
+		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
+			cmdstr = message.substring(`<@!${this.user.id}>`.length + 1);
+		} else if (message.startsWith(serverDocument.config.command_prefix)) {
+			cmdstr = message.substring(serverDocument.config.command_prefix.length);
+		}
+		if (cmdstr && !cmdstr.includes(" ")) {
+			commandObject = {
+				command: cmdstr.toLowerCase(),
+				suffix: null,
+			};
+		} else if (cmdstr) {
+			let command = cmdstr.split(" ")[0].toLowerCase();
+			let suffix = cmdstr.split(" ")
+				.splice(1)
+				.join(" ")
+				.trim();
+			commandObject = {
+				command: command,
+				suffix: suffix,
+			};
+		}
+		return Promise.resolve(commandObject);
 	}
 
 	/**
@@ -224,11 +224,9 @@ class Client extends Discord.Client {
 		if (commandModules[command]) {
 			return commandModules[command];
 		} else {
-			for (const publicCommand in commands.public) {
-				if (commands.public[publicCommand].aliases && commands.public[publicCommand].aliases.length > 0) {
-					if (commands.public[publicCommand].aliases.includes(command.trim())) {
-						return commandModules[publicCommand];
-					}
+			for (const [key, value] of Object.entries(commands.public)) {
+				if (value.aliases && value.aliases.length > 0) {
+					if (value.aliases.includes(command.trim())) return commandModules[key];
 				}
 			}
 		}
@@ -238,11 +236,9 @@ class Client extends Discord.Client {
 		if (commands.public[command]) {
 			return commands.public[command];
 		} else {
-			for (const publicCommand in commands.public) {
-				if (commands.public[publicCommand].aliases && commands.public[publicCommand].aliases.length > 0) {
-					if (commands.public[publicCommand].aliases.includes(command.trim())) {
-						return commands.public[publicCommand];
-					}
+			for (const [key, value] of Object.entries(commands.public)) {
+				if (value.aliases && value.aliases.length > 0) {
+					if (value.aliases.includes(command.trim())) return commands.public[key];
 				}
 			}
 		}
@@ -429,7 +425,8 @@ class Client extends Discord.Client {
 									if (ch) {
 										const channelDocument = serverDocument.channels.id(ch.id);
 										if (!channelDocument || channelDocument.bot_enabled) {
-											ch.send(`${member}`, {
+											ch.send({
+												content: `${member}`,
 												embed: {
 													color: 0x3669FA,
 													description: `Congratulations, you've leveled up to **${memberDocument.rank}**! 🏆`,
@@ -569,6 +566,8 @@ class Client extends Discord.Client {
 								text: `Contact a moderator to resolve this.`,
 							},
 						},
+					}).catch(err => {
+						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -590,10 +589,14 @@ class Client extends Discord.Client {
 							color: 0xFF0000,
 							description: `${userMessage}, so I kicked you from the server. Goodbye.`,
 						},
+					}).catch(err => {
+						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
-						color: 0x3669FA,
-						description: `${adminMessage}, so I kicked them from the server.`,
+						embed: {
+							color: 0x3669FA,
+							description: `${adminMessage}, so I kicked them from the server.`,
+						}
 					});
 					ModLog.create(server, serverDocument, "Kick", member, null, strikeMessage);
 				} catch (err) {
@@ -612,6 +615,8 @@ class Client extends Discord.Client {
 							color: 0xFF0000,
 							description: `${userMessage}, so I banned you from the server. Goodbye.`,
 						},
+					}).catch(err => {
+						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -633,6 +638,8 @@ class Client extends Discord.Client {
 							color: 0xFF0000,
 							description: `${userMessage}, and the chat moderator have again been notified about this.`,
 						},
+					}).catch(err => {
+						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -768,7 +775,7 @@ class Client extends Discord.Client {
 	 * @param {String} [reason] Optional reason for the unmute
 	 */
 	async unmuteMember (channel, member, reason = `Unmuted ${member.user.tag} in #${channel.name}`) {
-		if (await this.isMuted(channel, member) && channel.type === "text") {
+		if (this.isMuted(channel, member) && channel.type === "text") {
 			const overwrite = channel.permissionOverwrites.get(member.id);
 			if (overwrite) {
 				const allowedPerms = overwrite.allowed;
@@ -888,8 +895,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 });
 
 process.on("unhandledRejection", reason => {
-	winston.error(`An unexpected and unknown error occurred, which we should've been able to handle. Please report to github x.x\n`, reason);
-	process.exit(1);
+	winston.warn(`An error occurred, which we just ignored. We should handle these ya'know`, reason);
 	/*
 	 * Just saying, this won't close the process in the future
 	 * but if the bot.isReady is true
@@ -1004,7 +1010,7 @@ bot.on("guildDelete", async guild => {
  */
 bot.on("guildMemberAdd", async member => {
 	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_ADD event from Discord`, { svrid: member.guild.id, usrid: member.id });
+		winston.silly(`Received GUILD_MEMBER_ADD event from Discord`, { guild: member.guild.id, member: member.id });
 		try {
 			await events.GuildMemberAdd._handle({ member: member });
 		} catch (err) {
