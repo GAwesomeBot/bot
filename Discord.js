@@ -170,21 +170,21 @@ class Client extends Discord.Client {
 	}
 
 	// Bot Command Handlers
-	reloadPrivateCommand (command) {
+	reloadPrivateCommand (command, returnError = false) {
 		try {
 			privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload private command "${command}"`, err);
-			return err;
+			if (returnError) return err;
 		}
 	}
 
-	reloadPublicCommand (command) {
+	reloadPublicCommand (command, returnError = false) {
 		try {
 			commandModules[command] = reload(`./Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
-			return err;
+			if (returnError) return err;
 		}
 	}
 
