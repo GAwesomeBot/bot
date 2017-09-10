@@ -689,7 +689,7 @@ class MessageCreate extends BaseEvent {
 									.trim();
 								await Promise.all([this.setCooldown(serverDocument, channelDocument), this.saveServerDocument(serverDocument)]);
 								// Default help response
-								if (prompt.toLowerCase().startsWith("help")) {
+								if (prompt.toLowerCase().startsWith("help") && prompt.length === 4) {
 									msg.channel.send({
 										embed: {
 											color: 0x3669FA,
