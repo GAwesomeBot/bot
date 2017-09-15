@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 
 // User data (past names, profile fields, etc)
 module.exports = new mongoose.Schema({
-	_id: String,
+	_id: {
+		type: String,
+		required: true,
+	},
 	past_names: [String],
 	points: {
 		type: Number,
@@ -43,8 +46,5 @@ module.exports = new mongoose.Schema({
 		default: true,
 	},
 	upvoted_gallery_extensions: [String],
-	username: {
-		type: String,
-		required: true,
-	},
+	username: String,
 });
