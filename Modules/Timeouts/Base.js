@@ -1,8 +1,9 @@
 module.exports = class Base {
-	constructor (listener, after) {
+	constructor (listener, after, args) {
 		this.listener = listener;
 		this.after = after;
 		this.unreffed = false;
+		this.args = args;
 		/**
 		 * Maximum value of a timer, minus 1
 		 * Also known as 2^31 - 1

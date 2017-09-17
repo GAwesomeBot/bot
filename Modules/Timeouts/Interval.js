@@ -5,8 +5,8 @@ const Base = require("./Base");
  * @extends Base
  */
 module.exports = class Interval extends Base {
-	constructor (listener, after) {
-		super(listener, after);
+	constructor (listener, after, args) {
+		super(listener, after, args);
 		this.timeLeft = this.after;
 		this.start();
 	}
@@ -17,12 +17,12 @@ module.exports = class Interval extends Base {
 				this.listener();
 				this.timeLeft = this.after;
 				this.start();
-			}, this.timeLeft);
+			}, this.timeLeft, this.args);
 		} else {
 			this.timeout = setTimeout(() => {
 				this.timeLeft -= this.MAX;
 				this.start();
-			}, this.MAX);
+			}, this.MAX, this.args);
 		}
 		if (this.unreffed) {
 			this.timeout.unref();
