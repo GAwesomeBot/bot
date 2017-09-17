@@ -23,7 +23,7 @@ module.exports = class GitHubGist {
 	 * @param {String} options.text The content of the Gist
 	 * @returns {Object} Object containing the id and the url to the Gist
 	 */
-	async upload ({ title, text } = {}) {
+	async upload ({ title = "", text } = {}) {
 		const censor = [
 			discord.clientID,
 			discord.clientSecret,
