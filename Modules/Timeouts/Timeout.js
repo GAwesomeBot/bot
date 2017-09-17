@@ -11,20 +11,6 @@ module.exports = class Timeout extends Base {
 		this.start();
 	}
 
-	unref () {
-		if (!this.unreffed) {
-			this.unreffed = true;
-			this.timeout.unref();
-		}
-	}
-
-	ref () {
-		if (this.unreffed) {
-			this.unreffed = false;
-			this.timeout.ref();
-		}
-	}
-
 	start () {
 		if (this.after <= this.MAX) {
 			this.timeout = setTimeout(this.listener, this.after);
@@ -38,9 +24,5 @@ module.exports = class Timeout extends Base {
 		if (this.unreffed) {
 			this.timeout.unref();
 		}
-	}
-
-	close () {
-		clearTimeout(this.timeout);
 	}
 };

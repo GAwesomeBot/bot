@@ -11,4 +11,22 @@ module.exports = class Base {
 		this.MAX = 2147483647;
 		this.timeout = null;
 	}
+
+	unref () {
+		if (!this.unreffed) {
+			this.unreffed = true;
+			this.timeout.unref();
+		}
+	}
+
+	ref () {
+		if (this.unreffed) {
+			this.unreffed = false;
+			this.timeout.ref();
+		}
+	}
+
+	close () {
+		clearTimeout(this.timeout);
+	}
 };
