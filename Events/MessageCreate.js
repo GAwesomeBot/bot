@@ -304,7 +304,6 @@ class MessageCreate extends BaseEvent {
 								_id: this.bot.user.id,
 								reason: `First-time spam violation in #${msg.channel.name} (${msg.channel})`,
 							});
-							
 						} else if (spamDocument.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity * 2) {
 							// Second-time spam filter violation
 							winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
@@ -656,7 +655,7 @@ class MessageCreate extends BaseEvent {
 								await this.saveServerDocument(serverDocument);
 								await userDocument.save().catch(err => {
 									winston.verbose(`Failed to save user document...`, err);
-								})
+								});
 							}
 							// Check if it's a trigger for a tag command
 						} else if (commandObject && serverDocument.config.tags.list.id(commandObject.command) && serverDocument.config.tags.list.id(commandObject.command).isCommand) {
