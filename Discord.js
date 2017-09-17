@@ -3,6 +3,7 @@ const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const { Console, Utils, ShardIPC, GetGuild: GG, PostTotalData } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
+const Timeouts = require("./Modules/Timeouts/");
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
@@ -868,6 +869,60 @@ class Client extends Discord.Client {
 				default: return require("./Languages/en_us.js");
 			}
 		}
+	}
+
+	/**
+	 * Sets a timeout that will be automatically cancelled if the client is destroyed.
+	 * @param {Function} fn 
+	 * @param {Number} delay time to wait before executing (in milliseconds) 
+	 * @param {...*} args Arguments for the function 
+	 */
+	setTimeout (fn, delay, ...args) {
+		const timeout = Timeouts.setTimeout(() => {
+			fn(...args);
+			this._timeouts.delete(timeout);
+		}, delay);
+		this._timeouts.add(timeout);
+		return timeout;
+	}
+
+	/**
+   * Clears a timeout.
+   * @param {Timeout} timeout Timeout to cancel
+   */
+	clearTimeout (timeout) {
+		Timeouts.clearTimeout(timeout);
+		this._timeouts.delete(timeout);
+	}
+
+	/**
+   * Sets an interval that will be automatically cancelled if the client is destroyed.
+   * @param {Function} fn Function to execute
+   * @param {number} delay Time to wait before executing (in milliseconds)
+   * @param {...*} args Arguments for the function
+   * @returns {Timeout}
+   */
+	setInterval (fn, delay, ...args) {
+		const interval = Timeouts.setInterval(fn, delay, ...args);
+		this._intervals.add(interval);
+		return interval;
+	}
+
+	/**
+   * Clears an interval.
+   * @param {Timeout} interval Interval to cancel
+   */
+	clearInterval (interval) {
+		Timeouts.clearInterval(interval);
+		this._intervals.delete(interval);
+	}
+
+	destroy () {
+		for (const t of this._timeouts) Timeouts.clearTimeout(t);
+		for (const i of this._intervals) Timeouts.clearInterval(i);
+		this._timeouts.clear();
+		this._intervals.clear();
+		return this.manager.destroy();
 	}
 }
 
