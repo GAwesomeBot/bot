@@ -77,9 +77,6 @@ class MessageCreate extends BaseEvent {
 				});
 				const userDocument = findDocument.doc;
 				userDocument.username = msg.author.tag;
-				await userDocument.save().catch(err => {
-					winston.verbose(`Failed to save user document...`, err);
-				});
 				try {
 					await commandFunction({
 						bot: this.bot,
@@ -105,6 +102,9 @@ class MessageCreate extends BaseEvent {
 						},
 					});
 				}
+				await userDocument.save().catch(err => {
+					winston.verbose(`Failed to save user document...`, err);
+				});
 			} else {
 				// Process chatterbot prompt
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM chatterbot prompt`, { usrid: msg.author.id });
@@ -138,9 +138,12 @@ class MessageCreate extends BaseEvent {
 				}
 			}
 		} else {
+			// TODO: Remove this once Autofetch gets added to Discord
+			if (!msg.member) await msg.guild.members.fetch();
+
 			// Handle public messages
 			const serverDocument = await this.db.servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
-				winston.verbose("Failed to find server data for message", { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+				winston.verbose("Failed to find server data for message", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 			});
 			if (serverDocument) {
 				// Get channel data
@@ -217,9 +220,6 @@ class MessageCreate extends BaseEvent {
 					});
 					const userDocument = findDocument.doc;
 					userDocument.username = msg.author.tag;
-					await userDocument.save().catch(err => {
-						winston.verbose(`Failed to save user document...`, err);
-					});
 					if (userDocument) {
 						// Handle this as a violation
 						let violatorRoleID = null;
@@ -228,6 +228,9 @@ class MessageCreate extends BaseEvent {
 						}
 						this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 					}
+					await userDocument.save().catch(err => {
+						winston.verbose(`Failed to save user document...`, err);
+					});
 				}
 				// Spam filter
 				if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.spam_filter.isEnabled && !serverDocument.config.moderation.filters.spam_filter.disabled_channel_ids.includes(msg.channel.id) && memberBotAdminLevel < 1) {
@@ -286,21 +289,22 @@ class MessageCreate extends BaseEvent {
 								});
 								const userDocument = findDocument.doc;
 								userDocument.username = msg.author.tag;
-								userDocument.save().catch(err => {
-									winston.debug(`Failed to save user document...`, err);
-								});
 								if (userDocument) {
 									userDocument.points -= 25;
 									userDocument.save().catch(err => {
 										winston.debug(`Failed to save user document for points`, { usrid: msg.author.id }, err);
 									});
 								}
+								await userDocument.save().catch(err => {
+									winston.debug(`Failed to save user document...`, err);
+								});
 							}
 							// Add strike for user
 							memberDocument.strikes.push({
 								_id: this.bot.user.id,
 								reason: `First-time spam violation in #${msg.channel.name} (${msg.channel})`,
 							});
+							
 						} else if (spamDocument.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity * 2) {
 							// Second-time spam filter violation
 							winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
@@ -332,9 +336,6 @@ class MessageCreate extends BaseEvent {
 							});
 							const userDocument = findDocument.doc;
 							userDocument.username = msg.author.tag;
-							await userDocument.save().catch(err => {
-								winston.debug(`Failed to save user document...`, err);
-							});
 							if (userDocument) {
 								// Handle this as a violation
 								let violatorRoleID = null;
@@ -343,6 +344,9 @@ class MessageCreate extends BaseEvent {
 								}
 								this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
 							}
+							await userDocument.save().catch(err => {
+								winston.debug(`Failed to save user document...`, err);
+							});
 							// Clear spamDocument, restarting the spam filter process
 							spamDocument.remove();
 						}
@@ -376,6 +380,7 @@ class MessageCreate extends BaseEvent {
 							winston.debug(`Failed to find or create user data for message mention filter violation`, { usrid: msg.author.id }, err);
 						});
 						const userDocument = findDocument.doc;
+						userDocument.username = msg.author.tag;
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;
@@ -384,6 +389,9 @@ class MessageCreate extends BaseEvent {
 							}
 							this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.guild, serverDocument, msg.member, true)}** mentioned ${totalMentions} members / roles in a message in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Mention spam (${totalMentions} members / roles) in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.mention_filter.action, violatorRoleID);
 						}
+						await userDocument.save().catch(err => {
+							winston.debug(`Failed to save user document...`, err);
+						});
 					}
 				}
 
@@ -430,6 +438,7 @@ class MessageCreate extends BaseEvent {
 								winston.verbose(`Failed to get user document for votes..`, err);
 							});
 							const targetUserDocument = findDocument.doc;
+							targetUserDocument.username = member.user.tag;
 							if (targetUserDocument) {
 								let voteAction;
 
@@ -466,6 +475,7 @@ class MessageCreate extends BaseEvent {
 											winston.debug(`Failed to get user document for gilding member...`, err);
 										});
 										const userDocument = findDocument2.doc;
+										userDocument.username = msg.author.tag;
 										if (userDocument) {
 											if (userDocument.points > 10) {
 												userDocument.points -= 10;
@@ -506,6 +516,7 @@ class MessageCreate extends BaseEvent {
 									winston.debug(`Failed to find user document for voting..`, err);
 								});
 								const targetUserDocument2 = findDocument3.doc;
+								targetUserDocument2.username = message.author.tag;
 								if (targetUserDocument2) {
 									winston.silly(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 
@@ -581,6 +592,7 @@ class MessageCreate extends BaseEvent {
 								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
 							});
 							const userDocument = findDocument.doc;
+							userDocument.username = msg.author.tag;
 							if (userDocument) {
 								// NSFW filter for command suffix
 								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(commandObject.command).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, commandObject.suffix, true, false)) {
@@ -642,6 +654,9 @@ class MessageCreate extends BaseEvent {
 									await this.setCooldown(serverDocument, channelDocument);
 								}
 								await this.saveServerDocument(serverDocument);
+								await userDocument.save().catch(err => {
+									winston.verbose(`Failed to save user document...`, err);
+								})
 							}
 							// Check if it's a trigger for a tag command
 						} else if (commandObject && serverDocument.config.tags.list.id(commandObject.command) && serverDocument.config.tags.list.id(commandObject.command).isCommand) {
