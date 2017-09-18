@@ -18,7 +18,7 @@ module.exports = class Timeout extends Base {
 			this.timeout = setTimeout(() => {
 				this.after -= this.MAX;
 				this.start();
-			}, this.MAX, this.args);
+			}, this.MAX);
 		}
 
 		if (this.unreffed) {
