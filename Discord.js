@@ -887,21 +887,21 @@ class Client extends Discord.Client {
 	}
 
 	/**
-   * Clears a timeout.
-   * @param {Timeout} timeout Timeout to cancel
-   */
+   	 * Clears a timeout.
+   	 * @param {Timeout} timeout Timeout to cancel
+   	 */
 	clearTimeout (timeout) {
 		Timeouts.clearTimeout(timeout);
 		this._timeouts.delete(timeout);
 	}
 
 	/**
-   * Sets an interval that will be automatically cancelled if the client is destroyed.
-   * @param {Function} fn Function to execute
-   * @param {number} delay Time to wait before executing (in milliseconds)
-   * @param {...*} args Arguments for the function
-   * @returns {Timeout}
-   */
+   	 * Sets an interval that will be automatically cancelled if the client is destroyed.
+   	 * @param {Function} fn Function to execute
+   	 * @param {number} delay Time to wait before executing (in milliseconds)
+   	 * @param {...*} args Arguments for the function
+   	 * @returns {Timeout}
+   	 */
 	setInterval (fn, delay, ...args) {
 		const interval = Timeouts.setInterval(fn, delay, ...args);
 		this._intervals.add(interval);
@@ -909,9 +909,9 @@ class Client extends Discord.Client {
 	}
 
 	/**
-   * Clears an interval.
-   * @param {Timeout} interval Interval to cancel
-   */
+   	 * Clears an interval.
+   	 * @param {Timeout} interval Interval to cancel
+   	 */
 	clearInterval (interval) {
 		Timeouts.clearInterval(interval);
 		this._intervals.delete(interval);
