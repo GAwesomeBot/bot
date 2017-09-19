@@ -1,5 +1,5 @@
 module.exports = class Base {
-	constructor (listener, after, args) {
+	constructor (listener, after, ...args) {
 		this.listener = listener;
 		this.after = after;
 		this.unreffed = false;

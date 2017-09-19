@@ -5,8 +5,8 @@ const Base = require("./Base");
  * @extends Base
  */
 module.exports = class Interval extends Base {
-	constructor (listener, after, args) {
-		super(listener, after, args);
+	constructor (listener, after, ...args) {
+		super(listener, after, ...args);
 		this.timeLeft = this.after;
 		this.start();
 	}

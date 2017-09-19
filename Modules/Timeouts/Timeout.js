@@ -6,14 +6,14 @@ const Base = require("./Base");
  * @extends Base
  */
 module.exports = class Timeout extends Base {
-	constructor (listener, after, args) {
-		super(listener, after, args);
+	constructor (listener, after, ...args) {
+		super(listener, after, ...args);
 		this.start();
 	}
 
 	start () {
 		if (this.after <= this.MAX) {
-			this.timeout = setTimeout(this.listener, this.after, this.args);
+			this.timeout = setTimeout(this.listener, this.after, ...this.args);
 		} else {
 			this.timeout = setTimeout(() => {
 				this.after -= this.MAX;
