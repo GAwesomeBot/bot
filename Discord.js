@@ -859,7 +859,7 @@ class Client extends Discord.Client {
 
 	/**
 	 * Gets you a langauge translation for a server.
-	 * TODO: 4.2: Implement this
+	 * TODO: ?.?: Implement this
 	 * @param {Document} serverDocument The document to get the file for
 	 */
 	getTranslateFile (serverDocument) {
