@@ -423,9 +423,9 @@ module.exports = {
 			default: true,
 		},
 		server_listing: {
-			isShown: {
+			isEnabled: {
 				type: Boolean,
-				default: true,
+				default: false,
 			},
 			category: {
 				type: String,

@@ -1,4 +1,13 @@
 /* eslint-disable max-len */
+const ascii = `
+  _____                                               ____        _   
+ / ____|   /\\                                        |  _ \\      | |  
+| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
+| | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
+| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
+ \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
+			`;
+
 const database = require("./Database/Driver.js");
 const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
@@ -31,7 +40,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 	if (db) {
 		await winston.info(`Connected to the database successfully.`);
 
-		winston.verbose("Confirming MongoDB config values... ~(˘▾˘~)");
+		winston.silly("Confirming MongoDB config values.");
 		await db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
@@ -49,7 +58,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
 		}
 
-		winston.debug("Creating sharder instance.");
+		winston.verbose("Creating sharder instance.");
 		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, winston);
 		sharder.cluster.on("online", worker => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
@@ -67,16 +76,31 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 
 		sharder.IPC.once("warnDefaultSecret", () => {
-			winston.warn("Your secret value appears to be set to the default value. Please note that this value is public, and your session cookies can be edited by anyone!");
+			winston.warn("Your session secret value appears to be default. Please note that this value is public!");
 		});
 
 		sharder.IPC.once("warnNotProduction", () => {
-			winston.warn("GAB is running in development mode. This might impact performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
+			winston.warn("GAB is running in development mode, this might impact web interface performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
 		});
 
-		sharder.IPC.on("finished", () => {
-			shardFinished(sharder);
-		});
+		let shardFinished = () => {
+			sharder.finished++;
+			if (sharder.finished === sharder.count) {
+				// Print startup ascii message
+				winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
+				// Use console.log because winston never lets us have anything fun, MOM
+				console.log(ascii);
+				sharder.IPC.removeListener("finished", shardFinished);
+				sharder.IPC.send("postAllData", {}, 0);
+				if (process.argv.includes("--build")) {
+					winston.warn("Shutting down travis build with code 0");
+					sharder.cluster.disconnect();
+					process.exit(0);
+				}
+			}
+		};
+
+		sharder.IPC.on("finished", shardFinished);
 
 		sharder.IPC.on("getGuild", async (msg, shard) => {
 			try {
@@ -138,34 +162,12 @@ database.initialize(configJS.databaseURL).catch(err => {
 
 		sharder.IPC.on("sendAllGuilds", () => sharder.IPC.send("postAllData", {}, 0));
 
+		sharder.IPC.on("createPublicInviteLink", msg => sharder.IPC.send("createPublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
+		sharder.IPC.on("deletePublicInviteLink", msg => sharder.IPC.send("deletePublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
+
 		sharder.spawn();
 	}
 });
-
-function shardFinished (sharder) {
-	const ascii = `
-  _____                                               ____        _   
- / ____|   /\\                                        |  _ \\      | |  
-| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
-| | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
-| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
- \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
-			`;
-	sharder.finished++;
-	if (sharder.finished === sharder.count) {
-		// Print startup ascii message
-		winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
-		// Use console.log because winston never lets us have anything fun, MOM
-		console.log(ascii);
-		sharder.IPC.removeListener("finished", shardFinished);
-		sharder.IPC.send("postAllData", {}, 0);
-		if (process.argv.includes("--build")) {
-			winston.warn("Shutting down travis build with code 0");
-			sharder.cluster.disconnect();
-			process.exit(0);
-		}
-	}
-}
 
 process.on("uncaughtException", err => {
 	winston.error("An unknown, and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);

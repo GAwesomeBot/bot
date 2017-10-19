@@ -1722,7 +1722,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	app.get("/login/callback", passport.authenticate("discord", {
 		failureRedirect: "/error?err=discord",
 	}), (req, res) => {
-		if (configJSON.globalBlocklist.indexOf(req.user.id) > -1 || !req.user.verified) {
+		if (configJSON.globalBlocklist.indexOf(req.user.id) > -1 || req.user.verified === false) {
 			req.session.destroy(err => {
 				if (!err) renderError(res, "Your Discord account must have a verified email.", "<strong>Hah!</strong> Thought you were close, didn'tcha?");
 				else renderError(res, "Failed to destroy your session.");
@@ -3382,7 +3382,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				serverData: {
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 				},
 				currentPage: req.path,
 				configData: {
@@ -3405,30 +3405,14 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 			serverDocument.config.public_data.server_listing.category = req.body["server_listing-category"];
 			serverDocument.config.public_data.server_listing.description = req.body["server_listing-description"];
 			if (createInvite) {
-				svr.defaultChannel.createInvite({
-					maxAge: 0,
-					maxUses: 0,
-				}).then(invite => {
-					if (invite) {
-						serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
-					}
-					saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
-				});
-			} else if (serverDocument.config.public_data.server_listing.invite_link) {
-				svr.defaultChannel.getInvites().then(invites => {
-					if (invites) {
-						const inviteToDelete = invites.find(invite => `https://discord.gg/${invite.code}` === serverDocument.config.public_data.server_listing.invite_link);
-						if (inviteToDelete) {
-							inviteToDelete.delete().then(() => {
-								saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
-							});
-						} else {
-							saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
-						}
-					}
-				});
+				saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
+				bot.IPC.send("createPublicInviteLink", { guild: svr.id });
+			} else if (!req.body["server_listing-isEnabled"] && serverDocument.config.public_data.server_listing.invite_link) {
+				serverDocument.config.public_data.server_listing.invite_link = null;
+				saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
+				bot.IPC.send("deletePublicInviteLink", { guild: svr.id });
 			} else {
-				saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+				saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 			}
 		});
 	});
