@@ -1,6 +1,7 @@
 const dgr = require("download-github-repo");
-const fs = require("fs-extra");
+const fs = require("fs-nextra");
 const snekfetch = require("snekfetch");
+// TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {
 	check: config => new Promise(async (resolve, reject) => {

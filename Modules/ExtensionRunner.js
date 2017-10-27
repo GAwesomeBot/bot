@@ -1,5 +1,5 @@
 const domain = require("domain");
-const fs = require("fs-extra");
+const fs = require("fs-nextra");
 
 // Run an extension (command, keyword, or timer) in the sandbox
 /* eslint-disable max-len, no-unused-vars*/
