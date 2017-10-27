@@ -67,7 +67,8 @@
     "wolfram-node": "*",
     "write-file-atomic": "^2.3.0",
     "xml-parser": "*",
-    "xss-filters": "*"
+    "xss-filters": "*",
+    "zlib-sync": "^0.1.3"
   },
   "devDependencies": {
     "eslint": "^4.9.0"
