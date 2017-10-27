@@ -37,54 +37,6 @@ class Client extends Discord.Client {
 
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Discord.Collection();
-
-		// Bot IPC
-		winston.silly("Creating ShardIPC instance.");
-		this.IPC = new ShardIPC(this, winston, process);
-
-		this.IPC.on("getGuild", msg => {
-			let payload = msg;
-			if (payload.guild === "*") {
-				let result = {};
-				let guilds = payload.settings.mutual ? this.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : this.guilds;
-				guilds.forEach((val, key) => {
-					result[key] = GG.generate(val, payload.settings);
-				});
-
-				this.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
-			} else {
-				let guild = this.guilds.get(payload.guild);
-				let val = GG.generate(guild, payload.settings);
-				this.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
-			}
-		});
-
-		this.IPC.on("muteMember", async msg => {
-			const guild = bot.guilds.get(msg.guild);
-			const channel = guild.channels.get(msg.channel);
-			const member = guild.members.get(msg.member);
-
-			await this.muteMember(channel, member);
-		});
-
-		this.IPC.on("unmuteMember", async msg => {
-			const guild = bot.guilds.get(msg.guild);
-			const channel = guild.channels.get(msg.channel);
-			const member = guild.members.get(msg.member);
-
-			await this.unmuteMember(channel, member);
-		});
-
-		this.IPC.on("createMOTD", async msg => {
-			try {
-				const guild = bot.guilds.get(msg.guild);
-				const serverDocument = await db.servers.findOne({ _id: msg.guild }).exec();
-
-				MessageOfTheDay(this, db, guild, serverDocument.config.message_of_the_day);
-			} catch (err) {
-				winston.warn("Failed to create a MOTD timer for server!", { svrid: msg.guild });
-			}
-		});
 	}
 
 	/**
@@ -993,8 +945,77 @@ bot.once("pre-update", async () => {
 	}
 });
 
+// Bot IPC
+winston.silly("Creating ShardIPC instance.");
+bot.IPC = new ShardIPC(bot, winston, process);
+
+bot.IPC.on("getGuild", msg => {
+	let payload = msg;
+	if (payload.guild === "*") {
+		let result = {};
+		let guilds = payload.settings.mutual ? this.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : bot.guilds;
+		guilds.forEach((val, key) => {
+			result[key] = GG.generate(val, payload.settings);
+		});
+
+		bot.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
+	} else {
+		let guild = bot.guilds.get(payload.guild);
+		let val = GG.generate(guild, payload.settings);
+		bot.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
+	}
+});
+
+bot.IPC.on("muteMember", async msg => {
+	const guild = bot.guilds.get(msg.guild);
+	const channel = guild.channels.get(msg.channel);
+	const member = guild.members.get(msg.member);
+
+	await bot.muteMember(channel, member);
+});
+
+bot.IPC.on("unmuteMember", async msg => {
+	const guild = bot.guilds.get(msg.guild);
+	const channel = guild.channels.get(msg.channel);
+	const member = guild.members.get(msg.member);
+
+	await bot.unmuteMember(channel, member);
+});
+
+bot.IPC.on("createMOTD", async msg => {
+	try {
+		const guild = bot.guilds.get(msg.guild);
+		const serverDocument = await db.servers.findOne({ _id: msg.guild }).exec();
+
+		MessageOfTheDay(bot, db, guild, serverDocument.config.message_of_the_day);
+	} catch (err) {
+		winston.warn("Failed to create a MOTD timer for server!", { svrid: msg.guild });
+	}
+});
+
 bot.IPC.on("postAllData", async () => {
 	await PostTotalData(bot);
+});
+
+bot.IPC.on("createPublicInviteLink", async msg => {
+	let guildID = msg.guild;
+	let guild = bot.guilds.get(guildID);
+	const serverDocument = await db.servers.findOne({ _id: guildID }).exec();
+	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.first();
+	let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
+	serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
+	serverDocument.save();
+});
+
+bot.IPC.on("deletePublicInviteLink", async msg => {
+	let guildID = msg.guild;
+	let guild = bot.guilds.get(guildID);
+	const serverDocument = await db.servers.findOne({ _id: guildID }).exec();
+	let invites = await guild.fetchInvites();
+	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
+	if (invite) invite.delete("GAwesomeBot Public Server Listing");
+	serverDocument.config.public_data.server_listing.invite_link = null;
+	serverDocument.save();
 });
 
 bot.on("error", error => {

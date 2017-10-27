@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Public Data - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Public Data - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -24,14 +24,14 @@
 						<article class="message is-primary">
 							<div class="message-body">
 								<div class="content">
-									AwesomeBot provides server listing capability, allowing people to discover new servers they might be interested in. You can allow your server to be shown on the <a href="/activity/servers">activity page</a> and create a detailed listing for everyone to see.
+									GAwesomeBot provides server listing capability, allowing people to discover new servers they might be interested in. You can allow your server to be shown on the <a href="/activity/servers">activity page</a> and create a detailed listing for everyone to see.
 								</div>
 							</div>
 						</article>
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" onsubmit="submitForm(); return false;">
 							<p class="control">
 								<label class="checkbox">
 								<input name="isShown" type="checkbox" onclick="$('#public_data-options').toggleClass('is-hidden');" <%= configData.public_data.isShown ? "checked" : "" %>>

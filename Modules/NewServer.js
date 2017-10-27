@@ -10,7 +10,7 @@ const Utils = require("./Utils/");
 module.exports = async (bot, server, serverDocument) => {
 	// Default admin roles
 	server.roles.forEach(role => {
-		if (role.name !== "@everyone" && !role.managed && role.hasPermission("MANAGE_GUILD", false, true) && !serverDocument.config.admins.id(role.id)) {
+		if (role.name !== "@everyone" && !role.managed && role.permissions.has("MANAGE_GUILD", true) && !serverDocument.config.admins.id(role.id)) {
 			serverDocument.config.admins.push({
 				_id: role.id,
 				level: 3,

@@ -34,6 +34,7 @@ class SharderIPC extends EventEmitter {
 				});
 			} else {
 				shard = this.sharder.shards.get(shard);
+				if (!shard) shard = this.sharder.shards.get(0);
 				shard.send(payload).catch(err => {
 					throw err;
 				});
