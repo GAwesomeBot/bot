@@ -123,7 +123,7 @@ class Client extends Discord.Client {
 			suffix: null,
 		};
 		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
-			cmdstr = message.substring(this.user.toString() + 1);
+			cmdstr = message.substring(this.user.toString().length + 1);
 		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
 			cmdstr = message.substring(`<@!${this.user.id}>`.length + 1);
 		} else if (message.startsWith(serverDocument.config.command_prefix)) {
