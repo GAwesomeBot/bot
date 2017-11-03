@@ -223,6 +223,7 @@ class MessageCreate extends BaseEvent {
 									discord.clientToken,
 									tokens.discordList,
 									tokens.discordBots,
+									tokens.discordBotsOrg,
 									tokens.giphyAPI,
 									tokens.googleCSEID,
 									tokens.googleAPI,
