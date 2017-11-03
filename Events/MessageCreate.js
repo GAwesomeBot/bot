@@ -213,8 +213,9 @@ class MessageCreate extends BaseEvent {
 							try {
 								if (evalCommand.suffix.startsWith("```js") && evalCommand.suffix.endsWith("```")) evalCommand.suffix = evalCommand.suffix.substring(5, evalCommand.suffix.length - 3);
 								const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
-								let result = await eval(asyncEval(evalCommand.suffix, evalCommand.suffix.includes("return")));
-								if (typeof result !== "string") result = require("util").inspect(result, false, 1);
+								evalCommand.suffix = evalCommand.suffix
+									.replace("this.bot.token", "\"mfaNop\"")
+									.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
 								let { discord, tokens } = require("../Configurations/auth");
 								const censor = [
 									discord.clientID,
@@ -234,6 +235,8 @@ class MessageCreate extends BaseEvent {
 									tokens.gistKey,
 								];
 								const regex = new RegExpMaker(censor).make("gi");
+								let result = await eval(asyncEval(evalCommand.suffix, evalCommand.suffix.includes("return")));
+								if (typeof result !== "string") result = require("util").inspect(result, false, 1);
 								result = result.replace(regex, "-- GAB SNIP --");
 								if (result.length <= 1980) {
 									msg.channel.send({
