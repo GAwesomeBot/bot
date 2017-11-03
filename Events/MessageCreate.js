@@ -4,6 +4,7 @@ const { MicrosoftTranslate: mstranslate, Utils } = require("../Modules");
 const {
 	Gist,
 	FilterChecker: checkFiltered,
+	RegExpMaker,
 } = Utils;
 const levenshtein = require("fast-levenshtein");
 const snekfetch = require("snekfetch");
@@ -63,8 +64,8 @@ class MessageCreate extends BaseEvent {
 			let command = msg.content.toLowerCase().trim();
 			let suffix = "";
 			if (command.includes(" ")) {
-				command = command.split(" ")[0].toLowerCase().trim();
-				suffix = msg.content.split(" ")
+				command = command.split(/\s+/)[0].toLowerCase().trim();
+				suffix = msg.content.split(/\s+/)
 					.splice(1)
 					.join(" ")
 					.trim();
@@ -201,6 +202,87 @@ class MessageCreate extends BaseEvent {
 						this.bot.logMessage(serverDocument, "info", `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
 						return;
 					}
+				}
+
+				// Check for eval command from maintainers
+				if (this.configJSON.maintainers.includes(msg.author.id)) {
+					const evalCommand = await this.bot.checkCommandTag(msg.content, serverDocument);
+					if (evalCommand && evalCommand.command === "eval") {
+						if (evalCommand.suffix) {
+							let hrstart = process.hrtime();
+							try {
+								if (evalCommand.suffix.startsWith("```js") && evalCommand.suffix.endsWith("```")) evalCommand.suffix = evalCommand.suffix.substring(5, evalCommand.suffix.length - 3);
+								const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
+								let result = await eval(asyncEval(evalCommand.suffix, evalCommand.suffix.includes("return")));
+								if (typeof result !== "string") result = require("util").inspect(result, false, 1);
+								let { discord, tokens } = require("../Configurations/auth");
+								const censor = [
+									discord.clientID,
+									discord.clientSecret,
+									discord.clientToken,
+									tokens.discordList,
+									tokens.discordBots,
+									tokens.giphyAPI,
+									tokens.googleCSEID,
+									tokens.googleAPI,
+									tokens.imgurClientID,
+									tokens.microsoftTranslation,
+									tokens.twitchClientID,
+									tokens.wolframAppID,
+									tokens.openExchangeRatesKey,
+									tokens.omdbAPI,
+									tokens.gistKey,
+								];
+								const regex = new RegExpMaker(censor).make("gi");
+								result = result.replace(regex, "-- GAB SNIP --");
+								if (result.length <= 1980) {
+									msg.channel.send({
+										embed: {
+											color: 0x00FF00,
+											description: `\`\`\`js\n${result}\`\`\``,
+											footer: {
+												text: `Execution time: ${process.hrtime(hrstart)[0]}s ${Math.floor(process.hrtime(hrstart)[1] / 1000000)}ms`,
+											},
+										},
+									});
+								} else {
+									const GistUpload = new Gist(this.bot);
+									const res = await GistUpload.upload({
+										title: "Eval Result",
+										text: msg.content,
+									});
+									res && res.url && msg.channel.send({
+										embed: {
+											color: 0x3669FA,
+											title: `The eval results were too large!`,
+											description: `As such, we've uploaded them to a gist. Check them out [here](${res.url})`,
+										},
+									});
+								}
+							} catch (err) {
+								msg.channel.send({
+									embed: {
+										color: 0xFF0000,
+										description: `\`\`\`js\n${err.stack}\`\`\``,
+										footer: {
+											text: `Execution time: ${process.hrtime(hrstart)[0]}s ${Math.floor(process.hrtime(hrstart)[1] / 1000000)}ms`,
+										},
+									},
+								});
+							}
+						} else {
+							msg.channel.send({
+								embed: {
+									color: 0xFF0000,
+									description: `What would you like to evaluate?`,
+									footer: {
+										text: `I mean, you should know that, as you are a maintainer`,
+									},
+								},
+							});
+						}
+					}
+					return;
 				}
 
 				// Check if using a filtered word
@@ -429,8 +511,8 @@ class MessageCreate extends BaseEvent {
 
 					// Vote by mention
 					if (serverDocument.config.commands.points.isEnabled && msg.guild.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(msg.channel.id) && msg.content.startsWith("<@") && msg.content.indexOf(">") < msg.content.indexOf(" ") && msg.content.includes(" ") && msg.content.indexOf(" ") < msg.content.length - 1) {
-						const member = await this.bot.memberSearch(msg.content.split(" ")[0].trim(), msg.guild);
-						const voteString = msg.content.split(" ").splice(1).join(" ");
+						const member = await this.bot.memberSearch(msg.content.split(/\s+/)[0].trim(), msg.guild);
+						const voteString = msg.content.split(/\s+/).splice(1).join(" ");
 						if (member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 							// Get target user data
 							const findDocument = await this.db.users.findOrCreate({ _id: member.id }).catch(err => {
@@ -697,7 +779,7 @@ class MessageCreate extends BaseEvent {
 
 							// Check if it's a chatterbot prompt
 							if (!extensionApplied && serverDocument.config.chatterbot && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ")) {
-								const prompt = msg.content.split(" ")
+								const prompt = msg.content.split(/\s+/)
 									.splice(1)
 									.join(" ")
 									.trim();

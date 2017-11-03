@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const Long = require("long");
 const GetValue = require("./GetValue.js");
 
 /* eslint-disable max-len */
@@ -121,7 +122,7 @@ module.exports = bot => {
 		get: function get () {
 			if (this.channels.filter(c => c.type === "text").size === 0) return null;
 			const defaultChannel = this.channels.filter(c => c.type === "text" && c.permissionsFor(this.me).has("VIEW_CHANNEL") && c.permissionsFor(this.me).has("SEND_MESSAGES"))
-				.sort((a, b) => a.position - b.position)
+				.sort((a, b) => a.position - b.position || Long.fromString(a.id).sub(Long.fromString(b.id)).toNumber())
 				.first();
 			if (!defaultChannel) return null;
 			return defaultChannel;

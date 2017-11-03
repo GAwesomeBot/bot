@@ -7,7 +7,14 @@ module.exports = class RegExpMaker {
 		}
 	}
 	make (type = "g") {
-		for (let i = 0; i < this.array.length; i++) this.array[i] = this.array[i].escapeRegex();
+		for (let i = 0; i < this.array.length; i++) {
+			if (this.array[i] === "") {
+				this.array.splice(i, 1);
+				i--;
+			} else if (this.array[i] !== "") {
+				this.array[i] = this.array[i].escapeRegex();
+			}
+		}
 		return new RegExp(`${this.array.join("|")}`, type);
 	}
 };

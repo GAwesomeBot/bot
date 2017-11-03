@@ -28,7 +28,6 @@ module.exports = class GitHubGist {
 			discord.clientID,
 			discord.clientSecret,
 			discord.clientToken,
-			tokens.carboniteEx,
 			tokens.discordList,
 			tokens.discordBots,
 			tokens.giphyAPI,
@@ -70,8 +69,6 @@ module.exports = class GitHubGist {
 		} catch (err) {
 			throw err;
 		}
-		return {
-			deleted: res.status === 204,
-		};
+		return res.status === 204;
 	}
 };

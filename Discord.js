@@ -87,8 +87,8 @@ class Client extends Discord.Client {
 				suffix: null,
 			};
 		} else if (cmdstr) {
-			let command = cmdstr.split(" ")[0].toLowerCase();
-			let suffix = cmdstr.split(" ")
+			let command = cmdstr.split(/\s+/)[0].toLowerCase();
+			let suffix = cmdstr.split(/\s+/)
 				.splice(1)
 				.join(" ")
 				.trim();
@@ -924,6 +924,10 @@ process.on("uncaughtException", err => {
 	process.exit(1);
 });
 
+// Bot IPC
+winston.silly("Creating ShardIPC instance.");
+bot.IPC = new ShardIPC(bot, winston, process);
+
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
@@ -944,10 +948,6 @@ bot.once("pre-update", async () => {
 		winston.error(`We were unable to destroy the client! This is bad..`);
 	}
 });
-
-// Bot IPC
-winston.silly("Creating ShardIPC instance.");
-bot.IPC = new ShardIPC(bot, winston, process);
 
 bot.IPC.on("getGuild", msg => {
 	let payload = msg;
@@ -985,7 +985,7 @@ bot.IPC.on("unmuteMember", async msg => {
 bot.IPC.on("createMOTD", async msg => {
 	try {
 		const guild = bot.guilds.get(msg.guild);
-		const serverDocument = await db.servers.findOne({ _id: msg.guild }).exec();
+		const serverDocument = await db.servers.findOne({ _id: guild.id }).exec();
 
 		MessageOfTheDay(bot, db, guild, serverDocument.config.message_of_the_day);
 	} catch (err) {

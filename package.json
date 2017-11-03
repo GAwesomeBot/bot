@@ -18,7 +18,7 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "chalk": "^1.1.3",
-    "circular-json": "*",
+    "circular-json": "^0.4.0",
     "compression": "^1.7.1",
     "connect-mongo": "^2.0.0",
     "convert-units": "*",
@@ -36,9 +36,6 @@
     "fast-levenshtein": "*",
     "feed-read": "*",
     "fs-nextra": "^0.3.2",
-    "goo.gl": "*",
-    "google": "*",
-    "google-play-scraper": "*",
     "mathjs": "^3.16.5",
     "moment": "^2.19.1",
     "mongoose": "4.10.8",
@@ -53,8 +50,8 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "searchitunes": "*",
-    "showdown": "^1.8.0",
-    "snekfetch": "^3.5.7",
+    "showdown": "^1.8.1",
+    "snekfetch": "^3.5.8",
     "socket.io": "^2.0.4",
     "string": "*",
     "text-diff": "*",
@@ -71,6 +68,6 @@
     "zlib-sync": "^0.1.3"
   },
   "devDependencies": {
-    "eslint": "^4.9.0"
+    "eslint": "^4.10.0"
   }
 }

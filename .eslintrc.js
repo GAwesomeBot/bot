@@ -36,7 +36,7 @@ module.exports = {
 		"no-sequences": "error",
 		"no-throw-literal": "error",
 		"no-unmodified-loop-condition": "error",
-		"no-unused-expressions": "error",
+		"no-unused-expressions": ["error", { "allowShortCircuit": true }],
 		"no-useless-call": "error",
 		"no-useless-concat": "error",
 		"no-useless-escape": "error",

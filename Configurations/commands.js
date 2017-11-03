@@ -282,16 +282,6 @@ const commands = {
 			},
 			category: `Moderation ⚒`,
 		},
-		eval: {
-			usage: `<expression>`,
-			description: `Evaluates something`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 4,
-			},
-			category: `GAwesomeBot 🤖`,
-		},
 		expand: {
 			aliases: ["resolve"],
 			usage: `<URL>`,
