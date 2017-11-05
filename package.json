@@ -58,7 +58,7 @@
     "urban": "*",
     "uws": "*",
     "vm2": "^3.5.2",
-    "wikijs": "^4.3.4",
+    "wikijs": "^4.4.0",
     "winston": "^2.4.0",
     "winston-daily-rotate-file": "^1.7.2",
     "wolfram-node": "*",
