@@ -5,7 +5,7 @@ class GuildCreate extends BaseEvent {
 	async handle ({ guild }) {
 		this.bot.IPC.send("guilds", { latest: [guild.id] });
 		this.bot.IPC.send("sendAllGuilds", {});
-		await Promise.all(guild.members.fetch(), PostShardedData(this.bot));
+		await Promise.all([guild.members.fetch(), PostShardedData(this.bot)]);
 		let serverDocument, shouldMakeDocument = false;
 		try {
 			serverDocument = await this.db.servers.findOne({ _id: guild.id }).exec();
