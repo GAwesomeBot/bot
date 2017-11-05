@@ -105,7 +105,7 @@ class Client extends Discord.Client {
 	 * @param {Discord.Guild} server The guild that contains the member
 	 * @param {Document} serverDocument The database server document
 	 * @param {Discord.GuildMember} member The guild member to get the name from
-	 * @param {Boolean} [ignoreNick=false] If it should ignore nicknames 
+	 * @param {Boolean} [ignoreNick=false] If it should ignore nicknames
 	 */
 	getName (server, serverDocument, member, ignoreNick = false) {
 		// Cleans a string (strip markdown, prevent @everyone or @here)
@@ -210,7 +210,7 @@ class Client extends Discord.Client {
 	 * Finds a member on a server (by username, ID, etc.)
 	 * @param {String} string The string to search from
 	 * @param {Discord.Guild} server The guild to search the member in
-	 * @returns {Promise<?Discord.GuildMember>} The guild member 
+	 * @returns {Promise<?Discord.GuildMember>} The guild member
 	 */
 	memberSearch (string, server) {
 		return new Promise((resolve, reject) => {
@@ -287,7 +287,7 @@ class Client extends Discord.Client {
 	 * Finds a channel (by name or ID) in a server
 	 * @param {String} string The string to search the channel for
 	 * @param {Discord.Guild} server The guild to search the channel in
-	 * @returns {Promise<?Discord.TextChannel>} The text channel from the guild, if found. 
+	 * @returns {Promise<?Discord.TextChannel>} The text channel from the guild, if found.
 	 */
 	channelSearch (string, server) {
 		return new Promise((resolve, reject) => {
@@ -344,7 +344,7 @@ class Client extends Discord.Client {
 
 	/**
 	 * Gets the game string from a user
-	 * @param {Discord.GuildMember|Discord.User} userOrMember The user or GuildMember to get the game from 
+	 * @param {Discord.GuildMember|Discord.User} userOrMember The user or GuildMember to get the game from
 	 * @returns {Promise<?String>} A string containing the game, or an empty string otherwise
 	 */
 	getGame (userOrMember) {
@@ -621,10 +621,10 @@ class Client extends Discord.Client {
 
 	/**
 	 * Check if user has a bot admin role on a server / is a bot admin on the server
-	 * @param {Discord.Guild} server The server to check on 
+	 * @param {Discord.Guild} server The server to check on
 	 * @param {Document} serverDocument The database guild document
 	 * @param {Discord.GuildMember} member The member to check the admin level
-	 * @returns {Number} The admin level of the user 
+	 * @returns {Number} The admin level of the user
 	 */
 	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
@@ -680,7 +680,7 @@ class Client extends Discord.Client {
 	 * Check if a permission overwrite has any permissions related to channels
 	 * @param {Discord.PermissionOverwrites} allowedOrDenied The allowed or deny value of a permission overwrite for a member or role
 	 * @returns {Boolean} True if it has any of the perms, false if default
-	 */ 
+	 */
 	hasOverwritePerms (allowedOrDenied) {
 		const PERMS = [
 			"CREATE_INSTANT_INVITE",
@@ -825,9 +825,9 @@ class Client extends Discord.Client {
 
 	/**
 	 * Sets a timeout that will be automatically cancelled if the client is destroyed
-	 * @param {Function} fn 
-	 * @param {Number} delay time to wait before executing (in milliseconds) 
-	 * @param {...*} args Arguments for the function 
+	 * @param {Function} fn
+	 * @param {Number} delay time to wait before executing (in milliseconds)
+	 * @param {...*} args Arguments for the function
 	 * @returns {Timeout}
 	 */
 	setTimeout (fn, delay, ...args) {
@@ -919,7 +919,7 @@ process.on("unhandledRejection", reason => {
 process.on("uncaughtException", err => {
 	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
 	/*
-	 * Read above 
+	 * Read above
 	 */
 	process.exit(1);
 });
