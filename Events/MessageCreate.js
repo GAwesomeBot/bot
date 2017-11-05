@@ -24,7 +24,7 @@ class MessageCreate extends BaseEvent {
 
 	/**
 	 * Handles a MESSAGE_CREATE event
-	 * @param {Message} msg The received message from Discord 
+	 * @param {Message} msg The received message from Discord
 	 */
 	async handle ({ msg }) {
 		// Reload commands
@@ -285,8 +285,8 @@ class MessageCreate extends BaseEvent {
 								},
 							});
 						}
+						return;
 					}
-					return;
 				}
 
 				// Check if using a filtered word
@@ -855,8 +855,8 @@ class MessageCreate extends BaseEvent {
 
 	/**
 	 * Get a chatter bot response
-	 * @param {User|GuildMember|Snowflake} userOrUserID 
-	 * @param {?String} prompt 
+	 * @param {User|GuildMember|Snowflake} userOrUserID
+	 * @param {?String} prompt
 	 * @returns {Promise} The response if successful, otherwise an error
 	 */
 	async chatterPrompt (userOrUserID, prompt) {
@@ -888,9 +888,9 @@ class MessageCreate extends BaseEvent {
 
 	/**
 	 * Delete command message if necessary
-	 * @param {Document} serverDocument 
-	 * @param {Document} channelDocument 
-	 * @param {Message} msg 
+	 * @param {Document} serverDocument
+	 * @param {Document} channelDocument
+	 * @param {Message} msg
 	 */
 	async deleteCommandMessage (serverDocument, channelDocument, msg) {
 		if (serverDocument.config.delete_command_messages && msg.channel.permissionsFor(msg.guild.me).has("MANAGE_MESSAGES")) {
@@ -908,8 +908,8 @@ class MessageCreate extends BaseEvent {
 
 	/**
 	 * Set a command cooldown in a channel
-	 * @param {Document} serverDocument 
-	 * @param {Document} channelDocument 
+	 * @param {Document} serverDocument
+	 * @param {Document} channelDocument
 	 */
 	async setCooldown (serverDocument, channelDocument) {
 		if (channelDocument.command_cooldown > 0 || serverDocument.config.command_cooldown > 0) {
@@ -927,8 +927,8 @@ class MessageCreate extends BaseEvent {
 
 	/**
 	 * Increment command usage count
-	 * @param {Document} serverDocument 
-	 * @param {?String} command 
+	 * @param {Document} serverDocument
+	 * @param {?String} command
 	 */
 	async incrementCommandUsage (serverDocument, command) {
 		if (!serverDocument.command_usage) {
@@ -945,7 +945,7 @@ class MessageCreate extends BaseEvent {
 
 	/**
 	 * Save any and all changes to the serverDocument
-	 * @param {Document} serverDocument 
+	 * @param {Document} serverDocument
 	 */
 	async saveServerDocument (serverDocument) {
 		try {
