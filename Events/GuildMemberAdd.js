@@ -53,7 +53,7 @@ class GuildMemberAdd extends BaseEvent {
 							embed: {
 								color: 0x00FF00,
 								thumbnail: {
-									url: member.guild.iconURL || "",
+									url: member.guild.iconURL() || "",
 								},
 								title: `Welcome to ${member.guild} Discord Chat!`,
 								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message set for new members! Have a cookie instead 🍪",
