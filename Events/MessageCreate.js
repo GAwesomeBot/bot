@@ -259,7 +259,7 @@ class MessageCreate extends BaseEvent {
 										embed: {
 											color: 0x3669FA,
 											title: `The eval results were too large!`,
-											description: `As such, we've uploaded them to a gist. Check them out [here](${res.url})`,
+											description: `As such, I've uploaded them to a gist. Check them out [here](${res.url})`,
 										},
 									});
 								}
@@ -280,7 +280,7 @@ class MessageCreate extends BaseEvent {
 									color: 0xFF0000,
 									description: `What would you like to evaluate?`,
 									footer: {
-										text: `I mean, you should know that, as you are a maintainer`,
+										text: `Come on, give me something to work with!`,
 									},
 								},
 							});
