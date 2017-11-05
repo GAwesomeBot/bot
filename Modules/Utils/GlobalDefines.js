@@ -1,4 +1,3 @@
-/* eslint-disable */
-module.exports = () => {
-
+exports.addToGlobal = (name, val) => {
+	global[name] = val;
 };
