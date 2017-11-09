@@ -177,7 +177,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 	});
 
 	// Serve public dir
-	app.use("/static", express.static(`${__dirname}/public`, { maxAge: 86400000 }));
+	app.use("/static/:type", (req, res, next) => {
+		if (req.accepts("image/webp") && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
+			res.redirect("/static/img" + req.path.substring(0, req.path.lastIndexOf(".")) + ".webp");
+		} else return express.static(`${__dirname}/public/${req.params.type}`, { maxAge: 86400000 })(req, res, next);
+	});
 
 	// Open web interface
 	function requireHTTPS(req, res, next) {
@@ -703,9 +707,11 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 
 	// Header image provider
 	app.get("/header-image", (req, res) => {
-			res.sendFile(`${__dirname}/public/img/${configJSON.headerImage}`, err => {
-				if (err) winston.warn("It seems your headerImage value is invalid!", err)
-			});
+		let headerImage = configJSON.headerImage;
+		if (req.accepts("image/webp")) headerImage = headerImage.substring(0, headerImage.lastIndexOf(".")) + ".webp"
+		res.sendFile(`${__dirname}/public/img/${headerImage}`, err => {
+			if (err) winston.warn("It seems your headerImage value is invalid!", err)
+		});
 	});
 
 	// Server list provider for typeahead
