@@ -37,6 +37,6 @@ module.exports = async (bot, db, server, motdDocument) => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});
 			await sendMOTD(serverDocument);
-		}, Math.abs((motdDocument.last_run + motdDocument.interval) - Date.now())));
+		}, Math.abs((new Date(motdDocument.last_run).getTime() + motdDocument.interval) - Date.now())));
 	}
 };
