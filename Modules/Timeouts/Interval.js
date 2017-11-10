@@ -14,7 +14,7 @@ module.exports = class Interval extends Base {
 	start () {
 		if (this.timeLeft <= this.MAX) {
 			this.timeout = setTimeout(() => {
-				this.listener(this.args);
+				this.listener(...this.args);
 				this.timeLeft = this.after;
 				this.start();
 			}, this.timeLeft);

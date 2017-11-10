@@ -31,7 +31,7 @@ module.exports = async (bot, db, server, motdDocument) => {
 		}
 	};
 	if (motdDocument.isEnabled) {
-		if (bot.MOTDTimers.has(server.id)) clearTimeout(bot.MOTDTimers.get(server.id));
+		if (bot.MOTDTimers.has(server.id)) bot.clearTimeout(bot.MOTDTimers.get(server.id));
 		bot.MOTDTimers.set(server.id, bot.setTimeout(async () => {
 			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
