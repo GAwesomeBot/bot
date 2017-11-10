@@ -4,12 +4,11 @@ const reload = require("require-reload")(require);
 const { Console, Utils, ShardIPC, GetGuild: GG, PostTotalData } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
 const Timeouts = require("./Modules/Timeouts/");
+const { EventHandler } = require("./Internals/");
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 const database = require("./Database/Driver.js");
-const rawEvents = require("./Events/");
-const events = {};
 const WebServer = require("./Web/WebServer");
 const process = require("process");
 
@@ -27,16 +26,19 @@ const disabledEvents = [
 ];
 if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledEvents.push("MESSAGE_CREATE");
 
-const Discord = require("discord.js");
+const {
+	Client: DJSClient,
+	Collection,
+} = require("discord.js");
 winston.silly("Creating Discord.js client.");
-class Client extends Discord.Client {
+class Client extends DJSClient {
 	constructor (options) {
 		super(options);
 		// Value set once READY triggers
 		this.isReady = false;
 
 		// Store MOTD timers, and cancel accordingly
-		this.MOTDTimers = new Discord.Collection();
+		this.MOTDTimers = new Collection();
 	}
 
 	/**
@@ -50,7 +52,7 @@ class Client extends Discord.Client {
 			if (serverDocument.config.command_prefix === "@mention") {
 				if (server.me) {
 					resolve(`@${server.me.nickname || this.user.username} `);
-				} else if (!(server.members instanceof Discord.Collection)) {
+				} else if (!(server.members instanceof Collection)) {
 					resolve(`@${server.members[bot.user.id].nickname || this.user.username} `);
 				} else {
 					resolve(`@${server.members.get(bot.user.id).nickname || this.user.username} `);
@@ -893,18 +895,12 @@ winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseUR
 database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
-}).then(() => {
+}).then(async () => {
 	winston.info("Successfully connected to MongoDB!");
 	db = database.get();
 	winston.debug("Initializing Discord Events.");
-	for (const event in rawEvents.events) {
-		try {
-			let EventFile = require(rawEvents.eventFilePath(event));
-			events[event] = new EventFile(bot, db, configJS, configJSON);
-		} catch (err) {
-			winston.warn(`An error occurred while handling a ${event} Discord event. >.>`, { event: event }, err);
-		}
-	}
+	bot.events = new EventHandler(bot, db, configJS, configJSON);
+	await bot.events.init();
 });
 
 process.on("unhandledRejection", reason => {
@@ -938,15 +934,6 @@ bot.login(process.env.CLIENT_TOKEN).then(() => {
 }).catch(err => {
 	winston.error("Failed to connect to Discord :/\n", { err: err });
 	process.exit(1);
-});
-
-bot.once("pre-update", async () => {
-	try {
-		winston.verbose(`Preparing to update.. Shutting down Discord connections!`);
-		await bot.destroy();
-	} catch (err) {
-		winston.error(`We were unable to destroy the client! This is bad..`);
-	}
 });
 
 bot.IPC.on("getGuild", msg => {
@@ -1018,26 +1005,14 @@ bot.IPC.on("deletePublicInviteLink", async msg => {
 	serverDocument.save();
 });
 
-bot.on("error", error => {
-	winston.warn(`The Client WebSocket encountered an error.. ._.`, error);
-});
-
-bot.on("guildUnavailable", guild => {
-	winston.debug(`${guild} was / is unavailable`, { svrid: guild.id, date: Date.now() });
-});
-
-bot.on("guildMembersChunk", (members, guild) => {
-	winston.silly(`Received guildMembersChunk for guild "${guild}"`, { svrid: guild.id, members: members.size });
-});
-
 /**
  * READY payload received
  */
 bot.once("ready", async () => {
 	try {
-		await winston.debug("Running event READY");
-		await events.Ready._handle();
-		await winston.debug("Running webserver");
+		await winston.silly(`Received READY event from Discord!`);
+		await bot.events.onEvent("ready");
+		await winston.silly("Running webserver");
 		WebServer(bot, db, auth, configJS, configJSON, winston);
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
@@ -1052,7 +1027,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
 		try {
-			await events.MessageCreate._handle({ msg: msg });
+			await bot.events.onEvent("message", msg);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
 		}
@@ -1065,11 +1040,11 @@ bot.on("message", async msg => {
 bot.on("guildCreate", async guild => {
 	if (bot.isReady) {
 		winston.silly(`Received GUILD_CREATE event from Discord`, { guild: guild.id });
-		try {
-			await events.GuildCreate._handle({ guild: guild });
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
-		}
+		// Try {
+		// 	await events.GuildCreate._handle({ guild: guild });
+		// } catch (err) {
+		// 	winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
+		// }
 	}
 });
 
@@ -1079,11 +1054,11 @@ bot.on("guildCreate", async guild => {
 bot.on("guildDelete", async guild => {
 	if (bot.isReady) {
 		winston.silly(`Received GUILD_DELETE event from Discord`, { guild: guild.id });
-		try {
-			await events.GuildDelete._handle({ guild: guild });
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
-		}
+		// Try {
+		// 	await events.GuildDelete._handle({ guild: guild });
+		// } catch (err) {
+		// 	winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
+		// }
 	}
 });
 
@@ -1093,10 +1068,10 @@ bot.on("guildDelete", async guild => {
 bot.on("guildMemberAdd", async member => {
 	if (bot.isReady) {
 		winston.silly(`Received GUILD_MEMBER_ADD event from Discord`, { guild: member.guild.id, member: member.id });
-		try {
-			await events.GuildMemberAdd._handle({ member: member });
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
-		}
+		// Try {
+		// 	await events.GuildMemberAdd._handle({ member: member });
+		// } catch (err) {
+		// 	winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
+		// }
 	}
 });

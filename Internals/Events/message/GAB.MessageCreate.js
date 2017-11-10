@@ -1,6 +1,6 @@
 /* eslint-disable max-len, max-depth */
-const BaseEvent = require("./BaseEvent.js");
-const { MicrosoftTranslate: mstranslate, Utils } = require("../Modules");
+const BaseEvent = require("../BaseEvent.js");
+const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/");
 const {
 	Gist,
 	FilterChecker: checkFiltered,
@@ -10,7 +10,7 @@ const levenshtein = require("fast-levenshtein");
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
-	requirements ({ msg }) {
+	requirements (msg) {
 		if (msg.author.id === this.bot.user.id || msg.author.bot || this.configJSON.globalBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.bot.user.id) {
 				return false;
@@ -26,7 +26,7 @@ class MessageCreate extends BaseEvent {
 	 * Handles a MESSAGE_CREATE event
 	 * @param {Message} msg The received message from Discord
 	 */
-	async handle ({ msg }) {
+	async handle (msg) {
 		// Reload commands
 		this.bot.reloadAllCommands();
 		// Handle private messages
@@ -216,7 +216,7 @@ class MessageCreate extends BaseEvent {
 								evalCommand.suffix = evalCommand.suffix
 									.replace("this.bot.token", "\"mfaNop\"")
 									.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
-								let { discord, tokens } = require("../Configurations/auth");
+								let { discord, tokens } = require("../../../Configurations/auth");
 								const censor = [
 									discord.clientID,
 									discord.clientSecret,

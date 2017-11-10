@@ -1,10 +1,10 @@
 class BaseEvent {
 	/**
 	 * Base class for all events.
-	 * @param {Client} bot 
-	 * @param {DatabaseConnection} db 
-	 * @param {Object} configJS 
-	 * @param {Object} configJSON 
+	 * @param {Client} bot
+	 * @param {DatabaseConnection} db
+	 * @param {Object} configJS
+	 * @param {Object} configJSON
 	 */
 	constructor (bot, db, configJS, configJSON) {
 		this.bot = bot;
@@ -23,12 +23,13 @@ class BaseEvent {
 
 	/**
 	 * Call this function to handle events if the requirement is set
-	 * @param {?Object} [values={}] Params to hand over to the requirement check, and to the event
+	 * @param {?*[]} [args] Params to hand over to the requirement check, the prerequisite, and to the event
 	 * @private
 	 */
-	async _handle (values = {}) {
-		if (this.requirements(values)) {
-			return this.handle(values);
+	async _handle (...args) {
+		if (this.requirements(...args)) {
+			await this.prerequisite(...args);
+			return this.handle(...args);
 		}
 	}
 
@@ -40,6 +41,11 @@ class BaseEvent {
 	requirements () {
 		return true;
 	}
+
+	/**
+	 * Simple function that prepares everything that the event may need (like documents)
+	 */
+	async prerequisite () { } // eslint-disable-line no-empty-function
 }
 
 module.exports = BaseEvent;

@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
-const BaseEvent = require("./BaseEvent.js");
+const BaseEvent = require("../BaseEvent.js");
 const {
 	NewServer: getNewServerData,
 	PostShardedData,
 	Utils,
-} = require("../Modules/");
+} = require("../../../Modules/");
 const {
 	ClearServerStats: clearStats,
 	Giveaways,
