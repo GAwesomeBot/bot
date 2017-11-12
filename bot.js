@@ -58,6 +58,13 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
 		}
 
+		if (configJS.shardTotal === "auto") {
+			winston.info(`Getting the recommended shards from Discord..`);
+			let result = await require("discord.js").Util.fetchRecommendedShards(auth.discord.clientToken);
+			winston.info(`Starting the bot with the recommended number of shards from Discord!`, { shards: result });
+			configJS.shardTotal = result;
+		}
+
 		winston.verbose("Creating sharder instance.");
 		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, winston);
 		sharder.cluster.on("online", worker => {
