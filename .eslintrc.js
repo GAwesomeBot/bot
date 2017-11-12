@@ -15,6 +15,7 @@ module.exports = {
 		Blog: true,
 		Wiki: true,
 		Database: true,
+		Raw: true,
 	},
 	rules: {
 		"no-compare-neg-zero": "error",

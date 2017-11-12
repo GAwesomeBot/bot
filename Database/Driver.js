@@ -47,6 +47,7 @@ exports.initialize = url => new Promise((resolve, reject) => {
 				Wiki, wiki: Wiki,
 				Raw: mongoose.connection,
 			});
+			addToGlobal("Raw", mongoose.connection);
 			resolve(global.Database);
 		});
 });
