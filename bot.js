@@ -1,11 +1,11 @@
 /* eslint-disable max-len */
 const ascii = `
-  _____                                               ____        _   
- / ____|   /\\                                        |  _ \\      | |  
-| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_ 
+  _____                                               ____        _
+ / ____|   /\\                                        |  _ \\      | |
+| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_
 | | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
-| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_ 
- \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|																																		 	
+| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_
+ \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 			`;
 
 const database = require("./Database/Driver.js");
@@ -41,7 +41,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 		await winston.info(`Connected to the database successfully.`);
 
 		winston.silly("Confirming MongoDB config values.");
-		await db.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
+		await db.Raw.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 			}

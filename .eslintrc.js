@@ -9,6 +9,12 @@ module.exports = {
 	},
 	globals: {
 		winston: true,
+		Servers: true,
+		Users: true,
+		Gallery: true,
+		Blog: true,
+		Wiki: true,
+		Database: true,
 	},
 	rules: {
 		"no-compare-neg-zero": "error",

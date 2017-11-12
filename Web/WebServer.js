@@ -149,7 +149,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 		done(null, id);
 	});
 	const sessionStore = new mongooseSessionStore({
-		mongooseConnection: database.getConnection(),
+		mongooseConnection: Database.Raw,
 	});
 	app.use(session({
 		secret: configJS.secret,
@@ -498,7 +498,7 @@ module.exports = (bot, db, auth, configJS, configJSON, winston) => {
 				messageCount = result[0].total;
 				activeServers = result[0].active;
 			}
-			
+
 			const renderPage = data => {
 				res.render("pages/activity.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
