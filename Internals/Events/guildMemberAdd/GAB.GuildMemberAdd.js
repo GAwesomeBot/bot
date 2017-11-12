@@ -1,4 +1,4 @@
-const BaseEvent = require("./BaseEvent.js");
+const BaseEvent = require("../BaseEvent.js");
 /* eslint-disable max-len */
 
 /**

@@ -38,6 +38,7 @@ module.exports = async (bot, server, serverDocument) => {
 	// Default tag reactions
 	serverDocument.config.tag_reaction.messages = defTagReactions;
 
+	let guildCount = await Utils.GetValue(bot, "guilds.size", "int");
 	// Send message to server owner about GAwesomeBot
 	await bot.messageBotAdmins(server, serverDocument, {
 		embed: {
@@ -48,7 +49,7 @@ module.exports = async (bot, server, serverDocument) => {
 				url: bot.user.displayAvatarURL(),
 			},
 			footer: {
-				text: `${await Utils.GetValue(bot, "guilds.size", "int") % 1000 === 0 ? `*Wow, you're server #${await Utils.GetValue(bot, "guilds.size", "int")} for me!* 🎉` : ""}`,
+				text: `${guildCount % 1000 === 0 ? `*Wow, you're server #${guildCount} for me!* 🎉` : ""}`,
 			},
 		},
 	});

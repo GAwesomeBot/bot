@@ -1,4 +1,5 @@
 const events = require("../../Configurations/events");
+const reload = require("require-reload")(require);
 
 module.exports = class EventHandler {
 	constructor (client, db, configJS, configJSON) {
@@ -20,7 +21,22 @@ module.exports = class EventHandler {
 	}
 
 	async reloadEvent (eventName) {
-
+		if (eventName === "*") {
+			for (const eventNameInCache in this._cache) {
+				for (let eventFileName in this._cache[eventNameInCache]) {
+					let event = reload(`./${eventNameInCache}/${eventFileName}.js`);
+					this._cache[eventNameInCache][eventFileName] = new event(this.client, this.db, this.configJS, this.configJSON);
+				}
+			}
+			return;
+		}
+		if (!this._cache[eventName]) throw new Error(`Unknown event was parsed!`);
+		if (this._cache[eventName]) {
+			for (let eventFileName in this._cache[eventName]) {
+				let event = reload(`./${eventName}/${eventFileName}.js`);
+				this._cache[eventName][eventFileName] = new event(this.client, this.db, this.configJS, this.configJSON);
+			}
+		}
 	}
 
 	/**
@@ -35,7 +51,7 @@ module.exports = class EventHandler {
 			for (let eventFile in this._cache[eventName]) {
 				promiseArray.push(this._cache[eventName][eventFile]._handle(...args));
 			}
-			await Promise.all(promiseArray);
+			if (promiseArray.length) await Promise.all(promiseArray);
 		}
 	}
 };

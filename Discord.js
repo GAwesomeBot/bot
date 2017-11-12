@@ -21,7 +21,7 @@ global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
 const disabledEvents = [
-	"MESSAGE_DELETE_BULK",
+	"MESSAGE_DELETE_BULK", // TODO: Maybe allow this event? We support it in the event handler.. Dunno
 	"TYPING_START",
 ];
 if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledEvents.push("MESSAGE_CREATE");
@@ -1006,7 +1006,432 @@ bot.IPC.on("deletePublicInviteLink", async msg => {
 });
 
 /**
- * READY payload received
+ * CHANNEL_CREATE
+ */
+bot.on("channelCreate", async channel => {
+	if (bot.isReady) {
+		winston.silly(`Received CHANNEL_CREATE event from Discord!`, { ch: channel.id });
+		try {
+			await bot.events.onEvent("channelCreate", channel);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a CHANNEL_CREATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * CHANNEL_DELETE
+ */
+bot.on("channelDelete", async channel => {
+	if (bot.isReady) {
+		winston.silly(`Received CHANNEL_DELETE event from Discord!`, { ch: channel.id });
+		try {
+			await bot.events.onEvent("channelDelete", channel);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a CHANNEL_DELETE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * CHANNEL_PINS_UPDATE
+ */
+bot.on("channelPinsUpdate", async (channel, time) => {
+	if (bot.isReady) {
+		winston.silly(`Received CHANNEL_PINS_UPDATE event from Discord!`, { ch: channel.id, date: time });
+		try {
+			await bot.events.onEvent("channelPinsUpdate", channel, time);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a CHANNEL_PINS_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * CHANNEL_UPDATE
+ */
+bot.on("channelUpdate", async (oldCh, newCh) => {
+	if (bot.isReady) {
+		winston.silly(`Received CHANNEL_UPDATE event from Discord!`, { chid: newCh.id });
+		try {
+			await bot.events.onEvent("channelUpdate", oldCh, newCh);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a CHANNEL_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * Internal debug event
+ */
+bot.on("debug", async info => {
+	winston.silly(`Received DEBUG event from Discord.js!`, { info: info });
+	try {
+		await bot.events.onEvent("debug", info);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a DEBUG event! x.x\n`, err);
+	}
+});
+
+/**
+ * Disconnect event
+ */
+bot.on("disconnect", async event => {
+	winston.silly(`Received DISCONNECT event from Discord.js!`, { code: event.code || "unknown" });
+	try {
+		await bot.events.onEvent("disconnect", event);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a DISCONNECT event! x.x\n`, err);
+	}
+});
+
+/**
+ * EMOJI_CREATE
+ */
+bot.on("emojiCreate", async emoji => {
+	if (bot.isReady) {
+		winston.silly(`Received EMOJI_CREATE event from Discord!`, { emoji: emoji.id });
+		try {
+			await bot.events.onEvent("emojiCreate", emoji);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a EMOJI_CREATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * EMOJI_DELETE
+ */
+bot.on("emojiDelete", async emoji => {
+	if (bot.isReady) {
+		winston.silly(`Received EMOJI_DELETE event from Discord!`, { emoji: emoji.id });
+		try {
+			await bot.events.onEvent("emojiDelete", emoji);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a EMOJI_DELETE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * EMOJI_UPDATE
+ */
+bot.on("emojiUpdate", async (oldEmoji, newEmoji) => {
+	if (bot.isReady) {
+		winston.silly(`Received EMOJI_UPDATE event from Discord!`, { emoji: newEmoji.id });
+		try {
+			await bot.events.onEvent("emojiUpdate", oldEmoji, newEmoji);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a EMOJI_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * WebSocket Errors
+ */
+bot.on("error", async error => {
+	winston.silly(`Received ERROR event from Discord.js!`, { error });
+	try {
+		await bot.events.onEvent("error", error);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a ERROR event! x.x\n`, err);
+	}
+});
+
+/**
+ * GUILD_BAN_ADD
+ */
+bot.on("guildBanAdd", async (guild, user) => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_BAN_ADD event from Discord!`, { guild: guild.id, user: user.id });
+		try {
+			await bot.events.onEvent("guildBanAdd", guild, user);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_BAN_ADD event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_BAN_REMOVE
+ */
+bot.on("guildBanRemove", async (guild, user) => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_BAN_REMOVE event from Discord!`, { guild: guild.id, user: user.id });
+		try {
+			await bot.events.onEvent("guildBanRemove", guild, user);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_BAN_REMOVE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_CREATE
+ */
+bot.on("guildCreate", async guild => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_CREATE event from Discord!`, { guild: guild.id });
+		try {
+			await bot.events.onEvent("guildCreate", guild);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_DELETE
+ */
+bot.on("guildDelete", async guild => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_DELETE event from Discord!`, { guild: guild.id });
+		try {
+			await bot.events.onEvent("guildDelete", guild);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_MEMBER_ADD
+ */
+bot.on("guildMemberAdd", async member => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_MEMBER_ADD event from Discord!`, { member: member.id });
+		try {
+			await bot.events.onEvent("guildMemberAdd", member);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_MEMBER_AVAILABLE
+ * Do we need this?
+ */
+bot.on("guildMemberAvailable", async member => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_MEMBER_AVAILABLE event from Discord!`, { member: member.id });
+		try {
+			await bot.events.onEvent("guildMemberAvailable", member);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_AVAILABLE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_MEMBER_REMOVE
+ */
+bot.on("guildMemberRemove", async member => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_MEMBER_REMOVE event from Discord!`, { member: member.id });
+		try {
+			await bot.events.onEvent("guildMemberRemove", member);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_REMOVE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_MEMBERS_CHUNK
+ */
+bot.on("guildMembersChunk", async (members, guild) => {
+	winston.silly(`Received GUILD_MEMBERS_CHUNK event from Discord!`, { members: members.size, guild: guild.id });
+	try {
+		await bot.events.onEvent("guildMembersChunk", members, guild);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a GUILD_MEMBERS_CHUNK event! x.x\n`, err);
+	}
+});
+
+/**
+ * GUILD_MEMBER_SPEAKING
+ */
+bot.on("guildMemberSpeaking", async (member, speaking) => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_MEMBER_SPEAKING event from Discord!`, { member: member.id, speaking });
+		try {
+			await bot.events.onEvent("guildMemberSpeaking", member, speaking);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_SPEAKING event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_MEMBER_UPDATE
+ */
+bot.on("guildMemberUpdate", async (oldMember, newMember) => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_MEMBER_UPDATE event from Discord!`, { member: newMember.id });
+		try {
+			await bot.events.onEvent("guildMemberUpdate", oldMember, newMember);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_UNAVAILABLE
+ */
+bot.on("guildUnavailable", async guild => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_UNAVAILABLE event from Discord!`, { guild: guild.id });
+		try {
+			await bot.events.onEvent("guildUnavailable", guild);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_UNAVAILABLE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * GUILD_UPDATE
+ */
+bot.on("guildUpdate", async (oldGuild, newGuild) => {
+	if (bot.isReady) {
+		winston.silly(`Received GUILD_UPDATE event from Discord!`, { guild: newGuild.id });
+		try {
+			await bot.events.onEvent("guildUpdate", oldGuild, newGuild);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a GUILD_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_CREATE
+ */
+bot.on("message", async msg => {
+	if (bot.isReady) {
+		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
+		try {
+			await bot.events.onEvent("message", msg);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_DELETE
+ */
+bot.on("messageDelete", async msg => {
+	if (bot.isReady) {
+		winston.silly("Received MESSAGE_DELETE event from Discord!", { message: msg.id });
+		try {
+			await bot.events.onEvent("messageDelete", msg);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_DELETE_BULK
+ */
+bot.on("messageDeleteBulk", async msgs => {
+	if (bot.isReady) {
+		winston.silly("Received MESSAGE_DELETE_BULK event from Discord!", { messages: msgs.size });
+		try {
+			await bot.events.onEvent("messageDeleteBulk", msgs);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE_BULK event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_REACTION_ADD
+ */
+bot.on("messageReactionAdd", async (reaction, user) => {
+	if (bot.isReady) {
+		winston.silly(`Received MESSAGE_REACTION_ADD event from Discord!`, { message: reaction.message.id, user: user.id });
+		try {
+			await bot.events.onEvent("messageReactionAdd", reaction, user);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_ADD event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_REACTION_REMOVE
+ */
+bot.on("messageReactionRemove", async (reaction, user) => {
+	if (bot.isReady) {
+		winston.silly(`Received MESSAGE_REACTION_REMOVE event from Discord!`, { message: reaction.message.id, user: user.id });
+		try {
+			await bot.events.onEvent("messageReactionRemove", reaction, user);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_REACTION_REMOVE_ALL
+ */
+bot.on("messageReactionRemoveAll", async msg => {
+	if (bot.isReady) {
+		winston.silly("Received MESSAGE_REACTION_REMOVE_ALL event from Discord!", { message: msg.size });
+		try {
+			await bot.events.onEvent("messageReactionRemoveAll", msg);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE_ALL event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * MESSAGE_UPDATE
+ */
+bot.on("messageUpdate", async (oldMSG, newMSG) => {
+	if (bot.isReady) {
+		winston.silly(`Received MESSAGE_UPDATE event from Discord!`, { message: newMSG.id });
+		try {
+			await bot.events.onEvent("messageUpdate", oldMSG, newMSG);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a MESSAGE_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * PRESENCE_UPDATE
+ */
+bot.on("presenceUpdate", async (oldMember, newMember) => {
+	if (bot.isReady) {
+		winston.silly(`Received PRESENCE_UPDATE event from Discord!`, { member: newMember.id, guild: newMember.guild.id });
+		try {
+			await bot.events.onEvent("presenceUpdate", oldMember, newMember);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a PRESENCE_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * RATE_LIMIT
+ */
+bot.on("rateLimit", async rateLimitInfo => {
+	winston.silly(`Received RATE_LIMIT event from Discord.js!`, rateLimitInfo);
+	try {
+		await bot.events.onEvent("rateLimit", rateLimitInfo);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a RATE_LIMIT event! x.x\n`, err);
+	}
+});
+
+/**
+ * READY
  */
 bot.once("ready", async () => {
 	try {
@@ -1021,57 +1446,102 @@ bot.once("ready", async () => {
 });
 
 /**
- * Message Received by the bot
+ * RECONNECTING
  */
-bot.on("message", async msg => {
+bot.on("reconnecting", async () => {
+	winston.silly(`Reconnecting to Discord...`);
+});
+
+/**
+ * RESUME
+ */
+bot.on("resumed", async replayed => {
+	winston.silly(`Received RESUME event from Discord!`, { replayedEvents: replayed });
+	try {
+		await bot.events.onEvent("resumed", replayed);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a RESUME event! x.x\n`, err);
+	}
+});
+
+/**
+ * ROLE_CREATE
+ */
+bot.on("roleCreate", async role => {
 	if (bot.isReady) {
-		winston.silly("Received MESSAGE event from Discord!", { msg: msg });
+		winston.silly(`Received ROLE_CREATE event from Discord!`, { role: role.id });
 		try {
-			await bot.events.onEvent("message", msg);
+			await bot.events.onEvent("roleCreate", role);
 		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a ROLE_CREATE event! x.x\n`, err);
 		}
 	}
 });
 
 /**
- * Bot added to a server
+ * ROLE_DELETE
  */
-bot.on("guildCreate", async guild => {
+bot.on("roleDelete", async role => {
 	if (bot.isReady) {
-		winston.silly(`Received GUILD_CREATE event from Discord`, { guild: guild.id });
-		// Try {
-		// 	await events.GuildCreate._handle({ guild: guild });
-		// } catch (err) {
-		// 	winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
-		// }
+		winston.silly(`Received ROLE_DELETE event from Discord!`, { role: role.id });
+		try {
+			await bot.events.onEvent("roleDelete", role);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a ROLE_DELETE event! x.x\n`, err);
+		}
 	}
 });
 
 /**
- * Bot removed from a server
+ * ROLE_UPDATE
  */
-bot.on("guildDelete", async guild => {
+bot.on("roleUpdate", async (oldRole, newRole) => {
 	if (bot.isReady) {
-		winston.silly(`Received GUILD_DELETE event from Discord`, { guild: guild.id });
-		// Try {
-		// 	await events.GuildDelete._handle({ guild: guild });
-		// } catch (err) {
-		// 	winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
-		// }
+		winston.silly(`Received ROLE_UPDATE event from Discord!`, { role: newRole.id });
+		try {
+			await bot.events.onEvent("roleUpdate", oldRole, newRole);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a ROLE_UPDATE event! x.x\n`, err);
+		}
 	}
 });
 
 /**
- * A member joins a guild
+ * USER_UPDATE
  */
-bot.on("guildMemberAdd", async member => {
+bot.on("userUpdate", async (oldUser, newUser) => {
 	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_ADD event from Discord`, { guild: member.guild.id, member: member.id });
-		// Try {
-		// 	await events.GuildMemberAdd._handle({ member: member });
-		// } catch (err) {
-		// 	winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
-		// }
+		winston.silly(`Received USER_UPDATE event from Discord!`, { user: newUser.id });
+		try {
+			await bot.events.onEvent("userUpdate", oldUser, newUser);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a USER_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * VOICE_STATE_UPDATE
+ */
+bot.on("voiceStateUpdate", async (oldMember, newMember) => {
+	if (bot.isReady) {
+		winston.silly(`Received VOICE_STATE_UPDATE event from Discord!`, { member: newMember.id });
+		try {
+			await bot.events.onEvent("voiceStateUpdate", oldMember, newMember);
+		} catch (err) {
+			winston.error(`An unexpected error occurred while handling a VOICE_STATE_UPDATE event! x.x\n`, err);
+		}
+	}
+});
+
+/**
+ * WARN
+ */
+bot.on("warn", async info => {
+	winston.silly(`Received WARN event from Discord.js!`, { info });
+	try {
+		await bot.events.onEvent("resumed", info);
+	} catch (err) {
+		winston.error(`An unexpected error occurred while handling a WARN event! x.x\n`, err);
 	}
 });

@@ -1,5 +1,5 @@
-const BaseEvent = require("./BaseEvent.js");
-const { NewServer: getNewServerData, PostShardedData } = require("../Modules");
+const BaseEvent = require("../BaseEvent.js");
+const { NewServer: getNewServerData, PostShardedData } = require("../../../Modules/");
 
 class GuildCreate extends BaseEvent {
 	async handle ({ guild }) {
