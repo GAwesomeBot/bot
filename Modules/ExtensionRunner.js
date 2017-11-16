@@ -3,7 +3,7 @@ const fs = require("fs-nextra");
 
 // Run an extension (command, keyword, or timer) in the sandbox
 /* eslint-disable max-len, no-unused-vars*/
-module.exports = async (bot, db, server, serverDocument, channel, extensionDocument, msg, suffix, keywordMatch) => {
+module.exports = async (bot, server, serverDocument, channel, extensionDocument, msg, suffix, keywordMatch) => {
 	let extensionCode;
 	try {
 		extensionCode = await fs.readFile(`${__dirname}/../Extensions/${server.id}-${extensionDocument._id}.gabext`, "utf8");

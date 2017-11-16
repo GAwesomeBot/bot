@@ -6,9 +6,8 @@ class BaseEvent {
 	 * @param {Object} configJS
 	 * @param {Object} configJSON
 	 */
-	constructor (bot, db, configJS, configJSON) {
+	constructor (bot, configJS, configJSON) {
 		this.bot = bot;
-		this.db = db;
 		this.configJS = configJS;
 		this.configJSON = configJSON;
 	}

@@ -2,9 +2,8 @@ const events = require("../../Configurations/events");
 const reload = require("require-reload")(require);
 
 module.exports = class EventHandler {
-	constructor (client, db, configJS, configJSON) {
+	constructor (client, configJS, configJSON) {
 		this.client = client;
-		this.db = db;
 		this.configJS = configJS;
 		this.configJSON = configJSON;
 		this._cache = {};
@@ -15,7 +14,7 @@ module.exports = class EventHandler {
 			this._cache[eventName] = {};
 			for (let eventFile of eventFiles) {
 				let event = require(`./${eventName}/${eventFile}.js`);
-				this._cache[eventName][eventFile] = new event(this.client, this.db, this.configJS, this.configJSON);
+				this._cache[eventName][eventFile] = new event(this.client, this.configJS, this.configJSON);
 			}
 		}
 	}
@@ -25,7 +24,7 @@ module.exports = class EventHandler {
 			for (const eventNameInCache in this._cache) {
 				for (let eventFileName in this._cache[eventNameInCache]) {
 					let event = reload(`./${eventNameInCache}/${eventFileName}.js`);
-					this._cache[eventNameInCache][eventFileName] = new event(this.client, this.db, this.configJS, this.configJSON);
+					this._cache[eventNameInCache][eventFileName] = new event(this.client, this.configJS, this.configJSON);
 				}
 			}
 			return;
@@ -34,7 +33,7 @@ module.exports = class EventHandler {
 		if (this._cache[eventName]) {
 			for (let eventFileName in this._cache[eventName]) {
 				let event = reload(`./${eventName}/${eventFileName}.js`);
-				this._cache[eventName][eventFileName] = new event(this.client, this.db, this.configJS, this.configJSON);
+				this._cache[eventName][eventFileName] = new event(this.client, this.configJS, this.configJSON);
 			}
 		}
 	}

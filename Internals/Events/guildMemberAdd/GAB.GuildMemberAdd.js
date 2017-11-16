@@ -5,11 +5,11 @@ const BaseEvent = require("../BaseEvent.js");
  * Member joined a server
  */
 class GuildMemberAdd extends BaseEvent {
-	async handle ({ member }) {
+	async handle (member) {
 		// Get server data
 		let serverDocument;
 		try {
-			serverDocument = await this.db.servers.findOne({ _id: member.guild.id }).exec();
+			serverDocument = await Servers.findOne({ _id: member.guild.id }).exec();
 		} catch (err) {
 			winston.warn(`Failed to find server data for GUILD_MEMBER_ADD >.>`, { svrid: member.guild.id }, err);
 		}

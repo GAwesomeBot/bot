@@ -26,7 +26,7 @@ class MessageCreate extends BaseEvent {
 	 * Handles a MESSAGE_CREATE event
 	 * @param {Message} msg The received message from Discord
 	 */
-	async handle (msg) {
+	async handle (msg, proctime) {
 		// Reload commands
 		this.bot.reloadAllCommands();
 		// Handle private messages
@@ -73,10 +73,10 @@ class MessageCreate extends BaseEvent {
 			const commandFunction = this.bot.getPMCommand(command);
 			if (commandFunction) {
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
-				const findDocument = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+				const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 					winston.warn("Failed to find or create user data for message", { usrid: msg.author.id }, err);
 				});
-				const userDocument = findDocument.doc;
+				const userDocument = findDocument && findDocument.doc;
 				userDocument.username = msg.author.tag;
 				try {
 					await commandFunction({
@@ -143,8 +143,8 @@ class MessageCreate extends BaseEvent {
 			if (!msg.member) await msg.guild.members.fetch();
 
 			// Handle public messages
-			const serverDocument = await this.db.servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
-				winston.verbose("Failed to find server data for message", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+			const serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
+				winston.warn("Failed to find server data for message", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 			});
 			if (serverDocument) {
 				// Get channel data
@@ -289,6 +289,7 @@ class MessageCreate extends BaseEvent {
 					}
 				}
 
+				// TODO: Move this lel
 				// Check if using a filtered word
 				if (checkFiltered(serverDocument, msg.channel, msg.content, false, true)) {
 					// Delete offending message if necessary
@@ -301,7 +302,7 @@ class MessageCreate extends BaseEvent {
 						}
 					}
 					// Get user data
-					const findDocument = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+					const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 						winston.verbose("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 					});
 					const userDocument = findDocument.doc;
@@ -319,6 +320,7 @@ class MessageCreate extends BaseEvent {
 					});
 				}
 				// Spam filter
+				// TODO: Move this lul
 				if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.spam_filter.isEnabled && !serverDocument.config.moderation.filters.spam_filter.disabled_channel_ids.includes(msg.channel.id) && memberBotAdminLevel < 1) {
 					// Tracks spam with each new message (auto-delete after 45 seconds)
 					let spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
@@ -328,7 +330,7 @@ class MessageCreate extends BaseEvent {
 						spamDocument.message_count++;
 						spamDocument.last_message_content = msg.cleanContent;
 						this.bot.setTimeout(async () => {
-							const newServerDocument = await this.db.servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
+							const newServerDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
 								winston.debug(`Failed to get server document for spam filter..`, err);
 							});
 							if (newServerDocument) {
@@ -370,10 +372,10 @@ class MessageCreate extends BaseEvent {
 							// Deduct 25 GAwesomePoints if necessary
 							if (serverDocument.config.commands.points.isEnabled) {
 								// Get user data
-								const findDocument = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+								const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 									winston.debug(`Failed to find user document for spam filter...`, err);
 								});
-								const userDocument = findDocument.doc;
+								const userDocument = findDocument && findDocument.doc;
 								userDocument.username = msg.author.tag;
 								if (userDocument) {
 									userDocument.points -= 25;
@@ -416,10 +418,10 @@ class MessageCreate extends BaseEvent {
 							}
 
 							// Get user data
-							const findDocument = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 								winston.debug(`Failed to get user document for second time spam filter...`, err);
 							});
-							const userDocument = findDocument.doc;
+							const userDocument = findDocument && findDocument.doc;
 							userDocument.username = msg.author.tag;
 							if (userDocument) {
 								// Handle this as a violation
@@ -461,10 +463,10 @@ class MessageCreate extends BaseEvent {
 						}
 
 						// Get user data
-						const findDocument = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+						const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 							winston.debug(`Failed to find or create user data for message mention filter violation`, { usrid: msg.author.id }, err);
 						});
-						const userDocument = findDocument.doc;
+						const userDocument = findDocument && findDocument.doc;
 						userDocument.username = msg.author.tag;
 						if (userDocument) {
 							// Handle this as a violation
@@ -519,10 +521,10 @@ class MessageCreate extends BaseEvent {
 						const voteString = msg.content.split(/\s+/).splice(1).join(" ");
 						if (member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 							// Get target user data
-							const findDocument = await this.db.users.findOrCreate({ _id: member.id }).catch(err => {
+							const findDocument = await Users.findOrCreate({ _id: member.id }).catch(err => {
 								winston.verbose(`Failed to get user document for votes..`, err);
 							});
-							const targetUserDocument = findDocument.doc;
+							const targetUserDocument = findDocument && findDocument.doc;
 							targetUserDocument.username = member.user.tag;
 							if (targetUserDocument) {
 								let voteAction;
@@ -556,10 +558,10 @@ class MessageCreate extends BaseEvent {
 
 									if (voteAction === "gilded") {
 										// Get user data
-										const findDocument2 = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+										const findDocument2 = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 											winston.debug(`Failed to get user document for gilding member...`, err);
 										});
-										const userDocument = findDocument2.doc;
+										const userDocument = findDocument2 && findDocument2.doc;
 										userDocument.username = msg.author.tag;
 										if (userDocument) {
 											if (userDocument.points > 10) {
@@ -597,10 +599,10 @@ class MessageCreate extends BaseEvent {
 							const message = fetchedMessages.first();
 							if (message && ![this.bot.user.id, msg.author.id].includes(message.author.id) && !message.author.bot) {
 								// Get target user data
-								const findDocument3 = await this.db.users.findOrCreate({ _id: message.author.id }).catch(err => {
+								const findDocument3 = await Users.findOrCreate({ _id: message.author.id }).catch(err => {
 									winston.debug(`Failed to find user document for voting..`, err);
 								});
-								const targetUserDocument2 = findDocument3.doc;
+								const targetUserDocument2 = findDocument3 && findDocument3.doc;
 								targetUserDocument2.username = message.author.tag;
 								if (targetUserDocument2) {
 									winston.silly(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
@@ -639,7 +641,7 @@ class MessageCreate extends BaseEvent {
 									});
 								} else {
 									// Global AFK message
-									const targetUserDocument = await this.db.users.findOne({ _id: member.id }).exec().catch(err => {
+									const targetUserDocument = await Users.findOne({ _id: member.id }).exec().catch(err => {
 										winston.verbose(`Failed to find user document for global AFK message >.>`, err);
 									});
 									if (targetUserDocument && targetUserDocument.afk_message) {
@@ -673,10 +675,10 @@ class MessageCreate extends BaseEvent {
 							// Increment command usage count
 							this.incrementCommandUsage(serverDocument, commandObject.command);
 							// Get User data
-							const findDocument = await this.db.users.findOrCreate({ _id: msg.author.id }).catch(err => {
+							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
 							});
-							const userDocument = findDocument.doc;
+							const userDocument = findDocument && findDocument.doc;
 							userDocument.username = msg.author.tag;
 							if (userDocument) {
 								// NSFW filter for command suffix
@@ -851,6 +853,8 @@ class MessageCreate extends BaseEvent {
 				}
 			}
 		}
+		// TODO: Remove this
+		console.log(`Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 	}
 
 	/**

@@ -405,7 +405,7 @@ class Client extends DJSClient {
 							}
 							// Add 100 AwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								const findDocument = await db.users.findOrCreate({ _id: member.id }).catch(err => {
+								const findDocument = await Users.findOrCreate({ _id: member.id }).catch(err => {
 									winston.warn(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 								});
 								const userDocument = findDocument.doc;
@@ -890,16 +890,14 @@ const bot = new Client({
 
 ObjectDefines(bot);
 
-let db;
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
 }).then(async () => {
 	winston.info("Successfully connected to MongoDB!");
-	db = database.get();
 	winston.debug("Initializing Discord Events.");
-	bot.events = new EventHandler(bot, db, configJS, configJSON);
+	bot.events = new EventHandler(bot, configJS, configJSON);
 	await bot.events.init();
 });
 
@@ -972,9 +970,9 @@ bot.IPC.on("unmuteMember", async msg => {
 bot.IPC.on("createMOTD", async msg => {
 	try {
 		const guild = bot.guilds.get(msg.guild);
-		const serverDocument = await db.servers.findOne({ _id: guild.id }).exec();
+		const serverDocument = await Servers.findOne({ _id: guild.id }).exec();
 
-		MessageOfTheDay(bot, db, guild, serverDocument.config.message_of_the_day);
+		MessageOfTheDay(bot, guild, serverDocument.config.message_of_the_day);
 	} catch (err) {
 		winston.warn("Failed to create a MOTD timer for server!", { svrid: msg.guild });
 	}
@@ -987,7 +985,7 @@ bot.IPC.on("postAllData", async () => {
 bot.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	const serverDocument = await db.servers.findOne({ _id: guildID }).exec();
+	const serverDocument = await Servers.findOne({ _id: guildID }).exec();
 	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.first();
 	let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
 	serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
@@ -997,7 +995,7 @@ bot.IPC.on("createPublicInviteLink", async msg => {
 bot.IPC.on("deletePublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	const serverDocument = await db.servers.findOne({ _id: guildID }).exec();
+	const serverDocument = await Servers.findOne({ _id: guildID }).exec();
 	let invites = await guild.fetchInvites();
 	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
@@ -1313,7 +1311,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
-			await bot.events.onEvent("message", msg);
+			await bot.events.onEvent("message", msg, process.hrtime());
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}
@@ -1438,7 +1436,7 @@ bot.once("ready", async () => {
 		await winston.silly(`Received READY event from Discord!`);
 		await bot.events.onEvent("ready");
 		await winston.silly("Running webserver");
-		WebServer(bot, db, auth, configJS, configJSON, winston);
+		WebServer(bot, auth, configJS, configJSON, winston);
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 		process.exit(1);

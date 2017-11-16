@@ -39,6 +39,7 @@ exports.initialize = url => new Promise((resolve, reject) => {
 			addToGlobal("Gallery", Gallery);
 			addToGlobal("Blob", Blog);
 			addToGlobal("Wiki", Wiki);
+			addToGlobal("Raw", mongoose.connection);
 			addToGlobal("Database", {
 				Servers, servers: Servers,
 				Users, users: Users,
@@ -47,7 +48,6 @@ exports.initialize = url => new Promise((resolve, reject) => {
 				Wiki, wiki: Wiki,
 				Raw: mongoose.connection,
 			});
-			addToGlobal("Raw", mongoose.connection);
 			resolve(global.Database);
 		});
 });

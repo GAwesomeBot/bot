@@ -1,11 +1,10 @@
 /**
  * Send message of the day to a server
  * @param bot The bot instance / shard
- * @param db The mongoose database connection instance
  * @param server The server
  * @param motdDocument The message_of_the_day document
  */
-module.exports = async (bot, db, server, motdDocument) => {
+module.exports = async (bot, server, motdDocument) => {
 	if (!motdDocument.last_run) motdDocument.last_run = Date.now();
 	const sendMOTD = async serverDocument => {
 		const serverConfigDocument = serverDocument.config;
@@ -23,7 +22,7 @@ module.exports = async (bot, db, server, motdDocument) => {
 				bot.logMessage(serverDocument, "error", "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 			}
 			bot.setTimeout(async () => {
-				const newserverConfigDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
+				const newserverConfigDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
 					winston.warn(`Failed to set timeout for MOTD... (*-*)\n`, err);
 				});
 				await sendMOTD(newserverConfigDocument);
@@ -33,7 +32,7 @@ module.exports = async (bot, db, server, motdDocument) => {
 	if (motdDocument.isEnabled) {
 		if (bot.MOTDTimers.has(server.id)) bot.clearTimeout(bot.MOTDTimers.get(server.id));
 		bot.MOTDTimers.set(server.id, bot.setTimeout(async () => {
-			const serverDocument = await db.servers.findOne({ _id: server.id }).exec().catch(err => {
+			const serverDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});
 			await sendMOTD(serverDocument);

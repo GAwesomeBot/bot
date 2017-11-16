@@ -111,7 +111,7 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 
 /* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
-module.exports = (bot, db, auth, configJS, configJSON, winston) => {
+module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database) => {
 	const renderError = (res, text, line) => res.status(500).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
 
 	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
