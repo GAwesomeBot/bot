@@ -23,7 +23,7 @@ class Ready extends BaseEvent {
 			this.ensureDocuments().then(async newServerDocuments => {
 				if (newServerDocuments && newServerDocuments.length > 0) {
 					winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-					Servers.insertMany(newServerDocuments).catch(err => {
+					Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
 						winston.warn(`Failed to insert new server documents..`, err);
 					}).then(async () => {
 						winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
@@ -114,6 +114,8 @@ class Ready extends BaseEvent {
 		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
 		await PostShardedData(this.bot);
+		await winston.debug(`Reloading all commands.`);
+		this.bot.reloadAllCommands();
 		this.showStartupMessage();
 	}
 

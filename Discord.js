@@ -1307,6 +1307,7 @@ bot.on("guildUpdate", async (oldGuild, newGuild) => {
  * MESSAGE_CREATE
  */
 bot.on("message", async msg => {
+	let proctime = process.hrtime();
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
@@ -1314,7 +1315,9 @@ bot.on("message", async msg => {
 				// TODO: Remove this once Autofetch gets added to Discord
 				await msg.guild.members.fetch();
 			}
-			await bot.events.onEvent("message", msg, process.hrtime());
+			await bot.events.onEvent("message", msg, proctime);
+			// TODO: Remove this
+			console.log(`Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}
