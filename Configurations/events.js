@@ -89,6 +89,7 @@ module.exports = {
 		"GAB.SpamHandler",
 		"GAB.VoteHandler",
 		"GAB.AFKHandler",
+		// "GAB.Translation",
 	],
 	messageDelete: [
 
