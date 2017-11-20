@@ -18,7 +18,6 @@ module.exports = async (main, userDocument, msg, suffix, commandData) => {
 	 * @param main Object containing the most important things
 	 * Feel free to deconstruct it using { Value }
 	 * @property {Discord.Client} bot The bot object
-	 * @property {Database} db The database connection
 	 * @property {Object} configJS The config js object
 	 * @property {Object} configJSON The config json object
 	 * @property {Object} Utils Util object

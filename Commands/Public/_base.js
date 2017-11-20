@@ -12,7 +12,7 @@ module.exports = async (main, documents, msg, suffix, commandData) => {
 	 */
 	/**
 	 * @type {Object}
-	 * @param documents Object cotnaining all documents you need.
+	 * @param documents Object containing all documents you need.
 	 * Available documents:
 	 * * serverDocument
 	 * * channelDocument
@@ -24,7 +24,6 @@ module.exports = async (main, documents, msg, suffix, commandData) => {
 	 * @param main Object containing the most important things
 	 * Feel free to deconstruct it using { Value }
 	 * @property {Discord.Client} bot The bot object
-	 * @property {Database} db The database connection
 	 * @property {Object} configJS The config js object
 	 * @property {Object} configJSON The config json object
 	 * @property {Object} Utils Util object
