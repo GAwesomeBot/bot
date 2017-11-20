@@ -21,7 +21,6 @@ global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
 const disabledEvents = [
-	"MESSAGE_DELETE_BULK", // TODO: Maybe allow this event? We support it in the event handler.. Dunno
 	"TYPING_START",
 ];
 if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledEvents.push("MESSAGE_CREATE");
@@ -1311,6 +1310,10 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
+			if (msg.guild) {
+				// TODO: Remove this once Autofetch gets added to Discord
+				await msg.guild.members.fetch();
+			}
 			await bot.events.onEvent("message", msg, process.hrtime());
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
