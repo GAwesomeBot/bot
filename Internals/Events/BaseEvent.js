@@ -1,3 +1,5 @@
+const { Error } = require("../Errors/");
+
 class BaseEvent {
 	/**
 	 * Base class for all events.
@@ -17,7 +19,7 @@ class BaseEvent {
 	 * @param {?Object} [values] The values that the event emitted
 	 */
 	async handle () {
-		throw new Error(`${this.constructor.name} doesn't have a handle method!`);
+		throw new Error("NO_HANDLE", this.constructor.name);
 	}
 
 	/**

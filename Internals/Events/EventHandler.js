@@ -1,5 +1,6 @@
 const events = require("../../Configurations/events");
 const reload = require("require-reload")(require);
+const { Error } = require("../Errors/");
 
 module.exports = class EventHandler {
 	constructor (client, configJS, configJSON) {
@@ -29,7 +30,7 @@ module.exports = class EventHandler {
 			}
 			return;
 		}
-		if (!this._cache[eventName]) throw new Error(`Unknown event was parsed!`);
+		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", eventName);
 		if (this._cache[eventName]) {
 			for (let eventFileName in this._cache[eventName]) {
 				let event = reload(`./${eventName}/${eventFileName}.js`);
@@ -44,7 +45,7 @@ module.exports = class EventHandler {
 	 * @param {*[]} args The arguments of the event, in the order that they were received
 	 */
 	async onEvent (eventName, ...args) {
-		if (!this._cache[eventName]) throw new Error(`Unknown event was parsed!`);
+		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", eventName);
 		if (this._cache[eventName]) {
 			let promiseArray = [];
 			for (let eventFile in this._cache[eventName]) {

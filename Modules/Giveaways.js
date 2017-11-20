@@ -1,7 +1,9 @@
 /* eslint-disable max-len */
+const { Error } = require("../Internals/Errors/");
+
 module.exports = class Giveaways {
 	constructor () {
-		throw new Error(`The ${this.constructor.name} class shouldn't be instantiated!`);
+		throw new Error("STATIC_CLASS", this.constructor.name);
 	}
 
 	static async start (bot, server, serverDocument, user, channel, channelDocument, title, secret, duration) {
