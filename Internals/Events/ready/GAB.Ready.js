@@ -179,7 +179,7 @@ class Ready extends BaseEvent {
 				const server = this.bot.guilds.get(serverDocuments[i]._id);
 				if (server) {
 					winston.verbose(`Starting MOTD timer for server ${server}`, { svrid: server.id });
-					promiseArray.push(createMessageOfTheDay(this.bot, this.db, server, serverDocuments[i].config.message_of_the_day));
+					promiseArray.push(createMessageOfTheDay(this.bot, server, serverDocuments[i].config.message_of_the_day));
 				}
 			}
 			await Promise.all(promiseArray);
@@ -289,7 +289,7 @@ class Ready extends BaseEvent {
 						if (channelDocument.giveaway.isOngoing) {
 							const ch = svr.channels.get(channelDocument._id);
 							if (ch) {
-								promiseArray.push(Giveaways.endTimedGiveaway(this.bot, this.db, svr, ch, channelDocument.giveaway.expiry_timestamp));
+								promiseArray.push(Giveaways.endTimedGiveaway(this.bot, svr, ch, channelDocument.giveaway.expiry_timestamp));
 							}
 						}
 					});
@@ -353,7 +353,7 @@ class Ready extends BaseEvent {
 				winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
-					await clearStats(this.bot, this.db, server, serverDocument);
+					await clearStats(this.bot, server, serverDocument);
 				} else {
 					// Iterate through all members
 					server.members.forEach(async member => {
