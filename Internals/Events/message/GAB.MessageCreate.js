@@ -6,7 +6,6 @@ const {
 	FilterChecker: checkFiltered,
 	RegExpMaker,
 } = Utils;
-const levenshtein = require("fast-levenshtein");
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
@@ -15,7 +14,7 @@ class MessageCreate extends BaseEvent {
 			if (msg.author.id === this.bot.user.id) {
 				return false;
 			} else {
-				winston.silly(`Ignored ${msg.author.tag}.`, { usrid: msg.author.id, global_blocked: this.configJSON.globalBlocklist.includes(msg.author.id) });
+				winston.silly(`Ignored ${msg.author.tag}.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.globalBlocklist.includes(msg.author.id) });
 				return false;
 			}
 		}
@@ -27,8 +26,6 @@ class MessageCreate extends BaseEvent {
 	 * @param {Message} msg The received message from Discord
 	 */
 	async handle (msg, proctime) {
-		// Reload commands
-		this.bot.reloadAllCommands();
 		// Handle private messages
 		if (!msg.guild) {
 			// Forward PM to maintainer(s) if enabled
@@ -81,7 +78,6 @@ class MessageCreate extends BaseEvent {
 				try {
 					await commandFunction({
 						bot: this.bot,
-						db: this.db,
 						configJS: this.configJS,
 						configJSON: this.configJSON,
 						utils: Utils,
@@ -139,9 +135,6 @@ class MessageCreate extends BaseEvent {
 				}
 			}
 		} else {
-			// TODO: Remove this once Autofetch gets added to Discord
-			if (!msg.member) await msg.guild.members.fetch();
-
 			// Handle public messages
 			const serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
 				winston.warn("Failed to find server data for message", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
@@ -319,134 +312,10 @@ class MessageCreate extends BaseEvent {
 						winston.verbose(`Failed to save user document...`, err);
 					});
 				}
-				// Spam filter
-				// TODO: Move this lul
-				if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.spam_filter.isEnabled && !serverDocument.config.moderation.filters.spam_filter.disabled_channel_ids.includes(msg.channel.id) && memberBotAdminLevel < 1) {
-					// Tracks spam with each new message (auto-delete after 45 seconds)
-					let spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
-					if (!spamDocument) {
-						channelDocument.spam_filter_data.push({ _id: msg.author.id });
-						spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
-						spamDocument.message_count++;
-						spamDocument.last_message_content = msg.cleanContent;
-						this.bot.setTimeout(async () => {
-							const newServerDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
-								winston.debug(`Failed to get server document for spam filter..`, err);
-							});
-							if (newServerDocument) {
-								channelDocument = newServerDocument.channels.id(msg.channel.id);
-								spamDocument = channelDocument.spam_filter_data.id(msg.author.id);
-								if (spamDocument) {
-									spamDocument.remove();
-									await newServerDocument.save().catch(err => {
-										winston.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
-									});
-								}
-							}
-						}, 45000);
-						// Add this message to spamDocument if similar to the last one
-					} else if (levenshtein.get(spamDocument.last_message_content, msg.cleanContent) < 3) {
-						spamDocument.message_count++;
-						spamDocument.last_message_content = msg.cleanContent;
-
-						// First-time spam filter violation
-						if (spamDocument.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
-							winston.verbose(`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-							this.bot.logMessage(serverDocument, "info", `Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
-							// Message user and tell them to stop
-							msg.author.send({
-								embed: {
-									color: 0xFF0000,
-									description: `Stop spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.\nThe chat moderators have been notified about this.`,
-								},
-							});
-
-							// Message bot admins about user spamming
-							this.bot.messageBotAdmins(msg.guild, serverDocument, {
-								embed: {
-									color: 0xFF0000,
-									description: `**@${this.bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.`,
-								},
-							});
-
-							// Deduct 25 GAwesomePoints if necessary
-							if (serverDocument.config.commands.points.isEnabled) {
-								// Get user data
-								const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-									winston.debug(`Failed to find user document for spam filter...`, err);
-								});
-								const userDocument = findDocument && findDocument.doc;
-								userDocument.username = msg.author.tag;
-								if (userDocument) {
-									userDocument.points -= 25;
-									userDocument.save().catch(err => {
-										winston.debug(`Failed to save user document for points`, { usrid: msg.author.id }, err);
-									});
-								}
-								await userDocument.save().catch(err => {
-									winston.debug(`Failed to save user document...`, err);
-								});
-							}
-							// Add strike for user
-							memberDocument.strikes.push({
-								_id: this.bot.user.id,
-								reason: `First-time spam violation in #${msg.channel.name} (${msg.channel})`,
-							});
-						} else if (spamDocument.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity * 2) {
-							// Second-time spam filter violation
-							winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-							this.bot.logMessage(serverDocument, "info", `Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
-
-							// Delete spam messages if necessary
-							if (serverDocument.config.moderation.filters.spam_filter.delete_messages) {
-								const filteredMessages = [];
-								const foundMessages = await msg.channel.messages.fetch({ limit: 50 }).catch(err => {
-									winston.debug(`Failed to fetch messages for spam filter..`, err);
-								});
-								foundMessages.forEach(foundMessage => {
-									if (foundMessage.author.id === msg.author.id && levenshtein.get(spamDocument.last_message_content, foundMessage.cleanContent) < 3) {
-										filteredMessages.push(foundMessage);
-									}
-								});
-								if (filteredMessages.length >= 1) {
-									try {
-										msg.channel.bulkDelete(filteredMessages, true);
-									} catch (err) {
-										winston.verbose(`Failed to delete spam messages from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-									}
-								}
-							}
-
-							// Get user data
-							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-								winston.debug(`Failed to get user document for second time spam filter...`, err);
-							});
-							const userDocument = findDocument && findDocument.doc;
-							userDocument.username = msg.author.tag;
-							if (userDocument) {
-								// Handle this as a violation
-								let violatorRoleID = null;
-								if (!isNaN(serverDocument.config.moderation.filters.spam_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.spam_filter.violator_role_id)) {
-									violatorRoleID = serverDocument.config.moderation.filters.spam_filter.violator_role_id;
-								}
-								this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, serverDocument, msg.member, true)}** continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
-							}
-							await userDocument.save().catch(err => {
-								winston.debug(`Failed to save user document...`, err);
-							});
-							// Clear spamDocument, restarting the spam filter process
-							spamDocument.remove();
-						}
-					}
-					// Save spamDocument and serverDocument
-					serverDocument.save().catch(err => {
-						winston.debug(`Failed to save server data for spam filter..`, { svrid: msg.guild.id }, err);
-					});
-				}
 
 				// Mention filter
 				if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.filters.mention_filter.isEnabled && !serverDocument.config.moderation.filters.mention_filter.disabled_channel_ids.includes(msg.channel.id) && memberBotAdminLevel < 1) {
-					let totalMentions = msg.mentions.members ? msg.mentions.members.size() : msg.mentions.users.size() + msg.mentions.roles.size();
+					let totalMentions = msg.mentions.members ? msg.mentions.members.size : msg.mentions.users.size + msg.mentions.roles.size;
 					if (serverDocument.config.moderation.filters.mention_filter.include_everyone && msg.mentions.everyone) totalMentions++;
 
 					// Check if mention count is higher than threshold
@@ -482,6 +351,7 @@ class MessageCreate extends BaseEvent {
 					}
 				}
 
+				// TODO: Move this?
 				// Only keep responding if the bot is on in the channel and author isn't blocked on the server
 				if (channelDocument.bot_enabled && !serverDocument.config.blocked.includes(msg.author.id)) {
 					// Translate message if necessary
@@ -515,154 +385,6 @@ class MessageCreate extends BaseEvent {
 						});
 					}
 
-					// Vote by mention
-					if (serverDocument.config.commands.points.isEnabled && msg.guild.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(msg.channel.id) && msg.content.startsWith("<@") && msg.content.indexOf(">") < msg.content.indexOf(" ") && msg.content.includes(" ") && msg.content.indexOf(" ") < msg.content.length - 1) {
-						const member = await this.bot.memberSearch(msg.content.split(/\s+/)[0].trim(), msg.guild);
-						const voteString = msg.content.split(/\s+/).splice(1).join(" ");
-						if (member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
-							// Get target user data
-							const findDocument = await Users.findOrCreate({ _id: member.id }).catch(err => {
-								winston.verbose(`Failed to get user document for votes..`, err);
-							});
-							const targetUserDocument = findDocument && findDocument.doc;
-							targetUserDocument.username = member.user.tag;
-							if (targetUserDocument) {
-								let voteAction;
-
-								// Check for +1 triggers
-								for (const voteTrigger of this.configJS.voteTriggers) {
-									if (voteString.startsWith(voteTrigger)) {
-										voteAction = "upvoted";
-
-										// Increment points
-										targetUserDocument.points++;
-										break;
-									}
-								}
-
-								// Check for gild triggers
-								if (voteString.startsWith(" gild") || voteString.startsWith(" guild")) {
-									voteAction = "gilded";
-								}
-
-								// Log and save changes if necessary
-								if (voteAction) {
-									const saveTargetUserDocument = async () => {
-										try {
-											targetUserDocument.save();
-										} catch (err) {
-											winston.debug(`Failed to save user data for points`, { usrid: member.id }, err);
-										}
-										winston.silly(`User "${member.user.tag}" ${voteAction} by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-									};
-
-									if (voteAction === "gilded") {
-										// Get user data
-										const findDocument2 = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-											winston.debug(`Failed to get user document for gilding member...`, err);
-										});
-										const userDocument = findDocument2 && findDocument2.doc;
-										userDocument.username = msg.author.tag;
-										if (userDocument) {
-											if (userDocument.points > 10) {
-												userDocument.points -= 10;
-												await userDocument.save().catch(err => {
-													winston.debug("Failed to save user data for points", { usrid: msg.author.id }, err);
-												});
-												targetUserDocument.points += 10;
-												saveTargetUserDocument();
-											} else {
-												winston.verbose(`User "${msg.author.tag}" does not have enough points to gild "${member.user.tag}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-												msg.channel.send({
-													embed: {
-														color: 0xFF0000,
-														description: `Hey ${msg.author}, you don't have enough GAwesomePoints to gild ${member}!`,
-													},
-												});
-											}
-										}
-									} else {
-										saveTargetUserDocument();
-									}
-								}
-							}
-						}
-					}
-
-					// Vote based on previous message
-					for (const voteTrigger of this.configJS.voteTriggers) {
-						if (` ${msg.content}`.startsWith(voteTrigger)) {
-							// Get previous message
-							const fetchedMessages = await msg.channel.messages.fetch({ limit: 1, before: msg.id }).catch(err => {
-								winston.debug(`Failed to fetch message for voting...`, err);
-							});
-							const message = fetchedMessages.first();
-							if (message && ![this.bot.user.id, msg.author.id].includes(message.author.id) && !message.author.bot) {
-								// Get target user data
-								const findDocument3 = await Users.findOrCreate({ _id: message.author.id }).catch(err => {
-									winston.debug(`Failed to find user document for voting..`, err);
-								});
-								const targetUserDocument2 = findDocument3 && findDocument3.doc;
-								targetUserDocument2.username = message.author.tag;
-								if (targetUserDocument2) {
-									winston.silly(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-
-									// Increment points
-									targetUserDocument2.points++;
-
-									// Save changes to targetUserDocument2
-									await targetUserDocument2.save().catch(err => {
-										winston.debug(`Failed to save user data for points`, { usrid: msg.author.id }, err);
-									});
-								}
-							}
-							break;
-						}
-					}
-
-					// Check if message mentions AFK user (server and global)
-					if (msg.mentions.members.size) {
-						msg.mentions.members.forEach(async member => {
-							if (![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
-								// Server AFK message
-								const targetMemberDocument = serverDocument.members.id(member.id);
-								if (targetMemberDocument && targetMemberDocument.afk_message) {
-									msg.channel.send({
-										embed: {
-											thumbnail: {
-												url: member.user.displayAvatarURL(),
-											},
-											color: 0x3669FA,
-											author: {
-												name: `@${this.bot.getName(msg.guild, serverDocument, member)} is currently AFK.`,
-											},
-											description: `\`\`\`${targetMemberDocument.afk_message}\`\`\``,
-										},
-									});
-								} else {
-									// Global AFK message
-									const targetUserDocument = await Users.findOne({ _id: member.id }).exec().catch(err => {
-										winston.verbose(`Failed to find user document for global AFK message >.>`, err);
-									});
-									if (targetUserDocument && targetUserDocument.afk_message) {
-										msg.channel.send({
-											embed: {
-												thumbnail: {
-													url: member.user.displayAvatarURL(),
-												},
-												color: 0x3669FA,
-												author: {
-													name: `@${this.bot.getName(msg.guild, serverDocument, member)} is currently AFK.`,
-												},
-												description: `\`\`\`${targetUserDocument.afk_message}\`\`\``,
-											},
-										});
-									}
-								}
-							}
-						});
-					}
-
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {
 						// Check if message is a command, tag command, or extension trigger
@@ -679,8 +401,8 @@ class MessageCreate extends BaseEvent {
 								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
 							});
 							const userDocument = findDocument && findDocument.doc;
-							userDocument.username = msg.author.tag;
 							if (userDocument) {
+								userDocument.username = msg.author.tag;
 								// NSFW filter for command suffix
 								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(commandObject.command).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, commandObject.suffix, true, false)) {
 									// Delete offending message if necessary
@@ -706,7 +428,6 @@ class MessageCreate extends BaseEvent {
 									try {
 										const botObject = {
 											bot: this.bot,
-											db: this.db,
 											configJS: this.configJS,
 											configJSON: this.configJSON,
 											utils: Utils,
@@ -731,7 +452,7 @@ class MessageCreate extends BaseEvent {
 											embed: {
 												color: 0xFF0000,
 												title: `Something went wrong! 😱`,
-												description: `**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
+												description: `I was unable to find the command file for \`${commandObject.command}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 												footer: {
 													text: `Contact your GAB maintainer for more support.`,
 												},
@@ -791,7 +512,7 @@ class MessageCreate extends BaseEvent {
 									.trim();
 								await Promise.all([this.setCooldown(serverDocument, channelDocument), this.saveServerDocument(serverDocument)]);
 								// Default help response
-								if (prompt.toLowerCase().startsWith("help") && prompt.length === 4) {
+								if (prompt.toLowerCase().trim() === "help") {
 									msg.channel.send({
 										embed: {
 											color: 0x3669FA,
@@ -854,7 +575,7 @@ class MessageCreate extends BaseEvent {
 			}
 		}
 		// TODO: Remove this
-		console.log(`Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
+		console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 	}
 
 	/**
