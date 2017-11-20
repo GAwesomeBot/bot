@@ -592,7 +592,7 @@ destroy@~1.0.4:
 
 "discord.js@github:hydrabolt/discord.js":
   version "12.0.0-dev"
-  resolved "https://codeload.github.com/hydrabolt/discord.js/tar.gz/ad69e2ba4c0b1d2b89a81abb3a7276113e698b08"
+  resolved "https://codeload.github.com/hydrabolt/discord.js/tar.gz/aaa92c0b05f6b4abadeaa74b7acce626acca030b"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.0.2"
