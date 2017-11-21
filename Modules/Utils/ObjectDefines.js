@@ -129,6 +129,15 @@ module.exports = bot => {
 	});
 
 	/**
+	 * Gets the server document
+	 */
+	Object.defineProperty(Discord.Guild.prototype, "serverDocument", {
+		get: function get () {
+			return this.client.cache.get(this.id);
+		},
+	});
+
+	/**
 	 * Total count of users or guilds across all shards.
 	 * @returns {Number}
 	 */

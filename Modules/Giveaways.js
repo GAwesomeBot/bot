@@ -35,9 +35,7 @@ module.exports = class Giveaways {
 	}
 
 	static async end (bot, server, channel) {
-		const serverDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
-			winston.verbose(`Failed to end giveaway`, err);
-		});
+		const serverDocument = bot.cache.get(server.id);
 		if (serverDocument) {
 			const channelDocument = serverDocument.channels.id(channel.id);
 			if (channelDocument.giveaway.isOngoing) {

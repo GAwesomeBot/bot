@@ -16,10 +16,7 @@ class AFKHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
-			winston.warn(`Failed to find server document for AFK handler`, { guild: msg.guild.id }, err);
-			this.serverDocument = null;
-		});
+		this.serverDocument = this.bot.cache.get(msg.guild.id);
 	}
 
 	async handle (msg) {
@@ -55,7 +52,7 @@ class AFKHandler extends BaseEvent {
 									},
 									color: 0x3669FA,
 									author: {
-										name: `@${this.bot.getName(msg.guild, serverDocument, member)} is currently AFK.`,
+										name: `@${this.bot.getName(msg.guild, this.serverDocument, member)} is currently AFK.`,
 									},
 									description: `\`\`\`${targetUserDocument.afk_message}\`\`\``,
 								},

@@ -136,9 +136,7 @@ class MessageCreate extends BaseEvent {
 			}
 		} else {
 			// Handle public messages
-			const serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
-				winston.warn("Failed to find server data for message", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-			});
+			const serverDocument = this.bot.cache.get(msg.guild.id);
 			if (serverDocument) {
 				// Get channel data
 				let channelDocument = serverDocument.channels.id(msg.channel.id);

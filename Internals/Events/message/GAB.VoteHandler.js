@@ -14,10 +14,7 @@ class VoteHandler extends BaseEvent {
 		return true;
 	}
 	async prerequisite (msg) {
-		this.serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
-			winston.warn(`Failed to find server document for vote handler`, { guild: msg.guild.id }, err);
-			this.serverDocument = null;
-		});
+		this.serverDocument = this.bot.cache.get(msg.guild.id);
 	}
 
 	async handle (msg) {

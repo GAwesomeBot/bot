@@ -161,7 +161,6 @@ class Ready extends BaseEvent {
 			"help people out!",
 		];
 		winston.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
-		this.bot.isReady = true;
 		this.bot.IPC.send("finished", { id: this.bot.shard.id });
 	}
 

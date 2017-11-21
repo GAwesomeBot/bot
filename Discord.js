@@ -38,6 +38,9 @@ class Client extends DJSClient {
 
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Collection();
+
+		// Store server documents by ID
+		this.cache = new Collection();
 	}
 
 	/**
@@ -969,7 +972,7 @@ bot.IPC.on("unmuteMember", async msg => {
 bot.IPC.on("createMOTD", async msg => {
 	try {
 		const guild = bot.guilds.get(msg.guild);
-		const serverDocument = await Servers.findOne({ _id: guild.id }).exec();
+		const serverDocument = bot.cache.get(guild.id);
 
 		MessageOfTheDay(bot, guild, serverDocument.config.message_of_the_day);
 	} catch (err) {
@@ -984,7 +987,7 @@ bot.IPC.on("postAllData", async () => {
 bot.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	const serverDocument = await Servers.findOne({ _id: guildID }).exec();
+	const serverDocument = bot.cache.get(guild.id);
 	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.first();
 	let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
 	serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
@@ -994,7 +997,7 @@ bot.IPC.on("createPublicInviteLink", async msg => {
 bot.IPC.on("deletePublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	const serverDocument = await Servers.findOne({ _id: guildID }).exec();
+	const serverDocument = bot.cache.get(guild.id);
 	let invites = await guild.fetchInvites();
 	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
@@ -1443,6 +1446,7 @@ bot.once("ready", async () => {
 		await bot.events.onEvent("ready");
 		await winston.silly("Running webserver");
 		WebServer(bot, auth, configJS, configJSON, winston);
+		bot.isReady = true;
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 		process.exit(1);

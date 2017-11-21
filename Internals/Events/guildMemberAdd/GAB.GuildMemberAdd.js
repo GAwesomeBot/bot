@@ -7,12 +7,7 @@ const BaseEvent = require("../BaseEvent.js");
 class GuildMemberAdd extends BaseEvent {
 	async handle (member) {
 		// Get server data
-		let serverDocument;
-		try {
-			serverDocument = await Servers.findOne({ _id: member.guild.id }).exec();
-		} catch (err) {
-			winston.warn(`Failed to find server data for GUILD_MEMBER_ADD >.>`, { svrid: member.guild.id }, err);
-		}
+		let serverDocument = this.bot.cache.get(member.guild.id);
 		if (serverDocument) {
 			if (serverDocument.config.moderation.isEnabled) {
 				// Send new_member_message if necessary
