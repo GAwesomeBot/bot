@@ -904,7 +904,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 });
 
 process.on("unhandledRejection", reason => {
-	winston.warn(`An error occurred, which we just ignored. We should handle these ya'know`, reason);
+	winston.error(`An unexpected error occurred, and we failed to handle it x.x\n`, reason);
 	/*
 	 * Just saying, this won't close the process in the future
 	 * but if the bot.isReady is true
