@@ -178,7 +178,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Serve public dir
 	app.use("/static/:type", (req, res, next) => {
-		if (req.accepts("image/webp") && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
+		if (req.accepts("image/webp") === "image/webp" && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
 			res.redirect("/static/img" + req.path.substring(0, req.path.lastIndexOf(".")) + ".webp");
 		} else return express.static(`${__dirname}/public/${req.params.type}`, { maxAge: 86400000 })(req, res, next);
 	});
@@ -239,8 +239,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Landing page
 	app.get("/", async (req, res) => {
 		const uptime = process.uptime();
-		const guildSize = await bot.guilds.totalCount;
-		const userSize = await bot.users.totalCount;
+		const guildSize = bot.guilds.totalCount;
+		const userSize = bot.users.totalCount;
 		res.render("pages/landing.ejs", {
 			authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 			bannerMessage: configJSON.homepageMessageHTML,
@@ -269,7 +269,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			user_count: await bot.users.totalCount,
 		});
 	});
-	const getServerData = async serverDocument => {
+	const getServerData = async (serverDocument, webp = false) => {
 		let data;
 		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "owner", "id", "name"], members: ["nickname"] });
 		if (svr) {
@@ -277,11 +277,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			data = {
 				name: svr.name,
 				id: svr.id,
-				icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
+				icon: bot.getAvatarURL(svr.id, svr.icon, "icons", webp),
 				owner: {
 					username: owner.user.username,
 					id: owner.user.id,
-					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar),
+					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar, "avatars", webp),
 					name: owner.nickname || owner.user.username,
 				},
 				members: Object.keys(svr.members).length,
@@ -303,10 +303,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		if (req.query.id) {
 			params._id = req.query.id;
 		}
-		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : await bot.guilds.totalCount)
+		let webp = req.accepts("image/webp") !== false;
+		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
 			.exec(async (err, serverDocuments) => {
 				if (!err && serverDocuments) {
-					const data = await Promise.all(serverDocuments.map(async serverDocument => await getServerData(serverDocument) || serverDocument._id));
+					const data = await Promise.all(serverDocuments.map(serverDocument => getServerData(serverDocument, webp) || serverDocument._id));
 					res.json(data);
 				} else {
 					res.sendStatus(400);
@@ -623,7 +624,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					], async (err, serverDocuments) => {
 						let serverData = [];
 						if (!err && serverDocuments) {
-							serverData = serverDocuments.map(serverDocument => getServerData(serverDocument));
+							let webp = req.accepts("image/webp") === "image/webp";
+							serverData = serverDocuments.map(serverDocument => getServerData(serverDocument, webp));
 						}
 						serverData = await Promise.all(serverData);
 						let pageTitle = "Servers";
@@ -708,7 +710,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Header image provider
 	app.get("/header-image", (req, res) => {
 		let headerImage = configJSON.headerImage;
-		if (req.accepts("image/webp")) headerImage = headerImage.substring(0, headerImage.lastIndexOf(".")) + ".webp"
+		if (req.accepts("image/webp") === "image/webp") headerImage = headerImage.substring(0, headerImage.lastIndexOf(".")) + ".webp"
 		res.sendFile(`${__dirname}/public/img/${headerImage}`, err => {
 			if (err) winston.warn("It seems your headerImage value is invalid!", err)
 		});

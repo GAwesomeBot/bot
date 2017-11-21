@@ -781,10 +781,11 @@ class Client extends DJSClient {
 	 * @param {String} id The user or mebmer ID
 	 * @param {String} hash The avatar hash returned from Discord
 	 * @param {String} [type="avatars"] Type of avatar to fetch, set to "icons" for servers
+	 * @param {String} [webp=false] If the webp version of an image should be fetched
 	 * @returns {String} A string containing either the Discord URL to the avatar or a static reference to the generic avatar
 	 */
-	getAvatarURL (id, hash, type = "avatars") {
-		return hash ? `${this.options.http.cdn}/${type}/${id}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=2048` : "/static/img/discord-icon.png";
+	getAvatarURL (id, hash, type = "avatars", webp = false) {
+		return hash ? `${this.options.http.cdn}/${type}/${id}/${hash}.${hash.startsWith("a_") ? "gif" : webp ? "webp" : "png"}?size=2048` : "/static/img/discord-icon.png";
 	}
 
 	/**
