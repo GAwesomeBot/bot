@@ -12,7 +12,7 @@ const makeGABError = base => class GABError extends base {
 	constructor (key, ...args) {
 		super(message(key, args));
 		this[kCode] = key;
-		if (Error.captureStackTrace) Error.captureStackTrace(this, DiscordjsError);
+		if (Error.captureStackTrace) Error.captureStackTrace(this, GABError);
 	}
 
 	get name () {
