@@ -163,10 +163,6 @@ class MessageCreate extends BaseEvent {
 					memberDocument.last_active = Date.now();
 					// Check if the user has leveled up a rank
 					this.bot.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
-					// Save changes to serverDocument
-					await serverDocument.save().catch(err => {
-						winston.warn(`Failed to save server data for MESSAGE`, { svrid: msg.guild.id }, err);
-					});
 				}
 
 				// Check for start command from server admin

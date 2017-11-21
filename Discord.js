@@ -1319,6 +1319,11 @@ bot.on("message", async msg => {
 				await msg.guild.members.fetch();
 			}
 			await bot.events.onEvent("message", msg, proctime);
+			if (msg.guild) {
+				await bot.cache.get(msg.guild.id).save().catch(err => {
+					winston.warn(`Failed to save server document for MESSAGE..`, { guild: msg.guild.id }, err);
+				});
+			}
 			// TODO: Remove this
 			console.log(`Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 		} catch (err) {
