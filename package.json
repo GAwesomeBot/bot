@@ -38,7 +38,7 @@
     "fs-nextra": "^0.3.2",
     "mathjs": "^3.17.0",
     "moment": "^2.19.2",
-    "mongoose": "^4.13.4",
+    "mongoose": "^4.13.5",
     "mongoose-findorcreate": "*",
     "mstranslator": "*",
     "node-base64-image": "*",
