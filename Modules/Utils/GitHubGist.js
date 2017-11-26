@@ -13,7 +13,7 @@ module.exports = class GitHubGist {
 			"Content-Type": "application/json",
 		};
 		if (gistKey !== "") this.headers.Authorization = `Token ${gistKey}`;
-		this.apiURL = "https://api.github.com/gists/";
+		this.apiURL = "https://api.github.com/gists";
 	}
 
 	/**
@@ -66,7 +66,7 @@ module.exports = class GitHubGist {
 	async delete (id) {
 		let res;
 		try {
-			res = await snekfetch.delete(`${this.apiURL}${id}`).set(this.headers);
+			res = await snekfetch.delete(`${this.apiURL}/${id}`).set(this.headers);
 		} catch (err) {
 			throw err;
 		}

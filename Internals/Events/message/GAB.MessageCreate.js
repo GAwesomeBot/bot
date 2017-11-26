@@ -194,7 +194,7 @@ class MessageCreate extends BaseEvent {
 				// Check for eval command from maintainers
 				if (this.configJSON.maintainers.includes(msg.author.id)) {
 					const evalCommand = await this.bot.checkCommandTag(msg.content, serverDocument);
-					if (evalCommand && evalCommand.command === "eval") {
+					if (evalCommand && (evalCommand.command === "eval" || evalCommand.command === "ev")) {
 						if (evalCommand.suffix) {
 							let hrstart = process.hrtime();
 							try {
@@ -240,7 +240,7 @@ class MessageCreate extends BaseEvent {
 									const GistUpload = new Gist(this.bot);
 									const res = await GistUpload.upload({
 										title: "Eval Result",
-										text: msg.content,
+										text: result,
 									});
 									res && res.url && msg.channel.send({
 										embed: {
