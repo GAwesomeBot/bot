@@ -598,7 +598,7 @@ class Client extends DJSClient {
 					await member.send({
 						embed: {
 							color: 0xFF0000,
-							description: `${userMessage}, and the chat moderator have again been notified about this.`,
+							description: `${userMessage}, and the chat moderators have again been notified about this.`,
 						},
 					}).catch(err => {
 						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
