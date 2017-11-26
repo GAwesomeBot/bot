@@ -1702,6 +1702,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				renderError(res, "Failed to save admin console settings!");
 				return;
 			}
+			bot.IPC.send("cacheUpdate", { guild: serverDocument._id });
 			if (override) {
 				res.sendStatus(200);
 			} else {

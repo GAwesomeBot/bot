@@ -167,6 +167,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (sharder.shards.has(shardid)) sharder.IPC.send("createMOTD", msg, shardid);
 		});
 
+		sharder.IPC.on("cacheUpdate", async msg => {
+			const shardid = sharder.guilds.get(msg.guild);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("cacheUpdate", msg, shardid);
+		});
+
 		sharder.IPC.on("sendAllGuilds", () => sharder.IPC.send("postAllData", {}, 0));
 
 		sharder.IPC.on("createPublicInviteLink", msg => sharder.IPC.send("createPublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));

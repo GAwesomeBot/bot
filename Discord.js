@@ -1006,6 +1006,19 @@ bot.IPC.on("deletePublicInviteLink", async msg => {
 	serverDocument.save();
 });
 
+bot.IPC.on("cacheUpdate", async msg => {
+	let guildID = msg.guild;
+	let guild = bot.guilds.get(guildID);
+	if (guild) {
+		try {
+			let serverDocument = await Servers.findOne({ _id: guild.id }).exec();
+			bot.cache.set(guild.id, serverDocument);
+		} catch (err) {
+			winston.warn(`Failed to update the cache for a guild! x_x`, { guild: guildID }, err);
+		}
+	}
+});
+
 /**
  * CHANNEL_CREATE
  */
@@ -1326,7 +1339,7 @@ bot.on("message", async msg => {
 				});
 			}
 			// TODO: Remove this
-			console.log(`Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
+			console.log(`Whole Event Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}
