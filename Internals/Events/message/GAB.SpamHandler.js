@@ -38,15 +38,16 @@ class SpamHandler extends BaseEvent {
 					spamDocument.message_count++;
 					spamDocument.last_message_content = msg.cleanContent;
 					this.bot.setTimeout(async () => {
-						const newServerDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
+						this.serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
 							winston.debug(`Failed to get server document for spam filter..`, err);
 						});
-						if (newServerDocument) {
-							this.channelDocument = newServerDocument.channels.id(msg.channel.id);
+						if (this.serverDocument) {
+							this.bot.cache.set(this.serverDocument._id, this.serverDocument);
+							this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
 							spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
 							if (spamDocument) {
 								spamDocument.remove();
-								await newServerDocument.save().catch(err => {
+								await this.bot.cache.get(msg.guild.id).save().catch(err => {
 									winston.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
 								});
 							}
@@ -141,7 +142,7 @@ class SpamHandler extends BaseEvent {
 								violatorRoleID = this.serverDocument.config.moderation.filters.spam_filter.violator_role_id;
 							}
 							// eslint-disable-next-line max-len
-							this.bot.handleViolation(msg.guild, this.serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, this.serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
+							this.bot.handleViolation(msg.guild, this.serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** (${msg.member}) continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, this.serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
 						}
 						await userDocument.save().catch(err => {
 							winston.debug(`Failed to save user document...`, err);
@@ -150,10 +151,6 @@ class SpamHandler extends BaseEvent {
 						spamDocument.remove();
 					}
 				}
-				// Save spamDocument and serverDocument
-				await this.serverDocument.save().catch(err => {
-					winston.debug(`Failed to save server data for spam filter..`, { svrid: msg.guild.id }, err);
-				});
 			}
 		}
 	}
