@@ -205,7 +205,6 @@ class MessageCreate extends BaseEvent {
 									.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
 								let { discord, tokens } = require("../../../Configurations/auth");
 								const censor = [
-									discord.clientID,
 									discord.clientSecret,
 									discord.clientToken,
 									tokens.discordList,
