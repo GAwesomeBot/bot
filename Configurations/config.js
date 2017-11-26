@@ -1,7 +1,7 @@
 const configs = {
 	/*
    * Represents how many shards the bot will have.
-   * It *must* be a integer, aka *1*, *52* etc.
+   * It *must* be a integer, aka *1*, *52* etc. OR "auto"
    */
 	shardTotal: 1,
 	/*
@@ -40,9 +40,10 @@ const configs = {
    */
 	maxVoiceChannels: 2,
 	/*
-   * Direct Discord link to invite your bot. Replace "<REPLACE HERE>" (including the "<>") with your Application Client ID.
+   * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
+	 * Otherwise. !! DO NOT TOUCH !!
    */
-	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id=<REPLACE HERE>&scope=bot&permissions=470019135",
+	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot&permissions=470019135",
 	/*
 	 * Level of output the console should display. List of levels:
 	 * error, warn, info, debug and verbose.

@@ -254,7 +254,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Add to server link
 	app.get("/add", (req, res) => {
-		res.redirect(configJS.oauthLink);
+		res.redirect(configJS.oauthLink.format({ id: bot.user.id }));
 	});
 
 	// GAwesomeBot data API
