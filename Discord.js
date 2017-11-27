@@ -598,7 +598,7 @@ class Client extends DJSClient {
 					await member.send({
 						embed: {
 							color: 0xFF0000,
-							description: `${userMessage}, and the chat moderators have again been notified about this.`,
+							description: `${userMessage}, and the chat moderator have again been notified about this.`,
 						},
 					}).catch(err => {
 						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
@@ -806,7 +806,11 @@ class Client extends DJSClient {
 					channelid: chid ? chid : undefined,
 					userid: usrid ? usrid : undefined,
 				});
-				await serverDocument.save();
+				if (serverDocument.logs.length > 200) {
+					await serverDocument.save();
+					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
+				}
+				serverDocument.save();
 			}
 		} catch (err) {
 			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
@@ -941,7 +945,7 @@ bot.IPC.on("getGuild", msg => {
 	let payload = msg;
 	if (payload.guild === "*") {
 		let result = {};
-		let guilds = payload.settings.mutual ? this.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : bot.guilds;
+		let guilds = payload.settings.mutual ? bot.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : bot.guilds;
 		guilds.forEach((val, key) => {
 			result[key] = GG.generate(val, payload.settings);
 		});
@@ -1004,19 +1008,6 @@ bot.IPC.on("deletePublicInviteLink", async msg => {
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
 	serverDocument.config.public_data.server_listing.invite_link = null;
 	serverDocument.save();
-});
-
-bot.IPC.on("cacheUpdate", async msg => {
-	let guildID = msg.guild;
-	let guild = bot.guilds.get(guildID);
-	if (guild) {
-		try {
-			let serverDocument = await Servers.findOne({ _id: guild.id }).exec();
-			bot.cache.set(guild.id, serverDocument);
-		} catch (err) {
-			winston.warn(`Failed to update the cache for a guild! x_x`, { guild: guildID }, err);
-		}
-	}
 });
 
 /**
@@ -1329,7 +1320,6 @@ bot.on("message", async msg => {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
 			if (msg.guild) {
-				// TODO: Remove this once Autofetch gets added to Discord
 				await msg.guild.members.fetch();
 			}
 			await bot.events.onEvent("message", msg, proctime);
@@ -1338,8 +1328,6 @@ bot.on("message", async msg => {
 					winston.warn(`Failed to save server document for MESSAGE..`, { guild: msg.guild.id }, err);
 				});
 			}
-			// TODO: Remove this
-			console.log(`Whole Event Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}

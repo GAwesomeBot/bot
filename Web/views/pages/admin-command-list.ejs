@@ -19,40 +19,39 @@
 					<h1 class="title">
 						Command List
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									<strong>All GAwesomeBot commands</strong> are listed here. You can change <strong>who</strong> can use them and <strong>where</strong>. Some things to keep in mind:
-									<ul>
-										<li>
-											Admin-only commands can only be activated by members who have an admin role that is level 1 or higher. Other users will not receive a response if they try to use an admin-only command.
-										</li>
-										<li>
-											You can restrict commands to certain channels. They will not be accessible elsewhere. It's best not to use this for some core commands like <code>ping</code>, <code>help</code>, and <code>join</code>.
-										</li>
-									</ul>
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								<strong>All GAwesomeBot commands</strong> are listed here. You can change <strong>who</strong> can use them and <strong>where</strong>. Some things to keep in mind:
+								<ul>
+									<li>
+										Admin-only commands can only be activated by members who have an admin role that is level 1 or higher. Other users will not receive a response if they try to use an admin-only command.
+									</li>
+									<li>
+										You can restrict commands to certain channels. They will not be accessible elsewhere. It's best not to use this for some core commands like <code>ping</code>, <code>help</code>, and <code>join</code>.
+									</li>
+								</ul>
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field">
 							<a class="button modal-button" data-target="#command-preset-modal">
 								<span class="icon is-small">
 									<i class="fa fa-cog"></i>
 								</span>
 								<span>Apply Preset</span>
 							</a>
-							<div id="command-preset-modal" class="modal">
-								<div class="modal-background"></div>
-								<div class="modal-container">
-									<div class="modal-content">
-										<div class="box">
-											<h4 class="subtitle is-4">
-												Command options preset
-											</h4>
+						</div>
+						<div id="command-preset-modal" class="modal">
+							<div class="modal-background"></div>
+							<div class="modal-container">
+								<div class="modal-content">
+									<div class="box">
+										<h4 class="subtitle is-4">
+											Command options preset
+										</h4>
+										<div class="field">
 											<label class="label">Permissions</label>
 											<p class="control">
 												<span class="select">
@@ -65,6 +64,8 @@
 												</span>
 												<span class="help">Commands will only respond to members that have the selected bot admin level (or higher).</span>
 											</p>
+										</div>
+										<div class="field">
 											<label class="label">Channel(s)</label>
 											<% for(var i=0; i<channelData.length; i++) { %>
 												<label class="checkbox">
@@ -73,29 +74,30 @@
 												</label>
 												<br>
 											<% } %>
-											<p class="control has-addons">
+										</div>
+										<div class="field">
+											<div class="control has-addons">
 												<a class="button is-small" onclick="toggleChannels('preset-disabled_channel_ids', true);">
 													<span>Select All</span>
 												</a>
 												<a class="button is-small" onclick="toggleChannels('preset-disabled_channel_ids', false);">
 													<span>Deselect All</span>
 												</a>
-											</p>
+											</div>
 											<span class="help">Commands will run only in these channels.</span>
-											<br>
-											<input type="checkbox" id="preset-applied" name="preset-applied" style="display: none;">
-											<button name="preset-applied" class="button is-primary" onclick="$('#preset-applied').attr('checked', true); saveFormState(); location.reload();">
-												<span class="icon is-small">
-													<i class="fa fa-asterisk"></i>
-												</span>
-												<span>Apply to all commands</span>
-											</button>
 										</div>
+										<input type="checkbox" id="preset-applied" name="preset-applied" style="display: none;">
+										<button name="preset-applied" class="button is-primary" onclick="$('#preset-applied').attr('checked', true); saveFormState(); location.reload();">
+											<span class="icon is-small">
+												<i class="fa fa-asterisk"></i>
+											</span>
+											<span>Apply to all commands</span>
+										</button>
 									</div>
 								</div>
-								<a class="modal-close"></a>
 							</div>
-							<br><br>
+							<a class="modal-close"></a>
+						</div>
 							<% for(var command in commandCategories) { %>
 								<% if(command!="stats") { %>
 									<% var commandData = configData.commands[command];commandData.name = command;commandData.description = commandDescriptions[command];commandData.category = commandCategories[command]; %>
@@ -106,8 +108,7 @@
 							<% var formButtonsUnsaved = false; %>
 							<% include ../partials/form-buttons %>
 							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+					</form>
 				</div>
 			</div>
 		</div>

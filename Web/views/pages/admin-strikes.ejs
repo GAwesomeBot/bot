@@ -83,159 +83,166 @@
 					<h1 class="title">
 						Strikes
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									Strikes are the best way for moderators to <strong>keep track of rule violations</strong> by members on your server. You can add strikes when a user does something wrong, and strikes are automatically added for filter violations.
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								Strikes are the best way for moderators to <strong>keep track of rule violations</strong> by members on your server. You can add strikes when a user does something wrong, and strikes are automatically added for filter violations.
+							</div>
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field" style="overflow-x: scroll;">
+							<% if(strikes.length>0) { %>
+							<table class="table is-fullwidth">
+								<thead>
+								<tr>
+									<th></th>
+									<th>Username</th>
+									<th>ID</th>
+									<th></th>
+								</tr>
+								</thead>
+								<tbody>
+								<% for(var i=0; i<strikes.length; i++) { %>
+								<tr>
+									<td>
+										<img class="image is-24x24" src="<%= strikes[i].avatar %>" alt="<%= strikes[i].id %>">
+									</td>
+									<td>
+										<%= strikes[i].name %>
+									</td>
+									<td>
+										<%= strikes[i].id %>
+									</td>
+									<td>
+										<div class="field is-grouped">
+											<div class="control">
+											<a class="button modal-button is-small" data-target="#strikes-<%= i %>-modal">
+												<span class="icon is-small">
+													<i class="fa fa-eye"></i>
+												</span>
+												<span>View</span>
+											</a>
+											</div>
+											<div class="control">
+											<a class="button modal-button is-small is-primary" data-target="#strikes-<%= i %>-add-modal">
+												<span class="icon is-small">
+													<i class="fa fa-plus"></i>
+												</span>
+												<span>Add</span>
+											</a>
+											</div>
+											<div class="control">
+											<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
+											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); location.reload();">
+												<span>Remove All</span>
+												<span class="icon is-small">
+													<i class="fa fa-times"></i>
+												</span>
+											</button>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<div id="strikes-<%= i %>-modal" class="modal">
+									<div class="modal-background"></div>
+									<div class="modal-content">
+										<div class="box">
+												<h4 class="subtitle is-4">
+													Strikes for <strong>@<%= strikes[i].name %></strong>
+												</h4>
+												<% for(var j=0; j<strikes[i].strikes.length; j++) { %>
+												<article class="media">
+													<div class="media-left">
+														<img class="image is-64x64" src="<%= strikes[i].strikes[j].creator.avatar %>" alt="<%= strikes[i].strikes[j].creator.id %>">
+													</div>
+													<div class="media-content">
+														<div class="content">
+															<h5 class="title is-5" title="<%= strikes[i].strikes[j].rawDate %>"><%= strikes[i].strikes[j].relativeDate %></h5>
+															<h6 class="subtitle is-6" style="-webkit-margin-after: 0.5em;">Added by <strong>@<%= strikes[i].strikes[j].creator.name %></strong></h6>
+															<%- strikes[i].strikes[j].reason %>
+														</div>
+													</div>
+													<div class="media-right">
+														<span class="strikes-<%= strikes[i].id %>" id="removestrike-<%= strikes[i].id %>-<%= j %>">
+															<button class="delete is-medium" onclick="removeStrike(this.parentNode); return false"></button>
+														</span>
+													</div>
+												</article>
+												<% } %>
+											</div>
+										</div>
+									<button class="modal-close is-large"></button>
 								</div>
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
-							<div style="overflow-x: scroll;">
-								<% if(strikes.length>0) { %>
-									<table class="table">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>ID</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<strikes.length; i++) { %>
-												<tr>
-													<td>
-														<img class="image is-24x24" src="<%= strikes[i].avatar %>" alt="<%= strikes[i].id %>">
-													</td>
-													<td>
-														<%= strikes[i].name %>
-													</td>
-													<td>
-														<%= strikes[i].id %>
-													</td>
-													<td>
-														<a class="button modal-button is-small" data-target="#strikes-<%= i %>-modal">
-															<span class="icon is-small">
-																<i class="fa fa-eye"></i>
-															</span>
-															<span>View</span>
-														</a>
-														<a class="button modal-button is-small is-primary" data-target="#strikes-<%= i %>-add-modal">
-															<span class="icon is-small">
-																<i class="fa fa-plus"></i>
-															</span>
-															<span>Add</span>
-														</a>
-														<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
-														<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); location.reload();">
-															<span>Remove All</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-												<div id="strikes-<%= i %>-modal" class="modal">
-													<div class="modal-background"></div>
-													<div class="modal-container">
-														<div class="modal-content">
-															<div class="box">
-																<h4 class="subtitle is-4">
-																	Strikes for <strong>@<%= strikes[i].name %></strong>
-																</h4>
-																<% for(var j=0; j<strikes[i].strikes.length; j++) { %>
-																	<article class="media">
-																		<div class="media-left">
-																			<img class="image is-64x64" src="<%= strikes[i].strikes[j].creator.avatar %>" alt="<%= strikes[i].strikes[j].creator.id %>">
-																		</div>
-																		<div class="media-content">
-																			<p class="title is-5" title="<%= strikes[i].strikes[j].rawDate %>"><%= strikes[i].strikes[j].relativeDate %></p>
-																			<p class="subtitle is-6" style="-webkit-margin-after: 0.5em;">Added by <strong>@<%= strikes[i].strikes[j].creator.name %></strong></p>
-																			<%- strikes[i].strikes[j].reason %>
-																		</div>
-																		<div class="media-right">
-																			<span class="strikes-<%= strikes[i].id %>" id="removestrike-<%= strikes[i].id %>-<%= j %>">
-																				<button class="delete" onclick="removeStrike(this.parentNode); return false"></button>
-																			</span>
-																		</div>
-																	</article>
-																<% } %>
-															</div>
+								<div id="strikes-<%= i %>-add-modal" class="modal">
+									<div class="modal-background"></div>
+									<div class="modal-content">
+										<div class="box">
+											<h4 class="subtitle is-4">
+												Add a strike for <strong>@<%= strikes[i].name %></strong>
+											</h4>
+											<div class="field is-horizontal">
+												<div class="field-body">
+													<div class="field is-grouped">
+														<div class="control is-expanded">
+															<input id="<%= strikes[i].id %>-strike-reason" class="input" type="text" placeholder="Reason" minlength="1" maxlength="2000">
+														</div>
+														<div class="control">
+															<a class="button is-primary" onclick="newStrike('<%= strikes[i].id %>');">
+																<span class="icon">
+																	<i class="fa fa-plus"></i>
+																</span>
+																<span>Add</span>
+															</a>
 														</div>
 													</div>
-													<a class="modal-close"></a>
 												</div>
-												<div id="strikes-<%= i %>-add-modal" class="modal">
-													<div class="modal-background"></div>
-													<div class="modal-container">
-														<div class="modal-content">
-															<div class="box">
-																<h4 class="subtitle is-4">
-																	Add a strike for <strong>@<%= strikes[i].name %></strong>
-																</h4>
-																<div class="control is-horizontal">
-																	<div class="control is-grouped">
-																		<p class="control is-expanded">
-																			<input id="<%= strikes[i].id %>-strike-reason" class="input" type="text" placeholder="Reason" minlength="1" maxlength="2000">
-																		</p>
-																		<p class="control">
-																			<a class="button is-primary" onclick="newStrike('<%= strikes[i].id %>');">
-																				<span class="icon">
-																			        <i class="fa fa-plus"></i>
-																			    </span>
-																			    <span>Add</span>
-																			</a>
-																		</p>
-																	</div>
-																</div>
-															</div>
-														</div>
-													</div>
-													<a class="modal-close"></a>
-												</div>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message">
-										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											</div>
 										</div>
-										<div class="message-body">
-											There aren't any strikes on this server. Type the name of a user below and a reason to add a strike.
-										</div>
-									</article>
-									<br>
+									</div>
+									<button class="modal-close is-large"></button>
+								</div>
 								<% } %>
-							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control">
+								</tbody>
+							</table>
+							<% } else { %>
+							<article class="message" style="margin-bottom: 0px;">
+								<div class="message-header">
+									<p>
+										<span class="icon">
+											<i class="fa fa-meh-o"></i>
+										</span>
+										Nothing to see here
+									</p>
+								</div>
+								<div class="message-body">
+									There aren't any strikes on this server. Type the name of a user below and a reason to add a strike.
+								</div>
+							</article>
+							<br>
+							<% } %>
+						</div>
+						<div class="field is-horizontal">
+							<div class="field-body">
+								<div class="field is-grouped">
+									<div class="control">
 										<input id="new-strike-member" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
-									</p>
-									<p class="control is-expanded">
+									</div>
+									<div class="control is-expanded">
 										<input id="new-strike-reason" class="input" type="text" placeholder="Reason" onkeypress="return event.keyCode != 13;">
-									</p>
-									<p class="control">
+									</div>
+									<div class="control">
 										<a class="button is-primary" onclick="newStrike();">
 											<span class="icon">
 										        <i class="fa fa-plus"></i>
 										    </span>
 										    <span>Add</span>
 										</a>
-									</p>
+									</div>
 								</div>
 							</div>
-						</form>
-					</div>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>

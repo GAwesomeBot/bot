@@ -1,64 +1,64 @@
-<header>
-    <nav class="nav">
+    <nav class="navbar is-transparent">
         <div class="container">
-            <div class="nav-left">
-                <a class="nav-item is-brand title is-5 is-active" href="/" style="font-family: Montserrat;">
-                    <img src="/static/img/icon.png" style="border-radius: 100%;">
+            <div class="navbar-brand">
+                <a class="navbar-item is-bold is-5" href="/" style="font-family: Montserrat;">
+                    <img src="/static/img/icon.png" style="border-radius: 100%;" height="24" width="24">
                     &nbsp;
                     GAwesomeBot
                 </a>
+
+                <button id="navbar-burger" class="navbar-burger button" onClick="$(this).toggleClass('is-active'); $('#navbar-menu').toggleClass('is-active');">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
 
-            <span id="nav-toggle" class="nav-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </span>
-
-            <div id="nav-menu" class="nav-right nav-menu">
-                <a class="nav-item is-active" href="http://status.gilbertgobbels.xyz:8080" title="Status">
+            <div id="navbar-menu" class=" navbar-menu">
+                <div class="navbar-end">
+                <a class="navbar-item is-active" href="https://status.gawesomebot.com" title="Status">
                   <span class="icon is-small">
                     <i class="fa fa-check"></i>
                   </span>
                     &nbsp;
                     <span>Status</span>
                 </a>
-                <a id="nav-" class="nav-item is-active" href="/">
+                <a id="nav-" class="navbar-item is-active" href="/">
                     <span class="icon is-small">
                         <i class="fa fa-home"></i>
                     </span>
                     &nbsp;
                     <span>Home</span>
                 </a>
-                <a id="nav-activity" class="nav-item is-active" href="/activity">
+                <a id="nav-activity" class="navbar-item is-active" href="/activity">
                     <span class="icon is-small">
                         <i class="fa fa-comments"></i>
                     </span>
                     &nbsp;
                     <span>Activity</span>
                 </a>
-                <a id="nav-extensions" class="nav-item is-active" href="/extensions">
+                <a id="nav-extensions" class="navbar-item is-active" href="/extensions">
                     <span class="icon is-small">
                         <i class="fa fa-bolt"></i>
                     </span>
                     &nbsp;
                     <span>Extensions</span>
                 </a>
-                <a id="nav-wiki" class="nav-item is-active" href="/wiki">
+                <a id="nav-wiki" class="navbar-item is-active" href="/wiki">
                     <span class="icon is-small">
                         <i class="fa fa-book"></i>
                     </span>
                     &nbsp;
                     <span>Wiki</span>
                 </a>
-                <a id="nav-blog" class="nav-item is-active" href="/blog">
+                <a id="nav-blog" class="navbar-item is-active" href="/blog">
                     <span class="icon is-small">
                         <i class="fa fa-rss"></i>
                     </span>
                     &nbsp;
                     <span>Blog</span>
                 </a>
-                <a id="nav-donate" class="nav-item is-active modal-button" href="/donate">
+                <a id="nav-donate" class="navbar-item is-active modal-button" href="/donate">
                     <span class="icon is-small">
                         <i class="fa fa-gift"></i>
                     </span>
@@ -72,27 +72,34 @@
                 </script>
 
                 <% if(authUser) { %>
-                <a id="nav-dashboard" class="nav-item is-active" href="/dashboard" title="Go to dashboard">
+                <a id="nav-dashboard" class="navbar-item is-active" href="/dashboard" title="Go to dashboard">
                     <img class="image is-16x16" src="<%= authUser.avatar %>" style="border-radius: 100%;" alt="<%= authUser.id %>">
                     &nbsp;
                     <span><%= authUser.username %></span>
                 </a>
                 <% } else { %>
-                <p class="nav-item control has-addons">
-                    <a class="button is-white is-outlined" href="/add">
-                            <span class="icon is-small">
-                                <i class="fa fa-plus"></i>
-                            </span>
-                        <span>Add</span>
-                    </a>
-                    <a class="button is-white is-outlined" href="/login" style="margin-left: 0px;">
-                            <span class="icon is-small">
-                                <i class="fa fa-sign-in"></i>
-                            </span>
-                        <span>Login</span>
-                    </a>
-                </p>
+                <div class="navbar-item control">
+                    <div class="field has-addons">
+                        <p class="control">
+                            <a class="button is-white is-outlined" href="/add">
+                                <span class="icon is-small">
+                                    <i class="fa fa-plus"></i>
+                                </span>
+                                <span>Add</span>
+                            </a>
+                        </p>
+                        <p class="control">
+                            <a class="button is-white is-outlined" href="/login" style="margin-left: 0px;">
+                                <span class="icon is-small">
+                                    <i class="fa fa-sign-in"></i>
+                                </span>
+                                <span>Login</span>
+                            </a>
+                        </p>
+                    </div>
+                </div>
                 <% } %>
+                </div>
             </div>
             <script>
                 var currentPage = window.location.pathname.split("/")[1];
@@ -103,4 +110,3 @@
             </script>
         </div>
     </nav>
-</header>

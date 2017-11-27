@@ -41,7 +41,7 @@
 						<% if(serverData.length>0) { %>
 							Select a server to configure.
 						<% } else { %>
-							<span>You don&#39;t have any servers</span>
+							<span>You don&#39;t have any guilds</span>
 							<span class="icon is-medium">
 								<i class="fa fa-meh-o"></i>
 							</span>
@@ -65,12 +65,12 @@
 									</p>
 								</figure>
 								<div class="media-content">
-									<h2 class="title is-2 server-name"><%= serverData[i].name %></h2>
+									<h2 class="subtitle is-2 server-name"><%= serverData[i].name %></h2>
 								</div>
 								<% if(serverData[i].botJoined && serverData[i].isAdmin) { %>
 									<div class="media-right">
-										<span class="icon server-arrow is-large">
-					                        <i class="fa fa-chevron-right"></i>
+										<span class="icon server-arrow is-primary is-large">
+					                        <i class="fa fa-chevron-right fa-2x"></i>
 					                    </span>
 									</div>
 								<% } %>

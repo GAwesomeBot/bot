@@ -32,7 +32,7 @@
 		</div>
 		<div class="hero-body">
 			<div class="container has-text-centered">
-				<h1 class="title is-1">
+				<h1 class="subtitle is-1">
 					<span class="icon is-large">
                         <i class="fa fa-bolt"></i>
                     </span>
@@ -42,15 +42,19 @@
 					<div class="columns">
 						<div class="column is-8 is-offset-2">
 							<form method="get">
-								<p class="control has-addons has-addons-centered">
-									<input id="search-input" name="q" class="input is-expanded is-large header-search-box" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
+								<div class="field has-addons has-addons-centered">
+									<div class="control is-expanded">
+									<input id="search-input" name="q" class="input header-search-box" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
+									</div>
+									<div class="control">
 									<button id="search-button" type="submit" class="button is-primary is-large header-search-box">
 										<span class="icon">
 											<i class="fa fa-search"></i>
 										</span>
 										<span>Search</span>
 									</button>
-								</p>
+									</div>
+								</div>
 								<script>
 								mediaStyle(mq);
 								</script>
@@ -61,7 +65,7 @@
 			</div>
 		</div>
 		<div class="hero-foot">
-			<nav class="tabs is-boxed is-fullwidth">
+			<nav class="tabs is-boxed is-centered">
 				<div class="container">
 					<ul>
 						<li class="<%= mode=='gallery' ? 'is-active' : '' %>">

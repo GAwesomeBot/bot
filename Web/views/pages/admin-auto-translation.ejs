@@ -23,6 +23,9 @@
 			newTranslatedLanguage.addClass("is-danger");
 		}
 
+		console.log(newTranslatedMember.val())
+		console.log(newTranslatedLanguage.val())
+		console.log(Array.prototype.slice.call(document.getElementById("new-translated-enabled_channel_ids").querySelectorAll('input[type="checkbox"]')).some(x => x.checked))
 		if(newTranslatedMember.val() && newTranslatedLanguage.val() && Array.prototype.slice.call(document.getElementById("new-translated-enabled_channel_ids").querySelectorAll('input[type="checkbox"]')).some(x => x.checked)) {
 			$.ajax({
 				type: "POST",
@@ -35,8 +38,6 @@
 					<% } %>
 				},
 				success: function() {
-					saveFormState();
-					$("#form").submit();
 					location.reload();
 				}
 			});
@@ -58,19 +59,16 @@
 					<h1 class="title">
 						Auto-Translate Messages
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								GAwesomeBot's <code>translate</code> command can be set to automatically <strong>translate messages from certain members to English</strong>. This is useful for users that don't speak English. The bot will <strong>automatically and instantaneously</strong> post a translated version of each message in the channels you specify.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
+					<article class="message is-primary">
+						<div class="message-body">
+							GAwesomeBot's <code>translate</code> command can be set to automatically <strong>translate messages from certain members to English</strong>. This is useful for users that don't speak English. The bot will <strong>automatically and instantaneously</strong> post a translated version of each message in the channels you specify.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field">
 							<div style="overflow-x: scroll;">
 								<% if(configData.translated_messages.length>0) { %>
-									<table class="table">
+									<table class="table is-fullwidth">
 										<thead>
 											<tr>
 												<th></th>
@@ -115,12 +113,14 @@
 										</tbody>
 									</table>
 								<% } else { %>
-									<article class="message">
+									<article class="message" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											<p>
+												<span class="icon">
+													<i class="fa fa-meh-o"></i>
+												</span>
+												Nothing to see here
+											</p>
 										</div>
 										<div class="message-body">
 											You haven't set any members to translate messages for yet. Fill out the form below to get started.
@@ -129,9 +129,11 @@
 									<br>
 								<% } %>
 							</div>
-							<br>
-							<div class="columns">
-								<div id="new-translated-enabled_channel_ids" class="column is-narrow">
+						</div>
+						<br>
+						<div class="columns">
+							<div id="new-translated-enabled_channel_ids" class="column is-narrow">
+								<div class="field">
 									<% for(var i=0; i<channelData.length; i++) { %>
 										<label class="checkbox">
 										<input id="new-translated-enabled_channel_ids-<%= channelData[i].id %>" type="checkbox">
@@ -140,13 +142,17 @@
 										<br>
 									<% } %>
 								</div>
-								<div class="column">
-									<p class="control is-expanded">
+							</div>
+							<div class="column">
+								<div class="field">
+									<div class="control is-expanded">
 										<input id="new-translated-member" class="input user-autocomplete" type="text" placeholder="Member Username" onkeypress="return event.keyCode != 13;">
-									</p>
-									<div class="control is-horizontal">
-										<div class="control is-grouped">
-											<p class="control is-expanded">
+									</div>
+								</div>
+								<div class="field is-horizontal">
+									<div class="field-body">
+										<div class="field is-grouped">
+											<div class="control is-expanded">
 												<input id="new-translated-language" class="input" type="text" minlength="2" maxlength="6" placeholder="Source language code" list="languages" onkeypress="return event.keyCode != 13;">
 												<datalist id="languages">
 													<option value="af">Afrikaans</option>
@@ -204,25 +210,25 @@
 													<option value="yua">Yucatec Maya</option>
 												</datalist>
 												<span class="help">The language to translate <strong>from</strong>. List of codes <a href="https://msdn.microsoft.com/en-us/library/hh456380.aspx">here</a>.</span>
-											</p>
-											<p class="control">
-												<a class="button is-primary" onclick="newTranslated();">
+											</div>
+											<div class="control">
+												<a class="button is-primary" onclick="newTranslated(); return false;">
 													<span class="icon">
 												        <i class="fa fa-plus"></i>
 												    </span>
 												    <span>Add</span>
 												</a>
-											</p>
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

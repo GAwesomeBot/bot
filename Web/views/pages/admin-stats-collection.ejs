@@ -20,28 +20,23 @@
 					<h1 class="title">
 						Stats Collection
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								GAwesomeBot constantly records information about <strong>message, voice, and game activity</strong> on your server. You can view this data in the <code>stats</code> command, on the <a href="/dashboard/overview?svrid=<%= serverData.id %>">overview page</a>, and more.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
-							<% var commandData = configData.commands.stats;commandData.name = "stats";commandData.description = commandDescriptions.stats;commandData.category = commandCategories.stats; %>
-							<% include ../partials/admin-command-item %>
-							<% var commandData = configData.commands.games;commandData.name = "games";commandData.description = commandDescriptions.games;commandData.category = commandCategories.games; %>
-							<% include ../partials/admin-command-item %>
-							<% var commandData = configData.commands.messages;commandData.name = "messages";commandData.description = commandDescriptions.messages;commandData.category = commandCategories.messages; %>
-							<% include ../partials/admin-command-item %>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							GAwesomeBot constantly records information about <strong>message, voice, and game activity</strong> on your server. You can view this data in the <code>stats</code> command, on the <a href="/dashboard/overview?svrid=<%= serverData.id %>">overview page</a>, and more.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<% var commandData = configData.commands.stats;commandData.name = "stats";commandData.description = commandDescriptions.stats;commandData.category = commandCategories.stats; %>
+						<% include ../partials/admin-command-item %>
+						<% var commandData = configData.commands.games;commandData.name = "games";commandData.description = commandDescriptions.games;commandData.category = commandCategories.games; %>
+						<% include ../partials/admin-command-item %>
+						<% var commandData = configData.commands.messages;commandData.name = "messages";commandData.description = commandDescriptions.messages;commandData.category = commandCategories.messages; %>
+						<% include ../partials/admin-command-item %>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

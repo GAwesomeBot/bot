@@ -49,6 +49,33 @@ $.getJSON("/userlist", function(data) {
 							<h2 class="title">
 								<%= data.userProfile.username %><small class="subtitle is-4">#<%= data.userProfile.discriminator %></small>
 								<span class="tag is-medium <%= data.userProfile.statusColor %>"><%= data.userProfile.status.charAt(0).toUpperCase() + data.userProfile.status.slice(1) %></span>
+								<% if (["108892284119977984", "139836912335716352"].indexOf(data.userProfile.id) > -1) { %>
+								<span class="tag is-medium is-danger">
+									<span class="icon">
+										<i class="fa fa-wrench"></i>
+									</span>
+									&nbsp;
+									Developer
+								</span>
+								<% } else if (data.userProfile.isSudoMaintainer) { %>
+								<span class="tag is-medium is-primary">
+									<span class="icon">
+										<i class="fa fa-wrench"></i>
+									</span>
+									&nbsp;
+									Sudo Maintainer
+								</span>
+								<% } else if (data.userProfile.isMaintainer) { %>
+								<span class="tag is-medium is-link">
+									<span class="icon">
+										<i class="fa fa-wrench"></i>
+									</span>
+									&nbsp;
+									Maintainer
+								</span>
+								<% } else if (data.userProfile.isContributor) { %>
+								<span class="tag is-medium is-link">Contributor</span>
+								<% } %>
 							</h2>
 							<h5 class="subtitle">
 								Joined Discord <span title="<%= data.userProfile.rawAccountAge %>"><%= data.userProfile.roundedAccountAge %></span>
@@ -75,7 +102,7 @@ $.getJSON("/userlist", function(data) {
 									<span>ID <strong><%= data.userProfile.id %></strong></span>
 									<br>
 									<% if(data.userProfile.mutualServers) { %>
-										<span class="modal-button" data-target="#mutual-servers-modal">
+									<span class="modal-button" data-target="#mutual-servers-modal"></span>
 									<% } %>
 									<span class="icon is-medium">
 										<i class="fa fa-list-ul"></i>
@@ -188,27 +215,27 @@ $.getJSON("/userlist", function(data) {
 				<div class="box hero">
 					<article class="media">
 			    		<div class="media-content">
-							<h2 class="title">
+							<h3 class="subtitle is-3">
 								<span class="icon is-medium">
 									<i class="fa fa-star"></i>
 								</span>
 								<span><strong><%= data.totalPoints %></strong> point<%= data.totalPoints==1 ? "" : "s" %> total</span>
-							</h2>
-							<h2 class="title">
+							</h3>
+							<h3 class="subtitle is-3">
 								<span class="icon is-medium">
 									<i class="fa fa-user"></i>
 								</span>
 								<span><strong><%= data.publicProfilesCount %></strong> public user profile<%= data.publicProfilesCount==1 ? "" : "s" %></span>
-							</h2>
-							<h2 class="title">
+							</h3>
+							<h3 class="subtitle is-3">
 								<span class="icon is-medium">
 									<i class="fa fa-bell"></i>
 								</span>
 								<span><strong><%= data.reminderCount %></strong> reminder<%= data.reminderCount==1 ? "" : "s" %> set</span>
-							</h2>
+							</h3>
 						</div>
 				    	<div class="media-right">
-				    		<img class="image profile-image" style="width: 132px;border-radius: 100%;" src="/static/img/profile.png">
+				    		<img class="image profile-image" style="width: 168px;border-radius: 100%;" src="/static/img/profile.png">
 			    		</div>
 					</article>
 				</div>

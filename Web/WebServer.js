@@ -112,7 +112,7 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 /* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
 module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database) => {
-	const renderError = (res, text, line) => res.status(500).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
+	const renderError = (res, text, line, code = 500) => res.status(code).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
 
 	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
 
@@ -178,7 +178,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Serve public dir
 	app.use("/static/:type", (req, res, next) => {
-		if (req.accepts("image/webp") === "image/webp" && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
+		if (req.get("Accept") && req.get("Accept").indexOf("image/webp") > -1 && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
 			res.redirect("/static/img" + req.path.substring(0, req.path.lastIndexOf(".")) + ".webp");
 		} else return express.static(`${__dirname}/public/${req.params.type}`, { maxAge: 86400000 })(req, res, next);
 	});
@@ -202,7 +202,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		};
 		const httpsServer = https.createServer(credentials, app);
 		httpsServer.on("error", (err) => {
-			winston.error("We failed to listen to your incoming memes on the secure WebServer x/\n", { "err": err })
+			winston.error("We failed to listen to your beautiful voice on the secure WebServer x/\n", { "err": err })
 		})
 		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
 			winston.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
@@ -210,7 +210,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	}
 	const server = http.createServer(app);
 	server.on("error", (err) => {
-		winston.error("We failed to listen to your incoming memes on the WebServer x/\n", { "err": err });
+		winston.error("We failed to listen to your beautiful voice on the WebServer x/\n", { "err": err });
 	})
 	server.listen(configJS.httpPort, configJS.serverIP, () => {
 		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
@@ -334,6 +334,9 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			pastNameCount: (userDocument.past_names || {}).length || 0,
 			isAfk: userDocument.afk_message !== undefined && userDocument.afk_message !== "" && userDocument.afk_message !== null,
 			mutualServers: [],
+			isMaintainer: configJSON.maintainers.includes(usr.id) || configJSON.sudoMaintainers.includes(usr.id),
+			isContributor: configJSON.wikiContributors.includes(usr.id) || configJSON.maintainers.includes(usr.id) || configJSON.sudoMaintainers.includes(usr.id),
+			isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
 		};
 		switch (userProfile.status) {
 			case "online":
@@ -518,7 +521,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					req.query.q = "";
 				}
 				let count;
-				if (!req.query.count || isNaN(req.query.count)) {
+				if (!req.query.count || isNaN(req.query.count) || req.query.count > 64) {
 					count = 16;
 				} else {
 					count = parseInt(req.query.count) || guildAmount;
@@ -710,7 +713,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Header image provider
 	app.get("/header-image", (req, res) => {
 		let headerImage = configJSON.headerImage;
-		if (req.accepts("image/webp") === "image/webp") headerImage = headerImage.substring(0, headerImage.lastIndexOf(".")) + ".webp"
+		if (req.get("Accept") && req.get("Accept").indexOf("image/webp") > -1) headerImage = headerImage.substring(0, headerImage.lastIndexOf(".")) + ".webp"
 		res.sendFile(`${__dirname}/public/img/${headerImage}`, err => {
 			if (err) winston.warn("It seems your headerImage value is invalid!", err)
 		});
@@ -1037,7 +1040,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				res.render("pages/extensions.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					currentPage: req.path,
-					pageTitle: "My AwesomeBot Extensions",
+					pageTitle: "My GAwesomeBot Extensions",
 					serverData: {
 						id: req.user.id,
 					},
@@ -1089,7 +1092,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				res.render("pages/extensions.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					currentPage: req.path,
-					pageTitle: `${extensionData.name ? `${extensionData.name} - ` : ""}AwesomeBot Extension Builder`,
+					pageTitle: `${extensionData.name ? `${extensionData.name} - ` : ""}GAwesomeBot Extension Builder`,
 					serverData: {
 						id: req.user.id,
 					},
@@ -1237,9 +1240,28 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			categoryColor,
 			rawPublished: moment(blogDocument.published_timestamp).format(configJS.moment_date_format),
 			roundedPublished: moment(blogDocument.published_timestamp).fromNow(),
-			content: md.makeHtml(blogDocument.content),
+			content: blogDocument.content,
 		};
 	};
+	const getPageTitle = () => [
+		"Dolphin Musings",
+		"The Fault in Our Syntax",
+		"How to Become Popular",
+		"I wish I were a GAB",
+		"A Robot's Thoughts",
+		"My Meme Library",
+		"Top 10 Prank Channels",
+		"Why do we exist?",
+		"What is Love?",
+		"Updating GAB; My Story",
+		"What did I ever do to you?",
+		"Welcome back to",
+		"BitQuote made this happen",
+		"I didn't want this either",
+		"The tragic story",
+		"Developer Vs. Bot",
+		"What did we mess up today?"
+	][Math.floor(Math.random() * 17)]
 	app.get("/blog", (req, res) => {
 		let count;
 		if (!req.query.count || isNaN(req.query.count)) {
@@ -1268,10 +1290,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						if (data.content.length > 1000) {
 							data.content = `${data.content.slice(0, 1000)}...`;
 						}
+						data.content = md.makeHtml(data.content);
 						return data;
 					}));
 				}
-				await res.render("pages/blog.ejs", {
+				res.render("pages/blog.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
 					mode: "list",
@@ -1279,6 +1302,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
 					pageTitle: "GAwesomeBot Blog",
 					data: await blogPosts,
+					headerTitle: getPageTitle(),
 				});
 			});
 		});
@@ -1370,6 +1394,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				if (req.isAuthenticated()) {
 					data.userReaction = blogDocument.reactions.id(req.user.id) || {};
 				}
+				data.content = md.makeHtml(data.content);
 				res.render("pages/blog.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
@@ -1694,12 +1719,13 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Save serverDocument after admin console form data is received
 	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
+		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
 		serverDocument.save(err => {
 			dashboardUpdate(req.path, svr.id);
-			bot.logMessage(serverDocument, "save", `Changes were saved in the admin console at section ${req.path}.`, null, consolemember.id);
+			bot.logMessage(serverDocument, "save", `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
 			if (err) {
 				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
-				renderError(res, "Failed to save admin console settings!");
+				renderError(res, "An internal error occurred!");
 				return;
 			}
 			bot.IPC.send("cacheUpdate", { guild: serverDocument._id });
@@ -1881,7 +1907,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					chatterbot: serverDocument.config.chatterbot,
 					command_cooldown: serverDocument.config.command_cooldown,
 					command_fetch_properties: serverDocument.config.command_fetch_properties,
-					command_prefix: await bot.getCommandPrefix(svr, serverDocument),
+					command_prefix: serverDocument.config.command_prefix,
 					delete_command_messages: serverDocument.config.delete_command_messages,
 				},
 				botName: svr.members[bot.user.id].nickname || bot.user.username,
@@ -1898,9 +1924,9 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			}
 			serverDocument.config.delete_command_messages = req.body.delete_command_messages === "on";
 			serverDocument.config.chatterbot = req.body.chatterbot === "on";
-			serverDocument.config.command_cooldown = parseInt(req.body.command_cooldown);
-			serverDocument.config.command_fetch_properties.default_count = parseInt(req.body.default_count);
-			serverDocument.config.command_fetch_properties.max_count = parseInt(req.body.max_count);
+			serverDocument.config.command_cooldown = parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown);
+			serverDocument.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? serverDocument.config.command_fetch_properties.default_count : parseInt(req.body.default_count);
+			serverDocument.config.command_fetch_properties.max_count = isNaN(parseInt(req.body.max_count)) ? serverDocument.config.command_fetch_properties.max_count : parseInt(req.body.max_count);
 
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
@@ -2256,7 +2282,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					serverDocument.config.translated_messages.push({
 						_id: member.id,
 						source_language: req.body["new-source_language"],
-						enabled_channel_ids,
+						enabled_channel_ids: enabled_channel_ids,
 					});
 				}
 			} else {
@@ -2276,7 +2302,6 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				}
 				serverDocument.config.translated_messages.spliceNullElements();
 			}
-
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
@@ -2289,7 +2314,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				if (triviaSetDocument) {
 					res.json(triviaSetDocument.items);
 				} else {
-					renderError(res, "Are you sure that trivia set exists?");
+					renderError(res, "Are you sure that trivia set exists?", null, 404);
 				}
 			} else {
 				res.render("pages/admin-trivia-sets.ejs", {
@@ -2325,7 +2350,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						items: JSON.parse(req.body["new-items"]),
 					});
 				} catch (err) {
-					renderError(res, "That doesn't look like valid JSON to me!");
+					renderError(res, "That doesn't look like valid JSON to me!", null, 400);
 					return;
 				}
 			} else {
@@ -2516,7 +2541,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		});
 	});
 
-	// Admin console AwesomePoints
+	// Admin console GAwesomePoints
 	app.get("/dashboard/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-gawesome-points.ejs", {
@@ -2588,9 +2613,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	app.post("/dashboard/management/admins", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-role_id"] && req.body["new-level"] && !serverDocument.config.admins.id(req.body["new-role_id"])) {
+				let level = parseInt(req.body["new-level"]);
+				if (isNaN(level) || level > 3 || level < 1) level = 1;
 				serverDocument.config.admins.push({
 					_id: req.body["new-role_id"],
-					level: parseInt(req.body["new-level"]),
+					level: level,
 				});
 			} else {
 				for (let i = 0; i < serverDocument.config.admins.length; i++) {
@@ -3182,7 +3209,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	app.get("/dashboard/management/logs", async (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			try {
-				let serverLogs = serverDocument.logs.length > 500 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 500) : serverDocument.logs.toObject();
+				let serverLogs = serverDocument.logs.length > 200 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 200) : serverDocument.logs.toObject();
 				serverLogs = serverLogs.filter(serverLog => ((!req.query.q || serverLog.content.toLowerCase().indexOf(req.query.q.toLowerCase()) > -1) && (!req.query.chid || serverLog.channelid === req.query.chid)));
 				serverLogs.map(serverLog => {
 					const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
@@ -3894,11 +3921,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						name: req.body.game,
 					};
 					configJSON.game = req.body.game;
-					if (req.body.game === "awesomebot.xyz" || req.body["game-default"] !== null) {
+					if (req.body.game === "gawesomebot.com" || req.body["game-default"] !== null) {
 						configJSON.game = "default";
 						game = {
-							name: "awesomebot.xyz",
-							url: "http://awesomebot.xyz",
+							name: "gawesomebot.com",
+							url: "https://gawesomebot.com",
 						};
 					}
 					bot.editStatus(req.body.status, game);

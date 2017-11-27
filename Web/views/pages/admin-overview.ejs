@@ -16,7 +16,7 @@
 				<div class="column">
 					<article class="message is-primary">
 						<div class="message-header">
-							Welcome to the admin console for <strong><%= serverData.name %></strong>!
+							<p>Welcome to the admin console for <strong><%= serverData.name %></strong>!</p>
 						</div>
 						<div class="message-body">
 							The GAwesomeBot <strong>admin console</strong> gives you full access to all of the bot's <strong>settings</strong> for this server. Everything from enabling/disabling commands to creating a public server listing to muting a user to building your very own extension. The menu on the left shows the various sections of the admin console, each dedicated to a particular command or feature. This page shows an <strong>overview of this server's activity</strong> in the past week.
@@ -24,7 +24,7 @@
 					</article>
 					<section class="hero is-light is-bold" style="border-radius: 3px;">
 						<div class="hero-body">
-							<div class="container has-text-centered">
+							<div class="has-text-centered">
 								<h1 class="title">
 									<strong><%= memberCount %></strong>
 								</h1>
@@ -36,7 +36,7 @@
 								</h2>
 							</div>
 							<br>
-							<div class="container has-text-centered">
+							<div class="has-text-centered">
 								<h1 class="title">
 									@<strong><%= serverData.owner.username %></strong>
 								</h1>
@@ -46,7 +46,7 @@
 								</h2>
 							</div>
 							<br>
-							<div class="container has-text-centered">
+							<div class="has-text-centered">
 								<h1 class="title">
 									<strong><%= messagesToday %></strong>
 								</h1>
@@ -59,7 +59,7 @@
 							</div>
 							<% if(topCommand) { %>
 								<br>
-								<div class="container has-text-centered">
+								<div class="has-text-centered">
 									<h1 class="title">
 										<strong><%= topCommand %></strong>
 									</h1>
@@ -73,7 +73,7 @@
 							<% } %>
 							<% if(topMember) { %>
 								<br>
-								<div class="container has-text-centered">
+								<div class="has-text-centered">
 									<h1 class="title">
 										@<strong><%= topMember.username %></strong>
 									</h1>
@@ -85,7 +85,7 @@
 							<% } %>
 							<% if(topGame) { %>
 								<br>
-								<div class="container has-text-centered">
+								<div class="has-text-centered">
 									<h1 class="title">
 										<strong><%= topGame %></strong>
 									</h1>
@@ -99,7 +99,7 @@
 							<% } %>
 							<% if(richestMember) { %>
 								<br>
-								<div class="container has-text-centered">
+								<div class="has-text-centered">
 									<h1 class="title">
 										@<strong><%= richestMember.username %></strong>
 									</h1>

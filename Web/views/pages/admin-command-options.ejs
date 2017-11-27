@@ -20,24 +20,23 @@
 					<h1 class="title">
 						Global Command Options
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								These settings apply to <strong>all commands</strong>. They define how commands should display information, such as the number of results to show or whether to delete command messages after GAwesomeBot has responded.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
-							<h4 class="subtitle is-4">
-								General
-							</h4>
+					<article class="message is-primary">
+						<div class="message-body">
+							These settings apply to <strong>all commands</strong>. They define how commands should display information, such as the number of results to show or whether to delete command messages after GAwesomeBot has responded.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<h4 class="subtitle is-4">
+							General
+						</h4>
+						<div class="field">
 							<label class="label">Command prefix</label>
 							<p class="control">
 								<input name="command_prefix" class="input" type="text" value="<%= configData.command_prefix %>" minlength="1" maxlength="10">
 								<span class="help">Plaintext prefix used to activate commands. Type <code>@mention</code> in the box above to use a Discord mention of GAwesomeBot.</span>
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Command messages</label>
 							<p class="control">
 								<label class="checkbox">
@@ -46,6 +45,8 @@
 								</label>
 								<span class="help">Command messages are those that trigger GAwesomeBot commands; example: <code><%= configData.command_prefix %>cat</code></span>
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Cooldown period</label>
 							<p class="control">
 								<span class="select">
@@ -64,6 +65,8 @@
 								</span>
 								<span class="help">During this time after the use of any command, users won't be able to use other commands in the channel. Does not apply to admins. Can be overridden per-channel by the <code><%= configData.command_prefix %>cool</code> command.</span>
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Chatterbot</label>
 							<p class="control">
 								<label class="checkbox">
@@ -72,24 +75,28 @@
 								</label>
 								<span class="help">The <a href="http://www.program-o.com/">Program-O</a> chatbot will be used if the bot is mentioned and a command is not being used, e.g. <code><strong>@<%= botName %></strong> Hello! How are you?</code>.</span>
 							</p>
-							<br>
-							<h4 class="subtitle is-4">
-								Content Fetching
-							</h4>
+						</div>
+						<br>
+						<h4 class="subtitle is-4">
+							Content Fetching
+						</h4>
+						<div class="field">
 							<label class="label">Default number of results to show</label>
 							<p class="control">
 								<input name="default_count" class="input" type="number" value="<%= configData.command_fetch_properties.default_count %>" min="1" max="10">
 							</p>
+						</div>
+						<div clsas="field">
 							<label class="label">Maximum number of items to fetch</label>
 							<p class="control">
 								<input name="max_count" class="input" type="number" value="<%= configData.command_fetch_properties.max_count %>" min="5" max="25">
 							</p>
+						</div>
 							<br>
 							<% var formButtonsUnsaved = false; %>
 							<% include ../partials/form-buttons %>
 							<% include ../partials/form-buttons-bar %>
 						</form>
-					</div>
 				</div>
 			</div>
 		</div>

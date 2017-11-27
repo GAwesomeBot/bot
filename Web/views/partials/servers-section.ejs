@@ -94,20 +94,24 @@ function switchLayout(type) {
 			</span>
 		</div>
 		<div class="level-item">
-			<p class="control has-addons">
+			<div class="field has-addons">
+				<div class="control">
 				<a id="grid-layout-button" class="button" onclick="switchLayout('grid');">
 					<span class="icon is-small">
 						<i class="fa fa-th"></i>
 					</span>
 					<span>Grid</span>
 				</a>
+				</div>
+				<div class="control">
 				<a id="list-layout-button" class="button" onclick="switchLayout('list');">
 					<span class="icon is-small">
 						<i class="fa fa-th-list"></i>
 					</span>
 					<span>List</span>
 				</a>
-			</p>
+				</div>
+			</div>
 		</div>
 		<div class="level-item">
 			<span class="select">
@@ -134,24 +138,30 @@ function switchLayout(type) {
 						<div class="card" style="text-align: left;">
 							<div class="card-image">
 								<figure class="image is-square">
-									<img src="<%= data.serverData[i].icon %>" alt="<%= data.serverData[i].id %>">
+									<img src="<%= data.serverData[i].icon %>" alt=":(">
 								</figure>
 							</div>
 							<div class="card-content" style="max-height: 255px;overflow-y: scroll;">
-								<h3 class="title is-3"><%= data.serverData[i].name %></h3>
+								<h3 class="title is-5"><%= data.serverData[i].name %></h3>
 								<h5 class="subtitle is-5"><%= data.serverData[i].category %></h5>
 								<div class="level is-mobile">
 									<div class="level-item has-text-centered">
-										<p class="heading">Members</p>
-										<p class="title"><%= data.serverData[i].members %></p>
+										<div>
+											<p class="heading">Members</p>
+											<p class="title"><%= data.serverData[i].members %></p>
+										</div>
 									</div>
 									<div class="level-item has-text-centered">
-										<p class="heading">Message<%= data.serverData[i].messages==1 ? "" : "s" %></p>
-										<p class="title"><%= data.serverData[i].messages %></p>
+										<div>
+											<p class="heading">Message<%= data.serverData[i].messages==1 ? "" : "s" %></p>
+											<p class="title"><%= data.serverData[i].messages %></p>
+										</div>
 									</div>
 									<div class="level-item has-text-centered">
-										<p class="heading">Created</p>
-										<p class="title" title="<%= data.serverData[i].rawCreated %>"><%= data.serverData[i].relativeCreated %>d</p>
+										<div>
+											<p class="heading">Created</p>
+											<p class="title" title="<%= data.serverData[i].rawCreated %>"><%= data.serverData[i].relativeCreated %>d</p>
+										</div>
 									</div>
 								</div>
 
@@ -175,7 +185,7 @@ function switchLayout(type) {
 
 								<% if(data.serverData[i].invite_link) { %>
 									<div class="content">
-										Use <code><%= data.serverData[i].command_prefix %>help</code> to learn how to use AwesomeBot on <%= data.serverData[i].name %>
+										Use <code><%= data.serverData[i].command_prefix %>help</code> to learn how to use GAwesomeBot on <%= data.serverData[i].name %>
 									</div>
 								<% } %>
 							</div>
@@ -199,7 +209,7 @@ function switchLayout(type) {
 <div id="list-layout" class="container is-hidden">
 	<% if(data.serverData.length>0) { %>
 		<div style="overflow-x: scroll;">
-			<table class="table">
+			<table class="table is-fullwidth is-hoverable is-striped">
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -245,7 +255,7 @@ function switchLayout(type) {
 													<img src="<%= data.serverData[i].icon %>" alt="<%= data.serverData[i].id %>">
 												</figure>
 											</div>
-											<div class="media-content" style="overflow-x: scroll;">
+											<div class="media-content">
 												<div class="content">
 													<h4 class="title is-4">
 														<%= data.serverData[i].name %> <small class="subtitle is-5"><%= data.serverData[i].category %></small>
@@ -257,7 +267,7 @@ function switchLayout(type) {
 														<%- data.serverData[i].description %>
 													<% } %>
 													<% if(data.serverData[i].invite_link) { %>
-														Use <code><%= data.serverData[i].command_prefix %>help</code> to learn how to use AwesomeBot on <%= data.serverData[i].name %>
+														Use <code><%= data.serverData[i].command_prefix %>help</code> to learn how to use GAwesomeBot on <%= data.serverData[i].name %>
 													<% } %>
 												</div>
 												<% if(data.serverData[i].invite_link) { %>
@@ -284,47 +294,47 @@ function switchLayout(type) {
 <% } %>
 <% if(data.numPages>1) { %>
 	<br>
-	<nav class="pagination">
-		<ul>
+	<nav class="pagination is-centered">
+		<ul class="pagination-list">
 			<% if(data.currentPage>2) { %>
 				<li>
-					<a class="button" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
+					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
 						1
 					</a>
 				</li>
 			<% } %>
 			<% if(data.currentPage>3) { %>
 				<li>
-					<span>...</span>
+					<span class="pagination-ellipsis">&hellip;</span>
 				</li>
 			<% } %>
 			<% if(data.currentPage>1) { %>
 				<li>
-					<a class="button" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage-1 %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
+					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage-1 %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
 						<%= data.currentPage-1 %>
 					</a>
 				</li>
 			<% } %>
 			<li>
-				<a class="button is-primary" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
+				<a class="button is-primary pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
 					<%= data.currentPage %>
 				</a>
 			</li>
 			<% if(data.currentPage<data.numPages) { %>
 				<li>
-					<a class="button" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage+1 %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
+					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage+1 %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
 						<%= data.currentPage+1 %>
 					</a>
 				</li>
 			<% } %>
 			<% if(data.currentPage<data.numPages-2) { %>
 				<li>
-					<span>...</span>
+					<span class="pagination-ellipsis">&hellip;</span>
 				</li>
 			<% } %>
 			<% if(data.currentPage<data.numPages-1) { %>
 				<li>
-					<a class="button" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.numPages %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
+					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.numPages %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
 						<%= data.numPages %>
 					</a>
 				</li>

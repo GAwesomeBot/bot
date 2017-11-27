@@ -51,98 +51,97 @@
 					<h1 class="title">
 						Muted Members
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									Muted users <strong>cannot send text messages</strong> in a channel. Users may be automatically muted for filter violations and via the <code>mute</code> command. Please note that it might take a few seconds to minutes for this page to update after saving.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								Muted users <strong>cannot send text messages</strong> in a channel. Users may be automatically muted for filter violations and via the <code>mute</code> command. Please note that channel permissions can be overridden by anyone with the Manage Roles permission.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
-							<div style="overflow-x: scroll;">
-								<% if(muted.length>0) { %>
-									<table class="table">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>ID</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<muted.length; i++) { %>
-												<tr>
-													<td>
-														<img class="image is-24x24" src="<%= muted[i].avatar %>" alt="<%= muted[i].id %>">
-													</td>
-													<td>
-														<%= muted[i].name %>
-													</td>
-													<td>
-														<%= muted[i].id %>
-													</td>
-													<td>
-														<a class="button is-small is-primary modal-button" data-target="#muted-<%= i %>-channels-modal">
-															<span class="icon is-small">
-																<i class="fa fa-hashtag"></i>
-															</span>
-															<span>Channels</span>
-														</a>
-                                                        <input type="checkbox" id="muted-<%= muted[i].id %>-removed" name="muted-<%= muted[i].id %>-removed" style="display: none;">
-                                                        <button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState(); location.reload();">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-												<div id="muted-<%= i %>-channels-modal" class="modal">
-													<div class="modal-background"></div>
-													<div class="modal-container">
-														<div class="modal-content">
-															<div class="box">
-																<h4 class="subtitle is-4">
-																	Muted channels for <strong>@<%= muted[i].name %></strong>
-																</h4>
-																<% for(var j=0; j<channelData.length; j++) { %>
-																	<label class="checkbox">
-																	<input name="muted-<%= muted[i].id %>-<%= channelData[j].id %>" type="checkbox" <%= muted[i].channels.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-																		#<%= channelData[j].name %>
-																	</label>
-																	<br>
-																<% } %>
-															</div>
-														</div>
-													</div>
-													<a class="modal-close"></a>
-												</div>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message">
-										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field" style="overflow-x: scroll;">
+							<% if(muted.length>0) { %>
+							<table class="table is-fullwidth">
+								<thead>
+								<tr>
+									<th></th>
+									<th>Username</th>
+									<th>ID</th>
+									<th></th>
+								</tr>
+								</thead>
+								<tbody>
+								<% for(var i=0; i<muted.length; i++) { %>
+								<tr>
+									<td>
+										<img class="image is-24x24" src="<%= muted[i].avatar %>" alt="<%= muted[i].id %>">
+									</td>
+									<td>
+										<%= muted[i].name %>
+									</td>
+									<td>
+										<%= muted[i].id %>
+									</td>
+									<td>
+										<a class="button is-small is-primary modal-button" data-target="#muted-<%= i %>-channels-modal">
+											<span class="icon is-small">
+												<i class="fa fa-hashtag"></i>
 											</span>
-											<span>Nothing to see here</span>
+											<span>Channels</span>
+										</a>
+										<input type="checkbox" id="muted-<%= muted[i].id %>-removed" name="muted-<%= muted[i].id %>-removed" style="display: none;">
+										<button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState(); location.reload();">
+											<span>Remove</span>
+											<span class="icon is-small">
+												<i class="fa fa-times"></i>
+											</span>
+										</button>
+									</td>
+								</tr>
+								<div id="muted-<%= i %>-channels-modal" class="modal">
+									<div class="modal-background"></div>
+									<div class="modal-container">
+										<div class="modal-content">
+											<div class="box">
+												<h4 class="subtitle is-4">
+													Muted channels for <strong>@<%= muted[i].name %></strong>
+												</h4>
+												<% for(var j=0; j<channelData.length; j++) { %>
+												<label class="checkbox">
+													<input name="muted-<%= muted[i].id %>-<%= channelData[j].id %>" type="checkbox" <%= muted[i].channels.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
+													#<%= channelData[j].name %>
+												</label>
+												<br>
+												<% } %>
+											</div>
 										</div>
-										<div class="message-body">
-											There are no muted members in any channel on this server. Type the name of a user below to muted someone.
-										</div>
-									</article>
-									<br>
+									</div>
+									<a class="modal-close"></a>
+								</div>
 								<% } %>
-							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control">
+								</tbody>
+							</table>
+							<% } else { %>
+							<article class="message">
+								<div class="message-header">
+									<p>
+										<span class="icon">
+											<i class="fa fa-meh-o"></i>
+										</span>
+										Nothing to see here
+									</p>
+								</div>
+								<div class="message-body">
+									There are no muted members in any channel on this server. Type the name of a user below to muted someone.
+								</div>
+							</article>
+							<br>
+							<% } %>
+						</div>
+						<div class="field is-horizontal">
+							<div class="field-body">
+								<div class="field is-grouped">
+									<div class="control">
 										<span class="select">
 											<select id="new-mute-channel_id">
 												<% for(var i=0; i<channelData.length; i++) { %>
@@ -150,26 +149,26 @@
 												<% } %>
 											</select>
 										</span>
-									</p>
-									<p class="control is-expanded">
+									</div>
+									<div class="control is-expanded">
 										<input id="new-mute-member" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
-									</p>
-									<p class="control">
+									</div>
+									<div class="control">
 										<a class="button is-primary" onclick="newMute(); return false;">
 											<span class="icon">
 										        <i class="fa fa-volume-off"></i>
 										    </span>
 										    <span>Mute</span>
 										</a>
-									</p>
+									</div>
 								</div>
 							</div>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

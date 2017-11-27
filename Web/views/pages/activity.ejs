@@ -34,26 +34,30 @@
 		</div>
 		<div class="hero-body">
 			<div class="container has-text-centered">
-				<h1 class="title is-1">
+				<h1 class="subtitle is-1">
 					<strong><%= totalMessageCount %></strong> message<%= totalMessageCount==1 ? "" : "s" %> today, <strong><%= numActiveServers %></strong> active server<%= numActiveServers==1 ? "" : "s" %>
 				</h1>
 				<div class="columns">
 					<div class="column is-8 is-offset-2">
-						<p class="control has-addons has-addons-centered">
-							<input id="search-input" class="input is-expanded is-large header-search-box" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
-							<a id="search-button" class="button is-primary is-large header-search-box">
-								<span class="icon">
-									<i class="fa fa-search"></i>
-								</span>
-								<span>Search</span>
-							</a>
-						</p>
+						<div class="field has-addons has-addons-centered">
+							<div class="control is-expanded">
+								<input id="search-input" class="input header-search-box" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
+							</div>
+							<div class="control">
+								<a id="search-button" class="button is-primary is-large header-search-box">
+									<span class="icon">
+										<i class="fa fa-search"></i>
+									</span>
+									<span>Search</span>
+								</a>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 		<div class="hero-foot">
-			<nav class="tabs is-boxed is-fullwidth">
+			<nav class="tabs is-boxed is-centered">
 				<div class="container">
 					<ul>
 						<li class="<%= mode=='servers' ? 'is-active' : '' %>">
@@ -134,7 +138,7 @@
 					</div>
 				<% } else { %>
 					<p class="hero-buttons">
-						<h4 class="title is-4">
+						<h4 class="subtitle is-4">
 							PM GAwesomeBot <strong>profile setup</strong> to make your own profile.
 						</h4>
 					</p>

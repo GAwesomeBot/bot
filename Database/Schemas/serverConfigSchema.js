@@ -518,7 +518,7 @@ module.exports = {
 				type: String,
 				required: true,
 				lowercase: true,
-				maxlength: 2000,
+				maxlength: 200,
 			},
 			content: {
 				type: String,

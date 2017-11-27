@@ -69,21 +69,17 @@
 					<h1 class="title">
 						RSS Feeds
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								These <strong>RSS feeds can be accessed via the <code>rss</code> command</strong> by their unique name. For feeds that have streaming enabled, new articles will be posted in the channel you choose every 15 minutes or so. In general, RSS feeds can be used as a means to pull content from a variety of <strong>online services</strong> for which there is no built-in GAwesomeBot command.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" onsubmit="submitForm(); return false;">
-							<% var commandData = configData.commands.rss;commandData.name = "rss";commandData.description = commandDescriptions.rss;commandData.category = commandCategories.rss; %>
-							<% include ../partials/admin-command-item %>
-							<div style="overflow-x: scroll;">
+					<article class="message is-primary">
+						<div class="message-body">
+							These <strong>RSS feeds can be accessed via the <code>rss</code> command</strong> by their unique name. For feeds that have streaming enabled, new articles will be posted in the channel you choose every 15 minutes or so. In general, RSS feeds can be used as a means to pull content from a variety of <strong>online services</strong> for which there is no built-in GAwesomeBot command.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<% var commandData = configData.commands.rss;commandData.name = "rss";commandData.description = commandDescriptions.rss;commandData.category = commandCategories.rss; %>
+						<% include ../partials/admin-command-item %>
+							<div class="field" style="overflow-x: scroll;">
 								<% if(configData.rss_feeds.length>0) { %>
-									<table class="table">
+									<table class="table is-fullwidth">
 										<thead>
 											<tr>
 												<th>Name</th>
@@ -149,12 +145,14 @@
 										</tbody>
 									</table>
 								<% } else { %>
-									<article class="message">
+									<article class="message" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											<p>
+												<span class="icon">
+													<i class="fa fa-meh-o fa-lg"></i>
+												</span>
+												Nothing to see here
+											</p>
 										</div>
 										<div class="message-body">
 											You haven't added any RSS feeds yet. Fill out the form below to get started.
@@ -163,46 +161,52 @@
 									<br>
 								<% } %>
 							</div>
-							<div class="control is-grouped">
-								<p class="control is-expanded">
+							<div class="field is-grouped">
+								<div class="control is-expanded">
 									<input id="new-rss-url" class="input" type="url" placeholder="RSS URL" onkeypress="return event.keyCode != 13;">
-								</p>
-								<p class="control">
-									<p class="control has-addons">
+								</div>
+								<div class="field has-addons">
+									<div class="control">
 										<a class="button" href="javascript:newRssUrl('github');">
 											<span class="icon is-small">
 												<i class="fa fa-github"></i>
 											</span>
 											<span>GitHub</span>
 										</a>
+									</div>
+									<div class="control">
 										<a class="button" href="javascript:newRssUrl('reddit');">
 											<span class="icon is-small">
 												<i class="fa fa-reddit-alien"></i>
 											</span>
 											<span>Reddit</span>
 										</a>
+									</div>
+									<div class="control">
 										<a class="button" href="javascript:newRssUrl('twitter');">
 											<span class="icon is-small">
 												<i class="fa fa-twitter"></i>
 											</span>
 											<span>Twitter</span>
 										</a>
-									</p>
-								</p>
+									</div>
+								</div>
 							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
-										<input id="new-rss-name" class="input" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode != 13;">
-									</p>
-									<p class="control">
-										<a class="button is-primary" onclick="newRss();">
-											<span class="icon">
-										        <i class="fa fa-plus"></i>
-										    </span>
-										    <span>Add</span>
-										</a>
-									</p>
+							<div class="field is-horizontal">
+								<div class="field-body">
+									<div class="field is-grouped">
+										<div class="control is-expanded">
+											<input id="new-rss-name" class="input" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode != 13;">
+										</div>
+										<div class="control">
+											<a class="button is-primary" onclick="newRss();">
+												<span class="icon">
+										        	<i class="fa fa-plus"></i>
+										    	</span>
+										    	<span>Add</span>
+											</a>
+										</div>
+									</div>
 								</div>
 							</div>
 							<br>
@@ -210,7 +214,6 @@
                             <% include ../partials/form-buttons %>
                             <% include ../partials/form-buttons-bar %>
 						</form>
-					</div>
 				</div>
 			</div>
 		</div>

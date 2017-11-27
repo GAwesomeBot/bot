@@ -7,7 +7,7 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 		let updated = false;
 		// Send status message if stream started
 		if (data && !streamerDocument.live_state) {
-			winston.info(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
+			winston.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
 			streamerDocument.live_state = true;
 			updated = true;
 
@@ -33,10 +33,10 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 		// Save serverDocument if necessary
 		if (updated) {
 			await serverDocument.save().catch(err => {
-				winston.error(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
+				winston.warn(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
 			});
 		}
 	}).catch(err => {
-		winston.warn(`Error occured while checking if user is streaming.. -_-`, { svrid: server.id, streamer: streamerDocument._id }, err);
+		winston.warn(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err);
 	});
 };

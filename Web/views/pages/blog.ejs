@@ -11,23 +11,23 @@
 		</div>
 		<div class="hero-body">
 			<div class="container has-text-centered">
+				<h3 class="subtitle is-3">
+					"<%= headerTitle %>":
+                </h3>
 				<h1 class="title is-1">
 					<span class="icon is-large">
-                        <i class="fa fa-paw"></i>
+                        <i class="fa fa-rss"></i>
                     </span>
-					Dolphin Musings
+                    GAwesomeBot blog.
 				</h1>
-				<h3 class="subtitle is-3">
-					A <strong>not official</strong> GAwesomeBot blog.
-                    <% if(isMaintainer) { %>
-                        <a class="button is-white is-outlined" href="/blog/compose">
+                <% if(isMaintainer) { %>
+                <a class="button is-white is-outlined" href="/blog/compose">
                             <span class="icon is-small">
                                 <i class="fa fa-plus"></i>
                             </span>
-                            <span>New</span>
-                        </a>
-                    <% } %>
-				</h3>
+                    <span>New</span>
+                </a>
+                <% } %>
 			</div>
 		</div>
 	</section>
