@@ -598,7 +598,7 @@ class Client extends DJSClient {
 					await member.send({
 						embed: {
 							color: 0xFF0000,
-							description: `${userMessage}, and the chat moderator have again been notified about this.`,
+							description: `${userMessage}, and the chat moderators have again been notified about this.`,
 						},
 					}).catch(err => {
 						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
@@ -1320,6 +1320,8 @@ bot.on("message", async msg => {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
 			if (msg.guild) {
+				// TODO: Remove this once Autofetch gets added to Discord
+				// Gilbert stop touching the comments!
 				await msg.guild.members.fetch();
 			}
 			await bot.events.onEvent("message", msg, proctime);
@@ -1328,6 +1330,8 @@ bot.on("message", async msg => {
 					winston.warn(`Failed to save server document for MESSAGE..`, { guild: msg.guild.id }, err);
 				});
 			}
+			// This stays till caching is fully implemented
+			console.log(`Whole Event Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}
