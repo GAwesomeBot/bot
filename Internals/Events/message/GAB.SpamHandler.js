@@ -88,7 +88,6 @@ class SpamHandler extends BaseEvent {
 							});
 							const userDocument = findDocument && findDocument.doc;
 							if (userDocument) {
-								userDocument.username = msg.author.tag;
 								userDocument.points -= 25;
 								await userDocument.save().catch(err => {
 									winston.debug(`Failed to save user document...`, err);
@@ -134,7 +133,6 @@ class SpamHandler extends BaseEvent {
 						});
 						const userDocument = findDocument && findDocument.doc;
 						if (userDocument) {
-							userDocument.username = msg.author.tag;
 							// Handle this as a violation
 							let violatorRoleID = null;
 							// eslint-disable-next-line max-len

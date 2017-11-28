@@ -31,7 +31,6 @@ class VoteHandler extends BaseEvent {
 				});
 				const targetUserDocument = findDocument && findDocument.doc;
 				if (targetUserDocument) {
-					targetUserDocument.username = member.user.tag;
 					let voteAction = null;
 
 					// Check for +1 triggers
@@ -67,7 +66,6 @@ class VoteHandler extends BaseEvent {
 							});
 							const authorDocument = findDocument2 && findDocument2.doc;
 							if (authorDocument) {
-								authorDocument.username = msg.author.tag;
 								if (authorDocument.points > 10) {
 									authorDocument.points -= 10;
 									await authorDocument.save().catch(err => {
@@ -109,7 +107,6 @@ class VoteHandler extends BaseEvent {
 					});
 					const targetUserDocument = findDocument && findDocument.doc;
 					if (targetUserDocument) {
-						targetUserDocument.username = message.author.tag;
 						winston.info(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 
 						// Increment points

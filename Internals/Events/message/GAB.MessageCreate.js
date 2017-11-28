@@ -74,7 +74,6 @@ class MessageCreate extends BaseEvent {
 					winston.warn("Failed to find or create user data for message", { usrid: msg.author.id }, err);
 				});
 				const userDocument = findDocument && findDocument.doc;
-				userDocument.username = msg.author.tag;
 				try {
 					await commandFunction({
 						bot: this.bot,
@@ -292,7 +291,6 @@ class MessageCreate extends BaseEvent {
 						winston.verbose("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 					});
 					const userDocument = findDocument.doc;
-					userDocument.username = msg.author.tag;
 					if (userDocument) {
 						// Handle this as a violation
 						let violatorRoleID = null;
@@ -329,7 +327,6 @@ class MessageCreate extends BaseEvent {
 							winston.debug(`Failed to find or create user data for message mention filter violation`, { usrid: msg.author.id }, err);
 						});
 						const userDocument = findDocument && findDocument.doc;
-						userDocument.username = msg.author.tag;
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;
@@ -395,7 +392,6 @@ class MessageCreate extends BaseEvent {
 							});
 							const userDocument = findDocument && findDocument.doc;
 							if (userDocument) {
-								userDocument.username = msg.author.tag;
 								// NSFW filter for command suffix
 								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(commandObject.command).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, commandObject.suffix, true, false)) {
 									// Delete offending message if necessary
