@@ -9,7 +9,7 @@ class UsernameHandler extends BaseEvent {
 	}
 
 	async handle (msg) {
-		if (this.userDocument) {
+		if (this.userDocument && this.userDocument.username !== msg.author.tag) {
 			this.userDocument.username = msg.author.tag;
 			await this.userDocument.save();
 		}
