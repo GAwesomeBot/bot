@@ -59,7 +59,6 @@ class Ready extends BaseEvent {
 		let promiseArray = [];
 		this.bot.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
 		await Promise.all(promiseArray);
-		console.log(newServerDocuments);
 		return newServerDocuments;
 	}
 
