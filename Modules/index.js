@@ -8,8 +8,7 @@ module.exports = {
 	PostShardedData: require("./PostShardedData.js"),
 	PostTotalData: require("./PostTotalData.js"),
 	Sharder: require("./Sharder.js"),
-	SharderIPC: require("./ShardIPC.js").SharderIPC,
-	ShardIPC: require("./ShardIPC.js").ShardIPC,
+	SharderIPC: require("./IPC.js"),
 	Updater: require("./Updater.js"),
 	Utils: require("./Utils/"),
 };

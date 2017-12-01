@@ -70,7 +70,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 		sharder.cluster.on("online", worker => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
-		await sharder.IPC.listen();
+
 
 		// Sharder events
 		sharder.ready = 0;
@@ -91,13 +91,13 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 
 		let shardFinished = () => {
-			sharder.finished++;
+			if (sharder.finished > -1) sharder.finished++;
 			if (sharder.finished === sharder.count) {
 				// Print startup ascii message
 				winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 				// Use console.log because winston never lets us have anything fun, MOM
 				console.log(ascii);
-				sharder.IPC.removeListener("finished", shardFinished);
+				sharder.finished = -1;
 				sharder.IPC.send("postAllData", {}, 0);
 				if (process.argv.includes("--build")) {
 					winston.warn("Shutting down travis build with code 0");
@@ -109,29 +109,29 @@ database.initialize(configJS.databaseURL).catch(err => {
 
 		sharder.IPC.on("finished", shardFinished);
 
-		sharder.IPC.on("getGuild", async (msg, shard) => {
+		sharder.IPC.on("getGuild", async (msg, callback) => {
 			try {
 				let payload = msg;
 				if (payload.guild !== "*") {
 					let shardid = sharder.guilds.get(payload.guild);
 					if (!shardid && shardid !== 0) {
-						sharder.IPC.send("getGuildRes", { err: 404, guild: payload.guild, settings: payload.settings }, shard.id);
+						callback({ err: 404, guild: payload.guild, settings: payload.settings });
 						return;
 					}
 					let result = await sharder.shards.get(shardid).getGuild(payload.guild, payload.settings);
-					sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result }, shard.id);
+					return callback({ err: null, guild: payload.guild, settings: payload.settings, result: result });
 				} else {
 					let results = [];
 					sharder.shards.forEach(async shardd => {
 						results.push(shardd.getGuilds(payload.settings));
 					});
 					let result = await Promise.all(results);
-					sharder.IPC.send("getGuildRes", { err: null, guild: payload.guild, settings: payload.settings, result: result.reduce((prev, value) => Object.assign(prev, value), {}) }, shard.id);
+					return callback({ err: null, guild: payload.guild, settings: payload.settings, result: result.reduce((prev, value) => Object.assign(prev, value), {}) });
 				}
 			} catch (err) {
 				let payload = msg;
 				winston.warn("An error occured while fetching guild data from Discord l.l\n", err);
-				sharder.IPC.send("getGuildRes", { err: err, guild: payload.guild, settings: payload.settings }, shard.id);
+				return callback({ err: err, guild: payload.guild, settings: payload.settings });
 			}
 		});
 
@@ -177,11 +177,22 @@ database.initialize(configJS.databaseURL).catch(err => {
 		sharder.IPC.on("createPublicInviteLink", msg => sharder.IPC.send("createPublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
 		sharder.IPC.on("deletePublicInviteLink", msg => sharder.IPC.send("deletePublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
 
+		sharder.IPC.on("eval", async (msg, callback) => {
+			const promises = [];
+			sharder.shards.forEach(shard => promises.push(shard.eval(msg)));
+			callback(await Promise.all(promises));
+		});
+
 		sharder.spawn();
 	}
 });
 
 process.on("uncaughtException", err => {
-	winston.error("An unknown, and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
+	winston.error("An unknown and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
+	process.exit(1);
+});
+
+process.on("unhandledRejection", err => {
+	winston.error("An unknown and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
 	process.exit(1);
 });

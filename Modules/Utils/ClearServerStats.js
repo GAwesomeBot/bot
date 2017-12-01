@@ -1,4 +1,4 @@
-const computeRankScore = require("./RankScoreCalculator.js");
+/* eslint-disable max-len */
 
 /**
  * Clear activity stats for a server
@@ -6,14 +6,13 @@ const computeRankScore = require("./RankScoreCalculator.js");
  * @param {Guild} server The server which has its stats cleared
  * @param serverDocument The Server Document
  */
-/* eslint-disable max-len */
 module.exports = async (bot, server, serverDocument) => {
 	// Rank members by activity score for the week
 	const topMembers = [];
 	serverDocument.members.forEach(async memberDocument => {
 		const member = server.members.get(memberDocument._id);
 		if (member && member.id !== bot.user.id && !member.user.bot) {
-			const activityScore = computeRankScore(memberDocument.messages, memberDocument.voice);
+			const activityScore = memberDocument.messages + memberDocument.voice;
 			topMembers.push([member, activityScore]);
 			memberDocument.rank_score += activityScore / 10;
 			memberDocument.rank = await bot.checkRank(server, serverDocument, member, memberDocument, true);

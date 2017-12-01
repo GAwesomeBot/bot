@@ -1,7 +1,7 @@
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
-const { Console, Utils, ShardIPC, GetGuild: GG, PostTotalData } = require("./Modules/");
+const { Console, Utils, GetGuild: GG, PostTotalData } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
 const Timeouts = require("./Modules/Timeouts/");
 const { EventHandler } = require("./Internals/");
@@ -11,6 +11,7 @@ const auth = require("./Configurations/auth.js");
 const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 const process = require("process");
+const ProcessAsPromised = require("process-as-promised");
 
 const privateCommandModules = {};
 const commandModules = {};
@@ -910,38 +911,27 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 
 process.on("unhandledRejection", reason => {
 	winston.error(`An unexpected error occurred, and we failed to handle it x.x\n`, reason);
-	/*
-	 * Just saying, this won't close the process in the future
-	 * but if the bot.isReady is true
-	 * It'll go in the specified logging channels from configJS.discord
-	 */
 });
 
 process.on("uncaughtException", err => {
 	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
-	/*
-	 * Read above
-	 */
 	process.exit(1);
 });
 
 // Bot IPC
-winston.silly("Creating ShardIPC instance.");
-bot.IPC = new ShardIPC(bot, winston, process);
+bot.IPC = new ProcessAsPromised();
 
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
 	bot.IPC.send("ready", { id: bot.shard.id });
-	bot.IPC.listen();
 	process.setMaxListeners(0);
-	winston.debug("Listening for incoming IPC messages.");
 }).catch(err => {
 	winston.error("Failed to connect to Discord :/\n", { err: err });
 	process.exit(1);
 });
 
-bot.IPC.on("getGuild", msg => {
+bot.IPC.on("getGuild", async (msg, callback) => {
 	let payload = msg;
 	if (payload.guild === "*") {
 		let result = {};
@@ -950,11 +940,11 @@ bot.IPC.on("getGuild", msg => {
 			result[key] = GG.generate(val, payload.settings);
 		});
 
-		bot.IPC.send("getGuildRes", { guild: "*", settings: payload.settings, result: result });
+		return callback({ guild: "*", settings: payload.settings, result: result });
 	} else {
 		let guild = bot.guilds.get(payload.guild);
 		let val = GG.generate(guild, payload.settings);
-		bot.IPC.send("getGuildRes", { guild: payload.guild, settings: payload.settings, result: val });
+		return callback({ guild: payload.guild, settings: payload.settings, result: val });
 	}
 });
 
@@ -986,7 +976,7 @@ bot.IPC.on("createMOTD", async msg => {
 });
 
 bot.IPC.on("postAllData", async () => {
-	await PostTotalData(bot);
+	PostTotalData(bot);
 });
 
 bot.IPC.on("createPublicInviteLink", async msg => {
@@ -1008,6 +998,25 @@ bot.IPC.on("deletePublicInviteLink", async msg => {
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
 	serverDocument.config.public_data.server_listing.invite_link = null;
 	serverDocument.save();
+});
+
+bot.IPC.on("eval", async (msg, callback) => {
+	let result = bot._eval(msg);
+	if (result instanceof Map) result = Array.from(result.entries());
+	callback(result);
+});
+
+bot.IPC.on("cacheUpdate", async msg => {
+	let guildID = msg.guild;
+	let guild = bot.guilds.get(guildID);
+	if (guild) {
+		try {
+			let serverDocument = await Servers.findOne({ _id: guild.id }).exec();
+			bot.cache.set(guild.id, serverDocument);
+		} catch (err) {
+			winston.warn(`Failed to update guild cache! x_x`, { guild: guildID }, err);
+		}
+	}
 });
 
 /**
@@ -1321,17 +1330,14 @@ bot.on("message", async msg => {
 		try {
 			if (msg.guild) {
 				// TODO: Remove this once Autofetch gets added to Discord
-				// Gilbert stop touching the comments!
 				await msg.guild.members.fetch();
 			}
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
 				await bot.cache.get(msg.guild.id).save().catch(err => {
-					winston.warn(`Failed to save server document for MESSAGE..`, { guild: msg.guild.id }, err);
+					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id }, err);
 				});
 			}
-			// This stays till caching is fully implemented
-			console.log(`Whole Event Took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}

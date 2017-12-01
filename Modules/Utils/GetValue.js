@@ -1,4 +1,6 @@
 const Discord = require("discord.js");
+const ProcessAsPromised = require("process-as-promised");
+const IPC = new ProcessAsPromised();
 
 module.exports = (bot, val, merge, func) => {
 	try {
@@ -7,19 +9,9 @@ module.exports = (bot, val, merge, func) => {
 			code = `${func}(this.${val})`;
 		}
 		return new Promise((resolve, reject) => {
-			const listener = message => {
-				if (!message || message._SEval !== code) return;
-				process.removeListener("message", listener);
-				if (!message._error) resolve(message._result); else reject(message._error);
-			};
-			process.on("message", listener);
-
-			process.send({ _SEval: code }, err => {
-				if (err) {
-					process.removeListener("message", listener);
-					reject(err);
-				}
-			});
+			IPC.send("eval", code).then(msg => {
+				resolve(msg);
+			}).catch(err => reject(err));
 		}).then(res => {
 			switch (merge) {
 				case "int":

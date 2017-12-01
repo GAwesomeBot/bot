@@ -47,6 +47,7 @@
     "passport": "*",
     "passport-discord": "^0.1.3",
     "passport.socketio": "*",
+    "process-as-promised": "^1.0.1",
     "remove-markdown": "*",
     "require-reload": "*",
     "searchitunes": "*",

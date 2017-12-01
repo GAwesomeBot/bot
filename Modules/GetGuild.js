@@ -72,22 +72,16 @@ const generateGuild = (guild, settings) => {
  * @param {getGuildSettings} settings The settings to apply on generateGuild() when a guild was found.
  * @returns {Promise} Promise object representing the fetched guild object or array of guilds. Or, when no guild was found, 404.
  */
-const getGuild = (bot, guildID, settings) =>
-	new Promise((resolve, reject) => {
-		if (bot.guilds.has(guildID)) {
-			resolve(generateGuild(bot.guilds.get(guildID), settings));
-			return;
-		}
-		const listener = msg => {
-			if (!msg || msg.guild !== guildID || JSON.stringify(msg.settings) !== JSON.stringify(settings)) return;
-			bot.IPC.removeListener("getGuildRes", listener);
-			if (msg.err && msg.err !== 404) reject(msg.err);
-			if (msg.err && msg.err === 404) resolve(null);
-			else resolve(msg.result);
-		};
-		bot.IPC.on("getGuildRes", listener);
-		bot.IPC.send("getGuild", { guild: guildID, settings: settings });
+const getGuild = async (bot, guildID, settings) => {
+	if (bot.guilds.has(guildID)) {
+		return generateGuild(bot.guilds.get(guildID), settings);
+	}
+	return bot.IPC.send("getGuild", { guild: guildID, settings: settings }).then(msg => {
+		if (msg.err && msg.err !== 404) throw msg.err;
+		if (msg.err && msg.err === 404) return null;
+		else return msg.result;
 	});
+};
 
 module.exports = {
 	get: getGuild,

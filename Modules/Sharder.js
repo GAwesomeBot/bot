@@ -1,5 +1,5 @@
 const cluster = require("cluster");
-const EventEmitter = require("events");
+const ProcessAsPromised = require("process-as-promised");
 
 class Shard {
 	constructor (id, proc, sharder, worker) {
@@ -9,65 +9,28 @@ class Shard {
 		this.id = id;
 		this.winston = sharder.winston;
 		this.process.setMaxListeners(0);
+		this.IPC = new ProcessAsPromised(this.process);
 
 		this.process.once("exit", () => {
 			this.winston.debug(`Shard ${this.id} peacefully passed away. Respawning...`, { id: this.id });
 			this.sharder.create(this.id);
 		});
 
-		this.process.on("message", msg => {
-			if (msg) {
-				if (msg._SEval) {
-					this.sharder.broadcastEval(msg._SEval).then(
-						results => this.send({ _SEval: msg._SEval, _result: results }),
-						err => this.send({ _SEval: msg._SEval, _error: err })
-					);
-					return;
-				}
-			}
-			if (!msg._SEval) this.sharder.emit("message", this, msg);
-		});
+		this.sharder.IPC.onEvents.forEach((callback, event) => this.IPC.on(event, callback));
+		this.sharder.IPC.onceEvents.forEach((callback, event) => this.IPC.once(event, callback));
 	}
 
-	send (msg) {
-		return new Promise((resolve, reject) => {
-			this.process.send(msg, err => {
-				if (err) reject(err); else resolve();
-			});
-		});
+	send (event, data, timeout) {
+		return this.IPC.send(event, data, timeout || undefined);
 	}
 
 	eval (code) {
-		const promise = new Promise((resolve, reject) => {
-			const listener = message => {
-				if (!message || message._Eval !== code) return;
-				this.winston.silly("Recieved eval reply from shard!", { message: message, shard: this.id });
-				this.process.removeListener("message", listener);
-				resolve(message._result);
-			};
-			this.process.on("message", listener);
-
-			this.send({ _Eval: code }).catch(err => {
-				this.process.removeListener("message", listener);
-				reject(err);
-			});
-		});
-		return promise;
+		return new Promise(resolve => this.IPC.send("eval", code).then(res => resolve(res)));
 	}
 
 	getGuild (guildID, settings) {
 		return new Promise((resolve, reject) => {
-			const listener = msg => {
-				let payload = msg;
-				if (typeof msg !== "object") payload = JSON.parse(msg);
-				if (!msg || payload.subject !== "getGuildRes" || payload.guild !== guildID || JSON.stringify(payload.settings) !== JSON.stringify(settings)) return; // eslint-disable-line max-len
-				this.process.removeListener("message", listener);
-				resolve(payload.result);
-			};
-			this.process.on("message", listener);
-
-			this.send({ guild: guildID, settings: settings, subject: "getGuild" }).catch(err => {
-				this.process.removeListener("message", listener);
+			this.send("getGuild", { guild: guildID, settings: settings }).then(msg => resolve(msg.result)).catch(err => {
 				reject(err);
 			});
 		});
@@ -75,26 +38,15 @@ class Shard {
 
 	getGuilds (settings) {
 		return new Promise((resolve, reject) => {
-			const listener = msg => {
-				let payload = msg;
-				if (typeof msg !== "object") payload = JSON.parse(msg);
-				if (!msg || payload.subject !== "getGuildRes" || payload.guild !== "*" || JSON.stringify(payload.settings) !== JSON.stringify(settings)) return; // eslint-disable-line max-len
-				this.process.removeListener("message", listener);
-				resolve(payload.result);
-			};
-			this.process.on("message", listener);
-
-			this.send({ guild: "*", settings: settings, subject: "getGuild" }).catch(err => {
-				this.process.removeListener("message", listener);
+			this.send("getGuild", { guild: "*", settings: settings }).then(msg => resolve(msg.result)).catch(err => {
 				reject(err);
 			});
 		});
 	}
 }
 
-class Sharder extends EventEmitter {
+class Sharder {
 	constructor (token, count, winston) {
-		super();
 		this.cluster = cluster;
 		this.cluster.setupMaster({
 			exec: "Discord.js",
@@ -127,17 +79,10 @@ class Sharder extends EventEmitter {
 		this.shards.set(id, shard);
 	}
 
-	broadcast (message) {
+	broadcast (subject, message, timeout) {
 		this.winston.silly("Broadcasting message to all shards.", { msg: message });
 		const promises = [];
-		for (const shard of this.shards.values()) promises.push(shard.send(message));
-		return Promise.all(promises);
-	}
-
-	broadcastEval (val) {
-		this.winston.verbose("Evaluating code on shards", { code: val });
-		const promises = [];
-		for (const shard of this.shards.values()) promises.push(shard.eval(val));
+		for (const shard of this.shards.values()) promises.push(shard.send(subject, message, timeout));
 		return Promise.all(promises);
 	}
 }
