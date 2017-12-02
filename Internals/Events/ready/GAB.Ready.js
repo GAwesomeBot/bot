@@ -124,7 +124,7 @@ class Ready extends BaseEvent {
 		try {
 			winston.debug("Sending list of guild IDs to Master.");
 			let guilds = Array.from(this.bot.guilds.keys());
-			this.bot.IPC.send("guilds", { latest: guilds });
+			this.bot.IPC.send("guilds", { latest: guilds, shard: this.bot.shardID });
 		} catch (err) {
 			throw err;
 		}

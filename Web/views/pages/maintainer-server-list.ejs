@@ -16,7 +16,10 @@
 		}
 
 		if(serverMessage.val()) {
-			$("#form").submit();
+			$("#sendMessage").toggleClass("is-loading");
+			$.get(location.pathname + "?" + $("#form").serialize(), () => {
+				$("#sendMessage").toggleClass("is-loading")
+			});
 		}
 	}
 	</script>
@@ -34,97 +37,104 @@
 					<h1 class="title">
 						Server List
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									This section contains <strong>actions</strong> for every server the bot is on, namely sending a message to a channel and leaving the server. For information about the servers, go to the <a href="/activity">activity page</a>.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								This section contains <strong>actions</strong> for every server the bot is on, namely sending a message to a channel, leaving the server, or preventing it from adding GAB again. For information about the servers, go to the <a href="/activity">activity page</a>.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="/dashboard/servers/server-list" method="get">
-							<input type="hidden" name="svrid" value="maintainer" />
-							<p class="control has-addons">
+						</div>
+					</article>
+					<form id="form" action="/dashboard/servers/server-list" method="get">
+						<input type="hidden" name="svrid" value="maintainer" />
+						<div class="field has-addons">
+							<div class="control is-expanded">
 								<input id="server-search" name="q" class="input is-expanded" type="text" placeholder="Server name" value="<%= activeSearchQuery %>">
+							</div>
+							<div class="control">
 								<button class="button is-primary">
 									<span class="icon is-small">
 										<i class="fa fa-search"></i>
 									</span>
 									<span>Search</span>
 								</button>
-							</p>
-							<script>
-							$.getJSON("/serverlist", function(data) {
-								new autoComplete({
-								    selector: "#server-search",
-								    minChars: 2,
-								    source: function(query, res) {
-								    	query = query.toLowerCase();
-								       	res(data.filter(function(a) {
-								       		return a.toLowerCase().indexOf(query)>-1;
-								       	}));
-								    }
-								});
+							</div>
+						</div>
+						<script>
+						  $.getJSON("/serverlist", function(data) {
+							new autoComplete({
+							  selector: "#server-search",
+							  minChars: 2,
+							  source: function(query, res) {
+								query = query.toLowerCase();
+								res(data.filter(function(a) {
+								  return a.toLowerCase().indexOf(query)>-1;
+								}));
+							  }
 							});
-							</script>
-							<% if(data) { %>
-								<div class="control is-grouped">
-									<p class="control">
-										<span class="select">
-											<select name="i" onchange="$('#form').submit()">
-												<% for(var i=0; i<data.length; i++) { %>
-													<option value="<%= i %>"<%= selectedServer==i ? " selected": "" %>><%= data[i].name %></option>
-												<% } %>
-											</select>
-										</span>
-									</p>
-									<% if(selectedServer) { %>
-										<p class="control">
-											<span class="select">
-												<select name="chid">
-													<% for(var i=0; i<data[selectedServer].channelData.length; i++) { %>
-														<option value="<%= data[selectedServer].channelData[i].id %>"><%= data[selectedServer].channelData[i].name %></option>
-													<% } %>
-												</select>
-											</span>
-										</p>
-										<p class="control">
-											<a class="button is-primary" onclick="sendMessage();">
-												<span class="icon is-small">
-											        <i class="fa fa-paper-plane"></i>
-											    </span>
-											    <span>Send</span>
-											</a>
-										</p>
-										<p class="control">
-											<a class="button is-info" href="/activity/servers?q=<%= data[selectedServer].name %>">
-												<span class="icon is-small">
-											        <i class="fa fa-info"></i>
-											    </span>
-											    <span>Info</span>
-											</a>
-										</p>
-										<p class="control">
-											<button name="leave" class="button is-danger">
-												<span class="icon is-small">
-											        <i class="fa fa-times"></i>
-											    </span>
-											    <span>Leave Server</span>
-											</button>
-										</p>
-									<% } %>
-								</div>
+						  });
+						</script>
+						<% if(data) { %>
+							<div class="field is-grouped">
+								<p class="control">
+									<span class="select">
+										<select name="i" onchange="$('#form').submit()">
+											<% for(var i=0; i<data.length; i++) { %>
+											<option value="<%= i %>"<%= selectedServer==i ? " selected": "" %>><%= data[i].name %></option>
+											<% } %>
+										</select>
+									</span>
+								</p>
 								<% if(selectedServer) { %>
-									<p class="control">
-										<textarea id="server-message" name="message" class="textarea" placeholder="Message to send, in markdown" minlength="1" maxlength="2000"></textarea>
-									</p>
+								<p class="control">
+									<span class="select">
+										<select name="chid">
+											<% for(var i=0; i<data[selectedServer].channelData.length; i++) { %>
+											<option value="<%= data[selectedServer].channelData[i].id %>"><%= data[selectedServer].channelData[i].name %></option>
+											<% } %>
+										</select>
+									</span>
+								</p>
+								<p class="control">
+									<a class="button is-primary" onclick="sendMessage();" id="sendMessage">
+										<span class="icon is-small">
+											<i class="fa fa-paper-plane"></i>
+										</span>
+										<span>Send</span>
+									</a>
+								</p>
+								<p class="control">
+									<a class="button is-info" href="/activity/servers?q=<%= data[selectedServer].name %>">
+										<span class="icon is-small">
+											<i class="fa fa-info"></i>
+										</span>
+										<span>Info</span>
+									</a>
+								</p>
+								<p class="control">
+									<button name="leave" class="button is-warning">
+										<span class="icon is-small">
+											<i class="fa fa-times"></i>
+										</span>
+										<span>Leave Server</span>
+									</button>
+								</p>
+								<p class="control">
+									<button name="block" class="button is-danger">
+										<span class="icon is-small">
+											<i class="fa fa-exclamation"></i>
+										</span>
+										<span>Block Server</span>
+									</button>
+								</p>
 								<% } %>
-							<% } %>
-						</form>
-					</div>
+							</div>
+						<% if(selectedServer) { %>
+						<p class="control">
+							<textarea id="server-message" name="message" class="textarea" placeholder="Message to send, in markdown" minlength="1" maxlength="2000"></textarea>
+						</p>
+						<% } %>
+						<% } %>
+					</form>
 				</div>
 			</div>
 		</div>

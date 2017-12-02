@@ -135,10 +135,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 
-		sharder.IPC.on("guilds", async (msg, shard) => {
+		sharder.IPC.on("guilds", async msg => {
 			let guilds = msg.latest;
+			if (!guilds) guilds = [];
 			for (let guild of guilds) {
-				sharder.guilds.set(guild, shard.id);
+				sharder.guilds.set(guild, parseInt(msg.shard));
 			}
 			if (msg.remove) {
 				for (let guild of msg.remove) {
@@ -181,6 +182,17 @@ database.initialize(configJS.databaseURL).catch(err => {
 			const promises = [];
 			sharder.shards.forEach(shard => promises.push(shard.eval(msg)));
 			callback(await Promise.all(promises));
+		});
+
+		sharder.IPC.on("leaveGuild", async msg => {
+			const shardid = sharder.guilds.get(msg);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("leaveGuild", msg, shardid);
+			sharder.guilds.delete(msg);
+		});
+
+		sharder.IPC.on("sendMessage", async msg => {
+			const shardid = sharder.guilds.get(msg.guild);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("sendMessage", msg, shardid);
 		});
 
 		sharder.spawn();

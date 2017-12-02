@@ -3,7 +3,7 @@ const { NewServer: getNewServerData, PostShardedData } = require("../../../Modul
 
 class GuildCreate extends BaseEvent {
 	async handle (guild) {
-		this.bot.IPC.send("guilds", { latest: [guild.id] });
+		this.bot.IPC.send("guilds", { latest: [guild.id], shard: this.bot.shardID });
 		this.bot.IPC.send("sendAllGuilds", {});
 		await Promise.all([guild.members.fetch(), PostShardedData(this.bot)]);
 		let serverDocument, shouldMakeDocument = false;

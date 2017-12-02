@@ -42,6 +42,8 @@ class Client extends DJSClient {
 
 		// Store server documents by ID
 		this.cache = new Collection();
+
+		this.shardID = process.env.SHARD_ID;
 	}
 
 	/**
@@ -936,6 +938,8 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 	if (payload.guild === "*") {
 		let result = {};
 		let guilds = payload.settings.mutual ? bot.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : bot.guilds;
+		let query = payload.settings.findFilter;
+		if (query) guilds = guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || svr.members.get(svr.ownerID).user.username.toLowerCase().indexOf(query) > -1);
 		guilds.forEach((val, key) => {
 			result[key] = GG.generate(val, payload.settings);
 		});
@@ -1016,6 +1020,22 @@ bot.IPC.on("cacheUpdate", async msg => {
 		} catch (err) {
 			winston.warn(`Failed to update guild cache! x_x`, { guild: guildID }, err);
 		}
+	}
+});
+
+bot.IPC.on("leaveGuild", async msg => {
+	let guild = bot.guilds.get(msg);
+	if (guild) guild.leave();
+});
+
+bot.IPC.on("sendMessage", async msg => {
+	if (msg.guild === "*") {
+		return false;
+	} else {
+		let guild = bot.guilds.get(msg.guild);
+		let channel;
+		if (guild) channel = guild.channels.get(msg.channel);
+		if (channel) channel.send(msg.message);
 	}
 });
 

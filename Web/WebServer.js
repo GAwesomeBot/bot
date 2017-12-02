@@ -231,6 +231,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		const param = msg.location;
 		try {
 			io.of(path).emit("update", param);
+			if (param === "maintainer") configJSON = require("../Configurations/config.json");
 		} catch (err) {
 			winston.warn("An error occurred while handling a dashboard WebSocket!", err);
 		}
@@ -1740,12 +1741,12 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Save config.json after maintainer console form data is received
 	const saveMaintainerConsoleOptions = (consolemember, req, res, override) => {
 		dashboardUpdate(req.path, "maintainer");
-		writeFile(`${__dirname}/../Configuration/config.json`, JSON.stringify(configJSON, null, 4), err => {
+		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 4), err => {
 			if (err) {
 				winston.error(`Failed to update maintainer settings at ${req.path}`, { usrid: consolemember.id }, err);
 			}
 			if (override) {
-				res.sendStatus(200);
+				res.status(200);
 			} else res.redirect(req.originalUrl);
 		});
 	};
@@ -3669,91 +3670,18 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		});
 	});
 
-	// Maintainer console bot version
-	app.get("/dashboard/maintainer/version", (req, res) => {
-		checkAuth(req, res, () => {
-			Updater.check(configJSON, version => {
-				if (version === 404) {
-					res.render("pages/maintainer-version.ejs", {
-						disabled: true,
-						version: configJSON.version,
-						branch: configJSON.branch,
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-					});
-				} else if (!version["up-to-date"]) {
-					version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
-					res.render("pages/maintainer-version.ejs", {
-						disabled: false,
-						version: configJSON.version,
-						branch: configJSON.branch,
-						versionn: JSON.stringify(version.latest),
-						utd: false,
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-					});
-				} else {
-					res.render("pages/maintainer-version.ejs", {
-						disabled: false,
-						version: configJSON.version,
-						branch: configJSON.branch,
-						versionn: JSON.stringify(version.latest),
-						utd: true,
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-					});
-				}
-			});
-		});
-	});
-	app.post("/dashboard/maintainer/version", (req, res) => {
-		checkAuth(req, res, () => {
-			io.of("/dashboard/maintainer/version").on("connection", socket => {
-				socket.on("update", data => {
-					if (data === "start") {
-						socket.emit("update", "prepair");
-						Updater.update(bot, configJSON, socket, winston);
-					}
-				});
-			});
-			// unirest.post("https://status.gilbertgobbels.xyz/updates/stats").send(bot.user).end(() => {});
-			res.send("OK");
-		});
-	});
-
 	// Maintainer console server list
 	app.get("/dashboard/servers/server-list", (req, res) => {
-		checkAuth(req, res, () => {
+		checkAuth(req, res, async consolemember => {
 			const renderPage = data => {
 				res.render("pages/maintainer-server-list.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-					serverData: {
+        	serverData: {
 						name: bot.user.username,
 						id: bot.user.id,
-						icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 						isMaintainer: true,
+						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					},
 					currentPage: req.path,
 					activeSearchQuery: req.query.q,
@@ -3764,39 +3692,30 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 			if (req.query.q) {
 				const query = req.query.q.toLowerCase();
-				const data = bot.guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || svr.members.get(svr.ownerID).user.username.toLowerCase().indexOf(query) > -1).map(svr => ({
+				const data = Object.values(await getGuild.get(bot, "*", {
+					resolve: ["id", "ownerID", "name", "icon"],
+					channels: ["id", "type", "name", "position"],
+					findFilter: query,
+				})).map(svr => ({
 					name: svr.name,
 					id: svr.id,
-					icon: svr.iconURL || "/static/img/discord-icon.png",
+					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 					channelData: getChannelData(svr),
 				}));
+				if (data.length < parseInt(req.query.i) + 1) req.query.i = 0;
 
-				if (req.query.message) {
-					const svr = bot.guilds.get(data[parseInt(req.query.i)].id);
-					if (svr) {
-						const ch = svr.channels.get(req.query.chid);
-						if (ch) {
-							ch.createMessage(req.query.message);
-							req.query.q = "";
-							renderPage();
-						} else {
-							renderError(res, "That channel doesn't exist!");
-						}
-					} else {
-						renderError(res, "That server doesn't exist!");
-					}
-				} else if (req.query.leave !== undefined) {
-					const svr = bot.guilds.get(data[parseInt(req.query.i)].id);
-					if (svr) {
-						bot.leaveGuild(svr.id).then(() => {
-							req.query.q = "";
-							renderPage();
-						}).catch(() => {
-							renderError(res, "Failed to leave guild! They got lucky, this time.");
-						});
-					} else {
-						renderError(res, "That server doesn't exist!");
-					}
+				if (req.query.leave !== undefined) {
+					bot.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
+					renderPage();
+				} else if (req.query.block !== undefined) {
+					bot.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
+					configJSON.guildBlocklist.push(data[parseInt(req.query.i)].id);
+					saveMaintainerConsoleOptions(consolemember, req, res, true);
+					renderPage();
+				} else if (req.query.message) {
+					bot.IPC.send("sendMessage", { guild: data[parseInt(req.query.i)].id, channel: req.query.chid, message: req.query.message });
+					res.sendStatus(200);
+
 				} else {
 					renderPage(data);
 				}
@@ -3985,59 +3904,6 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		});
 	});
 
-	// Maintainer console maintainers
-	app.get("/dashboard/global-options/maintainers", (req, res) => {
-		checkAuth(req, res, consolemember => {
-			res.render("pages/maintainer-maintainers.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-					isMaintainer: true,
-				},
-				currentPage: req.path,
-				config: {
-					maintainers: configJSON.maintainers.map(a => {
-						const usr = bot.users.get(a) || {
-							id: "invalid-user",
-							username: "invalid-user",
-						};
-						return {
-							name: usr.username,
-							id: usr.id,
-							avatar: usr.avatarURL || "/static/img/discord-icon.png",
-						};
-					}),
-				},
-				showRemove: consolemember.id === configJSON.maintainers[0],
-			});
-		});
-	});
-	io.of("/dashboard/global-options/maintainers").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/global-options/maintainers", (req, res) => {
-		checkAuth(req, res, consolemember => {
-			if (req.body["new-user"]) {
-				const usr = findQueryUser(req.body["new-user"], bot.users);
-				if (usr && configJSON.maintainers.indexOf(usr.id) === -1) {
-					configJSON.maintainers.push(usr.id);
-				}
-			} else if (consolemember.id === configJSON.maintainers[0]) {
-				for (let i = 0; i < configJSON.maintainers.length; i++) {
-					if (req.body[`maintainer-${i}-removed`] !== null) {
-						configJSON.maintainers[i] = null;
-					}
-				}
-				configJSON.maintainers.spliceNullElements();
-			}
-
-			saveMaintainerConsoleOptions(consolemember, req, res);
-		});
-	});
-
 	// Maintainer console wiki contributors
 	app.get("/dashboard/global-options/wiki-contributors", (req, res) => {
 		checkAuth(req, res, consolemember => {
@@ -4097,6 +3963,132 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					}
 				}
 				configJSON.wikiContributors.spliceNullElements();
+			}
+
+			saveMaintainerConsoleOptions(consolemember, req, res);
+		});
+	});
+
+	// Maintainer console bot version
+	app.get("/dashboard/maintainer/version", (req, res) => {
+		checkAuth(req, res, () => {
+			Updater.check(configJSON, version => {
+				if (version === 404) {
+					res.render("pages/maintainer-version.ejs", {
+						disabled: true,
+						version: configJSON.version,
+						branch: configJSON.branch,
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						sudoMode: adminLvl === 4,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true,
+						},
+						currentPage: req.path,
+					});
+				} else if (!version["up-to-date"]) {
+					version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
+					res.render("pages/maintainer-version.ejs", {
+						disabled: false,
+						version: configJSON.version,
+						branch: configJSON.branch,
+						versionn: JSON.stringify(version.latest),
+						utd: false,
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						sudoMode: adminLvl === 4,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true,
+						},
+						currentPage: req.path,
+					});
+				} else {
+					res.render("pages/maintainer-version.ejs", {
+						disabled: false,
+						version: configJSON.version,
+						branch: configJSON.branch,
+						versionn: JSON.stringify(version.latest),
+						utd: true,
+						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+						sudoMode: adminLvl === 4,
+						serverData: {
+							name: bot.user.username,
+							id: bot.user.id,
+							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+							isMaintainer: true,
+						},
+						currentPage: req.path,
+					});
+				}
+			});
+		});
+	});
+	app.post("/dashboard/maintainer/version", (req, res) => {
+		checkAuth(req, res, () => {
+			io.of("/dashboard/maintainer/version").on("connection", socket => {
+				socket.on("update", data => {
+					if (data === "start") {
+						socket.emit("update", "prepair");
+						Updater.update(bot, configJSON, socket, winston);
+					}
+				});
+			});
+			// unirest.post("https://status.gilbertgobbels.xyz/updates/stats").send(bot.user).end(() => {});
+			res.send("OK");
+		});
+	});
+
+	// Maintainer console maintainers
+	app.get("/dashboard/global-options/maintainers", (req, res) => {
+		checkAuth(req, res, consolemember => {
+			res.render("pages/maintainer-maintainers.ejs", {
+				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				sudoMode: adminLvl === 4,
+				serverData: {
+					name: bot.user.username,
+					id: bot.user.id,
+					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+					isMaintainer: true,
+				},
+				currentPage: req.path,
+				config: {
+					maintainers: configJSON.maintainers.map(a => {
+						const usr = bot.users.get(a) || {
+							id: "invalid-user",
+							username: "invalid-user",
+						};
+						return {
+							name: usr.username,
+							id: usr.id,
+							avatar: usr.avatarURL || "/static/img/discord-icon.png",
+						};
+					}),
+				},
+				showRemove: consolemember.id === configJSON.maintainers[0],
+			});
+		});
+	});
+	io.of("/dashboard/global-options/maintainers").on("connection", socket => {
+		socket.on("disconnect", () => {});
+	});
+	app.post("/dashboard/global-options/maintainers", (req, res) => {
+		checkAuth(req, res, consolemember => {
+			if (req.body["new-user"]) {
+				const usr = findQueryUser(req.body["new-user"], bot.users);
+				if (usr && configJSON.maintainers.indexOf(usr.id) === -1) {
+					configJSON.maintainers.push(usr.id);
+				}
+			} else if (consolemember.id === configJSON.maintainers[0]) {
+				for (let i = 0; i < configJSON.maintainers.length; i++) {
+					if (req.body[`maintainer-${i}-removed`] !== null) {
+						configJSON.maintainers[i] = null;
+					}
+				}
+				configJSON.maintainers.spliceNullElements();
 			}
 
 			saveMaintainerConsoleOptions(consolemember, req, res);
