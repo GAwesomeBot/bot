@@ -4,32 +4,37 @@ const snekfetch = require("snekfetch");
 // TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {
-	check: config => new Promise(async (resolve, reject) => {
+	check: async config => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`);
 		} catch (err) {
-			reject(err);
+			winston.warn(`Failed to check for new updates. ~.~\n`, err);
+			throw err;
 		}
 		if (res) {
 			if (!res.body["up-to-date"] && !res.body.latest) {
-				reject(new Error(`Got a 404 from the server / this version is outdated..?`));
+				winston.debug(`GAB version ${config.version} was not found on branch ${config.branch}, you may need to reinstall GAB in order to use the Updater.`);
+				return 404;
 			}
-			resolve(res.body);
+			return res.body;
 		}
-	}),
-	get: (branch, version) => new Promise(async (resolve, reject) => {
+	},
+	get: async (branch, version) => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/versions/${branch}/${version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`);
 		} catch (err) {
-			reject(err);
+			winston.warn(`Failed to fetch version metadata. ~.~\n`, err);
+			throw err;
 		}
 		if (res) {
-			if (res.status === 404) reject(new Error(`Couldn't find the requested version / branch combo.`));
-			resolve(res.body);
+			if (res.status === 404) {
+				return 404;
+			}
+			return res.body;
 		}
-	}),
+	},
 	update: async (bot, config, io) => {
 		winston.info(`Preparing for update...`);
 

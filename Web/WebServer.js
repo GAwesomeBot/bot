@@ -735,7 +735,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					if (configJSON.maintainers.indexOf(req.user.id) > -1) {
 						next(usr);
 					} else {
-						res.redirect("/dashboard");
+						res.status(403).redirect("/dashboard");
 					}
 				} else {
 					const svr = await getGuild.get(bot, req.query.svrid, {
@@ -1738,13 +1738,15 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	};
 
 	// Save config.json after maintainer console form data is received
-	const saveMaintainerConsoleOptions = (consolemember, req, res) => {
+	const saveMaintainerConsoleOptions = (consolemember, req, res, override) => {
 		dashboardUpdate(req.path, "maintainer");
 		writeFile(`${__dirname}/../Configuration/config.json`, JSON.stringify(configJSON, null, 4), err => {
 			if (err) {
-				winston.error(`Failed to update settings at ${req.path}`, { usrid: consolemember.id }, err);
+				winston.error(`Failed to update maintainer settings at ${req.path}`, { usrid: consolemember.id }, err);
 			}
-			res.redirect(req.originalUrl);
+			if (override) {
+				res.sendStatus(200);
+			} else res.redirect(req.originalUrl);
 		});
 	};
 
@@ -3638,31 +3640,30 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						},
 					},
 				},
-			}, (err, result) => {
+			}, async (err, result) => {
 				let messageCount = 0;
 				if (!err && result) {
 					messageCount = result[0].total;
 				}
-				Updater.check(configJSON, version => {
-					res.render("pages/maintainer.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-						serverCount: bot.guilds.size,
-						userCount: bot.users.size,
-						totalMessageCount: messageCount,
-						roundedUptime: getRoundedUptime(process.uptime()),
-						shardCount: bot.shards.size,
-						version: configJSON.version,
-						utd: version["up-to-date"],
-						disabled: version === 404,
-					});
+				const version = Updater.check(configJSON);
+				res.render("pages/maintainer.ejs", {
+					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					serverData: {
+						name: bot.user.username,
+						id: bot.user.id,
+						icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+						isMaintainer: true,
+						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					},
+					currentPage: req.path,
+					serverCount: await bot.guilds.totalCount,
+					userCount: await bot.users.totalCount,
+					totalMessageCount: messageCount,
+					roundedUptime: getRoundedUptime(process.uptime()),
+					shardCount: configJS.shardTotal,
+					version: configJSON.version,
+					utd: (await version)["up-to-date"],
+					disabled: await version === 404,
 				});
 			});
 		});
