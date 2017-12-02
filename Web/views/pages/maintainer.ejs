@@ -16,90 +16,74 @@
 				<div class="column">
 					<article class="message is-primary">
 						<div class="message-header">
-							Welcome to the GAwesomeBot <strong>maintainer console</strong>!
+							<p>Welcome to the GAwesomeBot <strong>maintainer console</strong>!</p>
 						</div>
 						<div class="message-body">
 							Maintainers can configure GAwesomeBot across <strong>all servers</strong> from here, including the message in the homepage banner, commands disabled by default, and the global blocklist. The list of options is shown in the menu on the left. This page shows an <strong>overview</strong> of the bot's activity.
 						</div>
 					</article>
 					<section class="hero is-light is-bold" style="border-radius: 3px;">
-						<div class="hero-body">
-							<div class="container has-text-centered">
-								<h1 class="title">
-									<strong><%= serverCount %></strong>
-								</h1>
-								<h2 class="subtitle">
-									<span class="icon">
-					                    <i class="fa fa-server"></i>
-					                </span>
-									server<%= serverCount==1 ? "" : "s" %>
-								</h2>
-							</div>
+						<div class="hero-body has-text-centered">
+							<h1 class="title">
+								<strong><%= serverCount %></strong>
+							</h1>
+							<h2 class="subtitle">
+								<span class="icon">
+									<i class="fa fa-server"></i>
+								</span>
+								server<%= serverCount==1 ? "" : "s" %>
+							</h2>
 							<br>
-							<div class="container has-text-centered">
-								<h1 class="title">
-									<strong><%= userCount %></strong>
-								</h1>
-								<h2 class="subtitle">
-									<span class="icon">
-					                    <i class="fa fa-user"></i>
-					                </span>
-									unique users
-								</h2>
-							</div>
+							<h1 class="title">
+								<strong><%= userCount %></strong>
+							</h1>
+							<h2 class="subtitle">
+								<span class="icon">
+									<i class="fa fa-user"></i>
+								</span>
+								unique users
+							</h2>
 							<br>
-							<div class="container has-text-centered">
-								<h1 class="title">
-									<strong><%= totalMessageCount %></strong>
-								</h1>
-								<h2 class="subtitle">
-									<span class="icon">
-					                    <i class="fa fa-comments-o"></i>
-					                </span>
-									message<%= totalMessageCount==1 ? "" : "s" %> today
-								</h2>
-							</div>
+							<h1 class="title">
+								<strong><%= totalMessageCount %></strong>
+							</h1>
+							<h2 class="subtitle">
+								<span class="icon">
+									<i class="fa fa-comments-o"></i>
+								</span>
+								message<%= totalMessageCount==1 ? "" : "s" %> today
+							</h2>
 							<br>
-							<div class="container has-text-centered">
-								<h1 class="title">
-									<strong><%= roundedUptime %></strong>
-								</h1>
-								<h2 class="subtitle">
-									<span class="icon">
-					                    <i class="fa fa-clock-o"></i>
-					                </span>
-									process uptime
-								</h2>
-							</div>
+							<h1 class="title">
+								<strong><%= roundedUptime %></strong>
+							</h1>
+							<h2 class="subtitle">
+								<span class="icon">
+									<i class="fa fa-clock-o"></i>
+								</span>
+								process uptime
+							</h2>
 							<br>
-							<div class="container has-text-centered">
-								<h1 class="title">
-									<strong><%= shardCount %></strong>
-								</h1>
-								<h2 class="subtitle">
-									<span class="icon">
-					                    <i class="fa fa-puzzle-piece"></i>
-					                </span>
-									shard<%= shardCount==1 ? "" : "s" %>
-								</h2>
-							</div>
-							<br>
-							<div class="container has-text-centered">
-								<h1 class="title">
+							<h1 class="title">
+								<strong><%= shardCount %></strong>
+							</h1>
+							<h2 class="subtitle">
+								<span class="icon">
+									<i class="fa fa-puzzle-piece"></i>
+								</span>
+								shard<%= shardCount==1 ? "" : "s" %>
+							</h2>
+							<a title="<%if (disabled) { %> Updating is disabled. <% } else if (!utd) { %> An update is available. <% } else { %> No updates are available. <% } %>" href="/dashboard/maintainer/version?svrid=maintainer">
+								<h1 class="title has-text-weight-semibold">
 									<strong><%= version %></strong>
 								</h1>
 								<h2 class="subtitle">
-									<span class="icon">
-					                    <i class="fa fa-code-fork"></i>
-					                </span>
+									<span class="icon <%if (disabled) { %> has-text-grey <% } else if (!utd) { %> has-text-warning <% } else { %> has-text-success <% } %>">
+										<i class="fa fa-code-fork"></i>
+									</span>
 									bot version
 								</h2>
-								<% if (!utd && !disabled) { %>
-								<a href="/dashboard/maintainer/version?svrid=maintainer" class="button is-medium is-warning is-outlined">An update is available.</a>
-								<% } else if (disabled) { %>
-								<a href="/dashboard/maintainer/version?svrid=maintainer" class="button is-medium is-dark is-outlined">Updating is disabled.</a>
-								<% } %>
-							</div>
+							</a>
 						</div>
 					</section>
 				</div>

@@ -3651,7 +3651,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					serverData: {
 						name: bot.user.username,
 						id: bot.user.id,
-						icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 						isMaintainer: true,
 						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					},
