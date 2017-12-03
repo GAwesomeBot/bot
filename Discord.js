@@ -1,15 +1,24 @@
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
+
 const { Console, Utils, GetGuild: GG, PostTotalData } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
 const Timeouts = require("./Modules/Timeouts/");
-const { EventHandler } = require("./Internals/");
+const {
+	EventHandler,
+	Errors: {
+		Error: GABError,
+	},
+} = require("./Internals/");
+
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
+
 const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
+
 const process = require("process");
 const ProcessAsPromised = require("process-as-promised");
 
@@ -246,7 +255,7 @@ class Client extends DJSClient {
 			if (foundMember) {
 				resolve(foundMember);
 			} else {
-				reject(new Error(`Couldn't find a member in ${server} using string "${string}"`));
+				reject(new GABError("FAILED_TO_FIND", "member", server, string));
 			}
 		});
 	}
@@ -258,36 +267,8 @@ class Client extends DJSClient {
 	 * @param {Document} userDocument The database document for the user
 	 * @returns {Promise<?Discord.Guild>} The first guild found with the user
 	 */
-	serverSearch (string, user, userDocument) {
-		return new Promise((resolve, reject) => {
-			let foundServer;
-			const checkServer = server => server && server.members.has(user.id);
-
-			foundServer = this.guilds.find(server => server.name === string);
-			if (checkServer(foundServer)) {
-				resolve(foundServer);
-			}
-
-			foundServer = this.guilds.find(server => server.name.toLowerCase() === string.toLowerCase());
-			if (checkServer(foundServer)) {
-				resolve(foundServer);
-			}
-
-			foundServer = this.guilds.get(string);
-			if (checkServer(foundServer)) {
-				resolve(foundServer);
-			}
-
-			const servernick = userDocument.server_nicks.id(string.toLowerCase());
-			if (servernick) {
-				foundServer = this.guilds.get(servernick.server_id);
-				if (checkServer(foundServer)) {
-					resolve(foundServer);
-				}
-			}
-
-			reject(new Error(`Couldn't find a server that contains the user using the string "${string}"`));
-		});
+	serverSearch () {
+		return Promise.reject(new GABError("FEATURE_TODO"));
 	}
 
 	/**
@@ -298,7 +279,7 @@ class Client extends DJSClient {
 	 */
 	channelSearch (string, server) {
 		return new Promise((resolve, reject) => {
-			string = string.toLowerCase().replace(/ /g, "-");
+			string = string.toLowerCase().replace(/\s+/g, "-");
 
 			if (string.startsWith("#") && string.length > 1) {
 				string = string.substring(1);
@@ -316,7 +297,7 @@ class Client extends DJSClient {
 				}
 			}
 
-			reject(new Error(`Couldn't find any channels in ${server} using the string "${string}"`));
+			reject(new GABError("FAILED_TO_FIND", "channel", server, string));
 		});
 	}
 
@@ -345,7 +326,7 @@ class Client extends DJSClient {
 				}
 			}
 
-			reject(new Error(`Couldn't find any role in ${server} using the string "${string}"`));
+			reject(new GABError("FAILED_TO_FIND", "role", server, string));
 		});
 	}
 
@@ -391,7 +372,7 @@ class Client extends DJSClient {
 										const channelDocument = serverDocument.channels.id(ch.id);
 										if (!channelDocument || channelDocument.bot_enabled) {
 											ch.send({
-												content: `${member}`,
+												content: `${member},`,
 												embed: {
 													color: 0x3669FA,
 													description: `Congratulations, you've leveled up to **${memberDocument.rank}**! 🏆`,
@@ -667,7 +648,7 @@ class Client extends DJSClient {
 				try {
 					await member.send(messageObject);
 				} catch (err) {
-					winston.verbose(`bot.messageBotAdmins error at sending, probably blocked the bot / doesn't have messages from non-friends`, err);
+					winston.verbose(`Failed to send DM to admin, probably has me blocked or doesn't accept DMs from non-friends ._.`, err);
 				}
 			}
 		});
@@ -729,6 +710,7 @@ class Client extends DJSClient {
 				}, reason);
 			} catch (err) {
 				winston.verbose(`Probably missing permissions to mute member in "${channel.guild}".`, err);
+				// TODO: this.log to the server
 			}
 		}
 	}
@@ -752,12 +734,14 @@ class Client extends DJSClient {
 						}, reason);
 					} catch (err) {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+						// TODO: this.log to the server
 					}
 				} else {
 					try {
 						await overwrite.delete(reason);
 					} catch (err) {
 						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+						// TODO: this.log to the server
 					}
 				}
 			}
