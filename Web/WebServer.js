@@ -3815,23 +3815,23 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Maintainer console bot user options
 	app.get("/dashboard/global-options/bot-user", (req, res) => {
-		checkAuth(req, res, () => {
-			const sampleBotMember = bot.getFirstMember(bot.user);
+		checkAuth(req, res, async () => {
+			const sampleBotMember = bot.guilds.first().members.get(bot.user.id);
 			res.render("pages/maintainer-bot-user.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
-					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 				},
 				currentPage: req.path,
 				bot_user: {
 					status: sampleBotMember.status,
-					game: bot.getGame(sampleBotMember),
-					game_default: configJSON.game === "default",
-					avatar: bot.user.avatarURL,
+					game: await bot.getGame(sampleBotMember),
+					game_default: configJSON.activity.name === "default",
+					avatar: bot.user.avatarURL(),
 				},
 			});
 		});

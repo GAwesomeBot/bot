@@ -357,8 +357,8 @@ class Client extends DJSClient {
 	getGame (userOrMember) {
 		return new Promise(resolve => {
 			let presence = userOrMember.presence;
-			if (presence.game && presence.game !== null && presence.game.name) {
-				resolve(presence.game.name);
+			if (presence.activity && presence.activity !== null && presence.activity.name) {
+				resolve(presence.activity.name);
 			} else {
 				resolve("");
 			}
