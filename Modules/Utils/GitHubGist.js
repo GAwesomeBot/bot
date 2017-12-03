@@ -23,9 +23,8 @@ module.exports = class GitHubGist {
 	 * @param {String} options.text The content of the Gist
 	 * @returns {Object} Object containing the id and the url to the Gist
 	 */
-	async upload ({ title = "", text } = {}) {
+	async upload ({ title = "", text, file = "text.md" } = {}) {
 		const censor = [
-			discord.clientID,
 			discord.clientSecret,
 			discord.clientToken,
 			tokens.discordList,
@@ -49,7 +48,7 @@ module.exports = class GitHubGist {
 				description: `GAwesomeBot (${this.bot.user.tag} | ${this.bot.user.id})${title ? ` | ${title}` : ""}`,
 				public: this.public,
 				files: {
-					"text.md": {
+					[file]: {
 						content: text.replace(regExp, "(╯°□°）╯︵ ┻━┻"),
 					},
 				},
