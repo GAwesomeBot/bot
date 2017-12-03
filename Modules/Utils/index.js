@@ -15,4 +15,5 @@ module.exports = {
 	StreamChecker: require("./StreamChecker.js"),
 	StreamerUtils: require("./StreamerUtils.js"),
 	StreamingRSS: require("./StreamingRSS.js"),
+	StructureExtender: require("./StructureExtender.js"),
 };
