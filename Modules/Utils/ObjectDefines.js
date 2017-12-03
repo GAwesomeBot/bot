@@ -1,4 +1,3 @@
-const Discord = require("discord.js");
 const GetValue = require("./GetValue.js");
 
 /* eslint-disable max-len */
@@ -112,35 +111,6 @@ module.exports = bot => {
 		for (let text in options) original = original.replace(new RegExp(`\\{${text}\\}`, "gi"), options[text]);
 		return original;
 	};
-
-	/**
-	 * Gets the "default channel" for the guild
-	 * @returns {?TextChannel}
-	 */
-	Object.defineProperty(Discord.Guild.prototype, "defaultChannel", {
-		get: function get () {
-			if (this.channels.filter(c => c.type === "text").size === 0) return null;
-
-			let generalChannel = this.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
-			if (generalChannel && generalChannel.permissionsFor(this.me).has("VIEW_CHANNEL") && generalChannel.permissionsFor(this.me).has("SEND_MESSAGES")) {
-				return generalChannel;
-			}
-			const defaultChannel = this.channels.filter(c => c.type === "text" && c.permissionsFor(this.me).has("VIEW_CHANNEL") && c.permissionsFor(this.me).has("SEND_MESSAGES"))
-				.sort((a, b) => a.rawPosition - b.rawPosition)
-				.first();
-			if (!defaultChannel) return null;
-			return defaultChannel;
-		},
-	});
-
-	/**
-	 * Gets the server document
-	 */
-	Object.defineProperty(Discord.Guild.prototype, "serverDocument", {
-		get: function get () {
-			return this.client.cache.get(this.id);
-		},
-	});
 
 	/**
 	 * Total count of users or guilds across all shards.
