@@ -450,7 +450,7 @@ class MessageCreate extends BaseEvent {
 									}
 									await this.setCooldown(serverDocument, channelDocument);
 								}
-								await this.saveServerDocument(serverDocument);
+								// await this.saveServerDocument(serverDocument);
 								await userDocument.save().catch(err => {
 									winston.verbose(`Failed to save user document...`, err);
 								});
@@ -463,7 +463,7 @@ class MessageCreate extends BaseEvent {
 							msg.channel.send(`${serverDocument.config.tags.list.id(commandObject.command).content}`, {
 								disableEveryone: true,
 							});
-							await Promise.all([this.setCooldown(serverDocument, channelDocument), this.saveServerDocument(serverDocument)]);
+							await Promise.all([this.setCooldown(serverDocument, channelDocument)/*, this.saveServerDocument(serverDocument)*/]);
 						} else {
 							// Check if it's a command or keyword extension trigger
 							let extensionApplied = false;
@@ -489,9 +489,9 @@ class MessageCreate extends BaseEvent {
 								}
 							}
 
-							if (extensionApplied) {
-								this.saveServerDocument(serverDocument);
-							}
+							// if (extensionApplied) {
+							// 	this.saveServerDocument(serverDocument);
+							// }
 
 							// Check if it's a chatterbot prompt
 							if (!extensionApplied && serverDocument.config.chatterbot && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ")) {
@@ -499,7 +499,7 @@ class MessageCreate extends BaseEvent {
 									.splice(1)
 									.join(" ")
 									.trim();
-								await Promise.all([this.setCooldown(serverDocument, channelDocument), this.saveServerDocument(serverDocument)]);
+								await Promise.all([this.setCooldown(serverDocument, channelDocument)/*, this.saveServerDocument(serverDocument)*/]);
 								// Default help response
 								if (prompt.toLowerCase().trim() === "help") {
 									msg.channel.send({
@@ -558,7 +558,7 @@ class MessageCreate extends BaseEvent {
 							}
 						}
 					} else {
-						await this.saveServerDocument(serverDocument);
+						// await this.saveServerDocument(serverDocument);
 					}
 				}
 			}
@@ -649,7 +649,7 @@ class MessageCreate extends BaseEvent {
 			serverDocument.command_usage = {};
 		}
 
-		if (serverDocument.command_usage[command] === null) {
+		if (serverDocument.command_usage[command] === null || isNaN(serverDocument.command_usage[command])) {
 			serverDocument.command_usage[command] = 0;
 		}
 

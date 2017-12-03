@@ -6,10 +6,11 @@ const { Console, Utils, GetGuild: GG, PostTotalData } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
 const Timeouts = require("./Modules/Timeouts/");
 const {
-	EventHandler,
+	Cache,
 	Errors: {
 		Error: GABError,
 	},
+	EventHandler,
 } = require("./Internals/");
 
 const configJS = require("./Configurations/config.js");
@@ -50,7 +51,7 @@ class Client extends DJSClient {
 		this.MOTDTimers = new Collection();
 
 		// Store server documents by ID
-		this.cache = new Collection();
+		this.cache = new Cache(this);
 
 		this.shardID = process.env.SHARD_ID;
 	}
@@ -999,8 +1000,7 @@ bot.IPC.on("cacheUpdate", async msg => {
 	let guild = bot.guilds.get(guildID);
 	if (guild) {
 		try {
-			let serverDocument = await Servers.findOne({ _id: guild.id }).exec();
-			bot.cache.set(guild.id, serverDocument);
+			await bot.cache.update(guild.id);
 		} catch (err) {
 			winston.warn(`Failed to update guild cache! x_x`, { guild: guildID }, err);
 		}

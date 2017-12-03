@@ -1,4 +1,5 @@
 module.exports = {
-	EventHandler: require("./Events/EventHandler"),
+	Cache: require("./MongooseCache"),
 	Errors: require("./Errors/"),
+	EventHandler: require("./Events/EventHandler"),
 };
