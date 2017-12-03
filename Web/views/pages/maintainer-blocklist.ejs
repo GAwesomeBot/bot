@@ -45,85 +45,84 @@
 					<h1 class="title">
 						Global Blocklist
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									These users are <strong>blocked everywhere</strong>, meaning they can't use the bot in PM and in public chat. It's best to only use this for horrible trolls or spammers.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								These users are <strong>blocked everywhere</strong>, meaning they can't use the bot in PM and in public chat. It's best to only use this for horrible trolls or spammers.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
-							<div style="overflow-x: scroll;">
-								<% if(config.global_blocklist.length>0) { %>
-									<table class="table">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>ID</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<config.global_blocklist.length; i++) { %>
-												<tr>
-													<td>
-														<img class="image is-24x24" src="<%= config.global_blocklist[i].avatar %>" alt="<%= config.global_blocklist[i].id %>">
-													</td>
-													<td>
-														<%= config.global_blocklist[i].name %>
-													</td>
-													<td>
-														<%= config.global_blocklist[i].id %>
-													</td>
-													<td>
-														<button class="button is-small is-danger" name="block-<%= i %>-removed" onclick="hide_update_modal = true;">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message">
-										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
+						</div>
+					</article>
+					<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
+						<div class="field" style="overflow-x: scroll;">
+							<% if(config.global_blocklist.length>0) { %>
+							<table class="table is-fullwidth">
+								<thead>
+								<tr>
+									<th></th>
+									<th>Username</th>
+									<th>ID</th>
+									<th></th>
+								</tr>
+								</thead>
+								<tbody>
+								<% for(var i=0; i<config.global_blocklist.length; i++) { %>
+								<tr>
+									<td>
+										<img class="image is-24x24" src="<%= config.global_blocklist[i].avatar %>" alt="<%= config.global_blocklist[i].id %>">
+									</td>
+									<td>
+										<%= config.global_blocklist[i].name %>
+									</td>
+									<td>
+										<%= config.global_blocklist[i].id %>
+									</td>
+									<td>
+										<button class="button is-small is-danger" name="block-<%= i %>-removed" onclick="hide_update_modal = true;">
+											<span>Remove</span>
+											<span class="icon is-small">
+												<i class="fa fa-times"></i>
 											</span>
-											<span>Nothing to see here</span>
-										</div>
-										<div class="message-body">
-											There are no globally blocked users. Type the name of a user below to add one.
-										</div>
-									</article>
-									<br>
+										</button>
+									</td>
+								</tr>
 								<% } %>
-							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
-										<input id="new-block-user" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+								</tbody>
+							</table>
+							<% } else { %>
+							<article class="message" style="margin-bottom: 0px;">
+								<div class="message-header">
+									<p>
+										<span class="icon">
+											<i class="fa fa-meh-o"></i>
+										</span>
+										Nothing to see here
 									</p>
-									<p class="control">
+								</div>
+								<div class="message-body">
+									There are no globally blocked users. Type the name of a user below to add one.
+								</div>
+							</article>
+							<br>
+							<% } %>
+						</div>
+						<div class="field is-horizontal">
+							<div class="field-body">
+								<div class="field is-grouped">
+									<div class="control is-expanded">
+										<input id="new-block-user" class="input user-autocomplete" type="text" placeholder="ID or Username" onkeypress="return event.keyCode != 13;">
+									</div>
+									<div class="control">
 										<a class="button is-primary" onclick="newBlock();">
 											<span class="icon">
 										        <i class="fa fa-plus"></i>
 										    </span>
 										    <span>Add</span>
 										</a>
-									</p>
+									</div>
 								</div>
 							</div>
-						</form>
-					</div>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>
