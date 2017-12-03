@@ -58,18 +58,9 @@ class MessageCreate extends BaseEvent {
 					});
 				}
 			}
-			let command = msg.content.toLowerCase().trim();
-			let suffix = "";
-			if (command.includes(" ")) {
-				command = command.split(/\s+/)[0].toLowerCase().trim();
-				suffix = msg.content.split(/\s+/)
-					.splice(1)
-					.join(" ")
-					.trim();
-			}
-			const commandFunction = this.bot.getPMCommand(command);
+			const commandFunction = this.bot.getPMCommand(msg.command);
 			if (commandFunction) {
-				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: command });
+				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
 				const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 					winston.warn("Failed to find or create user data for message", { usrid: msg.author.id }, err);
 				});
@@ -81,12 +72,12 @@ class MessageCreate extends BaseEvent {
 						configJSON: this.configJSON,
 						utils: Utils,
 						Utils,
-					}, userDocument, msg, suffix, {
-						name: command,
-						usage: this.bot.getPMCommandMetadata(command).usage,
+					}, userDocument, msg, msg.suffix, {
+						name: msg.command,
+						usage: this.bot.getPMCommandMetadata(msg.command).usage,
 					});
 				} catch (err) {
-					winston.warn(`Failed to process PM command "${command}"`, { usrid: msg.author.id }, err);
+					winston.warn(`Failed to process PM command "${msg.command}"`, { usrid: msg.author.id }, err);
 					msg.author.send({
 						embed: {
 							color: 0xFF0000,
@@ -166,19 +157,15 @@ class MessageCreate extends BaseEvent {
 
 				// Check for start command from server admin
 				if (!channelDocument.bot_enabled && memberBotAdminLevel > 1) {
-					const startCommand = await this.bot.checkCommandTag(msg.content, serverDocument);
-					if (startCommand && startCommand.command === "start") {
+					if (msg.command === "start") {
 						channelDocument.bot_enabled = true;
 						let inAllChannels = false;
-						if (startCommand.suffix.toLowerCase().trim() === "all") {
+						if (msg.suffix && msg.suffix.toLowerCase().trim() === "all") {
 							inAllChannels = true;
 							serverDocument.channels.forEach(targetChannelDocument => {
 								targetChannelDocument.bot_enabled = true;
 							});
 						}
-						await serverDocument.save().catch(err => {
-							winston.warn(`Failed to save server data for bot enable..`, { svrid: msg.guild.id }, err);
-						});
 						msg.channel.send({
 							embed: {
 								color: 0x3669FA,
@@ -239,6 +226,7 @@ class MessageCreate extends BaseEvent {
 									const res = await GistUpload.upload({
 										title: "Eval Result",
 										text: result,
+										file: "eval_results.js",
 									});
 									res && res.url && msg.channel.send({
 										embed: {
@@ -280,7 +268,7 @@ class MessageCreate extends BaseEvent {
 					// Delete offending message if necessary
 					if (serverDocument.config.moderation.filters.custom_filter.delete_message) {
 						try {
-							msg.delete();
+							await msg.delete();
 						} catch (err) {
 							winston.verbose(`Failed to delete filtered message from member "${msg.author.tag}" in channel ${msg.channel.name} on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 							this.bot.logMessage(serverDocument, "warn", `I failed to delete a message containing a filtered word x.x`, msg.channel.id, msg.author.id);
@@ -290,7 +278,7 @@ class MessageCreate extends BaseEvent {
 					const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 						winston.verbose("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
 					});
-					const userDocument = findDocument.doc;
+					const userDocument = findDocument && findDocument.doc;
 					if (userDocument) {
 						// Handle this as a violation
 						let violatorRoleID = null;
@@ -316,7 +304,7 @@ class MessageCreate extends BaseEvent {
 						// Delete message if necessary
 						if (serverDocument.config.moderation.filters.mention_filter.delete_message) {
 							try {
-								msg.delete();
+								await msg.delete();
 							} catch (err) {
 								winston.debug(`Failed to delete filtered mention spam message from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 							}
@@ -378,14 +366,12 @@ class MessageCreate extends BaseEvent {
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {
 						// Check if message is a command, tag command, or extension trigger
-						const commandObject = await this.bot.checkCommandTag(msg.content, serverDocument);
-
-						if (commandObject && commandObject.command !== null && this.bot.getPublicCommandMetadata(commandObject.command)	&&
-								serverDocument.config.commands[commandObject.command].isEnabled &&
-								(this.bot.getPublicCommandMetadata(commandObject.command).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[commandObject.command].admin_level) &&
-								!serverDocument.config.commands[commandObject.command].disabled_channel_ids.includes(msg.channel.id)) {
+						if (msg.command !== null && this.bot.getPublicCommandMetadata(msg.command)	&&
+								serverDocument.config.commands[msg.command].isEnabled &&
+								(this.bot.getPublicCommandMetadata(msg.command).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[msg.command].admin_level) &&
+								!serverDocument.config.commands[msg.command].disabled_channel_ids.includes(msg.channel.id)) {
 							// Increment command usage count
-							this.incrementCommandUsage(serverDocument, commandObject.command);
+							this.incrementCommandUsage(serverDocument, msg.command);
 							// Get User data
 							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
@@ -393,7 +379,7 @@ class MessageCreate extends BaseEvent {
 							const userDocument = findDocument && findDocument.doc;
 							if (userDocument) {
 								// NSFW filter for command suffix
-								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(commandObject.command).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, commandObject.suffix, true, false)) {
+								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(msg.command).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
 									// Delete offending message if necessary
 									if (serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 										try {
@@ -429,19 +415,19 @@ class MessageCreate extends BaseEvent {
 											userDocument,
 										};
 										const commandData = {
-											name: commandObject.command,
-											usage: this.bot.getPublicCommandMetadata(commandObject.command).usage,
-											description: this.bot.getPublicCommandMetadata(commandObject.command).description,
+											name: msg.command,
+											usage: this.bot.getPublicCommandMetadata(msg.command).usage,
+											description: this.bot.getPublicCommandMetadata(msg.command).description,
 										};
-										await this.bot.getPublicCommand(commandObject.command)(botObject, documents, msg, commandObject.suffix, commandData);
+										await this.bot.getPublicCommand(msg.command)(botObject, documents, msg, msg.suffix, commandData);
 									} catch (err) {
-										winston.warn(`Failed to process command "${commandObject.command}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-										this.bot.logMessage(serverDocument, "error", `Failed to process command "${commandObject.command}" X.X`, msg.channel.id, msg.author.id);
+										winston.warn(`Failed to process command "${msg.command}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+										this.bot.logMessage(serverDocument, "error", `Failed to process command "${msg.command}" X.X`, msg.channel.id, msg.author.id);
 										msg.channel.send({
 											embed: {
 												color: 0xFF0000,
 												title: `Something went wrong! 😱`,
-												description: `I was unable to find the command file for \`${commandObject.command}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
+												description: `I was unable to find the command file for \`${msg.command}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 												footer: {
 													text: `Contact your GAB maintainer for more support.`,
 												},
@@ -450,33 +436,32 @@ class MessageCreate extends BaseEvent {
 									}
 									await this.setCooldown(serverDocument, channelDocument);
 								}
-								// await this.saveServerDocument(serverDocument);
 								await userDocument.save().catch(err => {
 									winston.verbose(`Failed to save user document...`, err);
 								});
 							}
 							// Check if it's a trigger for a tag command
-						} else if (commandObject && serverDocument.config.tags.list.id(commandObject.command) && serverDocument.config.tags.list.id(commandObject.command).isCommand) {
+						} else if (serverDocument.config.tags.list.id(msg.command) && serverDocument.config.tags.list.id(msg.command).isCommand) {
 							winston.verbose(`Treating "${msg.cleanContent}" as a tag command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 							this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
 							this.deleteCommandMessage(serverDocument, channelDocument, msg);
-							msg.channel.send(`${serverDocument.config.tags.list.id(commandObject.command).content}`, {
+							msg.channel.send(`${serverDocument.config.tags.list.id(msg.command).content}`, {
 								disableEveryone: true,
 							});
-							await Promise.all([this.setCooldown(serverDocument, channelDocument)/*, this.saveServerDocument(serverDocument)*/]);
+							await this.setCooldown(serverDocument, channelDocument);
 						} else {
 							// Check if it's a command or keyword extension trigger
 							let extensionApplied = false;
 							for (let i = 0; i < serverDocument.extensions.length; i++) {
 								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && serverDocument.extensions[i].enabled_channel_ids.includes(msg.channel.id)) {
 									// Command extensions
-									if (serverDocument.extensions[i].type === "command" && commandObject && commandObject.command && commandObject.command === serverDocument.extensions[i].key) {
+									if (serverDocument.extensions[i].type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
 										winston.verbose(`Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
 										this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 										extensionApplied = true;
 
 										// Do the normal things for commands
-										await Promise.all([this.incrementCommandUsage(serverDocument, commandObject.command), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
+										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
 										// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, commandObject.suffix, null);
 									} else if (serverDocument.extensions[i].type === "keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
@@ -488,18 +473,13 @@ class MessageCreate extends BaseEvent {
 									}
 								}
 							}
-
-							// if (extensionApplied) {
-							// 	this.saveServerDocument(serverDocument);
-							// }
-
 							// Check if it's a chatterbot prompt
 							if (!extensionApplied && serverDocument.config.chatterbot && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ")) {
 								const prompt = msg.content.split(/\s+/)
 									.splice(1)
 									.join(" ")
 									.trim();
-								await Promise.all([this.setCooldown(serverDocument, channelDocument)/*, this.saveServerDocument(serverDocument)*/]);
+								await this.setCooldown(serverDocument, channelDocument);
 								// Default help response
 								if (prompt.toLowerCase().trim() === "help") {
 									msg.channel.send({
@@ -557,8 +537,6 @@ class MessageCreate extends BaseEvent {
 								}
 							}
 						}
-					} else {
-						// await this.saveServerDocument(serverDocument);
 					}
 				}
 			}
