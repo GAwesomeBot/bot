@@ -193,6 +193,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 		sharder.IPC.on("sendMessage", async msg => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("sendMessage", msg, shardid);
+			else if (msg.guild === "*") sharder.IPC.send("sendMessage", msg, "*");
 		});
 
 		sharder.spawn();

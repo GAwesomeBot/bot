@@ -734,7 +734,12 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			if (usr) {
 				if (req.query.svrid === "maintainer") {
 					if (configJSON.maintainers.indexOf(req.user.id) > -1) {
-						next(usr);
+						try {
+							next(usr);
+						} catch (err) {
+							winston.warn(`An error occurred whle handling a ${req.method} request at ${req.path} (°□°）\n`, err);
+							renderError(res, "An unknown error occurred.")
+						}
 					} else {
 						res.status(403).redirect("/dashboard");
 					}
@@ -752,7 +757,12 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 								const member = svr.members[usr.id];
 								const adminLevel = bot.getUserBotAdmin(svr, serverDocument, member);
 								if (adminLevel >= 3) {
-									next(member, svr, serverDocument, adminLevel);
+									try {
+										next(member, svr, serverDocument, adminLevel);
+									} catch (err) {
+										winston.warn(`An error occurred while handling a ${req.method} request at ${req.path} (°□°) \n`, err);
+										renderError(res, "An unknown error occurred.")
+									}
 								} else {
 									res.redirect("/dashboard");
 								}
@@ -3727,31 +3737,29 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Maintainer console big message
 	app.get("/dashboard/servers/big-message", (req, res) => {
-		checkAuth(req, res, () => {
+		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-big-message.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
-					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 				},
 				currentPage: req.path,
-				serverCount: bot.guilds.size,
+				serverCount: await bot.guilds.totalCount,
 			});
 		});
 	});
 	app.post("/dashboard/servers/big-message", (req, res) => {
 		checkAuth(req, res, () => {
 			if (req.body.message) {
-				bot.guilds.forEach(svr => {
-					svr.defaultChannel.createMessage(req.body.message).then(() => {}, err => {
-						winston.error(err);
-					});
-				});
+				bot.IPC.send("sendMessage", { guild: "*", message: req.body.message });
+				res.sendStatus(200);
+			} else {
+				res.sendStatus(400);
 			}
-			res.redirect(req.originalUrl);
 		});
 	});
 

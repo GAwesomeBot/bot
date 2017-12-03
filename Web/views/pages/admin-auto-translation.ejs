@@ -23,9 +23,6 @@
 			newTranslatedLanguage.addClass("is-danger");
 		}
 
-		console.log(newTranslatedMember.val())
-		console.log(newTranslatedLanguage.val())
-		console.log(Array.prototype.slice.call(document.getElementById("new-translated-enabled_channel_ids").querySelectorAll('input[type="checkbox"]')).some(x => x.checked))
 		if(newTranslatedMember.val() && newTranslatedLanguage.val() && Array.prototype.slice.call(document.getElementById("new-translated-enabled_channel_ids").querySelectorAll('input[type="checkbox"]')).some(x => x.checked)) {
 			$.ajax({
 				type: "POST",

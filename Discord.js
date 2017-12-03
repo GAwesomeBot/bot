@@ -1029,13 +1029,16 @@ bot.IPC.on("leaveGuild", async msg => {
 });
 
 bot.IPC.on("sendMessage", async msg => {
-	if (msg.guild === "*") {
-		return false;
+	let payload = typeof msg === "string" ? JSON.parse(msg) : msg;
+	if (payload.guild === "*") {
+		bot.guilds.forEach(svr => {
+			svr.defaultChannel.send(payload.message);
+		});
 	} else {
-		let guild = bot.guilds.get(msg.guild);
+		let guild = bot.guilds.get(payload.guild);
 		let channel;
-		if (guild) channel = guild.channels.get(msg.channel);
-		if (channel) channel.send(msg.message);
+		if (guild) channel = guild.channels.get(payload.channel);
+		if (channel) channel.send(payload.message);
 	}
 });
 

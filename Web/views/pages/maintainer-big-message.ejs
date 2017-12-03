@@ -3,8 +3,9 @@
 <head>
 	<title>BigMessage - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
+	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body>
+<body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
 
 	<section class="section is-white">
@@ -17,28 +18,25 @@
 					<h1 class="title">
 						BigMessage
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									BigMessage is for <strong>really important announcements</strong>. This message is sent to every single server the bot is on. Use it only if it's absolutely necessary.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								BigMessage is for <strong>really important announcements</strong>. This message is sent to every single server the bot is on.<br> Use it only if it's absolutely necessary.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
-							<p class="control">
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field">
+							<div class="control">
 								<textarea name="message" class="textarea" maxlength="2000" placeholder="Message to send, in markdown"></textarea>
 								<span class="help">This message will be sent to <strong>all <%= serverCount %> server<%= serverCount==1 ? "" : "s" %></strong>, so make sure it's important!</span>
-							</p>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+							</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

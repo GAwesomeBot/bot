@@ -120,7 +120,7 @@ module.exports = bot => {
 	Object.defineProperty(Discord.Guild.prototype, "defaultChannel", {
 		get: function get () {
 			if (this.channels.filter(c => c.type === "text").size === 0) return null;
-			// Let's see if we have a #general or #mainchat cause why not
+
 			let generalChannel = this.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
 			if (generalChannel && generalChannel.permissionsFor(this.me).has("VIEW_CHANNEL") && generalChannel.permissionsFor(this.me).has("SEND_MESSAGES")) {
 				return generalChannel;
