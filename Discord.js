@@ -3,7 +3,7 @@ const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
 const { Console, Utils, GetGuild: GG, PostTotalData } = require("./Modules/");
-const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay } = Utils;
+const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/");
 const {
 	Cache,
@@ -875,6 +875,8 @@ class Client extends DJSClient {
 		return this.manager.destroy();
 	}
 }
+
+StructureExtender();
 
 const bot = new Client({
 	shardId: Number(process.env.SHARD_ID),
