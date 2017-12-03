@@ -1,4 +1,7 @@
 {
+  "sudoMaintainers": [
+
+  ],
   "maintainers": [
 
   ],
@@ -6,6 +9,9 @@
 
   ],
   "globalBlocklist": [
+
+  ],
+  "guildBlocklist": [
 
   ],
   "activity": {
