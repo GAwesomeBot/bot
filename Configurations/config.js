@@ -72,7 +72,7 @@ const configs = {
 	/*
    * Optional: If you want your bot to have an invite link to your guild, for support or things.
    */
-	discordLink: "",
+	discordLink: "https://discord.gg/NZwzJ9Q",
 	donateCharities: [
 		{
 			icon_url: "http://i.imgur.com/1C08tFT.png",
