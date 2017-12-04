@@ -106,7 +106,7 @@ class MessageCreate extends BaseEvent {
 					m.edit({
 						embed: {
 							color: 0xFF0000,
-							description: `Failed to get an answer, ok?!`,
+							description: `Our lovely chatter bot API fell asleep. We're sorry!`,
 						},
 					});
 				});
@@ -504,7 +504,7 @@ class MessageCreate extends BaseEvent {
 										m.edit({
 											embed: {
 												color: 0xFF0000,
-												description: `Failed to get an answer, ok?!`,
+												description: `Our lovely chatter bot API fell asleep. We're sorry!`,
 											},
 										});
 									});
@@ -633,18 +633,6 @@ class MessageCreate extends BaseEvent {
 
 		serverDocument.command_usage[command]++;
 		serverDocument.markModified("command_usage");
-	}
-
-	/**
-	 * Save any and all changes to the serverDocument
-	 * @param {Document} serverDocument
-	 */
-	async saveServerDocument (serverDocument) {
-		try {
-			await serverDocument.save();
-		} catch (err) {
-			winston.debug(`Failed to save server data for message create...`, { svrid: serverDocument._id }, err);
-		}
 	}
 }
 
