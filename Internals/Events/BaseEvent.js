@@ -3,13 +3,13 @@ const { Error } = require("../Errors/");
 class BaseEvent {
 	/**
 	 * Base class for all events.
-	 * @param {Client} bot
+	 * @param {Client} client
 	 * @param {DatabaseConnection} db
 	 * @param {Object} configJS
 	 * @param {Object} configJSON
 	 */
-	constructor (bot, configJS, configJSON) {
-		this.bot = bot;
+	constructor (client, configJS, configJSON) {
+		this.bot = this.client = client;
 		this.configJS = configJS;
 		this.configJSON = configJSON;
 	}
