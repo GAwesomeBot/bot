@@ -112,7 +112,7 @@ class SpamHandler extends BaseEvent {
 							const foundMessages = await msg.channel.messages.fetch({ limit: 50 }).catch(err => {
 								winston.debug(`Failed to fetch messages for spam filter..`, err);
 							});
-							foundMessages.forEach(foundMessage => {
+							foundMessages.size > 0 && foundMessages.forEach(foundMessage => {
 								if (foundMessage.author.id === msg.author.id && levenshtein.get(spamDocument.last_message_content, foundMessage.cleanContent) < 3) {
 									filteredMessages.push(foundMessage);
 								}
