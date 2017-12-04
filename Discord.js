@@ -601,11 +601,6 @@ class Client extends DJSClient {
 				break;
 			}
 		}
-
-		// Save serverDocument
-		await serverDocument.save().catch(err => {
-			winston.warn(`Failed to save server data for violation`, { svrid: server.id, chid: channel.id, usrid: member.id }, err);
-		});
 	}
 
 	/**
@@ -997,16 +992,10 @@ bot.IPC.on("eval", async (msg, callback) => {
 	callback(result);
 });
 
-bot.IPC.on("cacheUpdate", async msg => {
+bot.IPC.on("cacheUpdate", msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	if (guild) {
-		try {
-			await bot.cache.update(guild.id);
-		} catch (err) {
-			winston.warn(`Failed to update guild cache! x_x`, { guild: guildID }, err);
-		}
-	}
+	if (guild) bot.cache.update(guild.id);
 });
 
 bot.IPC.on("leaveGuild", async msg => {
@@ -1343,7 +1332,7 @@ bot.on("message", async msg => {
 			}
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
-				await bot.cache.get(msg.guild.id).save().catch(err => {
+				bot.cache.get(msg.guild.id).save().catch(err => {
 					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id }, err);
 				});
 			}
