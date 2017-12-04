@@ -19,6 +19,21 @@ const {
  */
 class Ready extends BaseEvent {
 	async handle () {
+		let leftGuilds = 0;
+		if (this.configJSON.guildBlocklist.length) {
+			this.configJSON.guildBlocklist.forEach(guildID => {
+				if (this.bot.guilds.get(guildID)) {
+					this.bot.guilds.get(guildID).leave();
+					leftGuilds++;
+				}
+			});
+		}
+		leftGuilds > 0 && winston.info(`Left the blacklisted guilds that added the bot while I was asleep.`, { leftGuilds });
+		await this.afterLeaving();
+	}
+
+	// Runs after leaving any blocklisted guilds (if any)
+	async afterLeaving () {
 		try {
 			this.ensureDocuments().then(async newServerDocuments => {
 				if (newServerDocuments && newServerDocuments.length > 0) {
@@ -37,6 +52,7 @@ class Ready extends BaseEvent {
 			await this.pruneServerData();
 		}
 	}
+
 	// Ensure that all servers have database documents
 	async ensureDocuments () {
 		winston.debug("Ensuring all guilds have a serverDocument.");
@@ -80,14 +96,14 @@ class Ready extends BaseEvent {
 	async setBotActivity () {
 		winston.debug("Setting bots playing activity.");
 		let activity = {
-			name: this.configJSON.activity.name,
+			name: this.configJSON.activity.name.format({ shard: this.bot.shardID, totalshards: this.bot.shard.count }),
 			url: this.configJSON.activity.twitchURL,
-			type: this.configJSON.activity.twitchURL ? 1 : 0,
+			type: this.configJSON.activity.twitchURL ? "WATCHING" : "PLAYING",
 		};
 		if (this.configJSON.activity.name === "default") {
 			activity = {
 				name: "https://gawesomebot.com",
-				type: 0,
+				type: "PLAYING",
 			};
 		}
 		this.bot.user.setPresence({
