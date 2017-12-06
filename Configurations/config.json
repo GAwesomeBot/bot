@@ -8,15 +8,14 @@
   "wikiContributors": [
 
   ],
-  "globalBlocklist": [
+  "userBlocklist": [
 
   ],
   "guildBlocklist": [
 
   ],
   "activity": {
-    "__comment": "You can set a custom playing game. Insert {shard} to display the current bot shard, {totalshards} to insert the total shard count",
-    "name": "https://gawesomebot.xyz | Shard {shard}",
+    "name": "default",
     "twitchURL": ""
   },
   "status": "online",
