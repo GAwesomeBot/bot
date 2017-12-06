@@ -2,7 +2,7 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData } = require("./Modules/");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic } = require("./Modules/");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/");
 const {
@@ -905,6 +905,8 @@ process.on("uncaughtException", err => {
 // Bot IPC
 bot.IPC = new ProcessAsPromised();
 
+bot.traffic = new Traffic(database, bot.IPC, winston, true);
+
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {
 	winston.info("Successfully connected to Discord!");
@@ -1029,6 +1031,11 @@ bot.IPC.on("updateBot", async msg => {
 		status: payload.status,
 		activity: activity,
 	});
+});
+
+bot.IPC.on("traffic", async (msg, callback) => {
+	winston.info("Getting traffic data");
+	callback(bot.traffic.get);
 });
 
 /**

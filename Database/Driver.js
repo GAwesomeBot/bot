@@ -10,6 +10,7 @@ modulesSchema.index({
 });
 const blogSchema = require("./Schemas/blogSchema.js");
 const wikiSchema = require("./Schemas/wikiSchema");
+const trafficSchema = require("./Schemas/trafficSchema");
 
 const { addToGlobal } = require("../Modules/Utils/GlobalDefines.js");
 
@@ -24,13 +25,15 @@ exports.initialize = url => new Promise((resolve, reject) => {
 		Gallery,
 		Blog,
 		Wiki,
+		Traffic
 	] = [
 		mongoose.model("servers", serverSchema),
 		mongoose.model("users", userSchema),
 		mongoose.model("gallery", modulesSchema),
 		mongoose.model("blog", blogSchema),
 		mongoose.model("wiki", wikiSchema),
-	];
+		mongoose.model("traffic", trafficSchema, "traffic"),
+];
 	mongoose.connection
 		.on("error", err => reject(err))
 		.once("open", () => {
@@ -46,6 +49,7 @@ exports.initialize = url => new Promise((resolve, reject) => {
 				Gallery, gallery: Gallery,
 				Blog, blog: Blog,
 				Wiki, wiki: Wiki,
+				Traffic, traffic: Traffic,
 				Raw: mongoose.connection,
 			});
 			resolve(global.Database);

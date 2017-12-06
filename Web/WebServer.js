@@ -4,6 +4,7 @@ const https = require("https");
 const compression = require("compression");
 const sio = require("socket.io");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const RateLimit = require("express-rate-limit");
 const ejs = require("ejs");
 const session = require("express-session");
@@ -14,6 +15,7 @@ const discordStrategy = require("passport-discord").Strategy;
 const discordOAuthScopes = ["identify", "guilds"];
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const writeFile = require("write-file-atomic");
 const base64 = require("node-base64-image");
 const sizeof = require("object-sizeof");
@@ -58,6 +60,7 @@ app.use(bodyParser.json({
 	parameterLimit: 10000,
 	limit: "5mb",
 }));
+app.use(cookieParser());
 app.set("json spaces", 2);
 
 app.engine("ejs", ejs.renderFile);
@@ -172,7 +175,12 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		if (configJSON.isUpdating) {
 			res.status(503).render("pages/503.ejs", {});
 		}	else {
-			next(); // eslint-disable-line callback-return
+			if (!req.cookies.trafficID) {
+				let UID = crypto.randomBytes(32).toString("hex");
+				res.cookie("trafficID", UID, { httpOnly: true });
+			}
+			if (req.method === "GET" && !req.path.includes("/static/")) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
+			next();
 		}
 	});
 

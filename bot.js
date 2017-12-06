@@ -12,7 +12,7 @@ const database = require("./Database/Driver.js");
 const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
-const { Console, Sharder } = require("./Modules/");
+const { Console, Sharder, Traffic } = require("./Modules/");
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -71,6 +71,8 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
 
+		const traffic = new Traffic(db, sharder.IPC, winston);
+		traffic.init();
 
 		// Sharder events
 		sharder.ready = 0;

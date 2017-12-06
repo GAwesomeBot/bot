@@ -9,6 +9,7 @@ module.exports = {
 	PostTotalData: require("./PostTotalData.js"),
 	Sharder: require("./Sharder.js"),
 	SharderIPC: require("./IPC.js"),
+	Traffic: require("./Traffic.js"),
 	Updater: require("./Updater.js"),
 	Utils: require("./Utils/"),
 };
