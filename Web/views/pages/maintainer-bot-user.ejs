@@ -22,7 +22,7 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								This is where you can set details about the bot's <strong>Discord user</strong>, such as username, status, and avatar.
+								This is where you can set details about the bot's <strong>Discord user</strong>, such as username, status, and avatar. These settings may take a while to update.
 							</div>
 						</div>
 					</article>
@@ -69,14 +69,14 @@
 									<label class="label">Game</label>
 									<div class="field has-addons" style="margin-bottom: 0px;">
 										<div class="control has-icons-left is-expanded">
-											<input name="game" class="input" type="text" value="<%= bot_user.game %>" style="width: 100%;">
+											<input name="game" id="user-game" class="input" type="text" value="<%= bot_user.game === "default" ? "gawesomebot.com" : bot_user.game %>" style="width: 100%;">
 											<span class="icon"><i class="fa fa-gamepad"></i></span>
 										</div>
 										<div class="control">
                                         	<% if(!bot_user.game_default) { %>
-												<button name="game-default" class="button">
+												<a name="game-default" class="button" onclick="$('#user-game').val('gawesomebot.com')">
 													Default
-												</button>
+												</a>
 											<% } %>
 										</div>
 									</div>

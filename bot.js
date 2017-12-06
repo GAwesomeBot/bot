@@ -196,6 +196,8 @@ database.initialize(configJS.databaseURL).catch(err => {
 			else if (msg.guild === "*") sharder.IPC.send("sendMessage", msg, "*");
 		});
 
+		sharder.IPC.on("updateBot", async msg => sharder.IPC.send("updateBot", msg, "*"));
+
 		sharder.spawn();
 	}
 });

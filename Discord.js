@@ -894,7 +894,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 });
 
 process.on("unhandledRejection", reason => {
-	winston.error(`An unexpected error occurred, and we failed to handle it x.x\n`, reason);
+	winston.error(`An unexpected error occurred, and we failed to handle it. x.x\n`, reason);
 });
 
 process.on("uncaughtException", err => {
@@ -1015,6 +1015,20 @@ bot.IPC.on("sendMessage", async msg => {
 		if (guild) channel = guild.channels.get(payload.channel);
 		if (channel) channel.send(payload.message);
 	}
+});
+
+bot.IPC.on("updateBot", async msg => {
+	let payload = JSON.parse(msg);
+	if (payload.avatar) bot.user.setAvatar(payload.avatar);
+	if (payload.username && payload.username !== bot.user.username) bot.user.setUsername(payload.username);
+	let activity = {};
+	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "gawesomebot.com";
+	else activity.name = payload.game;
+	activity.type = "PLAYING";
+	bot.user.setPresence({
+		status: payload.status,
+		activity: activity,
+	});
 });
 
 /**

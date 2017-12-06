@@ -737,7 +737,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						try {
 							next(usr);
 						} catch (err) {
-							winston.warn(`An error occurred whle handling a ${req.method} request at ${req.path} (°□°）\n`, err);
+							winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
 							renderError(res, "An unknown error occurred.")
 						}
 					} else {
@@ -760,7 +760,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 									try {
 										next(member, svr, serverDocument, adminLevel);
 									} catch (err) {
-										winston.warn(`An error occurred while handling a ${req.method} request at ${req.path} (°□°) \n`, err);
+										winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
 										renderError(res, "An unknown error occurred.")
 									}
 								} else {
@@ -1749,15 +1749,15 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	};
 
 	// Save config.json after maintainer console form data is received
-	const saveMaintainerConsoleOptions = (consolemember, req, res, override) => {
+	const saveMaintainerConsoleOptions = (consolemember, req, res, override, silent) => {
 		dashboardUpdate(req.path, "maintainer");
 		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 4), err => {
 			if (err) {
 				winston.error(`Failed to update maintainer settings at ${req.path}`, { usrid: consolemember.id }, err);
 			}
-			if (override) {
-				res.status(200);
-			} else res.redirect(req.originalUrl);
+			if (override && !silent) {
+				res.sendStatus(200);
+			} else if (!silent) res.redirect(req.originalUrl);
 		});
 	};
 
@@ -3720,7 +3720,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				} else if (req.query.block !== undefined) {
 					bot.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
 					configJSON.guildBlocklist.push(data[parseInt(req.query.i)].id);
-					saveMaintainerConsoleOptions(consolemember, req, res, true);
+					saveMaintainerConsoleOptions(consolemember, req, res, true, true);
 					renderPage();
 				} else if (req.query.message) {
 					bot.IPC.send("sendMessage", { guild: data[parseInt(req.query.i)].id, channel: req.query.chid, message: req.query.message });
@@ -3816,7 +3816,6 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Maintainer console bot user options
 	app.get("/dashboard/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, async () => {
-			const sampleBotMember = bot.guilds.first().members.get(bot.user.id);
 			res.render("pages/maintainer-bot-user.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 				serverData: {
@@ -3828,8 +3827,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				},
 				currentPage: req.path,
 				bot_user: {
-					status: sampleBotMember.status,
-					game: await bot.getGame(sampleBotMember),
+					status: configJSON.status,
+					game: configJSON.activity.name,
 					game_default: configJSON.activity.name === "default",
 					avatar: bot.user.avatarURL(),
 				},
@@ -3841,42 +3840,13 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	});
 	app.post("/dashboard/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, consolemember => {
-			const updateBotUser = avatar => {
-				bot.editSelf({
-					avatar: avatar ? `data:image/jpeg;base64,${avatar}` : null,
-					username: req.body.username,
-				}).then(() => {
-					let game = {
-						name: req.body.game,
-					};
-					configJSON.game = req.body.game;
-					if (req.body.game === "gawesomebot.com" || req.body["game-default"] !== null) {
-						configJSON.game = "default";
-						game = {
-							name: "gawesomebot.com",
-							url: "https://gawesomebot.com",
-						};
-					}
-					bot.editStatus(req.body.status, game);
-					saveMaintainerConsoleOptions(consolemember, req, res);
-				}, err => {
-					winston.error(err);
-				});
-			};
-
-			if (req.body.avatar) {
-				base64.encode(req.body.avatar, {
-					string: true,
-				}, (err, data) => {
-					updateBotUser(data);
-				});
-			} else {
-				base64.encode(bot.user.avatarURL.replace(".jpg", ".webp"), {
-					string: true,
-				}, (err, data) => {
-					updateBotUser(data);
-				});
+			bot.IPC.send("updateBot", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
+			configJSON.activity.name = req.body.game;
+			if (req.body.game === "gawesomebot.com") {
+					configJSON.activity.name = "default";
 			}
+			if (req.body.status) configJSON.status = req.body.status;
+			saveMaintainerConsoleOptions(consolemember, req, res, true);
 		});
 	});
 
