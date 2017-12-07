@@ -891,6 +891,8 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	winston.debug("Initializing Discord Events.");
 	bot.events = new EventHandler(bot, configJS, configJSON);
 	await bot.events.init();
+
+	bot.traffic = new Traffic(bot.IPC, true);
 });
 
 process.on("unhandledRejection", reason => {
@@ -904,8 +906,6 @@ process.on("uncaughtException", err => {
 
 // Bot IPC
 bot.IPC = new ProcessAsPromised();
-
-bot.traffic = new Traffic(bot.IPC, winston, true, database);
 
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {

@@ -1,8 +1,8 @@
 const crypto = require("crypto");
 
 class Traffic {
-	constructor (IPC, winston, isWorker, db) {
-		this.db = db;
+	constructor (IPC, isWorker) {
+		this.db = Database;
 		this.IPC = IPC;
 		this.winston = winston;
 
