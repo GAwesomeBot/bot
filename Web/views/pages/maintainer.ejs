@@ -3,6 +3,9 @@
 <head>
 	<title><%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
 </head>
 <body>
 	<% include ../partials/dashboard-header %>
@@ -22,70 +25,150 @@
 							Maintainers can configure GAwesomeBot across <strong>all servers</strong> from here, including the message in the homepage banner, commands disabled by default, and the global blocklist. The list of options is shown in the menu on the left. This page shows an <strong>overview</strong> of the bot's activity.
 						</div>
 					</article>
-					<section class="hero is-light is-bold" style="border-radius: 3px;">
-						<div class="hero-body has-text-centered">
-							<h1 class="title">
-								<strong><%= serverCount %></strong>
-							</h1>
-							<h2 class="subtitle">
-								<span class="icon">
-									<i class="fa fa-server"></i>
-								</span>
-								server<%= serverCount==1 ? "" : "s" %>
-							</h2>
-							<br>
-							<h1 class="title">
-								<strong><%= userCount %></strong>
-							</h1>
-							<h2 class="subtitle">
-								<span class="icon">
-									<i class="fa fa-user"></i>
-								</span>
-								known users
-							</h2>
-							<br>
-							<h1 class="title">
-								<strong><%= totalMessageCount %></strong>
-							</h1>
-							<h2 class="subtitle">
-								<span class="icon">
-									<i class="fa fa-comments-o"></i>
-								</span>
-								message<%= totalMessageCount==1 ? "" : "s" %> today
-							</h2>
-							<br>
-							<h1 class="title">
-								<strong><%= roundedUptime %></strong>
-							</h1>
-							<h2 class="subtitle">
-								<span class="icon">
-									<i class="fa fa-clock-o"></i>
-								</span>
-								process uptime
-							</h2>
-							<br>
-							<h1 class="title">
-								<strong><%= shardCount %></strong>
-							</h1>
-							<h2 class="subtitle">
-								<span class="icon">
-									<i class="fa fa-puzzle-piece"></i>
-								</span>
-								shard<%= shardCount==1 ? "" : "s" %>
-							</h2>
-							<a title="<%if (disabled) { %> Updating is disabled. <% } else if (!utd) { %> An update is available. <% } else { %> No updates are available. <% } %>" href="/dashboard/maintainer/version?svrid=maintainer">
-								<h1 class="title has-text-weight-semibold">
-									<strong><%= version %></strong>
-								</h1>
-								<h2 class="subtitle">
-									<span class="icon <%if (disabled) { %> has-text-grey <% } else if (!utd) { %> has-text-warning <% } else { %> has-text-success <% } %>">
-										<i class="fa fa-code-fork"></i>
+					<div class="columns">
+						<div class="column">
+							<a class="box notification is-white" href="/activity">
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-server"></i>
 									</span>
-									bot version
-								</h2>
+									Server<%= serverCount==1 ? "" : "s" %>
+								</div>
+								<div class="title">
+                                    <%= serverCount %>2321
+								</div>
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-user"></i>
+									</span>
+									User<%= serverCount==1 ? "" : "s" %>
+								</div>
+								<div class="title">
+                                    <%= userCount %>
+								</div>
 							</a>
 						</div>
-					</section>
+						<div class="column">
+							<a class="box notification is-white" onclick="$('.traffic-chart-container').slideToggle();">
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-comments-o"></i>
+									</span>
+									Message<%= totalMessageCount==1 ? "" : "s" %> today
+								</div>
+								<div class="title">
+                                    <%= totalMessageCount %>
+								</div>
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-file"></i>
+									</span>
+									View<%= trafficData.hour==1 ? "" : "s" %> the past hour
+								</div>
+								<div class="title">
+                                    <%= trafficData.hour %>
+								</div>
+							</a>
+						</div>
+						<div class="column">
+							<a class="box notification is-white">
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-puzzle-piece"></i>
+									</span>
+									Current Shard
+								</div>
+								<div class="title">
+                                    <%= parseInt(currentShard) + 1 %>/<%= shardCount %>
+								</div>
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-clock-o"></i>
+									</span>
+									Shard uptime
+								</div>
+								<div class="title">
+                                    <%= roundedUptime %>
+								</div>
+							</a>
+						</div>
+						<div class="column">
+							<a class="box notification <% if (disabled) { %>is-dark<% } else if (!utd) { %>is-warning<% } else { %>is-white<% } %>">
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-code-fork"></i>
+									</span>
+									Bot Version
+								</div>
+								<div class="title">
+                                    <%= version %>
+								</div>
+								<div class="heading">
+									<span class="icon is-small">
+										<i class="fa fa-arrow-circle-up"></i>
+									</span>
+									Latest Version
+								</div>
+								<div class="title">
+                                    <%if (disabled) { %> <%= version %> <% } else { %> <%= latestVersion %> <% } %>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="traffic-chart-container">
+					<h1 class="title">Web Interface Traffic</h1>
+					<div class="box">
+					<h4 class="subtitle">Today</h4>
+					<div id="traffic-chart-day" class="traffic-chart" style=""></div>
+					</div>
+					<div class="box">
+					<h4 class="subtitle">Last Week</h4>
+					<div id="traffic-chart-week" class="traffic-chart" style="margin-top: 15px;"></div>
+					</div>
+					<div class="box">
+					<h4 class="subtitle">Last Month</h4>
+					<div id="traffic-chart-month" class="traffic-chart" style="margin-top: 15px;"></div>
+					</div>
+					</div>
+					<script>
+					  function parseDate(ts){
+						return new Date(ts).toDateString();
+					  }
+					  let trafficGraphMonth = new Morris.Line({
+						element: "traffic-chart-month",
+						lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
+						data: [<%= Object.values(trafficData.days) %>],
+						xkey: "_id",
+						ykeys: ["pageViews", "authViews", "uniqueUsers"],
+						labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
+						resize: true,
+						dateFormat: parseDate,
+					  });
+
+					  let trafficGraphWeek = new Morris.Line({
+						element: "traffic-chart-week",
+						lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
+						data: [<%= trafficData.week %>],
+						xkey: "_id",
+						ykeys: ["pageViews", "authViews", "uniqueUsers"],
+						labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
+						resize: true,
+						dateFormat: parseDate,
+					  });
+
+					  let trafficGraphDay = new Morris.Line({
+						element: "traffic-chart-day",
+						lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
+						data: [<%= trafficData.day %>],
+						xkey: "_id",
+						ykeys: ["pageViews", "authViews", "uniqueUsers"],
+						labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
+						resize: true,
+						xLabels: "hour",
+					  });
+
+					  $(".traffic-chart-container").toggle();
+					</script>
 				</div>
 			</div>
 		</div>

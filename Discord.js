@@ -905,7 +905,7 @@ process.on("uncaughtException", err => {
 // Bot IPC
 bot.IPC = new ProcessAsPromised();
 
-bot.traffic = new Traffic(database, bot.IPC, winston, true);
+bot.traffic = new Traffic(bot.IPC, winston, true, database);
 
 winston.debug("Logging in to Discord Gateway.");
 bot.login(process.env.CLIENT_TOKEN).then(() => {

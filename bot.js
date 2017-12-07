@@ -71,7 +71,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
 
-		const traffic = new Traffic(db, sharder.IPC, winston);
+		const traffic = new Traffic(sharder.IPC, winston, false, db);
 		traffic.init();
 
 		// Sharder events

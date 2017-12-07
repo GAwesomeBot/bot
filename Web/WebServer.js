@@ -15,7 +15,6 @@ const discordStrategy = require("passport-discord").Strategy;
 const discordOAuthScopes = ["identify", "guilds"];
 const path = require("path");
 const fs = require("fs");
-const crypto = require("crypto");
 const writeFile = require("write-file-atomic");
 const base64 = require("node-base64-image");
 const sizeof = require("object-sizeof");
@@ -175,11 +174,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		if (configJSON.isUpdating) {
 			res.status(503).render("pages/503.ejs", {});
 		}	else {
-			if (!req.cookies.trafficID) {
-				let UID = crypto.randomBytes(32).toString("hex");
-				res.cookie("trafficID", UID, { httpOnly: true });
+			if (!req.cookies.trafficID || req.cookies.trafficID !== bot.traffic.TID) {
+				let TID = bot.traffic.TID;
+				res.cookie("trafficID", TID, { httpOnly: true });
 			}
-			if (req.method === "GET" && !req.path.includes("/static/")) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
+			if (req.method === "GET" && !req.path.startsWith("/static") && !["/header-image", "/userlist", "/serverlist"].includes(req.path)) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
 			next();
 		}
 	});
@@ -1778,7 +1777,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	app.get("/login/callback", passport.authenticate("discord", {
 		failureRedirect: "/error?err=discord",
 	}), (req, res) => {
-		if (configJSON.globalBlocklist.indexOf(req.user.id) > -1 || req.user.verified === false) {
+		if (configJSON.userBlocklist.indexOf(req.user.id) > -1 || req.user.verified === false) {
 			req.session.destroy(err => {
 				if (!err) renderError(res, "Your Discord account must have a verified email.", "<strong>Hah!</strong> Thought you were close, didn'tcha?");
 				else renderError(res, "Failed to destroy your session.");
@@ -3664,7 +3663,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				if (!err && result) {
 					messageCount = result[0].total;
 				}
-				const version = Updater.check(configJSON);
+				const trafficData = bot.traffic.data();
+				const version = await Updater.check(configJSON);
 				res.render("pages/maintainer.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					serverData: {
@@ -3681,8 +3681,11 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					roundedUptime: getRoundedUptime(process.uptime()),
 					shardCount: configJS.shardTotal,
 					version: configJSON.version,
-					utd: (await version)["up-to-date"],
-					disabled: await version === 404,
+					utd: version["up-to-date"],
+					latestVersion: version.latest ? version.latest.version : null,
+					disabled: version === 404,
+					trafficData: await trafficData,
+					currentShard: bot.shardID,
 				});
 			});
 		});
@@ -3863,12 +3866,12 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		checkAuth(req, res, () => {
 			res.render("pages/maintainer-homepage.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
-					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -3887,7 +3890,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			configJSON.homepageMessageHTML = req.body.homepageMessageHTML;
 			configJSON.headerImage = req.body.header_image;
 
-			saveMaintainerConsoleOptions(consolemember, req, res);
+			saveMaintainerConsoleOptions(consolemember, req, res, true);
 		});
 	});
 
