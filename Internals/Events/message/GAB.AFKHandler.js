@@ -3,11 +3,11 @@ const BaseEvent = require("../BaseEvent");
 class AFKHandler extends BaseEvent {
 	requirements (msg) {
 		if (!msg.guild) return false;
-		if (msg.author.id === this.bot.user.id || msg.author.bot || this.configJSON.globalBlocklist.includes(msg.author.id)) {
+		if (msg.author.id === this.bot.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.bot.user.id) {
 				return false;
 			} else {
-				winston.silly(`Ignored ${msg.author.tag} for AFK handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.globalBlocklist.includes(msg.author.id) });
+				winston.silly(`Ignored ${msg.author.tag} for AFK handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
 				return false;
 			}
 		}
