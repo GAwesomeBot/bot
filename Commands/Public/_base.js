@@ -2,10 +2,10 @@
  * This is a full documented base file for Public commands
  * Use this as a base for coding
  */
-module.exports = async (main, documents, msg, suffix, commandData) => {
+module.exports = async (main, documents, msg, commandData) => {
 	/**
 	 * @param {Discord.Message} msg The message object
-	 * @param {?String} suffix The command suffix, if any
+	 * Suffix is present in the msg object
 	 * @type {Object}
 	 * @param commandData Object containing the command name, usage and description.
 	 * Use `bot.getPMCommandMetadata(commandData.name)` for other things

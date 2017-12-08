@@ -2,11 +2,11 @@
  * This is a full documented base file for PM commands
  * Use this as a base for coding
  */
-module.exports = async (main, userDocument, msg, suffix, commandData) => {
+module.exports = async (main, userDocument, msg, commandData) => {
 	/**
 	 * @param {Document} userDocument The user document of the user that ran this command
 	 * @param {Discord.Message} msg The raw message
-	 * @param {?String} suffix The suffix of the command, if any
+	 * Suffix is present in the msg object
 	 */
 	/**
 	 * @type {Object}
