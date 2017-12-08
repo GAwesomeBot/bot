@@ -1,3 +1,6 @@
+const process = require("process");
+require("./Internals/Fastboot")(`shard-${process.env.SHARD_ID}`);
+
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
@@ -20,7 +23,6 @@ const auth = require("./Configurations/auth.js");
 const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 
-const process = require("process");
 const ProcessAsPromised = require("process-as-promised");
 
 const privateCommandModules = {};
