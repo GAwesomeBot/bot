@@ -3896,41 +3896,41 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Maintainer console wiki contributors
 	app.get("/dashboard/global-options/wiki-contributors", (req, res) => {
-		checkAuth(req, res, consolemember => {
+		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-wiki-contributors.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl === 4,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
-					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 				},
 				currentPage: req.path,
 				config: {
-					wiki_contributors: configJSON.maintainers.map(a => {
-						const usr = bot.users.get(a) || {
+					wiki_contributors: await Promise.all(configJSON.maintainers.map(async a => {
+						const usr = await bot.users.fetch(a, true) || {
 							id: "invalid-user",
 							username: "invalid-user",
 						};
 						return {
 							name: usr.username,
 							id: usr.id,
-							avatar: usr.avatarURL || "/static/img/discord-icon.png",
+							avatar: usr.avatarURL() || "/static/img/discord-icon.png",
 							isMaintainer: true,
+							isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
 						};
-					}).concat(configJSON.wikiContributors.map((a, i) => {
-						const usr = bot.users.get(a) || {
+					}).concat(configJSON.wikiContributors.map(async a => {
+						const usr = await bot.users.fetch(a, true) || {
 							id: "invalid-user",
 							username: "invalid-user",
 						};
 						return {
 							name: usr.username,
 							id: usr.id,
-							avatar: usr.avatarURL || "/static/img/discord-icon.png",
-							index: i,
+							avatar: usr.avatarURL() || "/static/img/discord-icon.png",
 						};
-					})),
+					}))),
 				},
 				showRemove: configJSON.maintainers.includes(consolemember.id),
 			});
@@ -3940,18 +3940,17 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		socket.on("disconnect", () => {});
 	});
 	app.post("/dashboard/global-options/wiki-contributors", (req, res) => {
-		checkAuth(req, res, consolemember => {
+		checkAuth(req, res, async consolemember => {
 			if (req.body["new-user"]) {
-				const usr = findQueryUser(req.body["new-user"], bot.users);
+				let usr = await db.users.findOne({ username: req.body["new-user"]}).exec();
+				if (!usr) usr = await bot.users.fetch(req.body["new-user"], true);
+				if (!usr.id) usr.id = usr._id;
 				if (usr && configJSON.wikiContributors.indexOf(usr.id) === -1) {
 					configJSON.wikiContributors.push(usr.id);
 				}
 			} else if (configJSON.maintainers.includes(consolemember.id)) {
-				for (let i = 0; i < configJSON.wikiContributors.length; i++) {
-					if (req.body[`contributor-${i}-removed`] !== null) {
-						configJSON.wikiContributors[i] = null;
-					}
-				}
+				let i = configJSON.wikiContributors.indexOf(req.body["contributor-removed"]);
+				configJSON.wikiContributors[i] = null;
 				configJSON.wikiContributors.spliceNullElements();
 			}
 
