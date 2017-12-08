@@ -4,7 +4,7 @@
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://github.com/GilbertGobbels/GAwesomeBot/blob/indev-4.0.2/LICENSE)
 [![Discord Server](https://discordapp.com/api/guilds/272081064535654400/embed.png)](https://discord.gg/UPJ2xt6)
 
-*Welcome to GAwesomeBot, the community revival of AwesomeBot! Still the best Discord Bot!*
+*Welcome to GAwesomeBot, the best Discord Bot!*
 GAwesomeBot is the best all-purpose bot you'll find out there, packed with features in entertainment, utility and more, GAwesomeBot was designed to bring more activity to your server, while keeping control over it all with a rich web interface and advanced, but elegant moderation features. Give [GAwesomeBot](https://gawesomebot.com) a try now!
 
 ## indev-4.0.2
