@@ -72,7 +72,7 @@ class MessageCreate extends BaseEvent {
 						configJSON: this.configJSON,
 						utils: Utils,
 						Utils,
-					}, userDocument, msg, msg.suffix, {
+					}, userDocument, msg, {
 						name: msg.command,
 						usage: this.bot.getPMCommandMetadata(msg.command).usage,
 					});
@@ -419,7 +419,7 @@ class MessageCreate extends BaseEvent {
 											usage: this.bot.getPublicCommandMetadata(msg.command).usage,
 											description: this.bot.getPublicCommandMetadata(msg.command).description,
 										};
-										await this.bot.getPublicCommand(msg.command)(botObject, documents, msg, msg.suffix, commandData);
+										await this.bot.getPublicCommand(msg.command)(botObject, documents, msg, commandData);
 									} catch (err) {
 										winston.warn(`Failed to process command "${msg.command}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 										this.bot.logMessage(serverDocument, "error", `Failed to process command "${msg.command}" X.X`, msg.channel.id, msg.author.id);
