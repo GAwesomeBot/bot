@@ -1,4 +1,4 @@
-module.exports = async (main, userDocument, msg, suffix, commandData) => {
+module.exports = async (main, msg, suffix, commandData) => {
 	const { bot, configJSON } = main;
 	const commands = require("../../Configurations/commands");
 
