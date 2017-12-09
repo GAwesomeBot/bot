@@ -66,4 +66,36 @@ module.exports = () => {
 		}
 		return GABMessage;
 	});
+
+	Structures.extend("User", User => {
+		class GABUser extends User {
+			constructor (client, data) {
+				super(client, data);
+				if (data.id) {
+					Users.findOrCreate({ _id: data.id })
+						.then(userDocument => {
+							this.userDocument = userDocument.doc;
+						})
+						.catch(() => {
+							this.userDocument = null;
+						});
+				}
+			}
+		}
+		return GABUser;
+	});
+
+	Structures.extend("GuildMember", GuildMember => {
+		class GABGuildMember extends GuildMember {
+			get memberDocument () {
+				let doc = this.guild.serverDocument.members.id(this.id);
+				if (!doc) {
+					this.guild.serverDocument.members.push({ _id: this.id });
+					doc = this.guild.serverDocument.members.id(this.id);
+				}
+				return doc;
+			}
+		}
+		return GABGuildMember;
+	});
 };

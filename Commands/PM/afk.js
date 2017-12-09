@@ -1,7 +1,7 @@
-module.exports = async (main, userDocument, msg, commandData) => {
+module.exports = async (main, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix === ".") {
-			userDocument.afk_message = null;
+			msg.author.userDocument.afk_message = null;
 			msg.channel.send({
 				embed: {
 					color: 0x00FF00,
@@ -13,7 +13,7 @@ module.exports = async (main, userDocument, msg, commandData) => {
 				},
 			});
 		} else {
-			userDocument.afk_message = msg.suffix;
+			msg.author.userDocument.afk_message = msg.suffix;
 			msg.channel.send({
 				embed: {
 					color: 0x00FF00,
@@ -24,14 +24,14 @@ module.exports = async (main, userDocument, msg, commandData) => {
 				},
 			});
 		}
-		await userDocument.save().catch(err => {
+		await msg.author.userDocument.save().catch(err => {
 			winston.verbose(`Failed to save user document for AFK message >.>\n`, err);
 		});
-	} else if (userDocument.afk_message) {
+	} else if (msg.author.userDocument.afk_message) {
 		msg.channel.send({
 			embed: {
 				color: 0x3669FA,
-				description: `Your current global AFK message is: \`\`\`\n${userDocument.afk_message.replace(/```/g, "")}\`\`\``,
+				description: `Your current global AFK message is: \`\`\`\n${msg.author.userDocument.afk_message.replace(/```/g, "")}\`\`\``,
 				footer: {
 					text: `Use "${commandData.name} <message>" to change it or "${commandData.name} ." to remove it.`,
 				},

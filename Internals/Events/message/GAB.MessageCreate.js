@@ -1,6 +1,6 @@
 /* eslint-disable max-len, max-depth */
 const BaseEvent = require("../BaseEvent.js");
-const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/");
+const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/index");
 const {
 	Gist,
 	FilterChecker: checkFiltered,
@@ -61,10 +61,6 @@ class MessageCreate extends BaseEvent {
 			const commandFunction = this.bot.getPMCommand(msg.command);
 			if (commandFunction) {
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
-				const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-					winston.warn("Failed to find or create user data for message", { usrid: msg.author.id }, err);
-				});
-				const userDocument = findDocument && findDocument.doc;
 				try {
 					await commandFunction({
 						bot: this.bot,
@@ -72,7 +68,7 @@ class MessageCreate extends BaseEvent {
 						configJSON: this.configJSON,
 						utils: Utils,
 						Utils,
-					}, userDocument, msg, {
+					}, msg, {
 						name: msg.command,
 						usage: this.bot.getPMCommandMetadata(msg.command).usage,
 					});
@@ -89,7 +85,7 @@ class MessageCreate extends BaseEvent {
 						},
 					});
 				}
-				await userDocument.save().catch(err => {
+				await msg.author.userDocument.save().catch(err => {
 					winston.verbose(`Failed to save user document...`, err);
 				});
 			} else {
@@ -178,15 +174,15 @@ class MessageCreate extends BaseEvent {
 				}
 
 				// Check for eval command from maintainers
-				if (this.configJSON.maintainers.includes(msg.author.id)) {
-					const evalCommand = await this.bot.checkCommandTag(msg.content, serverDocument);
-					if (evalCommand && (evalCommand.command === "eval" || evalCommand.command === "ev")) {
-						if (evalCommand.suffix) {
+				if (this.configJSON.maintainers.includes(msg.author.id) || this.configJSON.sudoMaintainers.includes(msg.author.id)) {
+					if (msg.command === "eval" || msg.command === "ev") {
+						if (msg.suffix) {
 							let hrstart = process.hrtime();
+							let suffix = msg.suffix;
 							try {
-								if (evalCommand.suffix.startsWith("```js") && evalCommand.suffix.endsWith("```")) evalCommand.suffix = evalCommand.suffix.substring(5, evalCommand.suffix.length - 3);
+								if (msg.suffix.startsWith("```js") && msg.suffix.endsWith("```")) suffix = msg.suffix.substring(5, msg.suffix.length - 3);
 								const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
-								evalCommand.suffix = evalCommand.suffix
+								suffix = msg.suffix
 									.replace("this.bot.token", "\"mfaNop\"")
 									.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
 								let { discord, tokens } = require("../../../Configurations/auth");
@@ -208,7 +204,7 @@ class MessageCreate extends BaseEvent {
 									tokens.gistKey,
 								];
 								const regex = new RegExpMaker(censor).make("gi");
-								let result = await eval(asyncEval(evalCommand.suffix, evalCommand.suffix.includes("return")));
+								let result = await eval(asyncEval(suffix, suffix.includes("return")));
 								if (typeof result !== "string") result = require("util").inspect(result, false, 1);
 								result = result.replace(regex, "-- GAB SNIP --");
 								if (result.length <= 1980) {
