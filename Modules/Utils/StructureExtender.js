@@ -69,17 +69,22 @@ module.exports = () => {
 
 	Structures.extend("User", User => {
 		class GABUser extends User {
-			constructor (client, data) {
-				super(client, data);
-				if (data.id) {
-					Users.findOrCreate({ _id: data.id })
-						.then(userDocument => {
-							this.userDocument = userDocument.doc;
-						})
-						.catch(() => {
-							this.userDocument = null;
+			get userDocument () {
+				if (this._userDocument) return this._userDocument;
+				Users.findOrCreate({ _id: this.id })
+					.then(userDocument => {
+						Object.defineProperty(this, "_userDocument", {
+							value: userDocument.doc,
+							enumerable: false,
 						});
-				}
+					})
+					.catch(() => {
+						Object.defineProperty(this, "_userDocument", {
+							value: null,
+							enumerable: false,
+						});
+					});
+				return this._userDocument;
 			}
 		}
 		return GABUser;
