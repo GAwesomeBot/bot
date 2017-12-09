@@ -5,16 +5,16 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic } = require("./Modules/");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
-const Timeouts = require("./Modules/Timeouts/");
+const Timeouts = require("./Modules/Timeouts/index");
 const {
 	Cache,
 	Errors: {
 		Error: GABError,
 	},
 	EventHandler,
-} = require("./Internals/");
+} = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
 const configJSON = require("./Configurations/config.json");
@@ -473,7 +473,7 @@ class Client extends DJSClient {
 			}
 		}
 
-		const blockMember = async () => {
+		const blockMember = async failedAction => {
 			if (!serverDocument.config.blocked.includes(member.id)) {
 				serverDocument.config.blocked.push(member.id);
 			}
@@ -494,6 +494,9 @@ class Client extends DJSClient {
 				embed: {
 					color: 0x3669FA,
 					description: `${adminMessage}, so I blocked them from using me on the server.`,
+					footer: {
+						text: failedAction ? `I was unable to ${failedAction} the member. Please check that I have permissions!` : "",
+					},
 				},
 			});
 			ModLog.create(server, serverDocument, "Block", member, null, strikeMessage);
@@ -526,7 +529,7 @@ class Client extends DJSClient {
 					});
 					ModLog.create(server, serverDocument, "Mute", member, null, strikeMessage);
 				} catch (err) {
-					await blockMember();
+					await blockMember("mute");
 				}
 				break;
 			}
@@ -549,7 +552,7 @@ class Client extends DJSClient {
 					});
 					ModLog.create(server, serverDocument, "Kick", member, null, strikeMessage);
 				} catch (err) {
-					await blockMember();
+					await blockMember("kick");
 				}
 				break;
 			}
@@ -575,7 +578,7 @@ class Client extends DJSClient {
 					});
 					ModLog.create(server, serverDocument, "Ban", member, null, strikeMessage);
 				} catch (err) {
-					await blockMember();
+					await blockMember("ban");
 				}
 				break;
 			}
