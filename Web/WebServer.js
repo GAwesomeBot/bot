@@ -234,6 +234,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	}));
 
 	bot.IPC.on("dashboardUpdate", msg => {
+		msg = JSON.parse(msg);
 		const path = msg.namespace;
 		const param = msg.location;
 		try {
@@ -1760,7 +1761,9 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		dashboardUpdate(req.path, "maintainer");
 		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 4), err => {
 			if (err) {
-				winston.error(`Failed to update maintainer settings at ${req.path}`, { usrid: consolemember.id }, err);
+				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: consolemember.id }, err);
+				renderError(res, "An internal error occurred!");
+				return;
 			}
 			if (override && !silent) {
 				res.sendStatus(200);

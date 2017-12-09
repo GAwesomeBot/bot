@@ -3,13 +3,13 @@ function saveFormState() {
 	try{
 		$("#builder-code-box").val(cm.getDoc().getValue());
 	} catch(err) {}
-	hide_update_modal = true;
 	initial_form_state = $('#form').serialize();
 	$("#form-submit span:nth-child(2)").html("Save")
 }
 
 function submitForm() {
 	$("#form-submit").addClass("is-loading");
+	hide_update_modal = true;
 	$.ajax({
 		method: "POST",
 		url: location.pathname + location.search,

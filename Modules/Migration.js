@@ -7,11 +7,6 @@ const winston = new (require("./Console"))("MIGRATION");
 
 winston.info(`Preparing to migrate ${databaseURL} to GAB 4.1`);
 
-Driver.initialize(databaseURL).catch(err => {
-	winston.error(`Failed to connect to the database!\n`, err);
-	process.exit(-1);
-});
-
 const MigrateChatterBot = async () => {
 	let serverDocuments = await Servers.find({ "config.chatterbot": { $in: [true, false] } });
 	for (const serverDocument of serverDocuments) {
@@ -30,7 +25,13 @@ const MigrateChatterBot = async () => {
 
 winston.info(`Updating configurations...`);
 
-Promise.all([MigrateChatterBot]).then(() => {
-	winston.info(`Successfully migrated ${databaseURL} to 4.1`);
-	process.exit(0);
+
+Driver.initialize(databaseURL).catch(err => {
+	winston.error(`Failed to connect to the database!\n`, err);
+	process.exit(-1);
+}).then(() => {
+	Promise.all([MigrateChatterBot()]).then(() => {
+		winston.info(`Successfully migrated ${databaseURL} to 4.1`);
+		process.exit(0);
+	});
 });

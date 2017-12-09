@@ -156,6 +156,7 @@
 						dateFormat: parseDate,
 					  });
 
+					  <% if (trafficData.day.length === 0) trafficData.day[0] = "{_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}" %>
 					  let trafficGraphDay = new Morris.Line({
 						element: "traffic-chart-day",
 						lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
