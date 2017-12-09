@@ -14,7 +14,7 @@ const database = require("./Database/Driver.js");
 const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
-const { Console, Sharder, Traffic } = require("./Modules/");
+const { Console, Sharder, Traffic, Boot } = require("./Modules/");
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -23,22 +23,23 @@ winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawe
 
 process.setMaxListeners(0);
 
-if (process.argv.includes("--build")) winston.warn("Travis build launched. Process will exit after successfully starting.");
+process.argv.forEach(arg => {
+	let func;
+	if (Boot.has(arg)) func = Boot.get(arg);
+	if (typeof func === "string") func = Boot.get(func);
+	if (func) func(configJS, configJSON, auth);
+});
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
-if (process.argv.indexOf("--db") > -1) {
-	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1];
-}
-if (process.argv.indexOf("--token") > -1) {
-	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1];
-}
+if (process.argv.includes("--migrate") || process.argv.includes("-m")) return;
 
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 	process.exit(-1);
 }).then(async () => {
 	const db = database.getConnection();
+
 	if (db) {
 		await winston.info(`Connected to the database successfully.`);
 
