@@ -9,7 +9,9 @@ const { Console, Utils, GetGuild: GG, PostTotalData, Traffic } = require("./Modu
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
-	Cache,
+	Cache: {
+		ServerDocumentCache,
+	},
 	Errors: {
 		Error: GABError,
 	},
@@ -53,7 +55,7 @@ class Client extends DJSClient {
 		this.MOTDTimers = new Collection();
 
 		// Store server documents by ID
-		this.cache = new Cache(this);
+		this.cache = new ServerDocumentCache(this);
 
 		this.shardID = process.env.SHARD_ID;
 	}

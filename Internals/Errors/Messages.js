@@ -3,6 +3,7 @@ const { register } = require("./GABError");
 const Messages = {
 	// Class-related
 	STATIC_CLASS: name => `The ${name} class should not be instantiated!`,
+	NON_OVERWRITTEN: prop => `The ${prop} function has not been overwritten!`,
 
 	// Event Related
 	UNKNOWN_EVENT: event => `Unknown event received: ${event}`,

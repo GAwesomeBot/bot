@@ -1,5 +1,5 @@
 module.exports = {
-	Cache: require("./MongooseCache"),
+	Cache: require("./Cache/"),
 	Errors: require("./Errors/"),
 	EventHandler: require("./Events/EventHandler"),
 };
