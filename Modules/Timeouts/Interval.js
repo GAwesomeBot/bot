@@ -16,6 +16,7 @@ module.exports = class Interval extends Base {
 			this.timeout = setTimeout(() => {
 				this.listener(...this.args);
 				this.timeLeft = this.after;
+				this.startedAt = Date.now();
 				this.start();
 			}, this.timeLeft);
 		} else {

@@ -11,6 +11,8 @@ module.exports = class Base {
 		 */
 		this.MAX = 2147483647;
 		this.timeout = null;
+
+		this.startedAt = Date.now();
 	}
 
 	unref () {
