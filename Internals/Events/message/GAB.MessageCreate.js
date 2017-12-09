@@ -60,6 +60,8 @@ class MessageCreate extends BaseEvent {
 			}
 			const commandFunction = this.bot.getPMCommand(msg.command);
 			if (commandFunction) {
+				const userDocument = (await Users.findOrCreate({ _id: msg.author.id })).doc;
+				msg.author.userDocument = userDocument;
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
 				try {
 					await commandFunction({

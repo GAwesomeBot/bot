@@ -67,29 +67,6 @@ module.exports = () => {
 		return GABMessage;
 	});
 
-	Structures.extend("User", User => {
-		class GABUser extends User {
-			get userDocument () {
-				if (this._userDocument) return this._userDocument;
-				Users.findOrCreate({ _id: this.id })
-					.then(userDocument => {
-						Object.defineProperty(this, "_userDocument", {
-							value: userDocument.doc,
-							enumerable: false,
-						});
-					})
-					.catch(() => {
-						Object.defineProperty(this, "_userDocument", {
-							value: null,
-							enumerable: false,
-						});
-					});
-				return this._userDocument;
-			}
-		}
-		return GABUser;
-	});
-
 	Structures.extend("GuildMember", GuildMember => {
 		class GABGuildMember extends GuildMember {
 			get memberDocument () {

@@ -2,7 +2,7 @@ module.exports = async (main, msg, suffix, commandData) => {
 	const { bot, configJSON } = main;
 	const commands = require("../../Configurations/commands");
 
-	if (!configJSON.maintainers.includes(msg.author.id)) {
+	if (!configJSON.maintainers.includes(msg.author.id) || !configJSON.sudoMaintainers.includes(msg.author.id)) {
 		return msg.reply({
 			embed: {
 				color: 0xFF0000,
