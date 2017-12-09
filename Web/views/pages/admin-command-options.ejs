@@ -70,10 +70,23 @@
 							<label class="label">Chatterbot</label>
 							<p class="control">
 								<label class="checkbox">
-								<input name="chatterbot" type="checkbox" <%= configData.chatterbot ? "checked" : "" %>>
+								<input name="chatterbot-isEnabled" type="checkbox" <%= configData.chatterbot ? "checked" : "" %>
+									onclick="$('#chatterbot_enabled_channel_ids-options').toggleClass('is-hidden');">
 									Allow members to converse with GAwesomeBot
 								</label>
 								<span class="help">The <a href="http://www.program-o.com/">Program-O</a> chatbot will be used if the bot is mentioned and a command is not being used, e.g. <code><strong>@<%= botName %></strong> Hello! How are you?</code>.</span>
+								<span id="chatterbot_enabled_channel_ids-options"
+									class="<%= configData.chatterbot.isEnabled ? '' : 'is-hidden' %>">
+									<br>
+									<% for (var i = 0; i < channelData.length; i++) { %>
+										<label class="checkbox">
+										<input name="chatterbot_enabled_channel_ids-<%= channelData[i].id %>"
+											type="checkbox" <%= configData.chatterbot.disabled_channel_ids.indexOf(channelData[i].id) === -1 ? "checked" : "" %>>
+											#<%= channelData[i].name %>
+										</label>
+										<br>
+									<% } %>
+								</span>
 							</p>
 						</div>
 						<br>

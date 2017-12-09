@@ -37,8 +37,11 @@ module.exports = {
 	})],
 	blocked: [String],
 	chatterbot: {
-		type: Boolean,
-		default: true,
+		isEnabled: {
+			type: Boolean,
+			default: true,
+		},
+		disabled_channel_ids: [String],
 	},
 	command_cooldown: {
 		type: Number,

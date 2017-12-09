@@ -1930,6 +1930,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					command_prefix: serverDocument.config.command_prefix,
 					delete_command_messages: serverDocument.config.delete_command_messages,
 				},
+				channelData: getChannelData(svr),
 				botName: svr.members[bot.user.id].nickname || bot.user.username,
 			});
 		});
@@ -1943,7 +1944,18 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				serverDocument.config.command_prefix = req.body.command_prefix;
 			}
 			serverDocument.config.delete_command_messages = req.body.delete_command_messages === "on";
-			serverDocument.config.chatterbot = req.body.chatterbot === "on";
+			serverDocument.config.chatterbot.isEnabled = req.body["chatterbot-isEnabled"] === "on";
+			if (req.body["chatterbot-isEnabled"] === "on") {
+				const channels = getChannelData(svr).map(ch => ch.id);
+				const enabledChannels = Object.keys(req.body).filter(key => key.startsWith("chatterbot_enabled_channel_ids")).map(chstring => chstring.split("-")[1]);
+				channels.forEach(ch => {
+					if (!enabledChannels.some(id => ch === id)) {
+						serverDocument.config.chatterbot.disabled_channel_ids.push(ch);
+					}	else if (enabledChannels.some(id => ch === id) && serverDocument.config.chatterbot.disabled_channel_ids.indexOf(ch) > -1) {
+						serverDocument.config.chatterbot.disabled_channel_ids = serverDocument.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch);
+					}
+				});
+			}
 			serverDocument.config.command_cooldown = parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown);
 			serverDocument.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? serverDocument.config.command_fetch_properties.default_count : parseInt(req.body.default_count);
 			serverDocument.config.command_fetch_properties.max_count = isNaN(parseInt(req.body.max_count)) ? serverDocument.config.command_fetch_properties.max_count : parseInt(req.body.max_count);
