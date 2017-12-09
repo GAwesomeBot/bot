@@ -8,7 +8,7 @@ const migrate = () => require("./Migration.js")();
 
 const db = configJS => {
 	if (!process.argv[process.argv.indexOf("--db") + 1]) {
-		winston.warn(`Argument --sudo requires a parameter.`);
+		winston.warn(`Argument --db requires a parameter.`);
 		return;
 	}
 	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1];
@@ -16,7 +16,7 @@ const db = configJS => {
 
 const token = (configJS, configJSON, auth) => {
 	if (!process.argv[process.argv.indexOf("--token") + 1]) {
-		winston.warn(`Argument --sudo requires a parameter.`);
+		winston.warn(`Argument --token requires a parameter.`);
 		return;
 	}
 	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1];
