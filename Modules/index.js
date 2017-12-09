@@ -11,5 +11,5 @@ module.exports = {
 	SharderIPC: require("./IPC.js"),
 	Traffic: require("./Traffic.js"),
 	Updater: require("./Updater.js"),
-	Utils: require("./Utils/"),
+	Utils: require("./Utils/index"),
 };
