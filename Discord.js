@@ -54,9 +54,6 @@ class Client extends DJSClient {
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Collection();
 
-		// Store server documents by ID
-		this.cache = new ServerDocumentCache(this);
-
 		this.shardID = process.env.SHARD_ID;
 	}
 
@@ -894,7 +891,8 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	winston.debug("Initializing Discord Events.");
 	bot.events = new EventHandler(bot, configJS, configJSON);
 	await bot.events.init();
-
+	// Store server documents by ID
+	bot.cache = new ServerDocumentCache(this);
 	bot.traffic = new Traffic(bot.IPC, true);
 });
 
