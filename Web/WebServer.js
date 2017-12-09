@@ -1951,7 +1951,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				channels.forEach(ch => {
 					if (!enabledChannels.some(id => ch === id)) {
 						serverDocument.config.chatterbot.disabled_channel_ids.push(ch);
-					}	else if (enabledChannels.some(id => ch === id) && serverDocument.config.chatterbot.disabled_channel_ids.indexOf(ch) > -1) {
+					} else if (enabledChannels.some(id => ch === id) && serverDocument.config.chatterbot.disabled_channel_ids.indexOf(ch) > -1) {
 						serverDocument.config.chatterbot.disabled_channel_ids = serverDocument.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch);
 					}
 				});
