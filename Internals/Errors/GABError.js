@@ -2,7 +2,7 @@
  * Heavily inspired from Discord.js's Error code, which in turn is inspired from Node's `internal/errors` module
  */
 const kCode = Symbol("code");
-const messages = global.ErrorMessages = new Map();
+const messages = new Map();
 
 /**
  * Extend an error of some sort into a GABError
