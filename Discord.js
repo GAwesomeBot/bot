@@ -687,11 +687,7 @@ class Client extends DJSClient {
 		for (const perm of PERMS) {
 			if (allowedOrDenied.has(perm)) howMany.push(perm);
 		}
-		if (howMany.length >= 1) {
-			return true;
-		} else {
-			return false;
-		}
+		return howMany.length >= 1;
 	}
 
 	/**
@@ -766,7 +762,7 @@ class Client extends DJSClient {
 	 * @param {String} id The user or mebmer ID
 	 * @param {String} hash The avatar hash returned from Discord
 	 * @param {String} [type="avatars"] Type of avatar to fetch, set to "icons" for servers
-	 * @param {String} [webp=false] If the webp version of an image should be fetched
+	 * @param {Boolean} [webp=false] If the webp version of an image should be fetched
 	 * @returns {String} A string containing either the Discord URL to the avatar or a static reference to the generic avatar
 	 */
 	getAvatarURL (id, hash, type = "avatars", webp = false) {
