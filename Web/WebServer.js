@@ -3974,7 +3974,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	});
 
 	// Maintainer console bot version
-	app.get("/dashboard/maintainer/version", (req, res) => {
+	app.get("/dashboard/management/version", (req, res) => {
 		checkAuth(req, res, async () => {
 			let version = await Updater.check(configJSON);
 			if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
@@ -3996,7 +3996,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			});
 		});
 	});
-	app.post("/dashboard/maintainer/version", (req, res) => {
+	app.post("/dashboard/management/version", (req, res) => {
 		checkAuth(req, res, () => {
 			io.of("/dashboard/maintainer/version").on("connection", socket => {
 				socket.on("update", data => {
@@ -4015,7 +4015,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	});
 
 	// Maintainer console maintainers
-	app.get("/dashboard/global-options/maintainers", (req, res) => {
+	app.get("/dashboard/management/maintainers", (req, res) => {
 		checkAuth(req, res, consolemember => {
 			res.render("pages/maintainer-maintainers.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -4044,10 +4044,10 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			});
 		});
 	});
-	io.of("/dashboard/global-options/maintainers").on("connection", socket => {
+	io.of("/dashboard/management/maintainers").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/global-options/maintainers", (req, res) => {
+	app.post("/dashboard/management/maintainers", (req, res) => {
 		checkAuth(req, res, consolemember => {
 			if (req.body["new-user"]) {
 				const usr = findQueryUser(req.body["new-user"], bot.users);
