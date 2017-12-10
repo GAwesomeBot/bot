@@ -1,7 +1,4 @@
-module.exports = async (main, msg, suffix, commandData) => {
-	const { bot, configJSON } = main;
-	const commands = require("../../Configurations/commands");
-
+module.exports = async ({ bot, configJSON }, msg, commandData) => {
 	if (!configJSON.maintainers.includes(msg.author.id) || !configJSON.sudoMaintainers.includes(msg.author.id)) {
 		return msg.reply({
 			embed: {
@@ -10,8 +7,11 @@ module.exports = async (main, msg, suffix, commandData) => {
 			},
 		});
 	}
+
+	const commands = require("../../Configurations/commands");
 	let params = msg.content.trim().split(/\s+/);
 	params.shift();
+
 	if (!params.length) {
 		let description = `
 To reload a PM command, use \`pm.<command>\`, where \`<command>\` is your PM command.
@@ -59,7 +59,7 @@ To reload a Public command, use \`public.<command>\`, where \`<command>\` is you
 				case "pm": fail = bot.reloadPrivateCommand(cmd, true); break;
 				case "public": {
 					if (!commands.public.hasOwnProperty(cmd)) {
-						winston.warn(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd: cmd });
+						winston.warn(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
 						return msg.reply({
 							embed: {
 								color: 0xFF0000,
@@ -71,7 +71,7 @@ To reload a Public command, use \`public.<command>\`, where \`<command>\` is you
 					fail = bot.reloadPublicCommand(cmd, true);
 					break;
 				}
-				default: return msg.reply({
+				default: msg.reply({
 					embed: {
 						color: 0xFF0000,
 						description: `I was unable to find command \`${cmd}\` of type \`${type}\`.`,
@@ -82,7 +82,7 @@ To reload a Public command, use \`public.<command>\`, where \`<command>\` is you
 				});
 			}
 			if (!fail) {
-				winston.info(`Reloaded ${type} command "${cmd}"`, { usrid: msg.author.id, cmd: cmd });
+				winston.verbose(`Reloaded ${type} command "${cmd}"`, { usrid: msg.author.id, cmd });
 				msg.reply({
 					embed: {
 						color: 0x3669FA,
@@ -90,7 +90,7 @@ To reload a Public command, use \`public.<command>\`, where \`<command>\` is you
 					},
 				});
 			} else if (fail) {
-				winston.warn(`Failed to reload ${type} command "${cmd}"`, { usrid: msg.author.id, cmd: cmd }, fail);
+				winston.verbose(`Failed to reload ${type} command "${cmd}"`, { usrid: msg.author.id, cmd }, fail);
 				msg.reply({
 					embed: {
 						color: 0xFF0000,
@@ -100,11 +100,11 @@ To reload a Public command, use \`public.<command>\`, where \`<command>\` is you
 				});
 			}
 		} else {
-			winston.warn(`Invalid command type or command not in commands.js provided!`, { usrid: msg.author.id, cmd: cmd });
+			winston.verbose(`Invalid command type or command not in commands.js provided!`, { usrid: msg.author.id, cmd });
 			msg.reply({
 				embed: {
 					color: 0xFF0000,
-					title: `Invalid command type (${type}) or command (${cmd})!`,
+					title: `Invalid command type (\`${type}\`) or command (\`${cmd}\`)!`,
 					description: `I was unable to find any command data in \`commands.js\` about \`${cmd}\`.`,
 				},
 			});
