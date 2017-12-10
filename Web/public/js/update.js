@@ -1,13 +1,3 @@
-function closeCodeModal () {
-	$("html").removeClass("is-clipped");
-  $("#config-modal").removeClass("is-active");
-}
-function showCodeModal (data, CMEditor) {
-  CMEditor.getDoc().setValue(data);
-  $("html").addClass("is-clipped");
-	$("#config-modal").addClass("is-active");
-}
-
 const ecolors = {
 	EJS: "is-danger",
 	HTML: "is-danger",
@@ -15,16 +5,41 @@ const ecolors = {
 	CSS: "is-primary",
 	JSON: "is-info"
 }
-function extensionColorPick (extension) {
-	if (ecolors[extension]) {
-		return ecolors[extension];
-	} else {
-		return 'is-dark'
-	}
+
+const t = {
+	confirm: `
+		<h1 class='title is-1'>
+			Are you sure?
+		</h1>
+		<br>
+		<h2 class='subtitle is-2'>
+			Updating will cause GAB to ignore incoming messages and web requests.
+		</h2>
+		<br>
+		<div class='notification is-warning is-bold'>
+			<strong>Do not exit this tab or close GAB while updating!</strong>
+			<br>
+			Doing so may lead to your instance becoming corrupted.
+		</div>
+		<br>
+	`,
+	connecting: `
+		<h2 id='status-title' class='title is-2'>
+			Connecting to socket...
+		</h2>
+		<br>
+		<h5 id='status-subtitle' class='subtitle is-5'>
+			Do not close this tab!
+		</h5>
+		<br>
+		<br>
+	`,
 }
 
 const e = {
-  prepair: () => {
+  prepare: () => {
+  	console.log("ELLO ELLO M8")
+		console.log($("#status-title"));
     $('#status-title').html("Preparing for update...");
   },
   metadata: () => {
@@ -138,34 +153,70 @@ const e = {
 };
 
 $(document).ready(function() {
-  $('#moreinfo-button').click(function() {
-    $('#new-version-info').slideToggle(86); $('#moreinfo-button').html('Update'); $('#moreinfo-button').attr('id', 'update-button');
-    $('#update-button').click(function() {
-      $('#content-container').html("<h1 class='title is-1'>Are you sure?</h1><br><h2 class='subtitle is-2'>This will lockdown GAB and close its core features.</h2><br><div class='notification is-warning is-bold'>DO NOT CLOSE THIS TAB OR SHUTDOWN GAB WHILE UPDATING!<br>Doing so may lead to your instance becoming corrupted.</div><br>");
-      $('#update-button').html("Let's go!")
-      $('#update-button').attr('id', 'start-button')
-      $('#start-button').click(function() {
-        $('#content-container').attr('style', 'padding-top: 0px; padding-right: 0px; padding-left: 0px;')
-        $('#content-container').html("<h2 id='status-title' class='title is-2'>Connecting to socket...</h2><br><h5 id='status-subtitle' class='subtitle is-5'>Do not close this tab!</h5><br><br>")
-        $('#start-button').addClass('is-loading')
-        $.post("/dashboard/maintainer/version?svrid=maintainer", function(response) {
-          var socket = io('/dashboard/maintainer/version');
-          
-          socket.emit("update", "start")
-          
-          socket.on("update", (data) => {
-            e[data](socket);
-          });
-          
-          socket.on("disconnect", () => {
-            $('#hero-container').attr('class','hero is-bold is-dark');
-            $('#status-title').html("Lost connection to socket!");
-            $('#status-subtitle').html("This isn't good... Please restart GAB!");
-            $('button').removeClass('is-loading').addClass('is-disabled').html("ᕙ(⇀‸↼‶)ᕗ");
-            socket.disconnect();
-          })
-       })
-      })
-    })
-  })
-})
+	let updateButton = $("#moreinfo-button");
+	let state = 0;
+
+  updateButton.click(() => {
+  	console.log(state);
+  	switch (state) {
+			case 0:
+				$('#new-version-info').slideToggle(86);
+				updateButton.html('Update');
+				state++;
+				break;
+			case 1:
+				updateContent(t.confirm);
+				updateButton.html("Let's go!");
+				state++;
+				break;
+			case 2:
+				const post = () => $.post("/dashboard/maintainer/version?svrid=maintainer", () => {
+					const socket = io('/dashboard/maintainer/version');
+
+					socket.on("update", data => {
+						console.log(data);
+						e[data](socket);
+					});
+					socket.on("disconnect", () => {
+						$('#hero-container').attr('class', 'hero is-bold is-dark');
+						$('#status-title').html("Lost connection to socket!");
+						$('#status-subtitle').html("This isn't good... Try restarting GAB or getting support.");
+						updateButton.removeClass('is-loading').attr('disabled', '').html("ᕙ(⇀‸↼‶)ᕗ");
+						socket.disconnect();
+					});
+					socket.emit("update", "start");
+				});
+
+				updateContent(t.connecting, post);
+				updateButton.addClass('is-loading');
+				state++;
+				break;
+		}
+	});
+});
+
+function closeCodeModal () {
+	$("html").removeClass("is-clipped");
+	$("#config-modal").removeClass("is-active");
+}
+
+function showCodeModal (data, CMEditor) {
+	CMEditor.getDoc().setValue(data);
+	$("html").addClass("is-clipped");
+	$("#config-modal").addClass("is-active");
+}
+
+function extensionColorPick (extension) {
+	if (ecolors[extension]) {
+		return ecolors[extension];
+	} else {
+		return 'is-dark'
+	}
+}
+
+function updateContent (html, callback) {
+	$("#content-container").slideToggle(300, function() {
+		$(this).html(html).slideToggle(300);
+		if (callback) callback();
+	});
+}

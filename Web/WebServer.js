@@ -3975,59 +3975,24 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Maintainer console bot version
 	app.get("/dashboard/maintainer/version", (req, res) => {
-		checkAuth(req, res, () => {
-			Updater.check(configJSON, version => {
-				if (version === 404) {
-					res.render("pages/maintainer-version.ejs", {
-						disabled: true,
-						version: configJSON.version,
-						branch: configJSON.branch,
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-					});
-				} else if (!version["up-to-date"]) {
-					version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
-					res.render("pages/maintainer-version.ejs", {
-						disabled: false,
-						version: configJSON.version,
-						branch: configJSON.branch,
-						versionn: JSON.stringify(version.latest),
-						utd: false,
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-					});
-				} else {
-					res.render("pages/maintainer-version.ejs", {
-						disabled: false,
-						version: configJSON.version,
-						branch: configJSON.branch,
-						versionn: JSON.stringify(version.latest),
-						utd: true,
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						sudoMode: adminLvl === 4,
-						serverData: {
-							name: bot.user.username,
-							id: bot.user.id,
-							icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-							isMaintainer: true,
-						},
-						currentPage: req.path,
-					});
-				}
+		checkAuth(req, res, async () => {
+			let version = await Updater.check(configJSON);
+			if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
+			res.render("pages/maintainer-version.ejs", {
+				disabled: version === 404,
+				version: configJSON.version,
+				branch: configJSON.branch,
+				latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
+				utd: version["up-to-date"],
+				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				serverData: {
+					name: bot.user.username,
+					id: bot.user.id,
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
+					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+				},
+				currentPage: req.path,
 			});
 		});
 	});
@@ -4036,13 +4001,16 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 			io.of("/dashboard/maintainer/version").on("connection", socket => {
 				socket.on("update", data => {
 					if (data === "start") {
-						socket.emit("update", "prepair");
-						Updater.update(bot, configJSON, socket, winston);
+						socket.emit("update", "prepare");
+						//Updater.update(bot, configJSON, socket, winston);
 					}
 				});
+				socket.on("disconnect", () => {
+					winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
+					bot.IPC.send("shutdown", { err: true });
+				});
 			});
-			// unirest.post("https://status.gilbertgobbels.xyz/updates/stats").send(bot.user).end(() => {});
-			res.send("OK");
+			res.sendStatus(200);
 		});
 	});
 

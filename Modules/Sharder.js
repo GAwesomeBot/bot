@@ -12,8 +12,8 @@ class Shard {
 		this.IPC = new ProcessAsPromised(this.process);
 
 		this.process.once("exit", () => {
-			this.winston.debug(`Shard ${this.id} peacefully passed away. Respawning...`, { id: this.id });
-			this.sharder.create(this.id);
+			this.winston.debug(`Shard ${this.id} peacefully passed away.${!this.sharder.shutdown ? " Respawning..." : ""}`, { id: this.id });
+			if (!this.sharder.shutdown) this.sharder.create(this.id);
 		});
 
 		this.sharder.IPC.onEvents.forEach((callback, event) => this.IPC.on(event, callback));
@@ -59,6 +59,7 @@ class Sharder {
 		this.IPC = new this.SharderIPC(this, winston);
 		this.shards = new this.Collection();
 		this.guilds = new this.Collection();
+		this.shutdown = false;
 	}
 
 	spawn () {

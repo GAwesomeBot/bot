@@ -203,6 +203,14 @@ database.initialize(configJS.databaseURL).catch(err => {
 
 		sharder.IPC.on("updateBot", async msg => sharder.IPC.send("updateBot", msg, "*"));
 
+		sharder.IPC.on("shutdown", async msg => {
+			if (msg.err) winston.error(`A critical error occurred within a worker, the master can no longer operate; GAB is shutting down.`);
+			else winston.info(`GAB is shutting down.`);
+			sharder.shutdown = true;
+			sharder.cluster.disconnect();
+			process.exit(msg.err ? 1 : 0);
+		});
+
 		sharder.spawn();
 	}
 });
