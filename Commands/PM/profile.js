@@ -53,7 +53,7 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 		m = await msg.reply({
 			embed: {
 				color: 0x43B581,
-				title: `Next up, here's your current backround ~~--~~ Click here to see the URL`,
+				title: `Next, here's your current backround ~~--~~ Click here to see the URL`,
 				url: msg.author.userDocument.profile_background_image,
 				image: {
 					url: msg.author.userDocument.profile_background_image,
