@@ -55,6 +55,8 @@ class Client extends DJSClient {
 		this.MOTDTimers = new Collection();
 
 		this.shardID = process.env.SHARD_ID;
+
+		this.messageListeners = {};
 	}
 
 	/**
@@ -77,6 +79,45 @@ class Client extends DJSClient {
 				resolve(serverDocument.config.command_prefix);
 			}
 		});
+	}
+
+	/**
+	 * Special await message for PM interaction.
+	 * @param {Discord.TextChannel} channel The channel to await a message in
+	 * @param {Discord.User} user The user to await the message from
+	 * @param {Number} [timeout=60000] The timeout for this await
+	 * @param {Function} [filter] The filter to run on the message
+	 */
+	async awaitPMMessage (channel, user, timeout = 60000, filter = () => true) {
+		if (!this.messageListeners[channel.id]) this.messageListeners[channel.id] = {};
+
+		const entry = {
+			filter,
+		};
+		entry.promise = new Promise((resolve, reject) => {
+			Object.assign(entry, {
+				resolve,
+				reject,
+			});
+		});
+
+		this.messageListeners[channel.id][user.id] = entry;
+
+		this.setTimeout(() => {
+			if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
+				this.messageListeners[channel.id][user.id].reject(new GABError("AWAIT_EXPIRED"));
+				delete this.messageListeners[channel.id][user.id];
+				if (Object.keys(this.messageListeners[channel.id]).length === 0) delete this.messageListeners[channel.id];
+			}
+		}, timeout);
+
+		return this.messageListeners[channel.id][user.id].promise;
+	}
+
+	deleteAwaitPMMessage (channel, user) {
+		this.messageListeners[channel.id][user.id].reject(new GABError("AWAIT_EXPIRED"));
+		delete this.messageListeners[channel.id][user.id];
+		if (Object.keys(this.messageListeners[channel.id]).length === 0) delete this.messageListeners[channel.id];
 	}
 
 	/**

@@ -4,6 +4,7 @@ module.exports = {
 	ConvertCurrency: require("./ConvertCurrency.js"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
 	GetGuild: require("./GetGuild.js"),
+	Imgur: require("./Imgur"),
 	MicrosoftTranslate: require("./MicrosoftTranslate.js"),
 	NewServer: require("./NewServer.js"),
 	PostShardedData: require("./PostShardedData.js"),

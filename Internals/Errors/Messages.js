@@ -14,6 +14,9 @@ const Messages = {
 
 	// Misc
 	FEATURE_TODO: `This feature is currently not implemented. It might be re-done eventually`,
+	// Await PM messages
+	AWAIT_EXPIRED: `The await for the message expired!`,
+	AWAIT_QUIT: `The user quitted the menu!`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

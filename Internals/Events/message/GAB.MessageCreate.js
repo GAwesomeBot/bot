@@ -6,6 +6,11 @@ const {
 	FilterChecker: checkFiltered,
 	RegExpMaker,
 } = Utils;
+const {
+	Errors: {
+		Error: GABError,
+	},
+} = require("../../index");
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
@@ -28,6 +33,16 @@ class MessageCreate extends BaseEvent {
 	async handle (msg, proctime) {
 		// Handle private messages
 		if (!msg.guild) {
+			if (this.bot.messageListeners[msg.channel.id] && this.bot.messageListeners[msg.channel.id][msg.author.id]) {
+				if (msg.content.toLowerCase().trim() === "quit") {
+					this.bot.messageListeners[msg.channel.id][msg.author.id].reject(new GABError("AWAIT_QUIT"));
+					this.bot.deleteAwaitPMMessage(msg.channel, msg.author);
+				} else if (this.bot.messageListeners[msg.channel.id][msg.author.id].filter(msg)) {
+					this.bot.messageListeners[msg.channel.id][msg.author.id].resolve(msg);
+					this.bot.deleteAwaitPMMessage(msg.channel, msg.author);
+				}
+				return;
+			}
 			// Forward PM to maintainer(s) if enabled
 			if (!this.configJSON.maintainers.includes(msg.author.id) && this.configJSON.pmForward) {
 				let url = "";
