@@ -3,6 +3,9 @@ const commands = {
 		afk: {
 			usage: `<"." or message>`,
 		},
+		config: {
+			usage: "",
+		},
 		giveaway: {
 			usage: "<server> | <channel>",
 		},
