@@ -1,5 +1,5 @@
 module.exports = async ({ bot, configJSON }, msg, commandData) => {
-	if (!configJSON.maintainers.includes(msg.author.id) || !configJSON.sudoMaintainers.includes(msg.author.id)) {
+	if (!(configJSON.sudoMaintainers.includes(msg.author.id) || configJSON.maintainers.includes(msg.author.id))) {
 		return msg.reply({
 			embed: {
 				color: 0xFF0000,
