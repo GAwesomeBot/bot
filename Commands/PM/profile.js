@@ -9,7 +9,6 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 	};
 
 	if (msg.suffix === "setup") {
-		console.log(`Profile setup starting for ${msg.author.tag}`);
 		let m = await msg.reply({
 			embed: {
 				color: 0x43B581,
@@ -112,7 +111,7 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 					name: `Profile setup for ${msg.author.tag}`,
 				},
 				footer: {
-					text: `Answer with "." if you don't want anything in your bio | This message expires in 5 minutes`,
+					text: `Answer with "." to not change your bio, or "none" to reset it | This message expires in 5 minutes`,
 				},
 			},
 		});
@@ -138,6 +137,9 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 		}
 		if (message && message.content) {
 			if (message.content.trim() === ".") {
+				if (msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
+				else changes.Bio = null;
+			} else if (message.content.toLowerCase().trim() === "none") {
 				changes.Bio = "delete";
 			} else {
 				changes.Bio = message.content.trim();
@@ -148,7 +150,7 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 		if (!msg.author.userDocument.profile_fields) msg.author.userDocument.profile_fields = {};
 		if (changes.Bio === "delete") {
 			delete msg.author.userDocument.profile_fields.Bio;
-		} else {
+		} else if (changes.Bio) {
 			msg.author.userDocument.profile_fields.Bio = changes.Bio;
 		}
 		msg.author.userDocument.markModified("profile_fields");
@@ -159,8 +161,11 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 			embed: {
 				color: 0x00FF00,
 				title: `You're all set! ~~--~~ Click here to see your profile. 👀`,
-				description: `Thanks! Your profile is good to go!`,
+				description: `Thanks for your input.`,
 				url: `${configJS.hostingURL}activity/users?q=${encodeURIComponent(`${msg.author.tag}`)}`,
+				footer: {
+					text: `Changed your mind? Run "profile setup" once again!`,
+				},
 			},
 		});
 	}
