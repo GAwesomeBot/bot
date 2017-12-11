@@ -25,7 +25,7 @@ exports.initialize = url => new Promise((resolve, reject) => {
 		Gallery,
 		Blog,
 		Wiki,
-		Traffic
+		Traffic,
 	] = [
 		mongoose.model("servers", serverSchema),
 		mongoose.model("users", userSchema),
@@ -33,7 +33,7 @@ exports.initialize = url => new Promise((resolve, reject) => {
 		mongoose.model("blog", blogSchema),
 		mongoose.model("wiki", wikiSchema),
 		mongoose.model("traffic", trafficSchema, "traffic"),
-];
+	];
 	mongoose.connection
 		.on("error", err => reject(err))
 		.once("open", () => {

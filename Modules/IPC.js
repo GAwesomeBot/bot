@@ -1,7 +1,7 @@
 const cJSON = require("circular-json");
-const ProcessAsPromised = require("process-as-promised");
-
-const EventEmitter = require("events");
+// Unused imports
+// const ProcessAsPromised = require("process-as-promised");
+// const EventEmitter = require("events");
 
 class SharderIPC {
 	constructor (sharder, winston) {
@@ -36,34 +36,35 @@ class SharderIPC {
 	}
 }
 
-class ShardIPC extends EventEmitter {
-	constructor (client, winston, process) {
-		super();
-		this.shardClient = client.shard;
-		this.winston = winston;
-		this.process = new ProcessAsPromised(process);
-		this.client = client;
-		this.setMaxListeners(0);
-	}
+// Unused? Gilbert, delete these if not needed
+// class ShardIPC extends EventEmitter {
+// 	constructor (client, winston, process) {
+// 		super();
+// 		this.shardClient = client.shard;
+// 		this.winston = winston;
+// 		this.process = new ProcessAsPromised(process);
+// 		this.client = client;
+// 		this.setMaxListeners(0);
+// 	}
 
-	listen () {
-		this.winston.verbose("Started shard listener.");
-		this.process.on("message", msg => {
-			try {
-				this.winston.silly("Received message from sharder.", { msg: msg });
-				if (msg._Eval) {
-					let result = this.client._eval(msg._Eval);
-					if (result instanceof Map) result = Array.from(result.entries());
-					this.shardClient.send({ _Eval: msg._Eval, _result: result });
-				}
-				let payload = msg;
-				if (typeof msg === "string") payload = cJSON.parse(msg);
-				this.emit(payload.subject, payload);
-			} catch (err) {
-				if (!msg._Eval && !msg._SEval) this.winston.warn("Unable to handle message from master :C\n", err);
-			}
-		});
-	}
-}
+// 	listen () {
+// 		this.winston.verbose("Started shard listener.");
+// 		this.process.on("message", msg => {
+// 			try {
+// 				this.winston.silly("Received message from sharder.", { msg: msg });
+// 				if (msg._Eval) {
+// 					let result = this.client._eval(msg._Eval);
+// 					if (result instanceof Map) result = Array.from(result.entries());
+// 					this.shardClient.send({ _Eval: msg._Eval, _result: result });
+// 				}
+// 				let payload = msg;
+// 				if (typeof msg === "string") payload = cJSON.parse(msg);
+// 				this.emit(payload.subject, payload);
+// 			} catch (err) {
+// 				if (!msg._Eval && !msg._SEval) this.winston.warn("Unable to handle message from master :C\n", err);
+// 			}
+// 		});
+// 	}
+// }
 
 module.exports = SharderIPC;
