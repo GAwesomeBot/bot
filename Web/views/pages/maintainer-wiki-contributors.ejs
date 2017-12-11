@@ -78,8 +78,8 @@
 															&nbsp;
 															<span class="tag">Sudo Maintainer</span>
 														<% } else if (config.wiki_contributors[i].isMaintainer) { %>
-														&nbsp;
-														<span class="tag">Maintainer</span>
+															&nbsp;
+															<span class="tag">Maintainer</span>
 														<% } %>
 													</td>
 													<td>
@@ -118,7 +118,7 @@
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-contributor-user" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-contributor-user" class="input user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode != 13;">
 									</div>
 									<div class="control">
 										<a class="button is-primary" onclick="newWikiContributors();">

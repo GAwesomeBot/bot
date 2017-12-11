@@ -1,27 +1,28 @@
 {
-  "sudoMaintainers": [
-
-  ],
-  "maintainers": [
-
-  ],
-  "wikiContributors": [
-
-  ],
-  "userBlocklist": [
-
-  ],
-  "guildBlocklist": [
-
-  ],
-  "activity": {
-    "name": "default",
-    "twitchURL": ""
-  },
-  "status": "online",
-  "headerImage": "header-bg.jpg",
-  "homepageMessageHTML": "",
-  "pmForward": false,
-  "version": "4.1.0",
-  "branch": "development"
+    "sudoMaintainers": [
+    ],
+    "maintainers": [
+    ],
+    "wikiContributors": [
+    ],
+    "userBlocklist": [],
+    "guildBlocklist": [
+    ],
+    "activity": {
+        "name": "default",
+        "twitchURL": ""
+    },
+    "status": "online",
+    "headerImage": "header-bg.jpg",
+    "homepageMessageHTML": "",
+    "pmForward": false,
+    "version": "4.1.0",
+    "branch": "development",
+    "perms": {
+        "eval": 2,
+        "sudoMode": 2,
+        "management": 2,
+        "administration": 1,
+        "shutdown": 0
+    }
 }

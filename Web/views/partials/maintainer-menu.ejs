@@ -66,15 +66,15 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-            <% if(currentPage=="/dashboard/management/version") { %>
-			<a class="is-active" href="#">GAB Version</a>
-            <% } else { %>
-			<a href="/dashboard/management/version?svrid=maintainer">GAB Version</a>
-            <% } %>
             <% if(currentPage=="/dashboard/management/maintainers") { %>
 			<a class="is-active" href="#">Maintainers</a>
             <% } else { %>
 			<a href="/dashboard/management/maintainers?svrid=maintainer">Maintainers</a>
+            <% } %>
+            <% if(currentPage=="/dashboard/management/version") { %>
+			<a class="is-active" href="#">GAB Version</a>
+            <% } else { %>
+			<a href="/dashboard/management/version?svrid=maintainer">GAB Version</a>
             <% } %>
 		</li>
 	</ul>

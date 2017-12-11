@@ -54,7 +54,7 @@
 			}
     </script>
 </head>
-<body onload="saveFormState()setUserAutocomplete('<%= serverData.id %>')">
+<body onload="saveFormState(); setUserAutocomplete('<%= serverData.id %>');">
 <% include ../partials/dashboard-header %>
 <% include ../partials/dashboard-socket-updates %>
 
@@ -77,7 +77,7 @@
                         </div>
                     </div>
                 </article>
-                <form id="form" onsubmit="submitForm() return false">
+                <form id="form" onsubmit="submitForm(); return false">
                     <h4 class="subtitle is-4">
                         Server
                     </h4>
@@ -154,7 +154,7 @@
                                 <% for(var i = 0; i < configData.moderation.status_messages.new_member_message.messages.length; i++) { %>
                                 <li>
                                     <button class="button is-small is-white" id="new_member_message-<%= i %>-removed"
-                                            onclick="removeMessage('new_member_message-<%= i %>-removed') return false">
+                                            onclick="removeMessage('new_member_message-<%= i %>-removed'); return false">
                                             <span class="icon is-small" style="margin-left: -2px;">
                                                 <i class="fa fa-times"></i>
                                             </span>
@@ -223,7 +223,7 @@
                                 <% for(var i = 0; i < configData.moderation.status_messages.member_online_message.messages.length; i++) { %>
                                 <li>
                                     <button class="button is-small is-white" id="member_online_message-<%= i %>-removed"
-                                            onclick="removeMessage('member_online_message-<%= i %>-removed') return false">
+                                            onclick="removeMessage('member_online_message-<%= i %>-removed'); return false">
                                             <span class="icon is-small" style="margin-left: -2px;">
                                                 <i class="fa fa-times"></i>
                                             </span>
@@ -279,7 +279,7 @@
                                 <li>
                                     <button class="button is-small is-white"
                                             id="member_offline_message-<%= i %>-removed"
-                                            onclick="removeMessage('member_offline_message-<%= i %>-removed') return false">
+                                            onclick="removeMessage('member_offline_message-<%= i %>-removed'); return false">
                                             <span class="icon is-small" style="margin-left: -2px;">
                                                 <i class="fa fa-times"></i>
                                             </span>
@@ -395,7 +395,7 @@
                                 <li>
                                     <button class="button is-small is-white"
                                             id="member_streaming_message-<%= i %>-removed"
-                                            onclick="removeMessage('member_streaming_message-<%= i %>-removed') return false">
+                                            onclick="removeMessage('member_streaming_message-<%= i %>-removed'); return false">
                                             <span class="icon is-small" style="margin-left: -2px;">
                                                 <i class="fa fa-times"></i>
                                             </span>
@@ -436,7 +436,7 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="member_rank_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('.member_rank_updated_message-options').toggleClass('is-hidden')if(!this.checked) {$('.member_rank_updated_message-type-options').addClass('is-hidden')} else if($('#member_rank_updated_message-type').val()=='message') {$('.member_rank_updated_message-type-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.member_rank_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('.member_rank_updated_message-options').toggleClass('is-hidden'); if(!this.checked) {$('.member_rank_updated_message-type-options').addClass('is-hidden')} else if($('#member_rank_updated_message-type').val()=='message') {$('.member_rank_updated_message-type-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.member_rank_updated_message.isEnabled ? "checked" : "" %>>
                             Member leveled up a <strong>rank</strong>
                         </label>
                         &nbsp;
@@ -548,7 +548,7 @@
                                 <% for(var i = 0; i < configData.moderation.status_messages.member_banned_message.messages.length; i++) { %>
                                 <li>
                                     <button class="button is-small is-white" id="member_banned_message-<%= i %>-removed"
-                                            onclick="removeMessage('member_banned_message-<%= i %>-removed') return false">
+                                            onclick="removeMessage('member_banned_message-<%= i %>-removed'); return false">
                                             <span class="icon is-small" style="margin-left: -2px;">
                                                 <i class="fa fa-times"></i>
                                             </span>
@@ -645,7 +645,7 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="message_edited_message-isEnabled" type="checkbox"
-                                   onclick="$('#message_edited_message-type-options').toggleClass('is-hidden')$('#message_edited_message-enabled_channel_ids-options').toggleClass('is-hidden')if(!this.checked) {$('.message_edited_message-options').addClass('is-hidden')} else if(!$('#message_edited_message-type').val()=='msg') {$('#message_edited_message-channel_id-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.message_edited_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#message_edited_message-type-options').toggleClass('is-hidden'); $('#message_edited_message-enabled_channel_ids-options').toggleClass('is-hidden'); if(!this.checked) {$('.message_edited_message-options').addClass('is-hidden')} else if(!$('#message_edited_message-type').val()=='msg') {$('#message_edited_message-channel_id-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.message_edited_message.isEnabled ? "checked" : "" %>>
                             Message <strong>edited</strong> by author
                         </label>
                         &nbsp;
@@ -683,7 +683,7 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="message_deleted_message-isEnabled" type="checkbox"
-                                   onclick="$('#message_deleted_message-type-options').toggleClass('is-hidden')$('#message_deleted_message-enabled_channel_ids-options').toggleClass('is-hidden')if(!this.checked) {$('.message_deleted_message-options').addClass('is-hidden')} else if(!$('#message_deleted_message-type').val()=='msg') {$('#message_deleted_message-channel_id-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.message_deleted_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#message_deleted_message-type-options').toggleClass('is-hidden'); $('#message_deleted_message-enabled_channel_ids-options').toggleClass('is-hidden'); if(!this.checked) {$('.message_deleted_message-options').addClass('is-hidden')} else if(!$('#message_deleted_message-type').val()=='msg') {$('#message_deleted_message-channel_id-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.message_deleted_message.isEnabled ? "checked" : "" %>>
                             Message <strong>deleted</strong> (not necessarily by author)
                         </label>
                         &nbsp;

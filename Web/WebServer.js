@@ -803,7 +803,9 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				}
 			}, (err, users) => {
 				if (!err && users) {
-					res.json(users.sort().map(usr => usr.username));
+					let response = users.sort().map(usr => usr.username || undefined);
+					response.spliceNullElements();
+					res.json(response);
 				} else {
 					next(err);
 				}
@@ -2735,7 +2737,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						name: member.user.username,
 						id: member.id,
 						avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-					})).concat(configJSON.globalBlocklist.filter(usrid => svr.members.hasOwnProperty(usrid)).map(usrid => {
+					})).concat(configJSON.userBlocklist.filter(usrid => svr.members.hasOwnProperty(usrid)).map(usrid => {
 						const member = svr.members[usrid];
 						return {
 							name: member.user.username,
@@ -3973,6 +3975,86 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		});
 	});
 
+	// Maintainer console maintainers
+	app.get("/dashboard/management/maintainers", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			res.render("pages/maintainer-maintainers.ejs", {
+				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				serverData: {
+					name: bot.user.username,
+					id: bot.user.id,
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
+					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
+				},
+				currentPage: req.path,
+				config: {
+					maintainers: await Promise.all(configJSON.maintainers.map(async id => {
+						const usr = await bot.users.fetch(id, true) || {
+							id: "invalid-user",
+							username: "invalid-user",
+						};
+						return {
+							name: usr.username,
+							id: usr.id,
+							avatar: usr.avatarURL() || "/static/img/discord-icon.png",
+							isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
+						};
+					})),
+					perms: configJSON.perms,
+				},
+			});
+		});
+	});
+	io.of("/dashboard/management/maintainers").on("connection", socket => {
+		socket.on("disconnect", () => {});
+	});
+	app.post("/dashboard/management/maintainers", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			if (req.body["new-user"]) {
+				let usr = await db.users.findOne({ username: req.body["new-user"]}).exec();
+				if (!usr) usr = await bot.users.fetch(req.body["new-user"], true);
+				if (!usr.id) usr.id = usr._id;
+				if (usr && configJSON.maintainers.indexOf(usr.id) === -1) {
+					configJSON.maintainers.push(usr.id);
+				}
+				if (usr && req.body[`isSudo`] === "true" && !configJSON.sudoMaintainers.includes(usr.id)) {
+					configJSON.sudoMaintainers.push(usr.id);
+				}
+			} else if (configJSON.sudoMaintainers.includes(consolemember.id)) {
+				if (req.body[`maintainer-removed`]) {
+					configJSON.maintainers[configJSON.maintainers.indexOf(req.body[`maintainer-removed`])] = null;
+					configJSON.sudoMaintainers[configJSON.sudoMaintainers.indexOf(req.body[`maintainer-removed`])] = null;
+				}
+				if (req.body[`maintainer-sudo`]) {
+					if (configJSON.sudoMaintainers.includes(req.body[`maintainer-sudo`])) configJSON.sudoMaintainers[configJSON.sudoMaintainers.indexOf(req.body[`maintainer-sudo`])] = null;
+					else configJSON.sudoMaintainers.push(req.body[`maintainer-sudo`]);
+				}
+				configJSON.maintainers.spliceNullElements();
+				configJSON.sudoMaintainers.spliceNullElements();
+
+				const perms = Object.keys(req.body).filter(param => param.startsWith("perm-"));
+				perms.forEach(perm => {
+					let value = req.body[perm];
+					perm = perm.split("-")[1];
+					switch (value) {
+						case "sudo":
+							configJSON.perms[perm] = 2;
+							break;
+						case "host":
+							configJSON.perms[perm] = 0;
+							break;
+						default:
+							configJSON.perms[perm] = 1;
+					}
+				});
+			}
+
+			if (req.body["additional-perms"]) return saveMaintainerConsoleOptions(consolemember, req, res, true);
+			saveMaintainerConsoleOptions(consolemember, req, res);
+		});
+	});
+
 	// Maintainer console bot version
 	app.get("/dashboard/management/version", (req, res) => {
 		checkAuth(req, res, async () => {
@@ -4012,59 +4094,6 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				});
 			});
 			res.sendStatus(200);
-		});
-	});
-
-	// Maintainer console maintainers
-	app.get("/dashboard/management/maintainers", (req, res) => {
-		checkAuth(req, res, consolemember => {
-			res.render("pages/maintainer-maintainers.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-				sudoMode: adminLvl === 4,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL || "/static/img/discord-icon.png",
-					isMaintainer: true,
-				},
-				currentPage: req.path,
-				config: {
-					maintainers: configJSON.maintainers.map(a => {
-						const usr = bot.users.get(a) || {
-							id: "invalid-user",
-							username: "invalid-user",
-						};
-						return {
-							name: usr.username,
-							id: usr.id,
-							avatar: usr.avatarURL || "/static/img/discord-icon.png",
-						};
-					}),
-				},
-				showRemove: consolemember.id === configJSON.maintainers[0],
-			});
-		});
-	});
-	io.of("/dashboard/management/maintainers").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/management/maintainers", (req, res) => {
-		checkAuth(req, res, consolemember => {
-			if (req.body["new-user"]) {
-				const usr = findQueryUser(req.body["new-user"], bot.users);
-				if (usr && configJSON.maintainers.indexOf(usr.id) === -1) {
-					configJSON.maintainers.push(usr.id);
-				}
-			} else if (consolemember.id === configJSON.maintainers[0]) {
-				for (let i = 0; i < configJSON.maintainers.length; i++) {
-					if (req.body[`maintainer-${i}-removed`] !== null) {
-						configJSON.maintainers[i] = null;
-					}
-				}
-				configJSON.maintainers.spliceNullElements();
-			}
-
-			saveMaintainerConsoleOptions(consolemember, req, res);
 		});
 	});
 
