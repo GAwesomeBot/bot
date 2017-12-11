@@ -191,7 +191,6 @@
 						</div>
 						<% } %>
 					</form>
-                    <% if (serverData.isSudoMaintainer) { %>
 					<br>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<input name="additional-perms" value="true" style="display: none;">
@@ -204,7 +203,7 @@
 									<dt>
 										Eval &nbsp;
 										<div class="select is-small">
-											<select name="perm-eval"<%= config.perms.eval === 0 ? " disabled" : ""%>>
+											<select name="perm-eval"<%= config.perms.eval === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.eval === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.eval === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.eval === 0 ? " selected" : ""%>>Only The Host</option>
@@ -218,7 +217,7 @@
 									<dt>
 										Sudo Mode &nbsp;
 										<div class="select is-small">
-											<select name="perm-sudoMode"<%= config.perms.sudoMode === 0 ? " disabled" : ""%>>
+											<select name="perm-sudoMode"<%= config.perms.sudoMode === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.sudoMode === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.sudoMode === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.sudoMode === 0 ? " selected" : ""%>>Only The Host</option>
@@ -231,7 +230,7 @@
 									<dt>
 										Management &nbsp;
 										<div class="select is-small">
-											<select name="perm-management"<%= config.perms.management === 0 ? " disabled" : ""%>>
+											<select name="perm-management"<%= config.perms.management === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.management === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.management === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.management === 0 ? " selected" : ""%>>Only The Host</option>
@@ -244,7 +243,7 @@
 									<dt>
 										Administration &nbsp;
 										<div class="select is-small">
-											<select name="perm-administration"<%= config.perms.administration === 0 ? " disabled" : ""%>>
+											<select name="perm-administration"<%= config.perms.administration === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.administration === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.administration === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.administration === 0 ? " selected" : ""%>>Only The Host</option>
@@ -258,7 +257,7 @@
 									<dt>
 										Shutdown &nbsp;
 										<div class="select is-small">
-											<select name="perm-shutdown"<%= config.perms.shutdown === 0 ? " disabled" : ""%>>
+											<select name="perm-shutdown"<%= config.perms.shutdown === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.shutdown === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.shutdown === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.shutdown === 0 ? " selected" : ""%>>Only The Host</option>
@@ -274,7 +273,6 @@
                         <% include ../partials/form-buttons %>
                         <% include ../partials/form-buttons-bar %>
 					</form>
-                    <% } %>
 				</div>
 			</div>
 		</div>
