@@ -739,7 +739,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	const deny = res => res.status(403).redirect("/dashboard");
 	// Check authentication for console
 	const checkPerms = (path, id, svrid) => {
-		let section;
+		let section = path;
 		if (path.startsWith(`/dashboard/management`)) section = "management";
 		else if (path.startsWith(`/dashboard/global-options`)) section = "administration";
 		else if (path === "/dashboard/management/eval") section = "eval";
@@ -3710,6 +3710,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 						isMaintainer: true,
 						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+						accessManagement: checkPerms("/dashboard/management", req.user.id),
 					},
 					currentPage: req.path,
 					serverCount: await bot.guilds.totalCount,
@@ -3740,6 +3742,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 						isMaintainer: true,
 						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+						accessManagement: checkPerms("/dashboard/management", req.user.id),
 					},
 					currentPage: req.path,
 					activeSearchQuery: req.query.q,
@@ -3794,6 +3798,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+					accessManagement: checkPerms("/dashboard/management", req.user.id),
 				},
 				currentPage: req.path,
 				serverCount: await bot.guilds.totalCount,
@@ -3822,6 +3828,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+					accessManagement: checkPerms("/dashboard/management", req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -3872,6 +3880,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+					accessManagement: checkPerms("/dashboard/management", req.user.id),
 				},
 				currentPage: req.path,
 				bot_user: {
@@ -3909,6 +3919,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+					accessManagement: checkPerms("/dashboard/management", req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -3942,6 +3954,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+					accessManagement: checkPerms("/dashboard/management", req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -4006,6 +4020,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
+					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
+					accessManagement: checkPerms("/dashboard/management", consolemember.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -4094,6 +4110,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+					accessManagement: checkPerms("/dashboard/management", req.user.id),
 				},
 				currentPage: req.path,
 			});

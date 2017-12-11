@@ -28,6 +28,7 @@
             <% } %>
 		</li>
 	</ul>
+	<% if (serverData.accessAdmin) { %>
 	<p class="menu-label">
         <span class="icon is-small">
             <i class="fa fa-cogs"></i>
@@ -58,6 +59,7 @@
             <% } %>
 		</li>
 	</ul>
+	<% } if (serverData.accessManagement) { %>
 	<p class="menu-label">
         <span class="icon is-small">
             <i class="fa fa-wrench"></i>
@@ -78,4 +80,5 @@
             <% } %>
 		</li>
 	</ul>
+	<% } %>
 </aside>
