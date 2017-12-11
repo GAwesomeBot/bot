@@ -1080,6 +1080,13 @@ bot.IPC.on("traffic", async (msg, callback) => {
 	callback(bot.traffic.get);
 });
 
+bot.IPC.on("updating", async (msg, callback) => {
+	winston.debug("Closing Discord client & Web Interface for updater.");
+	configJSON.isUnavailable = true;
+	bot.destroy();
+	callback();
+});
+
 /**
  * CHANNEL_CREATE
  */

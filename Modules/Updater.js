@@ -1,6 +1,7 @@
 const dgr = require("async-dl-github-repo");
 const fs = require("fs-nextra");
 const snekfetch = require("snekfetch");
+const Console = require("./Console");
 // TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {
@@ -36,101 +37,110 @@ module.exports = {
 		}
 	},
 	update: async (bot, config, io) => {
+		io.isUpdateFinished = false;
+		const winston = new Console("Updater");
 		winston.info(`Preparing for update...`);
-
-		// TODO: Emit this to all shards
-		bot.emit("pre-update");
-
+		await bot.IPC.send("updating", {});
 		config.isUpdating = true;
 
 		io.emit("update", "metadata");
-		winston.info(`Fetching newest version metadata..`);
+		winston.info(`Fetching latest version metadata...`);
 
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/versions/${config.branch}/check?v=${config.version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`);
 		} catch (err) {
-			throw err;
+			winston.error("An error occurred while fetching version metadata ~.~\n", err);
 		}
+
 		io.emit("update", "downloading");
-		winston.info(`Downloading the newest version from GitHub`);
+		winston.info(`Downloading latest version files from GitHub...`);
 
 		if (!await fs.exists("./Temp")) await fs.mkdir("./Temp");
 		const tempPath = await fs.mkdtemp("./Temp/v-");
 		let repoBranch = config.branch;
-		if (config.branc === "stable") repoBranch = "master";
+		if (config.branch === "stable") repoBranch = "master";
 
-		dgr(`GilbertGobbels/GAwesomeBot#${repoBranch}`, tempPath, async () => {
-			const body = res.body.latest;
-			const filesc = [];
-			const files = [];
+		try {
+			await dgr(`GilbertGobbels/GAwesomeBot#${repoBranch}`, tempPath);
+		} catch (err) {
+			winston.error("An error occurred while downloading latest version files ~.~\n", err);
+			return;
+		}
 
-			/* eslint-disable no-await-in-loop*/
-			// TODO: Gilbert make this use await Promise.all pls
-			for (let i = 0; i < body.files.length; i++) {
-				// TODO: Gilbert check this pls
-				if (body.files[i].substring(0, 13) === "Configurations/") {
-					const dataNew = await fs.readFile(`${tempPath}/${body.files[i]}`, "utf8");
-					const dataOld = await fs.readFile(`./${body.files[i]}`, "utf8");
-					filesc.push({
-						file: body.files[i],
-						dataNew,
-						dataOld,
-					});
-				} else {
-					files.push(body.files[i]);
-				}
-			}
-			/* eslint-enable no-await-in-loop*/
-			io.emit("update", "files_conf");
-			io.on("confirm", data => {
-				if (data === "filesc") io.emit("files_conf", filesc);
-				else if (data === "files") io.emit("files", files);
-			});
+		const body = res.body.latest;
+		const filesc = [];
+		const files = [];
+		const rmfiles = [];
 
-			winston.info(`Awaiting response from client..`);
-
-			io.on("files_conf", async files_conf => {
-				winston.info(`Installing configuration files..`);
-				const promiseArray = [];
-				for (let i = 0; i < files_conf.length; i++) {
-					promiseArray.push(fs.writeFile(`./${files_conf[i].file}`, files_conf[i].data));
-				}
-				await Promise.all(promiseArray);
-
-				io.emit("update", "files");
-				winston.info(`Awaiting response from client..`);
-
-				io.on("files", async cfiles => {
-					winston.info(`Installing the new files..`);
-					io.emit("update", "install");
-
-					for (let i = 0; i < cfiles.length; i++) {
-						fs.createReadStream(`${tempPath}/${cfiles[i]}`).pipe(fs.createWriteStream(`./${cfiles[i]}`));
-					}
-
-					io.emit("update", "done");
-					winston.info(`Finalizing the update..`);
-
-					const configg = JSON.parse(await fs.readFile(`./Configurations/config.json`, "utf8"));
-					configg.version = body.version;
-					try {
-						await fs.writeFile("./Configurations/config.json", JSON.stringify(configg, null, 4));
-					} catch (err) {
-						winston.verbose(`There has been an error saving the config.json file.. Impossible!`, err);
-					}
-
-					winston.info(`Cleaning up..`);
-
-					try {
-						await fs.remove(tempPath);
-						io.emit("update", "finished");
-						winston.info(`Finished updating. Please restart GAwesomeBot.`);
-					} catch (err) {
-						winston.verbose(`Couldn't remove the temp directory for the updater..`, err);
-					}
+		await Promise.all(body.files.map(async file => {
+			if (file.startsWith("Configuration")) {
+				let dataOld = "This is a new configuration file.";
+				if (!await fs.exists(`${tempPath}/${file}`)) return rmfiles.push(file);
+				if (await fs.exists(`./${file}`)) dataOld = await fs.readFile(`./${file}`, "utf8");
+				filesc.push({
+					file,
+					dataNew: await fs.readFile(`${tempPath}/${file}`, "utf8"),
+					dataOld,
 				});
+			} else {
+				if (!await fs.exists(`${tempPath}/${file}`)) return rmfiles.push(file);
+				files.push(file);
+			}
+		}));
+
+		io.on("confirm", data => {
+			if (data === "filesc") io.emit("files_conf", filesc);
+			else if (data === "files") io.emit("files", files);
+		});
+		winston.info(`Awaiting response from client...`);
+
+		io.emit("update", "files_conf");
+		io.on("files_conf", async files_conf => {
+			winston.info(`Installing configuration files...`);
+			const promiseArray = [];
+			files_conf.map(file => {
+				promiseArray.push(fs.writeFile(`./${file.file}`, file.data));
 			});
+			await Promise.all(promiseArray);
+
+			io.on("files", async fileres => {
+				winston.info(`Installing latest version files...`);
+				io.emit("update", "install");
+
+				fileres.forEach(file => {
+					fs.createReadStream(`${tempPath}/${file}`).pipe(fs.createWriteStream(`./${file}`));
+				});
+				await Promise.all(rmfiles.map(async file => {
+					if (await fs.exists(file)) return fs.unlink(file);
+				}));
+
+				io.emit("update", "done");
+				winston.info(`Finishing update...`);
+
+				const configNew = JSON.parse(await fs.readFile(`./Configurations/config.json`, "utf8"));
+				configNew.version = body.version;
+				try {
+					await fs.writeFile("./Configurations/config.json", JSON.stringify(configNew, null, 4));
+				} catch (err) {
+					winston.error(`An error occurred while finishing the update ~.~\n`, err);
+				}
+
+				winston.info(`Cleaning up...`);
+
+				try {
+					await fs.remove(tempPath);
+					io.emit("update", "finished");
+					io.isUpdateFinished = true;
+					winston.info(`Finished updating. Please restart GAwesomeBot.`);
+					bot.IPC.send("shutdown", { err: false });
+				} catch (err) {
+					winston.warn(`Failed to remove the Temp directory for update files:`, err);
+				}
+			});
+
+			winston.info(`Awaiting response from client...`);
+			io.emit("update", "files");
 		});
 	},
 };

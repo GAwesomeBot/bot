@@ -3998,14 +3998,15 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	});
 	app.post("/dashboard/management/version", (req, res) => {
 		checkAuth(req, res, () => {
-			io.of("/dashboard/maintainer/version").on("connection", socket => {
+			io.of("/dashboard/management/version").on("connection", socket => {
 				socket.on("update", data => {
 					if (data === "start") {
 						socket.emit("update", "prepare");
-						//Updater.update(bot, configJSON, socket, winston);
+						Updater.update(bot, configJSON, socket, winston);
 					}
 				});
 				socket.on("disconnect", () => {
+					if (socket.isUpdateFinished) return;
 					winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
 					bot.IPC.send("shutdown", { err: true });
 				});
