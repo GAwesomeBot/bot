@@ -671,8 +671,6 @@ class Client extends DJSClient {
 			if (adminLevel >= 3) break;
 		}
 
-		if (adminLevel !== 3 && configJSON.maintainers.includes(member.id)) return 4;
-
 		return adminLevel;
 	}
 

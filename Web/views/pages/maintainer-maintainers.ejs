@@ -82,7 +82,7 @@
 									<li>
 										<strong>Server Hosts:</strong>
 										<br>
-										Any Operating System user who has write access to GAB's root folder has the ability to gain all permissions. Any such user is considered "The Console".
+										Any Operating System user who has write access to GAB's root folder has the ability to gain all permissions. Any such user is considered "The Host".
 									</li>
 								</ul>
 								Additional Permissions can be configured down below.
@@ -129,11 +129,11 @@
 											</div>
 											<div class="control">
 												<button class="button is-small <% if (maintainer.isSudoMaintainer) { %>is-warning<% } else { %>is-primary<% } %>" name="maintainer-sudo" value="<%= maintainer.id %>"
-														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to remove Sudo Power from <%= maintainer.name%>?<% } else { %> you want to give <%= maintainer.name%> Sudo Powers? Sudo Maintainers can access all bot data and configuration; be careful!<% } %>');"<% if(!serverData.isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
+														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to remove Sudo Power from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers? Sudo Maintainers can access all bot data and configuration; be careful!<% } %>');"<% if(!serverData.isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
 													<% if (maintainer.isSudoMaintainer) { %>
 														<span>Remove Sudo</span>
 													<% } else { %>
-														<span>Make Sudo</span>
+														<span>Grant Sudo</span>
 													<% } %>
 													<span class="icon is-small">
 														<i class="fa fa-star"></i>
@@ -204,10 +204,10 @@
 									<dt>
 										Eval &nbsp;
 										<div class="select is-small">
-											<select name="perm-eval">
+											<select name="perm-eval"<%= config.perms.eval === 0 ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.eval === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.eval === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.eval === 0 ? " selected" : ""%>>Only The Console</option>
+												<option value="host"<%= config.perms.eval === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -218,10 +218,10 @@
 									<dt>
 										Sudo Mode &nbsp;
 										<div class="select is-small">
-											<select name="perm-sudoMode">
+											<select name="perm-sudoMode"<%= config.perms.sudoMode === 0 ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.sudoMode === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.sudoMode === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.sudoMode === 0 ? " selected" : ""%>>Only The Console</option>
+												<option value="host"<%= config.perms.sudoMode === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -231,10 +231,10 @@
 									<dt>
 										Management &nbsp;
 										<div class="select is-small">
-											<select name="perm-management">
+											<select name="perm-management"<%= config.perms.management === 0 ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.management === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.management === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.management === 0 ? " selected" : ""%>>Only The Console</option>
+												<option value="host"<%= config.perms.management === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -244,10 +244,10 @@
 									<dt>
 										Administration &nbsp;
 										<div class="select is-small">
-											<select name="perm-administration">
+											<select name="perm-administration"<%= config.perms.administration === 0 ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.administration === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.administration === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.administration === 0 ? " selected" : ""%>>Only The Console</option>
+												<option value="host"<%= config.perms.administration === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -258,10 +258,10 @@
 									<dt>
 										Shutdown &nbsp;
 										<div class="select is-small">
-											<select name="perm-shutdown">
+											<select name="perm-shutdown"<%= config.perms.shutdown === 0 ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.shutdown === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.shutdown === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.shutdown === 0 ? " selected" : ""%>>Only The Console</option>
+												<option value="host"<%= config.perms.shutdown === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
