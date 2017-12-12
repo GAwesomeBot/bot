@@ -952,7 +952,7 @@ const commands = {
 		// },
 		eval: {
 			usage: `<expression>`,
-			description: `Evaluate some Javascript Code`,
+			description: `Evaluate some JavaScript code`,
 			aliases: ["ev"],
 			configJSON: "eval",
 		},

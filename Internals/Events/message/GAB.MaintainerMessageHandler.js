@@ -25,7 +25,7 @@ class MaintainerMessageCreate extends BaseEvent {
 							usage: this.client.getSharedCommandMetadata(msg.command).usage,
 						});
 					} catch (err) {
-						winston.warn(`Failed to process PM command "${msg.command}"`, { usrid: msg.author.id }, err);
+						winston.warn(`Failed to process shared command "${msg.command}"`, { usrid: msg.author.id }, err);
 						msg.channel.send({
 							embed: {
 								color: 0xFF0000,
