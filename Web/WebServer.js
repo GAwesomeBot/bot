@@ -239,7 +239,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		const param = msg.location;
 		try {
 			io.of(path).emit("update", param);
-			if (param === "maintainer") configJSON = reload("../Configurations/config.json");
+			if (param === "maintainer") global.configJSON = reload("../Configurations/config.json");
 		} catch (err) {
 			winston.warn("An error occurred while handling a dashboard WebSocket!", err);
 		}
