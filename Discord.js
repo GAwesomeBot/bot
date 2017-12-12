@@ -19,7 +19,7 @@ const {
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
-const configJSON = require("./Configurations/config.json");
+global.configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 
 const database = require("./Database/Driver.js");
@@ -1030,7 +1030,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 }).then(async () => {
 	winston.info("Successfully connected to MongoDB!");
 	winston.debug("Initializing Discord Events.");
-	bot.events = new EventHandler(bot, configJS, configJSON);
+	bot.events = new EventHandler(bot, configJS);
 	await bot.events.init();
 	// Store server documents by ID
 	bot.cache = new ServerDocumentCache(this);
@@ -1642,7 +1642,7 @@ bot.once("ready", async () => {
 		await winston.silly(`Received READY event from Discord!`);
 		await bot.events.onEvent("ready");
 		await winston.silly("Running webserver");
-		WebServer(bot, auth, configJS, configJSON, winston);
+		WebServer(bot, auth, configJS, winston);
 		bot.isReady = true;
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);

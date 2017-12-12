@@ -81,7 +81,6 @@ class MessageCreate extends BaseEvent {
 					await commandFunction({
 						bot: this.bot,
 						configJS: this.configJS,
-						configJSON: this.configJSON,
 						utils: Utils,
 						Utils,
 					}, msg, {
@@ -331,7 +330,6 @@ class MessageCreate extends BaseEvent {
 										const botObject = {
 											bot: this.bot,
 											configJS: this.configJS,
-											configJSON: this.configJSON,
 											utils: Utils,
 											Utils,
 										};
