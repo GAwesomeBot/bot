@@ -1299,7 +1299,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		"I didn't want this either",
 		"The tragic story",
 		"Developer Vs. Bot",
-		"What did we mess up today?"
+		"What did we mess up today?",
+		"Where are your fingers?"
 	][Math.floor(Math.random() * 17)]
 	app.get("/blog", (req, res) => {
 		let count;
@@ -1356,6 +1357,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						pageTitle: `${data.title ? `Edit ${data.title}` : "New Post"} - GAwesomeBot Blog`,
 						mode: "compose",
 						data,
+						headerTitle: getPageTitle(),
 					});
 				};
 
@@ -1440,6 +1442,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					mode: "article",
 					pageTitle: `${blogDocument.title} - GAwesomeBot Blog`,
 					blogPost: data,
+					headerTitle: getPageTitle(),
 				});
 			}
 		});
