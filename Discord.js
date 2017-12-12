@@ -26,6 +26,7 @@ const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 
 const ProcessAsPromised = require("process-as-promised");
+const cJSON = require("circular-json");
 
 const privateCommandModules = {};
 const commandModules = {};
@@ -972,7 +973,7 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 	} else {
 		let guild = bot.guilds.get(payload.guild);
 		let val = GG.generate(guild, payload.settings);
-		return callback({ guild: payload.guild, settings: payload.settings, result: val });
+		return callback({ guild: payload.guild, settings: payload.settings, result: cJSON.stringify(val) });
 	}
 });
 
