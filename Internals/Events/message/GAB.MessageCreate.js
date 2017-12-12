@@ -399,7 +399,7 @@ class MessageCreate extends BaseEvent {
 								}
 							}
 							// Check if it's a chatterbot prompt
-							if (!extensionApplied && serverDocument.config.chatterbot && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ")) {
+							if (!extensionApplied && serverDocument.config.chatterbot && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
 								const prompt = msg.content.split(/\s+/)
 									.splice(1)
 									.join(" ")
