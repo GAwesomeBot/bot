@@ -14,7 +14,7 @@ class MaintainerMessageCreate extends BaseEvent {
 		if (msg.command) {
 			const command = this.client.getSharedCommand(msg.command);
 			if (command) {
-				if (this.client.canRunSharedCommand(msg.command, msg.author)) {
+				if (await this.client.canRunSharedCommand(msg.command, msg.author)) {
 					try {
 						await command({
 							bot: this.bot,
