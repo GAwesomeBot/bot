@@ -13,7 +13,7 @@ class SharderIPC {
 			this.winston.silly("Sending message to shard", { subject: subject, payload: payload, shard: shard });
 
 			if (shard === "*") {
-				return this.sharder.broadcast(subject, cJSON.stringify(payload), timeout);
+				return this.sharder.broadcast(subject, payload, timeout);
 			} else {
 				shard = this.sharder.shards.get(shard);
 				if (!shard) shard = this.sharder.shards.get(0);

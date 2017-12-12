@@ -43,8 +43,8 @@ module.exports = class Console {
 					filename: require("path").join(process.cwd(), `logs/${type === "master" ? "master" : type.replace(/ /g, "-")}-gawesomebot.log`),
 				}),
 				new winston.transports.DailyRotateFile({
-					name: "Console Output",
-					level: config.consoleLevel,
+					name: "Full Output",
+					level: config.fileLevel,
 					colorize: false,
 					datePattern: `dd-MM-yyyy.`,
 					prepend: true,
@@ -58,7 +58,7 @@ module.exports = class Console {
 					filename: require("path").join(process.cwd(), `logs/gawesomebot.log`),
 				}),
 				new winston.transports.File({
-					level: config.fileLevel,
+					level: config.consoleLevel,
 					json: true,
 					colorize: false,
 					filename: require("path").join(process.cwd(), `logs/verbose.gawesomebot.log`),

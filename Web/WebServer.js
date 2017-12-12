@@ -233,7 +233,6 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	}));
 
 	bot.IPC.on("dashboardUpdate", msg => {
-		msg = JSON.parse(msg);
 		const path = msg.namespace;
 		const param = msg.location;
 		try {
@@ -739,9 +738,9 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Check authentication for console
 	const checkPerms = (path, id, svrid) => {
 		let section = path;
-		if (path.startsWith(`/dashboard/management`)) section = "management";
+		if (path === `/dashboard/management/eval`) section = "eval";
 		else if (path.startsWith(`/dashboard/global-options`)) section = "administration";
-		else if (path === "/dashboard/management/eval") section = "eval";
+		else if (path.startsWith(`/dashboard/management`)) section = "management";
 		else if (path.startsWith(`/dashboard`) && svrid !== "maintainer") section = "sudoMode";
 		switch (configJSON.perms[section]) {
 			case 0:
@@ -3711,6 +3710,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 						accessManagement: checkPerms("/dashboard/management", req.user.id),
+						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 					},
 					currentPage: req.path,
 					serverCount: await bot.guilds.totalCount,
@@ -3743,6 +3743,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 						accessManagement: checkPerms("/dashboard/management", req.user.id),
+						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 					},
 					currentPage: req.path,
 					activeSearchQuery: req.query.q,
@@ -3799,6 +3800,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
 				currentPage: req.path,
 				serverCount: await bot.guilds.totalCount,
@@ -3829,6 +3831,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -3881,6 +3884,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
 				currentPage: req.path,
 				bot_user: {
@@ -3920,6 +3924,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -3955,6 +3960,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -4021,6 +4027,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
 					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
 					accessManagement: checkPerms("/dashboard/management", consolemember.id),
+					accessEval: checkPerms("/dashboard/management/eval", consolemember.id),
 				},
 				currentPage: req.path,
 				config: {
@@ -4111,6 +4118,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
 				currentPage: req.path,
 			});
@@ -4135,6 +4143,41 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		});
 	});
 
+	// Maintainer console evaluate code
+	app.get("/dashboard/management/eval", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			res.render("pages/maintainer-eval.ejs", {
+				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				serverData: {
+					name: bot.user.username,
+					id: bot.user.id,
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
+					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
+					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
+					accessManagement: checkPerms("/dashboard/management", consolemember.id),
+					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
+				},
+				currentPage: req.path,
+				config: {
+					shardTotal: Number(process.env.SHARD_COUNT),
+				},
+			});
+		});
+	});
+	app.post("/dashboard/management/eval", (req, res) => {
+		checkAuth(req, res, async () => {
+			if (req.body.code && req.body.target) {
+				bot.IPC.send("evaluate", { code: req.body.code, target: req.body.target }).then(result => {
+					res.send(JSON.stringify(result));
+				});
+			} else {
+				res.sendStatus(400);
+			}
+		});
+	});
+
+	// Maintainer console console logs
 	app.get("/dashboard/management/logs", (req, res) => {
 		checkAuth(req, res, () => {
 			winston.transports.file.query({ limit: 10 }, (err, results) => {
@@ -4153,6 +4196,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
 						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
 						accessManagement: checkPerms("/dashboard/management", req.user.id),
+						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 					},
 					currentPage: req.path,
 					logs: JSON.stringify(logs),
@@ -4187,7 +4231,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Error page
 	app.get("/error", (req, res) => {
-		if (req.query.err === "discord") renderError(res, "The Discord OAuth flow could not be completed. Contact your GAB maintainer for more help.");
+		if (req.query.err === "discord") renderError(res, "The Discord OAuth flow could not be completed.");
 		else if (req.query.err === "json") renderError(res, "That doesn't look like a valid trivia set to me!");
 		else renderError(res, "I AM ERROR");
 	});

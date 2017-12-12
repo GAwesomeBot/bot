@@ -93,7 +93,7 @@
 							</a>
 						</div>
 						<div class="column">
-							<a class="box notification <% if (disabled) { %>is-dark<% } else if (!utd) { %>is-info<% } else { %>is-white<% } %>" href="/dashboard/management/version?svrid=maintainer">
+							<a class="box notification <% if (disabled) { %>is-dark<% } else if (!utd) { %>is-info<% } else { %>is-white<% } %>"<% if (serverData.accessManagement) { %> href="/dashboard/management/version?svrid=maintainer"<% } %>>
 								<div class="heading">
 									<span class="icon is-small">
 										<i class="fa fa-code-fork"></i>

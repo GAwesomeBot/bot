@@ -189,6 +189,31 @@ database.initialize(configJS.databaseURL).catch(err => {
 			callback(await Promise.all(promises));
 		});
 
+		sharder.IPC.on("evaluate", async (msg, callback) => {
+			if (msg.target === "master") {
+				let result = {};
+				try {
+					result.result = eval(msg.code);
+				} catch (err) {
+					result.err = true;
+					result.result = err;
+				}
+				if (typeof result.result !== "string") result.result = require("util").inspect(result.result, false, 1);
+				return callback(result);
+			} else if (sharder.shards.has(Number(msg.target)) || msg.target === "all") {
+				sharder.IPC.send("evaluate", msg.code, msg.target === "all" ? "*" : Number(msg.target)).then(res => {
+					let result = {};
+					if (msg.target !== "all") result.result = res.result;
+					else result.result = res.map(m => m.result);
+					if (msg.target !== "all" && res.err) result.err = true;
+					else if (msg.target === "all" && res.some(m => m.err)) result.err = true;
+					callback(result);
+				});
+			} else {
+				return callback(null);
+			}
+		});
+
 		sharder.IPC.on("leaveGuild", async msg => {
 			const shardid = sharder.guilds.get(msg);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("leaveGuild", msg, shardid);

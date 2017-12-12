@@ -78,6 +78,11 @@
             <% } else { %>
 			<a href="/dashboard/management/version?svrid=maintainer">GAB Version</a>
             <% } %>
+            <% if(currentPage=="/dashboard/management/eval") { %>
+			<a class="is-active" href="#">Evaluate</a>
+            <% } else if (serverData.accessEval) { %>
+			<a href="/dashboard/management/eval?svrid=maintainer">Evaluate</a>
+            <% } %>
             <% if(currentPage=="/dashboard/management/logs") { %>
 			<a class="is-active" href="#">Logs</a>
             <% } else { %>

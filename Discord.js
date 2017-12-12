@@ -1034,6 +1034,18 @@ bot.IPC.on("eval", async (msg, callback) => {
 	callback(result);
 });
 
+bot.IPC.on("evaluate", async (msg, callback) => {
+	let result = {};
+	try {
+		result.result = bot._eval(msg);
+	} catch (err) {
+		result.err = true;
+		result.result = err;
+	}
+	if (typeof result.result !== "string") result.result = require("util").inspect(result.result, false, 1);
+	callback(result);
+});
+
 bot.IPC.on("cacheUpdate", msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
