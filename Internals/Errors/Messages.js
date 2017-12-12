@@ -17,6 +17,10 @@ const Messages = {
 	// Await PM messages
 	AWAIT_EXPIRED: `The await for the message expired!`,
 	AWAIT_QUIT: `The user quitted the menu!`,
+
+	// Shared Command related
+	UNAUTHORIZED_USER: user => `"${user.tag}" is not part of the sudo or normal maintainer list.`,
+	SHARED_INVALID_MODE: (mode, command) => `"${mode}" is an invalid mode for command ${command}`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

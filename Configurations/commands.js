@@ -942,6 +942,21 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 	},
+	shared: {
+		// _base: {
+		// 	usage: ``,
+		// 	description: ``,
+		// 	aliases: [],
+		//	example: [],
+		//  configJSON: "",
+		// },
+		eval: {
+			usage: `<expression>`,
+			description: `Evaluate some Javascript Code`,
+			aliases: ["ev"],
+			configJSON: "eval",
+		},
+	},
 };
 
 module.exports = commands;
