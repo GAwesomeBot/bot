@@ -4,7 +4,6 @@ class BaseEvent {
 	/**
 	 * Base class for all events.
 	 * @param {Client} client
-	 * @param {DatabaseConnection} db
 	 * @param {Object} configJS
 	 * @param {Object} configJSON
 	 */
