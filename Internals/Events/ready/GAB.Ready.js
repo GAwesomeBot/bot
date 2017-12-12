@@ -42,14 +42,14 @@ class Ready extends BaseEvent {
 						winston.warn(`Failed to insert new server documents..`, err);
 					}).then(async () => {
 						winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
-						await this.pruneServerData();
+						await this.setBotActivity();
 					});
 				} else {
-					await this.pruneServerData();
+					await this.setBotActivity();
 				}
 			});
 		} catch (err) {
-			await this.pruneServerData();
+			await this.setBotActivity();
 		}
 	}
 
