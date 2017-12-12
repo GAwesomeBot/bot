@@ -78,6 +78,11 @@
             <% } else { %>
 			<a href="/dashboard/management/version?svrid=maintainer">GAB Version</a>
             <% } %>
+            <% if(currentPage=="/dashboard/management/logs") { %>
+			<a class="is-active" href="#">Logs</a>
+            <% } else { %>
+			<a href="/dashboard/management/logs?svrid=maintainer">Logs</a>
+            <% } %>
 		</li>
 	</ul>
 	<% } %>

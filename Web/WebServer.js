@@ -16,7 +16,6 @@ const discordOAuthScopes = ["identify", "guilds"];
 const path = require("path");
 const fs = require("fs");
 const writeFile = require("write-file-atomic");
-const base64 = require("node-base64-image");
 const sizeof = require("object-sizeof");
 const moment = require("moment");
 const textDiff = require("text-diff");
@@ -4133,6 +4132,45 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 				});
 			});
 			res.sendStatus(200);
+		});
+	});
+
+	app.get("/dashboard/management/logs", (req, res) => {
+		checkAuth(req, res, () => {
+			winston.transports.file.query({ limit: 10 }, (err, results) => {
+				results.reverse();
+				let logs = results.map(log => {
+					log.timestamp = moment(log.timestamp).format("DD-MM-YYYY HH:mm:ss");
+					return log;
+				});
+				res.render("pages/maintainer-logs.ejs", {
+					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					serverData: {
+						name: bot.user.username,
+						id: bot.user.id,
+						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
+						isMaintainer: true,
+						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
+						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
+						accessManagement: checkPerms("/dashboard/management", req.user.id),
+					},
+					currentPage: req.path,
+					logs: JSON.stringify(logs),
+				});
+			});
+		});
+	});
+	io.of("/dashboard/management/logs").on("connection", async socket => {
+		const send = data => {
+			data.timestamp = moment(data.timestamp).format("DD-MM-YYYY HH:mm:ss");
+			socket.emit("logs", data);
+		};
+		// We have to use this cheat because winston's unsupported af and its stream method's start parameter does *not* work as documented... How lame, amirite ladies?
+		// So keep your logs clean, people! You don't want this to go over thousands of lines. Luckily, the page is already rendered when we execute the query, it's just the WebSocket that's delayed.
+		winston.transports.file.query({ limit: Infinity }, (err, results) => {
+			let stream = winston.transports.file.stream({ start: results.length - 1 }).on("log", send);
+
+			socket.on("disconnect", () => stream.destroy());
 		});
 	});
 
