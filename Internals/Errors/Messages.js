@@ -17,6 +17,20 @@ const Messages = {
 	// Await PM messages
 	AWAIT_EXPIRED: `The await for the message expired!`,
 	AWAIT_QUIT: `The user quitted the menu!`,
+
+	// CLI errors
+	CLI_PARAM_INVALID: (paramName, receivedType, allowedTypes) => {
+		function mapTo (string) {
+			if (typeof string !== "string") string = string.constructor.name;
+			return string;
+		}
+
+		if (Array.isArray(allowedTypes)) {
+			allowedTypes = allowedTypes.map(mapTo).join("|");
+		}
+		if (typeof allowedTypes !== "string") allowedTypes = mapTo(allowedTypes);
+		return `Invalid type of "${paramName}" argument: should be ${allowedTypes}, passed ${receivedType}`;
+	},
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
