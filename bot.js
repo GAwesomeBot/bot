@@ -14,7 +14,7 @@ const database = require("./Database/Driver.js");
 const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
-const { Console, Sharder, Traffic, Boot } = require("./Modules/");
+const { Console, Sharder, Traffic, Boot, CLI } = require("./Modules/");
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -76,6 +76,10 @@ database.initialize(configJS.databaseURL).catch(err => {
 
 		const traffic = new Traffic(sharder.IPC, winston, false, db);
 		traffic.init();
+
+		winston.verbose("Creating a STDIN CLI instance.");
+		const cli = new CLI();
+		cli.setup(sharder);
 
 		// Sharder events
 		sharder.ready = 0;

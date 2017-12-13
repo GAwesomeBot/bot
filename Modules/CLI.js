@@ -1,4 +1,3 @@
-const { EOL } = require("os");
 const { cli } = require("../Configurations/commands");
 const {
 	Errors: {
@@ -6,10 +5,14 @@ const {
 	},
 } = require("../Internals/index");
 class CLI {
-	constructor (client) {
-		this.bot = this.client = client;
+	constructor (sharder) {
+		this.sharder = sharder;
 		this.stdin = process.stdin;
 		this.currentlyRunningCommand = null;
+	}
+
+	writeArrow () {
+		process.stdout.write(">");
 	}
 
 	/**
@@ -34,32 +37,41 @@ class CLI {
 	listener (data) {
 		let strData = data.toString();
 		if (!this.currentlyRunningCommand) {
-			const [command, ...args] = strData.split(" ");
+			let [command, ...args] = strData.split(" ");
+			command = command.trim();
 			const cmdData = this.getFullCommand(command);
 			if (!cmdData) return;
-			const commandClass = new cmdData.class(this.bot);
 			if (cmdData.data.isMultiline) {
 				this.commandArgs = args.join(" ");
 				this.currentlyRunningCommand = {
 					data: cmdData.data,
-					class: commandClass,
+					class: cmdData.func,
 				};
 			} else {
-				commandClass.run(cmdData.data, args.join(" "));
+				try {
+					cmdData.func({ cli: this }, cmdData.data, args.join(" "));
+				} catch (err) {
+					winston.error(`An error occurred while running this command:\n${err.stack}`);
+				}
 			}
 		} else {
 			if (this.currentlyRunningCommand.data.isMultiline) {
-				if (strData.endsWith(`\u001a${EOL}`)) {
-					strData = strData.replace(/\u001a[\r\n]{1,2}$/, "'");
-					this.commandArgs += strData;
-					this.currentlyRunningCommand.class.run(this.currentlyRunningCommand.data, {
-						args: this.commandArgs,
-					});
+				let trimmedData = strData.trim();
+				if (trimmedData.endsWith(`\u001a`)) {
+					trimmedData = trimmedData.replace(/\u001a$/, "'");
+					try {
+						this.currentlyRunningCommand.func({ cli: this }, this.currentlyRunningCommand.data, this.commandArgs);
+					} catch (err) {
+						winston.error(`An error occurred while running this comma:nd\n${err.stack}`);
+					}
 					delete this.commandArgs;
+				} else {
+					this.commandArgs += trimmedData;
 				}
 			}
 			delete this.currentlyRunningCommand;
 		}
+		this.writeArrow();
 	}
 
 	/**
@@ -67,11 +79,11 @@ class CLI {
 	 * @param {String} commandName The command name
 	 * @returns {Object} The command object*/
 	getFullCommand (commandName) {
-		if (!(commandName instanceof String)) throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
 		if (!this.getCommandData(commandName)) return null;
 		return {
 			data: this.getCommandData(commandName),
-			class: this.getCommand(commandName),
+			func: this.getCommand(commandName),
 		};
 	}
 	/**
@@ -79,17 +91,17 @@ class CLI {
 	 * @param {String} commandName The command name
 	 * @returns {Object} The command object*/
 	getCommandData (commandName) {
-		if (!(commandName instanceof String)) throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
 		return cli[commandName] || null;
 	}
 
 	/**
-	 * Gets a command class
+	 * Gets a command function
 	 * @param {String} commandName The command name
-	 * @returns {Object} The command class | TODO: make the class a typedef or something
+	 * @returns {Function} The command function
 	 */
 	getCommand (commandName) {
-		if (!(commandName instanceof String)) throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
 		if (!this.getCommandData(commandName)) return null;
 		return require(`../Commands/CLI/${commandName}`);
 	}

@@ -14,4 +14,5 @@ module.exports = {
 	Traffic: require("./Traffic.js"),
 	Updater: require("./Updater.js"),
 	Utils: require("./Utils/index"),
+	CLI: require("./CLI"),
 };

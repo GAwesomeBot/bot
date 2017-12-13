@@ -957,6 +957,15 @@ const commands = {
 			configJSON: "eval",
 		},
 	},
+
+	cli: {
+		shutdown: {
+			description: "Shuts down the bot.",
+		},
+		restart: {
+			description: "Restarts the bot.",
+		},
+	},
 };
 
 module.exports = commands;
