@@ -3,7 +3,7 @@ const reload = require("require-reload")(require);
 const { Error } = require("../Errors/");
 
 module.exports = class EventHandler {
-	constructor (client, configJS, configJSON) {
+	constructor (client, configJS) {
 		this.client = client;
 		this.configJS = configJS;
 		this.configJSON = configJSON;

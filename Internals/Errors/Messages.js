@@ -31,7 +31,7 @@ const Messages = {
 		if (typeof allowedTypes !== "string") allowedTypes = mapTo(allowedTypes);
 		return `Invalid type of "${paramName}" argument: should be ${allowedTypes}, passed ${receivedType}`;
 	},
-
+    
 	// Shared Command related
 	UNAUTHORIZED_USER: user => `"${user.tag}" is not part of the sudo or normal maintainer list.`,
 	SHARED_INVALID_MODE: (mode, command) => `"${mode}" is an invalid mode for command ${command}`,

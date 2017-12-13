@@ -21,6 +21,8 @@ const moment = require("moment");
 const textDiff = require("text-diff");
 const diff = new textDiff();
 
+const reload = require("require-reload")(require);
+
 const showdown = require("showdown");
 const md = new showdown.Converter({
 	tables: true,
@@ -112,7 +114,7 @@ const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400
 
 /* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
-module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database) => {
+module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	const renderError = (res, text, line, code = 500) => res.status(code).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
 
 	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
@@ -237,7 +239,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		const param = msg.location;
 		try {
 			io.of(path).emit("update", param);
-			if (param === "maintainer") configJSON = require("../Configurations/config.json");
+			if (param === "maintainer") global.configJSON = reload("../Configurations/config.json");
 		} catch (err) {
 			winston.warn("An error occurred while handling a dashboard WebSocket!", err);
 		}
@@ -1299,7 +1301,8 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 		"I didn't want this either",
 		"The tragic story",
 		"Developer Vs. Bot",
-		"What did we mess up today?"
+		"What did we mess up today?",
+		"Where are your fingers?"
 	][Math.floor(Math.random() * 17)]
 	app.get("/blog", (req, res) => {
 		let count;
@@ -1356,6 +1359,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 						pageTitle: `${data.title ? `Edit ${data.title}` : "New Post"} - GAwesomeBot Blog`,
 						mode: "compose",
 						data,
+						headerTitle: getPageTitle(),
 					});
 				};
 
@@ -1440,6 +1444,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					mode: "article",
 					pageTitle: `${blogDocument.title} - GAwesomeBot Blog`,
 					blogPost: data,
+					headerTitle: getPageTitle(),
 				});
 			}
 		});
@@ -1778,13 +1783,13 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 
 	// Save config.json after maintainer console form data is received
 	const saveMaintainerConsoleOptions = (consolemember, req, res, override, silent) => {
-		dashboardUpdate(req.path, "maintainer");
-		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 4), err => {
+		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 2), err => {
 			if (err) {
 				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: consolemember.id }, err);
 				renderError(res, "An internal error occurred!");
 				return;
 			}
+			dashboardUpdate(req.path, "maintainer");
 			if (override && !silent) {
 				res.sendStatus(200);
 			} else if (!silent) res.redirect(req.originalUrl);
@@ -3699,7 +3704,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 					messageCount = result[0].total;
 				}
 				const trafficData = bot.traffic.data();
-				const version = await Updater.check(configJSON);
+				const version = await Updater.check();
 				res.render("pages/maintainer.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
 					serverData: {
@@ -4101,7 +4106,7 @@ module.exports = (bot, auth, configJS, configJSON, winston, db = global.Database
 	// Maintainer console bot version
 	app.get("/dashboard/management/version", (req, res) => {
 		checkAuth(req, res, async () => {
-			let version = await Updater.check(configJSON);
+			let version = await Updater.check();
 			if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
 			res.render("pages/maintainer-version.ejs", {
 				disabled: version === 404,

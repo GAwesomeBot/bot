@@ -91,6 +91,7 @@ module.exports = {
 		"GAB.VoteHandler",
 		"GAB.AFKHandler",
 		"GAB.UsernameHandler",
+		"GAB.MaintainerMessageHandler",
 		// "GAB.Translation",
 		// "GAB.OtherFilters",
 	],

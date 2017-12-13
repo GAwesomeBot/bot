@@ -1,5 +1,3 @@
-const cJSON = require("circular-json");
-
 class SharderIPC {
 	constructor (sharder, winston) {
 		this.sharder = sharder;

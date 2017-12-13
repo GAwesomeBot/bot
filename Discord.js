@@ -19,16 +19,18 @@ const {
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
-const configJSON = require("./Configurations/config.json");
+global.configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 
 const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 
 const ProcessAsPromised = require("process-as-promised");
+const cJSON = require("circular-json");
 
 const privateCommandModules = {};
 const commandModules = {};
+const sharedModules = {};
 
 // Set up a global instance of Winston for this Shard
 global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
@@ -200,29 +202,37 @@ class Client extends DJSClient {
 		}
 	}
 
-	reloadAllPrivateCommands () {
-		let command_keys = Object.keys(privateCommandModules);
-		if (!command_keys.length) {
-			command_keys = Object.keys(commands.pm);
+	reloadSharedCommand (command, returnError = false) {
+		try {
+			sharedModules[command] = reload(`./Commands/Shared/${command}.js`);
+		} catch (err) {
+			winston.verbose(`Failed to reload shared command "${command}"`, err);
+			if (returnError) return err;
 		}
-		command_keys.forEach(cmd => {
-			this.reloadPrivateCommand(cmd);
-		});
+	}
+
+	reloadAllPrivateCommands () {
+		let commandKeys = Object.keys(privateCommandModules);
+		if (!commandKeys.length) commandKeys = Object.keys(commands.pm);
+		commandKeys.forEach(cmd => this.reloadPrivateCommand(cmd));
 	}
 
 	reloadAllPublicCommands () {
-		let command_keys = Object.keys(commandModules);
-		if (!command_keys.length) {
-			command_keys = Object.keys(commands.public);
-		}
-		command_keys.forEach(cmd => {
-			this.reloadPublicCommand(cmd);
-		});
+		let commandKeys = Object.keys(commandModules);
+		if (!commandKeys.length) commandKeys = Object.keys(commands.public);
+		commandKeys.forEach(cmd => this.reloadPublicCommand(cmd));
+	}
+
+	reloadAllSharedCommands () {
+		let commandKeys = Object.keys(sharedModules);
+		if (!commandKeys.length) commandKeys = Object.keys(commands.shared);
+		commandKeys.forEach(cmd => this.reloadSharedCommand(cmd));
 	}
 
 	reloadAllCommands () {
 		this.reloadAllPrivateCommands();
 		this.reloadAllPublicCommands();
+		this.reloadAllSharedCommands();
 	}
 
 	getPMCommandList () {
@@ -231,6 +241,10 @@ class Client extends DJSClient {
 
 	getPublicCommandList () {
 		return Object.keys(commands.public);
+	}
+
+	getSharedCommandList () {
+		return Object.keys(commands.shared);
 	}
 
 	getPMCommand (command) {
@@ -242,11 +256,23 @@ class Client extends DJSClient {
 			return commandModules[command];
 		} else {
 			for (const [key, value] of Object.entries(commands.public)) {
-				if (value.aliases && value.aliases.length > 0) {
-					if (value.aliases.includes(command.trim())) return commandModules[key];
-				}
+				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commandModules[key];
 			}
 		}
+	}
+
+	getSharedCommand (command) {
+		if (sharedModules[command]) {
+			return sharedModules[command];
+		} else {
+			for (const [key, value] of Object.entries(commands.shared)) {
+				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return sharedModules[key];
+			}
+		}
+	}
+
+	getPMCommandMetadata (command) {
+		return commands.pm[command];
 	}
 
 	getPublicCommandMetadata (command) {
@@ -254,15 +280,91 @@ class Client extends DJSClient {
 			return commands.public[command];
 		} else {
 			for (const [key, value] of Object.entries(commands.public)) {
-				if (value.aliases && value.aliases.length > 0) {
-					if (value.aliases.includes(command.trim())) return commands.public[key];
-				}
+				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.public[key];
 			}
 		}
 	}
 
-	getPMCommandMetadata (command) {
-		return commands.pm[command];
+	getSharedCommandMetadata (command) {
+		if (commands.shared[command]) {
+			return commands.shared[command];
+		} else {
+			for (const [key, value] of Object.entries(commands.shared)) {
+				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.shared[key];
+			}
+		}
+	}
+
+	getSharedCommandName (command) {
+		let cmds = Object.keys(commands.shared);
+		if (cmds.includes(command)) return command;
+		cmds = Object.entries(commands.shared);
+		for (const [key, value] of cmds) {
+			if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return key;
+		}
+	}
+
+	async canRunSharedCommand (command, user) {
+		command = this.getSharedCommandName(command);
+		if (!(configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id))) throw new GABError("UNAUTHORIZED_USER", user);
+		let commandData = this.getSharedCommandMetadata(command);
+		switch (commandData.configJSON) {
+			case "eval": {
+				let value = configJSON.perms.eval;
+				switch (value) {
+					case 0: return false;
+					case 1: {
+						// Maintainers
+						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
+						return false;
+					}
+					case 2: {
+						// Sudo Maintainers
+						if (configJSON.sudoMaintainers.includes(user.id)) return true;
+						return false;
+					}
+				}
+				break;
+			}
+			case "administration":
+			case "admin": {
+				let value = configJSON.perms.administration;
+				switch (value) {
+					case 0: return false;
+					case 1: {
+						// Maintainers
+						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
+						return false;
+					}
+					case 2: {
+						// Sudo Maintainers
+						if (configJSON.sudoMaintainers.includes(user.id)) return true;
+						return false;
+					}
+				}
+				break;
+			}
+			case "shutdown": {
+				let value = configJSON.perms.shutdown;
+				switch (value) {
+					case 0: return false;
+					case 1: {
+						// Maintainers
+						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
+						return false;
+					}
+					case 2: {
+						// Sudo Maintainers
+						if (configJSON.sudoMaintainers.includes(user.id)) return true;
+						return false;
+					}
+				}
+				break;
+			}
+			default: {
+				throw new GABError("SHARED_INVALID_MODE", commandData.configJSON, command);
+			}
+		}
 	}
 
 	/**
@@ -928,7 +1030,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 }).then(async () => {
 	winston.info("Successfully connected to MongoDB!");
 	winston.debug("Initializing Discord Events.");
-	bot.events = new EventHandler(bot, configJS, configJSON);
+	bot.events = new EventHandler(bot, configJS);
 	await bot.events.init();
 	// Store server documents by ID
 	bot.cache = new ServerDocumentCache(this);
@@ -972,7 +1074,7 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 	} else {
 		let guild = bot.guilds.get(payload.guild);
 		let val = GG.generate(guild, payload.settings);
-		return callback({ guild: payload.guild, settings: payload.settings, result: val });
+		return callback({ guild: payload.guild, settings: payload.settings, result: cJSON.stringify(val) });
 	}
 });
 
@@ -1540,7 +1642,7 @@ bot.once("ready", async () => {
 		await winston.silly(`Received READY event from Discord!`);
 		await bot.events.onEvent("ready");
 		await winston.silly("Running webserver");
-		WebServer(bot, auth, configJS, configJSON, winston);
+		WebServer(bot, auth, configJS, winston);
 		bot.isReady = true;
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);

@@ -4,11 +4,9 @@ class BaseEvent {
 	/**
 	 * Base class for all events.
 	 * @param {Client} client
-	 * @param {DatabaseConnection} db
 	 * @param {Object} configJS
-	 * @param {Object} configJSON
 	 */
-	constructor (client, configJS, configJSON) {
+	constructor (client, configJS) {
 		this.bot = this.client = client;
 		this.configJS = configJS;
 		this.configJSON = configJSON;

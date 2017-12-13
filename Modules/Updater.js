@@ -5,7 +5,7 @@ const Console = require("./Console");
 // TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {
-	check: async config => {
+	check: async (config = configJSON) => {
 		let res;
 		try {
 			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`);

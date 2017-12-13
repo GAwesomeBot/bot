@@ -79,7 +79,11 @@ const getGuild = async (bot, guildID, settings) => {
 	return bot.IPC.send("getGuild", { guild: guildID, settings: settings }).then(msg => {
 		if (msg.err && msg.err !== 404) throw msg.err;
 		if (msg.err && msg.err === 404) return null;
-		else return msg.result;
+		try {
+			return JSON.parse(msg.result);
+		} catch (err) {
+			return msg.result;
+		}
 	});
 };
 

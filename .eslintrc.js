@@ -16,6 +16,7 @@ module.exports = {
 		Wiki: true,
 		Database: true,
 		Raw: true,
+		configJSON: true,
 	},
 	rules: {
 		"no-compare-neg-zero": "error",

@@ -102,7 +102,7 @@ class Ready extends BaseEvent {
 		};
 		if (this.configJSON.activity.name === "default") {
 			activity = {
-				name: "https://gawesomebot.com",
+				name: "https://gawesomebot.com | Shard {shard}".format({ shard: this.bot.shardID }),
 				type: "PLAYING",
 			};
 		}
