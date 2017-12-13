@@ -25,8 +25,8 @@ module.exports = async (main, documents, msg, commandData) => {
 	 * Feel free to deconstruct it using { Value }
 	 * @property {Discord.Client} bot The bot object
 	 * @property {Object} configJS The config js object
-	 * @property {Object} configJSON The config json object
 	 * @property {Object} Utils Util object
 	 * @property {Object} utils Util object
+	 * configJSON is in the global
 	 */
 };

@@ -1,4 +1,4 @@
-module.exports = async ({ bot, configJSON }, msg, commandData) => {
+module.exports = async ({ bot }, msg, commandData) => {
 	if (!(configJSON.sudoMaintainers.includes(msg.author.id) || configJSON.maintainers.includes(msg.author.id))) {
 		return msg.reply({
 			embed: {

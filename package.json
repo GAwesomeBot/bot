@@ -29,14 +29,14 @@
     "ejs": "*",
     "erlpack": "github:discordapp/erlpack",
     "express": "^4.16.2",
-    "express-rate-limit": "*",
+    "express-rate-limit": "^2.11.0",
     "express-session": "^1.15.6",
     "fast-levenshtein": "*",
     "feed-read": "*",
     "fs-nextra": "^0.3.2",
     "mathjs": "^3.17.0",
-    "moment": "^2.19.3",
-    "mongoose": "^4.13.6",
+    "moment": "^2.19.4",
+    "mongoose": "^4.13.7",
     "mongoose-findorcreate": "*",
     "mstranslator": "*",
     "node-base64-image": "*",
@@ -49,7 +49,7 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "searchitunes": "*",
-    "showdown": "^1.8.4",
+    "showdown": "^1.8.5",
     "snekfetch": "^3.6.1",
     "socket.io": "^2.0.4",
     "string": "*",
@@ -67,6 +67,6 @@
     "zlib-sync": "^0.1.4"
   },
   "devDependencies": {
-    "eslint": "^4.12.1"
+    "eslint": "^4.13.1"
   }
 }
