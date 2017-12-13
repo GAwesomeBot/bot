@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+const { EOL } = require("os");
+>>>>>>> [CLI] Let's work on it
 const { cli } = require("../Configurations/commands");
 const {
 	Errors: {
@@ -5,8 +9,13 @@ const {
 	},
 } = require("../Internals/index");
 class CLI {
+<<<<<<< HEAD
 	constructor (sharder) {
 		this.sharder = sharder;
+=======
+	constructor (client) {
+		this.bot = this.client = client;
+>>>>>>> [CLI] Let's work on it
 		this.stdin = process.stdin;
 		this.currentlyRunningCommand = null;
 	}
@@ -37,6 +46,10 @@ class CLI {
 			command = command.trim();
 			const cmdData = this.getFullCommand(command);
 			if (!cmdData) return;
+			const [command, ...args] = strData.split(" ");
+			const cmdData = this.getFullCommand(command);
+			if (!cmdData) return;
+			const commandClass = new cmdData.class(this.bot);
 			if (cmdData.data.isMultiline) {
 				this.commandArgs = args.join(" ");
 				this.currentlyRunningCommand = {
@@ -75,11 +88,19 @@ class CLI {
 	 * @param {String} commandName The command name
 	 * @returns {Object} The command object*/
 	getFullCommand (commandName) {
+<<<<<<< HEAD
 		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
 		if (!this.getCommandData(commandName)) return null;
 		return {
 			data: this.getCommandData(commandName),
 			func: this.getCommand(commandName),
+=======
+		if (!(commandName instanceof String)) throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+		if (!this.getCommandData(commandName)) return null;
+		return {
+			data: this.getCommandData(commandName),
+			class: this.getCommand(commandName),
+>>>>>>> [CLI] Let's work on it
 		};
 	}
 	/**
@@ -87,17 +108,30 @@ class CLI {
 	 * @param {String} commandName The command name
 	 * @returns {Object} The command object*/
 	getCommandData (commandName) {
+<<<<<<< HEAD
 		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+=======
+		if (!(commandName instanceof String)) throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+>>>>>>> [CLI] Let's work on it
 		return cli[commandName] || null;
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Gets a command function
 	 * @param {String} commandName The command name
 	 * @returns {Function} The command function
 	 */
 	getCommand (commandName) {
 		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+=======
+	 * Gets a command class
+	 * @param {String} commandName The command name
+	 * @returns {Object} The command class | TODO: make the class a typedef or something
+	 */
+	getCommand (commandName) {
+		if (!(commandName instanceof String)) throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
+>>>>>>> [CLI] Let's work on it
 		if (!this.getCommandData(commandName)) return null;
 		return require(`../Commands/CLI/${commandName}`);
 	}
