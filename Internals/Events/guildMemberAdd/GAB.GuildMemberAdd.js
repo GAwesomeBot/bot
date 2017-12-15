@@ -53,7 +53,7 @@ class GuildMemberAdd extends BaseEvent {
 								title: `Welcome to ${member.guild} Discord Chat!`,
 								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message set for new members! Have a cookie instead 🍪",
 								footer: {
-									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${await this.bot.getCommandPrefix(member.guild, serverDocument)}help" in the public chat.`,
+									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${this.bot.getCommandPrefix(member.guild, serverDocument)}help" in the public chat.`,
 								},
 							},
 						});

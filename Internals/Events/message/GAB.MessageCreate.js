@@ -84,7 +84,7 @@ class MessageCreate extends BaseEvent {
 						utils: Utils,
 						Utils,
 					}, msg, {
-						name: msg.command,
+						name: this.client.getPublicCommandName(msg.command),
 						usage: this.bot.getPMCommandMetadata(msg.command).usage,
 					});
 				} catch (err) {
@@ -411,7 +411,7 @@ class MessageCreate extends BaseEvent {
 										embed: {
 											color: 0x3669FA,
 											title: `Hey there, it seems like you are lost!`,
-											description: `Use \`${await this.bot.getCommandPrefix(msg.guild, serverDocument)}help\` for info about how to use me on this server! 😄`,
+											description: `Use \`${this.bot.getCommandPrefix(msg.guild, serverDocument)}help\` for info about how to use me on this server! 😄`,
 										},
 									});
 									// Process chatterbot prompt
