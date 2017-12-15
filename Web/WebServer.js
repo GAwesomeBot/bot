@@ -47,6 +47,7 @@ const Updater = require("./../Modules/Updater.js");
 const Utils = require("./../Modules/Utils");
 const getGuild = require("./../Modules").GetGuild;
 
+const { LoggingLevels } = require("../Internals/Constants");
 
 const app = express();
 app.use(compression());
@@ -1766,7 +1767,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
 		serverDocument.save(err => {
 			dashboardUpdate(req.path, svr.id);
-			bot.logMessage(serverDocument, "save", `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
+			bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
 			if (err) {
 				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
 				renderError(res, "An internal error occurred!");

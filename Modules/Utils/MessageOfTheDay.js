@@ -1,3 +1,5 @@
+const { LoggingLevels } = require("../../Internals/Constants");
+
 /**
  * Send message of the day to a server
  * @param bot The bot instance / shard
@@ -14,12 +16,12 @@ module.exports = async (bot, server, motdDocument) => {
 				serverConfigDocument.message_of_the_day.last_run = Date.now();
 				await serverConfigDocument.message_of_the_day.save().catch(err => {
 					winston.warn(`Failed to save message of the day data... 😞\n`, err);
-					bot.logMessage(serverDocument, "error", "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
+					bot.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 				});
 				channel.send(serverConfigDocument.message_of_the_day.message_content);
-				bot.logMessage(serverDocument, "info", "Sent Message Of The Day successfully.", null, channel.id);
+				bot.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", null, channel.id);
 			} else {
-				bot.logMessage(serverDocument, "error", "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
+				bot.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 			}
 			bot.setTimeout(async () => {
 				const newserverConfigDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {

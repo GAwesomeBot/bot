@@ -1,4 +1,5 @@
 const BaseEvent = require("../BaseEvent.js");
+const { LoggingLevels } = require("../../Constants");
 /* eslint-disable max-len */
 
 /**
@@ -80,7 +81,7 @@ class GuildMemberAdd extends BaseEvent {
 							winston.verbose(`Failed to add new role to member`, { svrid: member.guild.id, usrid: member.id, role: role.id }, err);
 						}
 					}
-					(x === arrayOfRoles.length && this.bot.logMessage(serverDocument, "info", `Added new member roles to a new member.`, null, member.id)) || this.bot.logMessage(serverDocument, "error", `I was unable to add some roles to a new member!`, null, member.id);
+					(x === arrayOfRoles.length && this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Added new member roles to a new member.`, null, member.id)) || this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `I was unable to add some roles to a new member!`, null, member.id);
 				}
 			}
 		}

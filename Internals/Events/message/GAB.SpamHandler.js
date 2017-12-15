@@ -1,5 +1,6 @@
 const BaseEvent = require("../BaseEvent");
 const levenshtein = require("fast-levenshtein");
+const { LoggingLevels } = require("../../Constants");
 
 class SpamHandler extends BaseEvent {
 	requirements (msg) {
@@ -62,7 +63,7 @@ class SpamHandler extends BaseEvent {
 					if (spamDocument.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
 						// eslint-disable-next-line max-len
 						winston.verbose(`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-						this.bot.logMessage(this.serverDocument, "info", `Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
+						this.bot.logMessage(this.serverDocument, LoggingLevels.INFO, `Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
 						// Message user and tell them to stop
 						msg.author.send({
 							embed: {
@@ -104,7 +105,7 @@ class SpamHandler extends BaseEvent {
 						// Second-time spam filter violation
 						// eslint-disable-next-line max-len
 						winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-						this.bot.logMessage(this.serverDocument, "info", `Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
+						this.bot.logMessage(this.serverDocument, LoggingLevels.INFO, `Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
 
 						// Delete spam messages if necessary
 						if (this.serverDocument.config.moderation.filters.spam_filter.delete_messages) {

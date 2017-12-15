@@ -1,5 +1,6 @@
 const BaseEvent = require("../BaseEvent.js");
 const { NewServer: getNewServerData, PostShardedData } = require("../../../Modules/");
+const {	LoggingLevels } = require("../../Constants");
 
 class GuildCreate extends BaseEvent {
 	async handle (guild) {
@@ -18,7 +19,7 @@ class GuildCreate extends BaseEvent {
 			}
 			if (serverDocument) {
 				winston.info(`Rejoined server ${guild}`, { svrid: guild.id });
-				this.bot.logMessage(serverDocument, "info", "I've been re-added to your server! (^-^)");
+				this.bot.logMessage(serverDocument, LoggingLevels.INFO, "I've been re-added to your server! (^-^)");
 			} else if (shouldMakeDocument || !serverDocument) {
 				winston.info(`Joined server ${guild}`, { svrid: guild.id });
 				try {
@@ -27,7 +28,7 @@ class GuildCreate extends BaseEvent {
 				} catch (err) {
 					winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
 				}
-				this.bot.logMessage(await Servers.findOne({ _id: guild.id }).exec(), "info", "I've been added to your server! (^-^)");
+				this.bot.logMessage(await Servers.findOne({ _id: guild.id }).exec(), LoggingLevels.INFO, "I've been added to your server! (^-^)");
 			}
 		}
 	}

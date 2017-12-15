@@ -1,5 +1,6 @@
 const defaultTriviaSet = require("./../Configurations/trivia.json");
 const levenshtein = require("fast-levenshtein");
+const { LoggingLevels } = require("../Internals/Constants");
 
 module.exports = class Trivia {
 	static async start (bot, db, svr, serverDocument, member, ch, channelDocument, set) {
@@ -32,7 +33,7 @@ module.exports = class Trivia {
 			channelDocument.trivia.past_questions = [];
 			channelDocument.trivia.score = 0;
 			channelDocument.trivia.responders = [];
-			bot.logMessage(serverDocument, "info", `User "${member}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
+			bot.logMessage(serverDocument, LoggingLevels.INFO, `User "${member}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
 			ch.send({
 				color: 0x50ff60,
 				description: `Trivia game started by ${member} ${set ? `(set: ${set})` : ""}🎮`,
