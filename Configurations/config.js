@@ -59,6 +59,15 @@ const configs = {
 	 * Leaving this as default is NOT recommended.
 	 */
 	secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
+	/**
+	 * The password that will be used in the encryption of data
+	 * YOU MUST CHANGE THIS.
+	 * And whatever you do. DO NOT CHANGE THIS AFTERWARDS.
+	 * The encrypted data will be lost otherwise.
+	 * So, set it to something secore, then never ever touch it. Save it in a file!
+	 * Hell, it can even be a random word! Just remember: never share this.
+	 */
+	encryptionPassword: "vPuVQ;e!9RH9:&`pSh'Y",
 	/*
 	 * Discord channel and server where any errors should be outputted,
 	 * whenever applicable
