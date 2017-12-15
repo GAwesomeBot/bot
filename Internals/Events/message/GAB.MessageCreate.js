@@ -411,7 +411,7 @@ class MessageCreate extends BaseEvent {
 										embed: {
 											color: 0x3669FA,
 											title: `Hey there, it seems like you are lost!`,
-											description: `Use \`${this.bot.getCommandPrefix(msg.guild, serverDocument)}help\` for info about how to use me on this server! 😄`,
+											description: `Use \`${msg.guild.commandPrefix}help\` for info about how to use me on this server! 😄`,
 										},
 									});
 									// Process chatterbot prompt

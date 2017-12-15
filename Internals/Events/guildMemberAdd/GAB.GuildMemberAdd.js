@@ -53,7 +53,7 @@ class GuildMemberAdd extends BaseEvent {
 								title: `Welcome to ${member.guild} Discord Chat!`,
 								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message set for new members! Have a cookie instead 🍪",
 								footer: {
-									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${this.bot.getCommandPrefix(member.guild, serverDocument)}help" in the public chat.`,
+									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${member.guild.commandPrefix}help" in the public chat.`,
 								},
 							},
 						});
@@ -71,12 +71,16 @@ class GuildMemberAdd extends BaseEvent {
 					}
 				}
 				if (arrayOfRoles.length > 0) {
-					try {
-						await member.addRoles(arrayOfRoles, `Added new member role(s) to this member for joining the guild.`);
-						this.bot.logMessage(serverDocument, "info", `Added new member roles to a new member.`, null, member.id);
-					} catch (err) {
-						winston.verbose(`Failed to add new role(s) to member`, { svrid: member.guild.id, usrid: member.id }, err);
+					let x = 0;
+					for (const role of arrayOfRoles) {
+						try {
+							await member.addRole(role, `Added new member role(s) to this member for joining the guild.`);
+							x++;
+						} catch (err) {
+							winston.verbose(`Failed to add new role to member`, { svrid: member.guild.id, usrid: member.id, role: role.id }, err);
+						}
 					}
+					(x === arrayOfRoles.length && this.bot.logMessage(serverDocument, "info", `Added new member roles to a new member.`, null, member.id)) || this.bot.logMessage(serverDocument, "error", `I was unable to add some roles to a new member!`, null, member.id);
 				}
 			}
 		}
