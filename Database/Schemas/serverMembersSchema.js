@@ -31,6 +31,7 @@ module.exports = new mongoose.Schema({
 		default: false,
 	},
 	strikes: [new mongoose.Schema({
+		// User ID
 		_id: {
 			type: String,
 			required: true,
@@ -43,6 +44,10 @@ module.exports = new mongoose.Schema({
 		timestamp: {
 			type: Date,
 			default: Date.now,
+		},
+		modlog_entry: {
+			type: Number,
+			required: true,
 		},
 	})],
 	profile_fields: mongoose.Schema.Types.Mixed,
