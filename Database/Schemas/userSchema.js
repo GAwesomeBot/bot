@@ -22,7 +22,7 @@ module.exports = new mongoose.Schema({
 			type: String,
 			required: true,
 		},
-	})],
+	}, { usePushEach: true })],
 	reminders: [new mongoose.Schema({
 		name: {
 			type: String,
@@ -32,7 +32,7 @@ module.exports = new mongoose.Schema({
 			type: Date,
 			required: true,
 		},
-	})],
+	}, { usePushEach: true })],
 	location: String,
 	weatherunit: String,
 	last_seen: Date,
@@ -47,4 +47,4 @@ module.exports = new mongoose.Schema({
 	},
 	upvoted_gallery_extensions: [String],
 	username: String,
-});
+}, { usePushEach: true });

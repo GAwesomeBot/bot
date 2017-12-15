@@ -114,4 +114,4 @@ module.exports = new mongoose.Schema({
 		creator_id: String,
 		participant_ids: [String],
 	},
-});
+}, { usePushEach: true });

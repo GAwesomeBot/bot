@@ -47,7 +47,6 @@ module.exports = new mongoose.Schema({
 		},
 		modlog_entry: {
 			type: Number,
-			required: true,
 		},
 	})],
 	profile_fields: mongoose.Schema.Types.Mixed,

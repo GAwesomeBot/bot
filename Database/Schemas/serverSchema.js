@@ -33,7 +33,7 @@ module.exports = new mongoose.Schema({
 			type: Date,
 			required: true,
 		},
-	})],
+	}, { usePushEach: true })],
 	logs: [new mongoose.Schema({
 		timestamp: {
 			type: Date,
@@ -56,6 +56,6 @@ module.exports = new mongoose.Schema({
 			type: String,
 			required: false,
 		},
-	}, { _id: false })],
+	}, { _id: false, usePushEach: true })],
 	modlog: require("./serverModlogSchema.js"),
-});
+}, { usePushEach: true });
