@@ -90,7 +90,7 @@ module.exports = class Trivia {
 	static async question (set, channelDocument) {
 		let question;
 		while ((!question || channelDocument.trivia.past_questions.includes(question.question)) && channelDocument.trivia.past_questions.length < set.length) {
-			question = set.random();
+			question = set.random;
 		}
 		if (question) {
 			channelDocument.trivia.past_questions.push(question.question);

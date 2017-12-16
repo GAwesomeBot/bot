@@ -18,7 +18,7 @@ class GuildMemberAdd extends BaseEvent {
 					if (ch) {
 						const channelDocument = serverDocument.channels.id(ch.id);
 						if (!channelDocument || channelDocument.bot_enabled) {
-							const random = serverDocument.config.moderation.status_messages.new_member_message.messages.random().replaceAll("@user", `**@${this.bot.getName(member.guild, serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`);
+							const random = serverDocument.config.moderation.status_messages.new_member_message.messages.random.replaceAll("@user", `**@${this.bot.getName(member.guild, serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`);
 							if (random) {
 								ch.send({
 									embed: {
