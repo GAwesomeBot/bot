@@ -955,7 +955,7 @@ const commands = {
 		},
 		reload: {
 			usage: `...<pm or public>.<command> or "*"`,
-			description: `Reloads commands!`,
+			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
 			configJSON: "administration",
 		},
