@@ -39,7 +39,7 @@ class Traffic {
 	}
 
 	async fetch () {
-		this.winston.verbose(`Fetching traffic data`);
+		this.winston.debug(`Fetching traffic data`);
 		this.IPC.send("traffic", {}, "*").then(msg => {
 			let payload = msg.reduce((val, oldVal) => ({
 				pageViews: val.pageViews + oldVal.pageViews,

@@ -73,6 +73,11 @@
             <% } else { %>
 			<a href="/dashboard/management/maintainers?svrid=maintainer">Maintainers</a>
             <% } %>
+            <% if(currentPage=="/dashboard/management/shards") { %>
+			<a class="is-active" href="#">Shards</a>
+			<% } else { %>
+			<a href="/dashboard/management/shards?svrid=maintainer">Shards</a>
+            <% } %>
             <% if(currentPage=="/dashboard/management/version") { %>
 			<a class="is-active" href="#">GAB Version</a>
             <% } else { %>

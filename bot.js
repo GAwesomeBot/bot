@@ -15,6 +15,7 @@ const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
 const { Console, Sharder, Traffic, Boot } = require("./Modules/");
+const configWarnings = [];
 
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
@@ -36,7 +37,7 @@ if (process.argv.includes("--migrate") || process.argv.includes("-m")) return;
 
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
-	process.exit(-1);
+	process.exit(1);
 }).then(async () => {
 	const db = database.getConnection();
 
@@ -47,24 +48,52 @@ database.initialize(configJS.databaseURL).catch(err => {
 		await Raw.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
+				configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");
 			}
 		});
+
+		winston.silly("Confirming auth.js config values.");
+		if (Object.values(auth.tokens).some(token => token === "")) {
+			winston.warn("You haven't supplied some auth tokens, make sure to fill in auth.js to make sure all GAB features function!");
+			configWarnings.push("In auth.js, some values have not been filled in correctly. Some commands may not function as expected.");
+		}
+
+		winston.silly("Confirming config.js config values.");
+		if (!configJS.hostingURL || !configJS.oauthLink || (typeof configJS.hostingURL || typeof configJS.oauthLink) !== "string") {
+			winston.warn("Some config.js values have not been configured correctly. GAB may be harder to reach by users.");
+			configWarnings.push("The config.js values hostingURL and/or oauthLink are malformed or empty.");
+		}
+		if (!configJS.secret || !configJS.serverIP || (typeof configJS.secret || typeof configJS.serverIP) !== "string" || !configJS.httpPort || !configJS.httpsPort) {
+			winston.warn("Some config.js values have not been configured correclty. GAB's Web Interface may not work as intended.");
+			configWarnings.push("The config.js values secret, serverIP, httpPort and/or httpsPort are malformed or empty.");
+		}
+		if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
+			winston.warn("Your session secret value appears to be default. Please note that this value is public!");
+			configWarnings.push("Your config.js secret value has not been reconfigured. This value is public!");
+		}
+
+		winston.silly("Confirming environment setup.");
+		if (process.env.NODE_ENV !== "production") {
+			winston.warn("GAB is running in development mode, this might impact web interface performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
+			configWarnings.push("GAwesomeBot is running in development mode. Set the NODE_ENV environment variable to 'production' to dismiss this warning.");
+		}
 
 		winston.silly("Confirming clientToken config value.");
 		if (!auth.discord.clientToken && !process.argv.includes("--build")) {
 			winston.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! -.-");
-			return;
+			process.exit(1);
 		}
 
 		winston.silly("Confirming shardTotal config value.");
 		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
 			winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
+			process.exit(1);
 		}
 
 		if (configJS.shardTotal === "auto") {
 			winston.info(`Getting the recommended shards from Discord..`);
 			let result = await require("discord.js").Util.fetchRecommendedShards(auth.discord.clientToken);
-			winston.info(`Starting the bot with the recommended number of shards from Discord!`, { shards: result });
+			winston.info(`GAwesomeBot will spawn ${result} shard(s) as recommended by Discord.`, { shards: result });
 			configJS.shardTotal = result;
 		}
 
@@ -74,7 +103,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
 
-		const traffic = new Traffic(sharder.IPC, winston, false, db);
+		const traffic = new Traffic(sharder.IPC, false);
 		traffic.init();
 
 		// Sharder events
@@ -85,14 +114,6 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (sharder.ready === sharder.count) {
 				winston.info("All shards connected.");
 			}
-		});
-
-		sharder.IPC.once("warnDefaultSecret", () => {
-			winston.warn("Your session secret value appears to be default. Please note that this value is public!");
-		});
-
-		sharder.IPC.once("warnNotProduction", () => {
-			winston.warn("GAB is running in development mode, this might impact web interface performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
 		});
 
 		let shardFinished = () => {
@@ -112,8 +133,10 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		};
 
+		// Shard has finished all work
 		sharder.IPC.on("finished", shardFinished);
 
+		// Shard requests guild data
 		sharder.IPC.on("getGuild", async (msg, callback) => {
 			try {
 				let payload = msg;
@@ -140,6 +163,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 
+		// Shard requests changes to gulid cache
 		sharder.IPC.on("guilds", async msg => {
 			let guilds = msg.latest;
 			if (!guilds) guilds = [];
@@ -153,42 +177,51 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 
+		// Shard has modified Console data
 		sharder.IPC.on("dashboardUpdate", async msg => {
 			winston.silly(`Broadcasting update to dashboard at ${msg.location}.`);
 			sharder.IPC.send("dashboardUpdate", { namespace: msg.namespace, location: msg.location }, "*");
 		});
 
+		// Shard requests a user to be muted
 		sharder.IPC.on("muteMember", async msg => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("muteMember", msg, shardid);
 		});
 
+		// Shard requests a user to be unmuted
 		sharder.IPC.on("unmuteMember", async msg => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("unmuteMember", msg, shardid);
 		});
 
+		// Shard requests a new Message Of The Day to be created
 		sharder.IPC.on("createMOTD", async msg => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("createMOTD", msg, shardid);
 		});
 
+		// Shard requests an update to the serverDocument cache
 		sharder.IPC.on("cacheUpdate", async msg => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("cacheUpdate", msg, shardid);
 		});
 
+		// Shard requests bot stats to be posted
 		sharder.IPC.on("sendAllGuilds", () => sharder.IPC.send("postAllData", {}, 0));
 
+		// Shard requests a guild's public Invite Link to be created/destroyed
 		sharder.IPC.on("createPublicInviteLink", msg => sharder.IPC.send("createPublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
 		sharder.IPC.on("deletePublicInviteLink", msg => sharder.IPC.send("deletePublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
 
+		// Shard requests JavaScript code to be executed
 		sharder.IPC.on("eval", async (msg, callback) => {
 			const promises = [];
 			sharder.shards.forEach(shard => promises.push(shard.eval(msg)));
 			callback(await Promise.all(promises));
 		});
 
+		// Shard requests JavaScript code to be executed and return values to be readable by humans
 		sharder.IPC.on("evaluate", async (msg, callback) => {
 			if (msg.target === "master") {
 				let result = {};
@@ -214,28 +247,93 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 
+		// Shard requests leaving a guild
 		sharder.IPC.on("leaveGuild", async msg => {
 			const shardid = sharder.guilds.get(msg);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("leaveGuild", msg, shardid);
 			sharder.guilds.delete(msg);
 		});
 
+		// Shard requests a message to be sent to a guild
 		sharder.IPC.on("sendMessage", async msg => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("sendMessage", msg, shardid);
 			else if (msg.guild === "*") sharder.IPC.send("sendMessage", msg, "*");
 		});
 
-		sharder.IPC.on("updateBot", async msg => sharder.IPC.send("updateBot", msg, "*"));
+		// Shard requests the bot user to be updated
+		sharder.IPC.on("updateBotUser", async msg => sharder.IPC.send("updateBotUser", msg, "*"));
 
+		// Shard requests data about all shards
+		sharder.IPC.on("shardData", async (msg, callback) => {
+			let data = {};
+			data.master = {};
+			data.master.rss = Math.floor((process.memoryUsage().rss / 1024) / 1024);
+			data.master.uptime = Math.round(((process.uptime() / 60) / 60) * 10) / 10;
+			data.master.warns = configWarnings;
+			data.master.platform = process.platform;
+			switch (data.master.platform) {
+				case "win32":
+					data.master.platform = "Windows";
+					data.master.platformIcon = "windows";
+					break;
+				case "darwin":
+					data.master.platform = "MacOS";
+					data.master.platformIcon = "apple";
+					break;
+				case "linux":
+					data.master.platform = "Linux";
+					data.master.platformIcon = "linux";
+					break;
+				default:
+					data.master.platform = `An Unknown Operating System (${process.platform})`;
+					data.master.platformIcon = "question";
+					break;
+			}
+			data.master.PID = process.pid;
+			const beforeQuery = process.hrtime();
+			data.master.guilds = await db.servers.count().exec();
+			const afterQuery = process.hrtime(beforeQuery);
+			const afterQuerySeconds = afterQuery[0] * 1000;
+			const afterQueryNano = afterQuery[1] / 1000000;
+			data.master.ping = Math.round((afterQuerySeconds + afterQueryNano) * 100) / 100;
+			data.master.users = await db.users.count().exec();
+			data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
+			callback(data);
+		});
+
+		sharder.IPC.on("dismissWarning", (msg, callback) => {
+			let index = configWarnings.indexOf(msg.warning);
+			if (index > -1) configWarnings.splice(index, 1);
+			callback();
+		});
+
+		sharder.IPC.on("freezeShard", async (msg, callback) => {
+			if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("freeze", {}, Number(msg.shard));
+			callback();
+		});
+
+		sharder.IPC.on("restartShard", async (msg, callback) => {
+			if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("restart", { soft: msg.soft }, Number(msg.shard));
+			callback();
+		});
+
+		// Shard requests all shards to be marked Unavailable
 		sharder.IPC.on("updating", (msg, callback) => sharder.IPC.send("updating", msg, "*").then(callback));
 
+		// Shard requests GAB to shutdown
 		sharder.IPC.on("shutdown", async msg => {
-			if (msg.err) winston.error(`A critical error occurred within a worker, the master can no longer operate; GAB is shutting down.`);
-			else winston.info(`GAB is shutting down.`);
-			sharder.shutdown = true;
-			sharder.cluster.disconnect();
-			process.exit(msg.err ? 1 : 0);
+			if (msg.soft) {
+				if (msg.err) winston.error(`A critical error occurred within a worker, all workers must restart.`);
+				else winston.info(`All workers are being restarted. Expect some lag!`);
+				sharder.shards.forEach(shard => shard.worker.kill());
+			} else {
+				if (msg.err) winston.error(`A critical error occurred within a worker, the master can no longer operate; GAB is shutting down.`);
+				else winston.info(`GAB is shutting down.`);
+				sharder.shutdown = true;
+				sharder.cluster.disconnect();
+				process.exit(msg.err ? 1 : 0);
+			}
 		});
 
 		sharder.spawn();
