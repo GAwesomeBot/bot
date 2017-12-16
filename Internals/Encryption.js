@@ -16,9 +16,9 @@ module.exports = class EncryptionManager {
 
 	encrypt (data) {
 		let cipher = createCipher("aes256", password);
-		let ecnrypted = cipher.update(data, "utf8", "hex");
-		ecnrypted += cipher.final("hex");
-		return ecnrypted;
+		let encrypted = cipher.update(data, "utf8", "hex");
+		encrypted += cipher.final("hex");
+		return encrypted;
 	}
 
 	decrypt (data) {
