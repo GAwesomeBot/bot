@@ -9,10 +9,9 @@ const {
 	Errors: {
 		Error: GABError,
 	},
-	Constants: {
-		LoggingLevels,
-	},
+	Constants,
 } = require("../../index");
+const { LoggingLevels } = Constants;
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
@@ -296,12 +295,17 @@ class MessageCreate extends BaseEvent {
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {
 						// Check if message is a command, tag command, or extension trigger
-						if (msg.command !== null && this.bot.getPublicCommandMetadata(msg.command)	&&
-								serverDocument.config.commands[msg.command].isEnabled &&
-								(this.bot.getPublicCommandMetadata(msg.command).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[msg.command].admin_level) &&
-								!serverDocument.config.commands[msg.command].disabled_channel_ids.includes(msg.channel.id)) {
+						let cmd;
+						if (msg.command !== null) {
+							cmd = this.client.getPublicCommandName(msg.command);
+							if (!cmd) cmd = msg.command;
+						}
+						if (msg.command !== null && cmd !== null && this.bot.getPublicCommandMetadata(cmd) &&
+								serverDocument.config.commands[cmd].isEnabled &&
+								(this.bot.getPublicCommandMetadata(cmd).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[cmd].admin_level) &&
+								!serverDocument.config.commands[cmd].disabled_channel_ids.includes(msg.channel.id)) {
 							// Increment command usage count
-							this.incrementCommandUsage(serverDocument, this.client.getPublicCommandName(msg.command));
+							this.incrementCommandUsage(serverDocument, cmd);
 							// Get User data
 							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
@@ -309,7 +313,7 @@ class MessageCreate extends BaseEvent {
 							const userDocument = findDocument && findDocument.doc;
 							if (userDocument) {
 								// NSFW filter for command suffix
-								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(msg.command).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
+								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(cmd).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
 									// Delete offending message if necessary
 									if (serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 										try {
@@ -346,18 +350,18 @@ class MessageCreate extends BaseEvent {
 										};
 										const commandData = {
 											name: msg.command,
-											usage: this.bot.getPublicCommandMetadata(msg.command).usage,
-											description: this.bot.getPublicCommandMetadata(msg.command).description,
+											usage: this.bot.getPublicCommandMetadata(cmd).usage,
+											description: this.bot.getPublicCommandMetadata(cmd).description,
 										};
-										await this.bot.getPublicCommand(msg.command)(botObject, documents, msg, commandData);
+										await this.bot.getPublicCommand(cmd)(botObject, documents, msg, commandData);
 									} catch (err) {
-										winston.warn(`Failed to process command "${msg.command}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-										this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${msg.command}" X.X`, msg.channel.id, msg.author.id);
+										winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+										this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
 										msg.channel.send({
 											embed: {
 												color: 0xFF0000,
 												title: `Something went wrong! 😱`,
-												description: `I was unable to find the command file for \`${msg.command}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
+												description: `I was unable to find the command file for \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 												footer: {
 													text: `Contact your GAB maintainer for more support.`,
 												},
@@ -391,7 +395,7 @@ class MessageCreate extends BaseEvent {
 										extensionApplied = true;
 
 										// Do the normal things for commands
-										await Promise.all([this.incrementCommandUsage(serverDocument, this.client.getPublicCommandName(msg.command)), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
+										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
 										// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, commandObject.suffix, null);
 									} else if (serverDocument.extensions[i].type === "keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
@@ -404,7 +408,7 @@ class MessageCreate extends BaseEvent {
 								}
 							}
 							// Check if it's a chatterbot prompt
-							if (!extensionApplied && serverDocument.config.chatterbot && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
+							if (!extensionApplied && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
 								const prompt = msg.content.split(/\s+/)
 									.splice(1)
 									.join(" ")
@@ -453,7 +457,7 @@ class MessageCreate extends BaseEvent {
 									}
 								}
 							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.bot.user.id) && serverDocument.config.tag_reaction.isEnabled) {
-								const random = serverDocument.config.tag_reaction.messages.random().replaceAll("@user", `**@${this.bot.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
+								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.bot.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
 								if (random) {
 									msg.channel.send(random);
 								} else {
