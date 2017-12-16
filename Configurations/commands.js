@@ -957,7 +957,7 @@ const commands = {
 			usage: ``,
 			description: `...<pm or public>.<command> or "*"`,
 			aliases: ["r"],
-			configJSON: "eval",
+			configJSON: "administration",
 		},
 	},
 
