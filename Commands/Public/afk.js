@@ -9,7 +9,7 @@ module.exports = async (main, documents, msg, commandData) => {
 					title: `Welcome back! 🎊`,
 					description: `I removed your AFK message in this server.`,
 					footer: {
-						text: `You can set a new one by running "${msg.guild.commandPrefix}${commandData.name} <message>"`,
+						text: `You can set a new one by using "${msg.guild.commandPrefix}${commandData.name} <message>"`,
 					},
 				},
 			});
@@ -18,7 +18,7 @@ module.exports = async (main, documents, msg, commandData) => {
 			msg.channel.send({
 				embed: {
 					color: 0x00FF00,
-					description: `Alright, I'll show that when someone mentions you on this server. 👌`,
+					description: `Alright, I will now show that message when you are mentioned in chat. 👌`,
 					footer: {
 						text: `Use "${msg.guild.commandPrefix}${commandData.name} ." to remove it`,
 					},
@@ -41,7 +41,7 @@ module.exports = async (main, documents, msg, commandData) => {
 				color: 0xFF0000,
 				description: `You don't have an AFK message set right now! ⌨`,
 				footer: {
-					text: `You can set one by running "${msg.guild.commandPrefix}${commandData.name} <message>"`,
+					text: `You can set one by using "${msg.guild.commandPrefix}${commandData.name} <message>"`,
 				},
 			},
 		});
