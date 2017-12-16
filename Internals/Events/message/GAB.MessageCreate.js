@@ -82,6 +82,7 @@ class MessageCreate extends BaseEvent {
 				try {
 					await commandFunction({
 						bot: this.bot,
+						client: this.client,
 						configJS: this.configJS,
 						utils: Utils,
 						Utils,
@@ -337,6 +338,7 @@ class MessageCreate extends BaseEvent {
 									try {
 										const botObject = {
 											bot: this.bot,
+											client: this.client,
 											configJS: this.configJS,
 											utils: Utils,
 											Utils,
@@ -531,7 +533,6 @@ class MessageCreate extends BaseEvent {
 				this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete command message in channel`, msg.channel.id, msg.author.id);
 			}
 			channelDocument.isMessageDeletedDisabled = false;
-			await serverDocument.save();
 		}
 	}
 
