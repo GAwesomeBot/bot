@@ -301,7 +301,7 @@ class MessageCreate extends BaseEvent {
 								(this.bot.getPublicCommandMetadata(msg.command).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[msg.command].admin_level) &&
 								!serverDocument.config.commands[msg.command].disabled_channel_ids.includes(msg.channel.id)) {
 							// Increment command usage count
-							this.incrementCommandUsage(serverDocument, msg.command);
+							this.incrementCommandUsage(serverDocument, this.client.getPublicCommandName(msg.command));
 							// Get User data
 							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
 								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
@@ -391,7 +391,7 @@ class MessageCreate extends BaseEvent {
 										extensionApplied = true;
 
 										// Do the normal things for commands
-										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
+										await Promise.all([this.incrementCommandUsage(serverDocument, this.client.getPublicCommandName(msg.command)), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
 										// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, commandObject.suffix, null);
 									} else if (serverDocument.extensions[i].type === "keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
@@ -462,6 +462,9 @@ class MessageCreate extends BaseEvent {
 											color: 0xFF0000,
 											title: `Uh-oh`,
 											description: `Something went wrong! 😱`,
+											footer: {
+												text: `I was unable to gt a random tag reaction message! Contact your server admins about this!`,
+											},
 										},
 									});
 								}
