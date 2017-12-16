@@ -34,7 +34,7 @@ module.exports = {
 			default: 1,
 			enum: [1, 2, 3],
 		},
-	})],
+	}, { usePushEach: true })],
 	blocked: [String],
 	chatterbot: {
 		isEnabled: {
@@ -81,7 +81,7 @@ module.exports = {
 			default: 0,
 			min: 0,
 		},
-	})],
+	}, { usePushEach: true })],
 	countdown_data: [new mongoose.Schema({
 		_id: {
 			type: String,
@@ -95,7 +95,7 @@ module.exports = {
 			type: Date,
 			required: true,
 		},
-	})],
+	}, { usePushEach: true })],
 	custom_api_keys: {
 		google_api_key: String,
 		google_cse_id: String,
@@ -115,7 +115,7 @@ module.exports = {
 			default: false,
 			required: true,
 		},
-	})],
+	}, { usePushEach: true })],
 	message_of_the_day: {
 		isEnabled: {
 			type: Boolean,
@@ -461,7 +461,7 @@ module.exports = {
 			required: true,
 		},
 		role_id: String,
-	})],
+	}, { usePushEach: true })],
 	room_data: [new mongoose.Schema({
 		_id: {
 			type: String,
@@ -471,7 +471,7 @@ module.exports = {
 			type: Date,
 			default: Date.now,
 		},
-	})],
+	}, { usePushEach: true })],
 	rss_feeds: [new mongoose.Schema({
 		_id: {
 			type: String,
@@ -491,7 +491,7 @@ module.exports = {
 			enabled_channel_ids: [String],
 			last_article_title: String,
 		},
-	})],
+	}, { usePushEach: true })],
 	streamers_data: [new mongoose.Schema({
 		_id: {
 			type: String,
@@ -507,7 +507,7 @@ module.exports = {
 			type: Boolean,
 			default: false,
 		},
-	})],
+	}, { usePushEach: true })],
 	tag_reaction: {
 		isEnabled: {
 			type: Boolean,
@@ -536,7 +536,7 @@ module.exports = {
 				type: Boolean,
 				default: false,
 			},
-		})],
+		}, { usePushEach: true })],
 		listIsAdminOnly: {
 			type: Boolean,
 			default: false,
@@ -571,7 +571,7 @@ module.exports = {
 			maxlength: 6,
 		},
 		enabled_channel_ids: [String],
-	})],
+	}, { usePushEach: true })],
 	trivia_sets: [new mongoose.Schema({
 		_id: String,
 		items: [new mongoose.Schema({
@@ -588,6 +588,6 @@ module.exports = {
 				required: true,
 			},
 		})],
-	})],
+	}, { usePushEach: true })],
 	voicetext_channels: [String],
 };

@@ -9,6 +9,9 @@ const {
 	Errors: {
 		Error: GABError,
 	},
+	Constants: {
+		LoggingLevels,
+	},
 } = require("../../index");
 const snekfetch = require("snekfetch");
 
@@ -83,8 +86,9 @@ class MessageCreate extends BaseEvent {
 						configJS: this.configJS,
 						utils: Utils,
 						Utils,
+						Constants,
 					}, msg, {
-						name: msg.command,
+						name: this.client.getPublicCommandName(msg.command),
 						usage: this.bot.getPMCommandMetadata(msg.command).usage,
 					});
 				} catch (err) {
@@ -183,7 +187,7 @@ class MessageCreate extends BaseEvent {
 								description: `Hello! I'm back${inAllChannels ? " in all channels" : ""}! 🐬`,
 							},
 						});
-						this.bot.logMessage(serverDocument, "info", `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
+						this.bot.logMessage(serverDocument, LoggingLevels.INFO, `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
 						return;
 					}
 				}
@@ -197,7 +201,7 @@ class MessageCreate extends BaseEvent {
 							await msg.delete();
 						} catch (err) {
 							winston.verbose(`Failed to delete filtered message from member "${msg.author.tag}" in channel ${msg.channel.name} on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-							this.bot.logMessage(serverDocument, "warn", `I failed to delete a message containing a filtered word x.x`, msg.channel.id, msg.author.id);
+							this.bot.logMessage(serverDocument, LoggingLevels.WARN, `I failed to delete a message containing a filtered word x.x`, msg.channel.id, msg.author.id);
 						}
 					}
 					// Get user data
@@ -265,13 +269,13 @@ class MessageCreate extends BaseEvent {
 						mstranslate.detect({ text: msg.cleanContent }, (err, res) => {
 							if (err) {
 								winston.debug(`Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, usrid: msg.author.id }, err);
-								this.bot.logMessage(serverDocument, "warn", `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+								this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
 							} else if (res.toLowerCase() !== "en") {
 								// If the message is not in English, attempt to translate it from the language defined for the user
 								mstranslate.translate({ text: msg.cleanContent, from: translatedDocument.source_language, to: "EN" }, (translateErr, translateRes) => {
 									if (translateErr) {
 										winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
-										this.bot.logMessage(serverDocument, "warn", `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+										this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
 									} else {
 										msg.channel.send({
 											embed: {
@@ -312,7 +316,7 @@ class MessageCreate extends BaseEvent {
 											await msg.delete();
 										} catch (err) {
 											winston.debug(`Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-											this.bot.logMessage(serverDocument, "info", `Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}"`, msg.channel.id, msg.author.id);
+											this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}"`, msg.channel.id, msg.author.id);
 										}
 									}
 									// Handle this as a violation
@@ -324,7 +328,7 @@ class MessageCreate extends BaseEvent {
 								} else {
 									// Assume its a command, lets run it!
 									winston.verbose(`Treating "${msg.cleanContent}" as a command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-									this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a command`, msg.channel.id, msg.author.id);
+									this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a command`, msg.channel.id, msg.author.id);
 									this.deleteCommandMessage(serverDocument, channelDocument, msg);
 									try {
 										const botObject = {
@@ -332,6 +336,7 @@ class MessageCreate extends BaseEvent {
 											configJS: this.configJS,
 											utils: Utils,
 											Utils,
+											Constants,
 										};
 										const documents = {
 											serverDocument,
@@ -347,7 +352,7 @@ class MessageCreate extends BaseEvent {
 										await this.bot.getPublicCommand(msg.command)(botObject, documents, msg, commandData);
 									} catch (err) {
 										winston.warn(`Failed to process command "${msg.command}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-										this.bot.logMessage(serverDocument, "error", `Failed to process command "${msg.command}" X.X`, msg.channel.id, msg.author.id);
+										this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${msg.command}" X.X`, msg.channel.id, msg.author.id);
 										msg.channel.send({
 											embed: {
 												color: 0xFF0000,
@@ -368,7 +373,7 @@ class MessageCreate extends BaseEvent {
 							// Check if it's a trigger for a tag command
 						} else if (serverDocument.config.tags.list.id(msg.command) && serverDocument.config.tags.list.id(msg.command).isCommand) {
 							winston.verbose(`Treating "${msg.cleanContent}" as a tag command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-							this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
+							this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
 							this.deleteCommandMessage(serverDocument, channelDocument, msg);
 							msg.channel.send(`${serverDocument.config.tags.list.id(msg.command).content}`, {
 								disableEveryone: true,
@@ -382,7 +387,7 @@ class MessageCreate extends BaseEvent {
 									// Command extensions
 									if (serverDocument.extensions[i].type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
 										winston.verbose(`Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
-										this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
+										this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 										extensionApplied = true;
 
 										// Do the normal things for commands
@@ -392,7 +397,7 @@ class MessageCreate extends BaseEvent {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
 										if (((serverDocument.extensions[i].keywords.length > 1 || serverDocument.extensions[i].keywords[0] !== "*") && keywordMatch.selectedKeyword > -1) || (serverDocument.extensions[i].keywords.length === 1 && serverDocument.extensions[i].keywords[0] === "*")) {
 											winston.verbose(`Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
-											this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
+											this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 											// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, null, keywordMatch);
 										}
 									}
@@ -411,13 +416,13 @@ class MessageCreate extends BaseEvent {
 										embed: {
 											color: 0x3669FA,
 											title: `Hey there, it seems like you are lost!`,
-											description: `Use \`${await this.bot.getCommandPrefix(msg.guild, serverDocument)}help\` for info about how to use me on this server! 😄`,
+											description: `Use \`${msg.guild.commandPrefix}help\` for info about how to use me on this server! 😄`,
 										},
 									});
 									// Process chatterbot prompt
 								} else {
 									winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-									this.bot.logMessage(serverDocument, "info", `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
+									this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
 									const m = await msg.channel.send({
 										embed: {
 											color: 0x3669FA,
@@ -516,7 +521,7 @@ class MessageCreate extends BaseEvent {
 				await msg.delete();
 			} catch (err) {
 				winston.debug(`Failed to delete command message..`, err);
-				this.bot.logMessage(serverDocument, "warn", `Failed to delete command message in channel`, msg.channel.id, msg.author.id);
+				this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete command message in channel`, msg.channel.id, msg.author.id);
 			}
 			channelDocument.isMessageDeletedDisabled = false;
 			await serverDocument.save();
@@ -536,7 +541,7 @@ class MessageCreate extends BaseEvent {
 				channelDocument.isCommandCooldownOngoing = false;
 				await serverDocument.save().catch(err => {
 					winston.debug(`Failed to save server data for command cooldown...`, { svrid: serverDocument._id }, err);
-					this.bot.logMessage(serverDocument, "warn", `Failed to save server data for command cooldown!`);
+					this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to save server data for command cooldown!`);
 				});
 			}, channelDocument.command_cooldown || serverDocument.config.command_cooldown);
 		}

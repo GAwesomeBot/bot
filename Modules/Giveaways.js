@@ -21,7 +21,7 @@ module.exports = class Giveaways {
 						color: 0x3669FA,
 						description: `${user} has started a giveaway called **${title}**! Good luck! 🍻`,
 						footer: {
-							text: `Use "${await bot.getCommandPrefix(server, serverDocument)}giveaway enroll" or "${await bot.getCommandPrefix(server, serverDocument)}giveaway join" for a chance to win.`,
+							text: `Use "${bot.getCommandPrefix(server, serverDocument)}giveaway enroll" or "${bot.getCommandPrefix(server, serverDocument)}giveaway join" for a chance to win.`,
 						},
 					},
 				});

@@ -42,12 +42,9 @@ module.exports = async (bot, server, serverDocument) => {
 	// Send message to server owner about GAwesomeBot
 	await bot.messageBotAdmins(server, serverDocument, {
 		embed: {
-			color: 0x00FF00,
+			color: 0x43B581,
 			title: `Hello! ${bot.user.tag} (that's me) has been added to "${server}", a server you moderate!`,
-			description: `Use ${await bot.getCommandPrefix(server, serverDocument)}help to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
-			thumbnail: {
-				url: bot.user.displayAvatarURL(),
-			},
+			description: `Use \`${server.commandPrefix}help\` to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
 			footer: {
 				text: `${guildCount % 1000 === 0 ? `*Wow, you're server #${guildCount} for me!* 🎉` : ""}`,
 			},

@@ -12,6 +12,10 @@ const {
 	Cache: {
 		ServerDocumentCache,
 	},
+	Constants: {
+		LoggingLevels,
+	},
+	Encryption,
 	Errors: {
 		Error: GABError,
 	},
@@ -68,19 +72,17 @@ class Client extends DJSClient {
 	 * @returns {Promise<?String>} The prefix of the server
 	 */
 	getCommandPrefix (server, serverDocument) {
-		return new Promise(resolve => {
-			if (serverDocument.config.command_prefix === "@mention") {
-				if (server.me) {
-					resolve(`@${server.me.nickname || this.user.username} `);
-				} else if (!(server.members instanceof Collection)) {
-					resolve(`@${server.members[bot.user.id].nickname || this.user.username} `);
-				} else {
-					resolve(`@${server.members.get(bot.user.id).nickname || this.user.username} `);
-				}
+		if (serverDocument.config.command_prefix === "@mention") {
+			if (server.me) {
+				return `@${server.me.nickname || this.user.username} `;
+			} else if (!(server.members instanceof Collection)) {
+				return `@${server.members[bot.user.id].nickname || this.user.username} `;
 			} else {
-				resolve(serverDocument.config.command_prefix);
+				return `@${server.members.get(bot.user.id).nickname || this.user.username} `;
 			}
-		});
+		} else {
+			return serverDocument.config.command_prefix;
+		}
 	}
 
 	/**
@@ -254,7 +256,7 @@ class Client extends DJSClient {
 	getPublicCommand (command) {
 		if (commandModules[command]) {
 			return commandModules[command];
-		} else {
+		} else if (command) {
 			for (const [key, value] of Object.entries(commands.public)) {
 				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commandModules[key];
 			}
@@ -264,7 +266,7 @@ class Client extends DJSClient {
 	getSharedCommand (command) {
 		if (sharedModules[command]) {
 			return sharedModules[command];
-		} else {
+		} else if (command) {
 			for (const [key, value] of Object.entries(commands.shared)) {
 				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return sharedModules[key];
 			}
@@ -282,6 +284,15 @@ class Client extends DJSClient {
 			for (const [key, value] of Object.entries(commands.public)) {
 				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.public[key];
 			}
+		}
+	}
+
+	getPublicCommandName (command) {
+		let cmds = Object.keys(commands.public);
+		if (cmds.includes(command)) return command;
+		cmds = Object.entries(commands.public);
+		for (const [key, value] of cmds) {
+			if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return key;
 		}
 	}
 
@@ -587,7 +598,7 @@ class Client extends DJSClient {
 	 */
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
 		roleID = roleID.id || roleID;
-		this.logMessage(serverDocument, "info", `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
+		this.logMessage(serverDocument, LoggingLevels.INFO, `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
 
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
@@ -934,7 +945,9 @@ class Client extends DJSClient {
 					await serverDocument.save();
 					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
 				}
-				serverDocument.save();
+				serverDocument.save().catch(err => {
+					winston.error(`Failed to re-save server document for logging a message`, err);
+				});
 			}
 		} catch (err) {
 			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
@@ -1641,6 +1654,8 @@ bot.once("ready", async () => {
 	try {
 		await winston.silly(`Received READY event from Discord!`);
 		await bot.events.onEvent("ready");
+		await winston.silly("Initializing the encryption manager..");
+		bot.encryptionManager = new Encryption(this);
 		await winston.silly("Running webserver");
 		WebServer(bot, auth, configJS, winston);
 		bot.isReady = true;

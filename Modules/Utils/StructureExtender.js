@@ -20,6 +20,15 @@ module.exports = () => {
 			get serverDocument () {
 				return this.client.cache.get(this.id);
 			}
+
+			get commandPrefix () {
+				if (this._commandPrefix) return this._commandPrefix;
+				Object.defineProperty(this, "_commandPrefix", {
+					value: this.client.getCommandPrefix(this, this.serverDocument),
+					enumerable: false,
+				});
+				return this._commandPrefix;
+			}
 		}
 		return GABGuild;
 	});

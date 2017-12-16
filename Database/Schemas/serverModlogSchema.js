@@ -34,6 +34,8 @@ module.exports = {
 				"Unban",
 				"Unmute",
 				"Strike",
+				"Temp Ban",
+				"Temp Mute",
 			],
 			required: true,
 		},
@@ -60,5 +62,5 @@ module.exports = {
 			type: Boolean,
 			default: true,
 		},
-	})],
+	}, { usePushEach: true })],
 };

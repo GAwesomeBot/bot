@@ -35,4 +35,4 @@ module.exports = new mongoose.Schema({
 			type: String,
 		},
 	}],
-});
+}, { usePushEach: true });

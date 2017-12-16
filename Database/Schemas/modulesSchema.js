@@ -80,4 +80,4 @@ module.exports = new mongoose.Schema({
 			"saved",
 		],
 	},
-});
+}, { usePushEach: true });
