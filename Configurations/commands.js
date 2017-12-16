@@ -63,8 +63,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		alert: {
-			usage: `[<message>]`,
-			description: `Allows members to message all the server admins`,
+			usage: `<message>`,
+			description: `Allows members to alert all the server admins`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
