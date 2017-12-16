@@ -1187,7 +1187,7 @@ bot.IPC.on("sendMessage", async msg => {
 });
 
 bot.IPC.on("updateBot", async msg => {
-	let payload = JSON.parse(msg);
+	let payload = msg;
 	if (payload.avatar) bot.user.setAvatar(payload.avatar);
 	if (payload.username && payload.username !== bot.user.username) bot.user.setUsername(payload.username);
 	let activity = {};
