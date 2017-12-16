@@ -1655,7 +1655,7 @@ bot.once("ready", async () => {
 		await winston.silly(`Received READY event from Discord!`);
 		await bot.events.onEvent("ready");
 		await winston.silly("Initializing the encryption manager..");
-		bot.encryptionManager = new Encryption(this);
+		bot.encryptionManager = new Encryption(bot);
 		await winston.silly("Running webserver");
 		WebServer(bot, auth, configJS, winston);
 		bot.isReady = true;
