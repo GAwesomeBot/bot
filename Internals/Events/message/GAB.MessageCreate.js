@@ -70,7 +70,7 @@ class MessageCreate extends BaseEvent {
 								name: `${msg.author.tag} just sent me a PM!`,
 								icon_url: msg.author.displayAvatarURL(),
 							},
-							description: `${url !== "" ? `The message was too large! Please go [here](${url}) to read it. 📨` : `\`\`\`${msg.content}\`\`\``}`,
+							description: `${url !== "" ? `The message was too large! You can read it [here](${url}). 📨` : `\`\`\`${msg.content}\`\`\``}`,
 						},
 					});
 				}
@@ -99,7 +99,7 @@ class MessageCreate extends BaseEvent {
 							title: `Something went wrong! 😱`,
 							description: `**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 							footer: {
-								text: `You should report this on GitHub so we can fix it!`,
+								text: `Contact your Server Admin for support!`,
 							},
 						},
 					});
@@ -121,7 +121,7 @@ class MessageCreate extends BaseEvent {
 					m.edit({
 						embed: {
 							color: 0xFF0000,
-							description: `Our lovely chatter bot API fell asleep. We're sorry!`,
+							description: `Sorry, I didn't catch that. Could you repeat yourself?`,
 						},
 					});
 				});
@@ -416,7 +416,7 @@ class MessageCreate extends BaseEvent {
 										embed: {
 											color: 0x3669FA,
 											title: `Hey there, it seems like you are lost!`,
-											description: `Use \`${msg.guild.commandPrefix}help\` for info about how to use me on this server! 😄`,
+											description: `Use \`${msg.guild.commandPrefix}help\` to learn how to use me on this server! 😄`,
 										},
 									});
 									// Process chatterbot prompt
@@ -434,7 +434,7 @@ class MessageCreate extends BaseEvent {
 										m.edit({
 											embed: {
 												color: 0xFF0000,
-												description: `Our lovely chatter bot API fell asleep. We're sorry!`,
+												description: `Sorry, I didn't catch that. Could you repeat yourself?`,
 											},
 										});
 									});
@@ -460,8 +460,8 @@ class MessageCreate extends BaseEvent {
 									msg.channl.send({
 										embed: {
 											color: 0xFF0000,
-											title: `Woops!`,
-											description: `Failed to get a random tag to place in chat.. 😱`,
+											title: `Uh-oh`,
+											description: `Something went wrong! 😱`,
 										},
 									});
 								}
@@ -501,9 +501,9 @@ class MessageCreate extends BaseEvent {
 			response = JSON.parse(res.body).botsay
 				.replaceAll("Program-O", this.bot.user.username)
 				.replaceAll("<br/>", "\n")
-				.replaceAll("Elizabeth", "BitQuote");
+				.replaceAll("Elizabeth", "Gilbert");
 		} else {
-			response = "I don't feel like talking right now.. 😠";
+			response = "I don't feel like talking right now... 😠";
 		}
 		return response;
 	}
