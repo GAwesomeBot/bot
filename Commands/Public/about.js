@@ -4,7 +4,13 @@ module.exports = async ({ bot, configJS }, documents, msg, commandData) => {
 		`Created by GG142 and [the team](${configJS.hostingURL}#team)! ❤️`,
 		`Built using [Node.JS](https://nodejs.org/en/) and [Discord.js](https://discord.js.org/#/)`,
 	].join("\n");
-	const fields = [];
+	const fields = [
+		{
+			name: `Version`,
+			value: `**${configJSON.version}** on branch\n**${configJSON.branch}**`,
+			inline: true,
+		},
+	];
 	configJS.hostingURL && fields.push({
 		name: `Want to learn more?`,
 		value: `Click [here](${configJS.hostingURL})`,
@@ -12,7 +18,7 @@ module.exports = async ({ bot, configJS }, documents, msg, commandData) => {
 	});
 	configJS.discordLink && fields.push({
 		name: `Need some help?`,
-		value: `Join our [Discord Server](${configJS.discordLink})`,
+		value: `Join our\n[Discord Server](${configJS.discordLink})`,
 		inline: true,
 	});
 	msg.channel.send({
@@ -20,9 +26,6 @@ module.exports = async ({ bot, configJS }, documents, msg, commandData) => {
 			color: 0x43B581,
 			fields,
 			description,
-			thumbnail: {
-				url: bot.user.displayAvatarURL({ size: 64 }),
-			},
 			footer: {
 				text: `Use "${msg.guild.commandPrefix}help" to list all commands that you can use in this server`,
 			},
