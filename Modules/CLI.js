@@ -11,10 +11,6 @@ class CLI {
 		this.currentlyRunningCommand = null;
 	}
 
-	writeArrow () {
-		process.stdout.write(">");
-	}
-
 	/**
 	* Sets up all the stuff we need
 	* @returns {CLI}
@@ -71,7 +67,6 @@ class CLI {
 			}
 			delete this.currentlyRunningCommand;
 		}
-		this.writeArrow();
 	}
 
 	/**
