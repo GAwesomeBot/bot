@@ -463,7 +463,7 @@ class MessageCreate extends BaseEvent {
 											title: `Uh-oh`,
 											description: `Something went wrong! 😱`,
 											footer: {
-												text: `I was unable to gt a random tag reaction message! Contact your server admins about this!`,
+												text: `I was unable to get a random tag reaction message! Contact your server admins about this!`,
 											},
 										},
 									});
