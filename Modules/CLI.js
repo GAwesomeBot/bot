@@ -41,7 +41,7 @@ class CLI {
 				this.commandArgs = args.join(" ");
 				this.currentlyRunningCommand = {
 					data: cmdData.data,
-					class: cmdData.func,
+					func: cmdData.func,
 				};
 			} else {
 				try {
@@ -53,12 +53,13 @@ class CLI {
 		} else {
 			if (this.currentlyRunningCommand.data.isMultiline) {
 				let trimmedData = strData.trim();
-				if (trimmedData.endsWith(`\u001a`)) {
-					trimmedData = trimmedData.replace(/\u001a$/, "'");
+				if (trimmedData.endsWith(`\u0007`)) {
+					trimmedData = trimmedData.replace(/\u0007/, "");
+					this.commandArgs += trimmedData;
 					try {
 						this.currentlyRunningCommand.func({ cli: this }, this.currentlyRunningCommand.data, this.commandArgs);
 					} catch (err) {
-						winston.error(`An error occurred while running this comma:nd\n${err.stack}`);
+						winston.error(`An error occurred while running this command:\n${err.stack}`);
 					}
 					delete this.commandArgs;
 				} else {
