@@ -43,7 +43,7 @@ module.exports = async (main, msg, commandData) => {
 					},
 				});
 			} else {
-				const GistUpload = new Gist(this.bot);
+				const GistUpload = new Gist(main.client);
 				const res = await GistUpload.upload({
 					title: "Eval Result",
 					text: result,

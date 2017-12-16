@@ -18,6 +18,7 @@ class MaintainerMessageCreate extends BaseEvent {
 					try {
 						await command({
 							bot: this.bot,
+							client: this.client,
 							configJS: this.configJS,
 						}, msg, {
 							name: this.client.getSharedCommandName(msg.command),
