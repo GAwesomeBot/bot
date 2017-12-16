@@ -30,10 +30,10 @@ class GuildMemberAdd extends BaseEvent {
 								ch.send({
 									embed: {
 										color: 0xFF0000,
-										title: `Woops! I was unable to get a member join message!`,
+										title: `Uh-oh. Something went wrong!`,
 										description: `Just letting you know, ${member} joined this server!`,
 										footer: {
-											text: `Psst. Can you check the dashboard messages to see if there are any? I need at least one message for this feature to work as intended!`,
+											text: `Psst; Admins should make sure their server is correctly configurated!`,
 										},
 									},
 								});
@@ -52,9 +52,9 @@ class GuildMemberAdd extends BaseEvent {
 									url: member.guild.iconURL() || "",
 								},
 								title: `Welcome to ${member.guild} Discord Chat!`,
-								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message set for new members! Have a cookie instead 🍪",
+								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message for new members! Have a cookie instead 🍪",
 								footer: {
-									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${member.guild.commandPrefix}help" in the public chat.`,
+									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${member.guild.commandPrefix}help"!`,
 								},
 							},
 						});
