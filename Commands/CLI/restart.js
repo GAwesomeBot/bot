@@ -7,6 +7,6 @@ module.exports = async ({ cli }) => {
 		shell: true,
 	});
 	proc.unref();
-	await cli.sharder.IPC.send("shutdown", {});
+	cli.sharder.IPC.send("shutdown", {});
 	process.exit(0);
 };

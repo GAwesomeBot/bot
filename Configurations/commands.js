@@ -965,6 +965,9 @@ const commands = {
 		restart: {
 			description: "Restarts the bot.",
 		},
+		help: {
+			description: "Gives help.",
+		},
 	},
 };
 
