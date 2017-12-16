@@ -954,8 +954,8 @@ const commands = {
 			configJSON: "eval",
 		},
 		reload: {
-			usage: ``,
-			description: `...<pm or public>.<command> or "*"`,
+			usage: `...<pm or public>.<command> or "*"`,
+			description: `Reloads commands!`,
 			aliases: ["r"],
 			configJSON: "administration",
 		},
