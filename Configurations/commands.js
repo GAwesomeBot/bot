@@ -21,9 +21,6 @@ const commands = {
 		profile: {
 			usage: `["setup" or <field>] [|] ["." or <value>],`,
 		},
-		reload: {
-			usage: `<pm or public>.<command> or "*"`,
-		},
 		remindme: {
 			usage: `<time from now> | <reminder>`,
 		},
@@ -954,6 +951,12 @@ const commands = {
 			usage: `<expression>`,
 			description: `Evaluate some JavaScript code`,
 			aliases: ["ev"],
+			configJSON: "eval",
+		},
+		reload: {
+			usage: ``,
+			description: `...<pm or public>.<command> or "*"`,
+			aliases: ["r"],
 			configJSON: "eval",
 		},
 	},
