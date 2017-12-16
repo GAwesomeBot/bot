@@ -55,8 +55,7 @@ setTimeout(function() {
 
     <div class="field">
         <label class="label">Content</label>
-        <span class="help" style="float: right;margin-right: 15px; margin-top: 10px;">Editor by <strong>SimpleMDE</strong></span>
-        <p class="control">
+        <div class="control">
         <textarea name="content" id="composer-content" class="textarea" placeholder="Post content, in markdown" required><%= data.content %></textarea>
         <script>
         var converter = new showdown.Converter({
@@ -79,7 +78,8 @@ setTimeout(function() {
             }
         });
         </script>
-        </p>
+        </div>
+        <span class="help" style="float: right;margin-right: 15px; margin-top: 10px;">Editor by <strong>SimpleMDE</strong></span>
     </div>
 
     <div class="field">

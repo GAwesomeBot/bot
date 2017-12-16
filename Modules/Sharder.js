@@ -16,7 +16,11 @@ class Shard {
 			if (!this.sharder.shutdown) this.sharder.create(this.id);
 		});
 
-		this.sharder.IPC.onEvents.forEach((callback, event) => this.IPC.on(event, callback));
+		this.sharder.IPC.onEvents.forEach((callback, event) => {
+			this.IPC.on(event, (...args) => {
+				if (!this.sharder.shutdown) return callback(...args);
+			});
+		});
 		this.sharder.IPC.onceEvents.forEach((callback, event) => this.IPC.once(event, callback));
 	}
 
@@ -53,6 +57,7 @@ class Sharder {
 		});
 		this.winston = winston;
 		this.token = token ? token : process.env.CLIENT_TOKEN;
+		this.host = process.env.GAB_HOST ? process.env.GAB_HOST : undefined;
 		this.count = count;
 		this.SharderIPC = require("./").SharderIPC;
 		this.Collection = require("discord.js").Collection;
@@ -75,6 +80,7 @@ class Sharder {
 			CLIENT_TOKEN: this.token,
 			SHARD_ID: id,
 			SHARD_COUNT: this.count,
+			GAB_HOST: this.host,
 		});
 		let shard = new Shard(id, worker.process, this, worker);
 		this.shards.set(id, shard);

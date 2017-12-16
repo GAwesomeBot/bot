@@ -203,7 +203,7 @@
 									<dt>
 										Eval &nbsp;
 										<div class="select is-small">
-											<select name="perm-eval"<%= config.perms.eval === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+											<select name="perm-eval"<%= (config.perms.eval === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.eval === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.eval === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.eval === 0 ? " selected" : ""%>>Only The Host</option>
@@ -212,12 +212,13 @@
 									</dt>
 									<dd>&bull; Can run the <code>eval</code> command</dd>
 									<dd>&bull; Can access the Eval section in the Maintainer Console</dd>
+									<dd>&bull; Can elevate their permissions to The Host</dd>
 								</div>
 								<div class="field">
 									<dt>
 										Sudo Mode &nbsp;
 										<div class="select is-small">
-											<select name="perm-sudoMode"<%= config.perms.sudoMode === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+											<select name="perm-sudoMode"<%= (config.perms.sudoMode === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.sudoMode === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.sudoMode === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.sudoMode === 0 ? " selected" : ""%>>Only The Host</option>
@@ -230,7 +231,7 @@
 									<dt>
 										Management &nbsp;
 										<div class="select is-small">
-											<select name="perm-management"<%= config.perms.management === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+											<select name="perm-management"<%= (config.perms.management === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.management === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.management === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.management === 0 ? " selected" : ""%>>Only The Host</option>
@@ -243,7 +244,7 @@
 									<dt>
 										Administration &nbsp;
 										<div class="select is-small">
-											<select name="perm-administration"<%= config.perms.administration === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+											<select name="perm-administration"<%= (config.perms.administration === 0 && !serverData.isHost) || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.administration === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.administration === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.administration === 0 ? " selected" : ""%>>Only The Host</option>
@@ -258,7 +259,7 @@
 									<dt>
 										Shutdown &nbsp;
 										<div class="select is-small">
-											<select name="perm-shutdown"<%= config.perms.shutdown === 0 || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+											<select name="perm-shutdown"<%= (config.perms.shutdown === 0 && !serverData.isHost) || !serverData.isSudoMaintainer ? " disabled" : ""%>>
 												<option value="maintainer"<%= config.perms.shutdown === 1 ? " selected" : ""%>>All Maintainers</option>
 												<option value="sudo"<%= config.perms.shutdown === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
 												<option value="host"<%= config.perms.shutdown === 0 ? " selected" : ""%>>Only The Host</option>
@@ -266,6 +267,7 @@
 										</div>
 									</dt>
 									<dd>&bull; Can run the <code>shutdown</code> and <code>restart</code> commands</dd>
+									<dd>&bull; Can manage all Shards and the Master</dd>
 								</div>
 							</dl>
 						</div>

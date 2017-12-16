@@ -15,6 +15,7 @@ const discordStrategy = require("passport-discord").Strategy;
 const discordOAuthScopes = ["identify", "guilds"];
 const path = require("path");
 const fs = require("fs");
+const fsn = require("fs-nextra");
 const writeFile = require("write-file-atomic");
 const sizeof = require("object-sizeof");
 const moment = require("moment");
@@ -122,15 +123,6 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 
 	const createMessageOfTheDay = (id) => bot.IPC.send("createMOTD", { guild: id });
 
-	// Notify the maintainer of possible issues
-	if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
-		bot.IPC.send("warnDefaultSecret", {});
-	}
-
-	if (app.get('env') !== "production") {
-		bot.IPC.send("warnNotProduction", {});
-	}
-
 	// Set the clientID and clientSecret from argv if needed
 	if (process.argv.includes("--CID")) {
 		auth.discord.clientID = process.argv[process.argv.indexOf("--CID") + 1]
@@ -173,7 +165,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 
 	app.use("/", (req, res, next) => {
 		winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
-		if (configJSON.isUpdating) {
+		if (global.isUnavailable) {
 			res.status(503).render("pages/503.ejs", {});
 		}	else {
 			if (!req.cookies.trafficID || req.cookies.trafficID !== bot.traffic.TID) {
@@ -747,7 +739,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		else if (path.startsWith(`/dashboard`) && svrid !== "maintainer") section = "sudoMode";
 		switch (configJSON.perms[section]) {
 			case 0:
-				return false;
+				return process.env.GAB_HOST === id;
 				break;
 			case 1:
 				return configJSON.maintainers.includes(id);
@@ -3907,7 +3899,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 	app.post("/dashboard/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, consolemember => {
-			bot.IPC.send("updateBot", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
+			bot.IPC.send("updateBotUser", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
 			configJSON.activity.name = req.body.game;
 			if (req.body.game === "gawesomebot.com") {
 					configJSON.activity.name = "default";
@@ -4031,6 +4023,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
 					isMaintainer: true,
 					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
+					isHost: process.env.GAB_HOST === consolemember.id,
 					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
 					accessManagement: checkPerms("/dashboard/management", consolemember.id),
 					accessEval: checkPerms("/dashboard/management/eval", consolemember.id),
@@ -4085,7 +4078,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				perms.forEach(perm => {
 					let value = req.body[perm];
 					perm = perm.split("-")[1];
-					if (configJSON.perms[perm] === 0) return;
+					if (configJSON.perms[perm] === 0 && process.env.GAB_HOST !== consolemember.id) return;
 					switch (value) {
 						case "sudo":
 							configJSON.perms[perm] = 2;
@@ -4172,13 +4165,65 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		});
 	});
 	app.post("/dashboard/management/eval", (req, res) => {
-		checkAuth(req, res, async () => {
+		checkAuth(req, res, async consolemember => {
 			if (req.body.code && req.body.target) {
 				bot.IPC.send("evaluate", { code: req.body.code, target: req.body.target }).then(result => {
 					res.send(JSON.stringify(result));
 				});
+				winston.info(`Maintainer ${consolemember.username} executed JavaScript from the Maintainer Console!`, { maintainer: consolemember.id, code: req.body.code, target: req.body.target });
 			} else {
 				res.sendStatus(400);
+			}
+		});
+	});
+
+	// Maintainer console shard data
+	app.get("/dashboard/management/shards", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			let data = await bot.IPC.send("shardData", {});
+			res.render("pages/maintainer-shards.ejs", {
+				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				serverData: {
+					name: bot.user.username,
+					id: bot.user.id,
+					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
+					isMaintainer: true,
+					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
+					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
+					accessManagement: checkPerms("/dashboard/management", consolemember.id),
+					accessEval: checkPerms("/dashboard/management/eval", consolemember.id),
+					accessShutdown: checkPerms("shutdown", consolemember.id),
+				},
+				currentPage: req.path,
+				config: {
+					shardTotal: Number(process.env.SHARD_COUNT),
+					currentShard: bot.shardID,
+					data,
+				},
+			});
+		});
+	});
+	app.post("/dashboard/management/shards", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			if (!checkPerms("shutdown", consolemember.id)) return res.sendStatus(403);
+			if (req.body["dismiss"]) {
+				await bot.IPC.send("dismissWarning", { warning: req.body["dismiss"] });
+			}
+			if (req.body["freeze-shard"]) {
+				await bot.IPC.send("freezeShard", { shard: req.body["freeze-shard"] });
+			}
+			if (req.body["reset-shard"]) {
+				await bot.IPC.send("restartShard", { shard: req.body["reset-shard"], soft: true });
+			}
+			if (req.body["restart-shard"]) {
+				await bot.IPC.send("restartShard", { shard: req.body["restart-shard"], soft: false });
+			}
+			res.sendStatus(200);
+			if (req.body["restart"] === "master") {
+				bot.IPC.send("shutdown", { err: false, soft: true });
+			}
+			if (req.body["shutdown"] === "master") {
+				bot.IPC.send("shutdown", { err: false });
 			}
 		});
 	});
@@ -4215,13 +4260,11 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			data.timestamp = moment(data.timestamp).format("DD-MM-YYYY HH:mm:ss");
 			socket.emit("logs", data);
 		};
-		// We have to use this cheat because winston's unsupported af and its stream method's start parameter does *not* work as documented... How lame, amirite ladies?
+		// We have to use this cheat because winston's unsupported af and its stream method's start parameter does *not* work as documented.
 		// So keep your logs clean, people! You don't want this to go over thousands of lines. Luckily, the page is already rendered when we execute the query, it's just the WebSocket that's delayed.
-		winston.transports.file.query({ limit: Infinity }, (err, results) => {
-			let stream = winston.transports.file.stream({ start: results.length - 1 }).on("log", send);
-
-			socket.on("disconnect", () => stream.destroy());
-		});
+		let l = (await fsn.readFile("./logs/verbose.gawesomebot.log", "utf8")).split(/\n+/).length;
+		let stream = winston.transports.file.stream({ start: l - 2 }).on("log", send);
+		socket.on("disconnect", () => stream.destroy());
 	});
 
 	// 503 testing page

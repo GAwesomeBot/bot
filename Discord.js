@@ -1186,7 +1186,7 @@ bot.IPC.on("sendMessage", async msg => {
 	}
 });
 
-bot.IPC.on("updateBot", async msg => {
+bot.IPC.on("updateBotUser", async msg => {
 	let payload = msg;
 	if (payload.avatar) bot.user.setAvatar(payload.avatar);
 	if (payload.username && payload.username !== bot.user.username) bot.user.setUsername(payload.username);
@@ -1205,11 +1205,51 @@ bot.IPC.on("traffic", async (msg, callback) => {
 	callback(bot.traffic.get);
 });
 
+bot.IPC.on("shardData", async (msg, callback) => {
+	let data = {};
+	data.isFrozen = global.isFrozen;
+	if (!data.isFrozen) data.users = bot.users.size;
+	if (!data.isFrozen) data.guilds = bot.guilds.size;
+	if (!data.isFrozen) data.ping = Math.floor(bot.ping);
+	data.rss = Math.floor((process.memoryUsage().rss / 1024) / 1024);
+	data.uptime = Math.round(((process.uptime() / 60) / 60) * 10) / 10;
+	data.PID = process.pid;
+	data.ID = bot.shardID;
+	callback(data);
+});
+
 bot.IPC.on("updating", async (msg, callback) => {
 	winston.debug("Closing Discord client & Web Interface for updater.");
-	configJSON.isUnavailable = true;
+	global.isUnavailable = true;
 	bot.destroy();
 	callback();
+});
+
+bot.IPC.on("freeze", async (msg, callback) => {
+	winston.info("Freezing shard...");
+	global.isFrozen = true;
+	bot.destroy();
+	callback();
+});
+
+bot.IPC.on("restart", async (msg, callback) => {
+	let shouldReset = msg.soft;
+	if (!shouldReset) {
+		bot.isReady = false;
+		callback(); // eslint-disable-line callback-return
+		bot.destroy();
+		// Have faith that the master will revive us
+		process.exit(0);
+	} else {
+		bot.isReady = false;
+		for (const t of bot._timeouts) Timeouts.clearTimeout(t);
+		for (const i of bot._intervals) Timeouts.clearInterval(i);
+		bot._timeouts.clear();
+		bot._intervals.clear();
+		await bot.events.onEvent("ready");
+		bot.isReady = true;
+		return callback();
+	}
 });
 
 /**
