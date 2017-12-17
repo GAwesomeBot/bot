@@ -27,6 +27,7 @@ module.exports = async (main, documents, msg, commandData) => {
 	 * @property {Object} configJS The config js object
 	 * @property {Object} Utils Util object
 	 * @property {Object} utils Util object
+	 * @property {Object} Constants Constants Object
 	 * configJSON is in the global
 	 */
 };
