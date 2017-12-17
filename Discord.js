@@ -1640,7 +1640,7 @@ bot.on("messageReactionRemove", async (reaction, user) => {
  */
 bot.on("messageReactionRemoveAll", async msg => {
 	if (bot.isReady) {
-		winston.silly("Received MESSAGE_REACTION_REMOVE_ALL event from Discord!", { message: msg.size });
+		winston.silly("Received MESSAGE_REACTION_REMOVE_ALL event from Discord!", { message: msg.id });
 		try {
 			await bot.events.onEvent("messageReactionRemoveAll", msg);
 		} catch (err) {
