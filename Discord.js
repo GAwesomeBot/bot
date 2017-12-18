@@ -1208,9 +1208,11 @@ bot.IPC.on("traffic", async (msg, callback) => {
 bot.IPC.on("shardData", async (msg, callback) => {
 	let data = {};
 	data.isFrozen = global.isFrozen;
-	if (!data.isFrozen) data.users = bot.users.size;
-	if (!data.isFrozen) data.guilds = bot.guilds.size;
-	if (!data.isFrozen) data.ping = Math.floor(bot.ping);
+	if (!data.isFrozen) {
+		data.users = bot.users.size;
+		data.guilds = bot.guilds.size;
+		data.ping = Math.floor(bot.ping);
+	}
 	data.rss = Math.floor((process.memoryUsage().rss / 1024) / 1024);
 	data.uptime = Math.round(((process.uptime() / 60) / 60) * 10) / 10;
 	data.PID = process.pid;
