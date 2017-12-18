@@ -1,4 +1,4 @@
-module.exports = async ({ bot, configJS }, msg, commandData) => {
+module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) => {
 	const handleQuit = () => {
 		msg.reply({
 			embed: {
@@ -52,10 +52,9 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 		m = await msg.reply({
 			embed: {
 				color: 0x43B581,
-				title: `Next, here's your current backround ~~--~~ Click here to see the URL`,
-				url: msg.author.userDocument.profile_background_image,
+				title: `Next, here's your current backround.`,
 				image: {
-					url: msg.author.userDocument.profile_background_image,
+					url: IsURL(msg.author.userDocument.profile_background_image) ? msg.author.userDocument.profile_background_image : ``,
 				},
 				thumbnail: {
 					url: msg.author.displayAvatarURL({ size: 64, format: "png" }),
@@ -63,7 +62,7 @@ module.exports = async ({ bot, configJS }, msg, commandData) => {
 				author: {
 					name: `Profile setup for ${msg.author.tag}`,
 				},
-				description: `Would you like a new one? Just paste in a URL.`,
+				description: `Your current image URL is: \`\`\`\n${msg.author.userDocument.profile_background_image}\`\`\`\nWould you like a new one? Just paste in a URL.`,
 				footer: {
 					text: `Answer with "." to not change it, or "default" to reset it to the default image. | This message expires in 2 minutes`,
 				},
