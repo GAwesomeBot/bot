@@ -203,7 +203,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		};
 		const httpsServer = https.createServer(credentials, app);
 		httpsServer.on("error", (err) => {
-			winston.error("We failed to listen to your beautiful voice on the secure WebServer x/\n", { "err": err })
+			winston.error("We failed to listen to incoming web requests on the secure WebServer x/\n", { "err": err })
 		})
 		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
 			winston.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
@@ -211,7 +211,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	}
 	const server = http.createServer(app);
 	server.on("error", (err) => {
-		winston.error("We failed to listen to your beautiful voice on the WebServer x/\n", { "err": err });
+		winston.error("We failed to listen to incoming web requests on the WebServer x/\n", { "err": err });
 	})
 	server.listen(configJS.httpPort, configJS.serverIP, () => {
 		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
