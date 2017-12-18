@@ -19,10 +19,10 @@
     "version": "4.1.0",
     "branch": "development",
     "perms": {
-        "eval": 2,
+        "eval": 0,
         "sudoMode": 2,
         "management": 2,
         "administration": 1,
-        "shutdown": 0
+        "shutdown": 2
     }
 }
