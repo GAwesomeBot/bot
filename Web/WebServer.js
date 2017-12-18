@@ -12,7 +12,7 @@ const mongooseSessionStore = require("connect-mongo")(session);
 const passport = require("passport");
 const passportSocketIo = require("passport.socketio");
 const discordStrategy = require("passport-discord").Strategy;
-const discordOAuthScopes = ["identify", "guilds"];
+const discordOAuthScopes = ["identify", "guilds", "email"];
 const path = require("path");
 const fs = require("fs");
 const fsn = require("fs-nextra");
@@ -3409,6 +3409,16 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					}
 				}
 			});
+
+			let defaultChannel;
+
+			let generalChannel = Object.values(svr.channels).find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
+
+			if (generalChannel) defaultChannel = generalChannel;
+			else defaultChannel = Object.values(svr.channels).filter(c => c.type === "text")
+				.sort((a, b) => a.rawPosition - b.rawPosition)
+				.first();
+
 			res.render("pages/admin-ongoing-activities.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
         sudoMode: adminLvl !== 3,
@@ -3416,7 +3426,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					name: svr.name,
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-					defaultChannel: svr.defaultChannel.name,
+					defaultChannel: defaultChannel.name,
 				},
 				currentPage: req.path,
 				trivia: ongoingTrivia,
@@ -3431,7 +3441,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		socket.on("disconnect", () => {});
 	});
 	app.post("/dashboard/other/ongoing-activities", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
+		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			if (req.body["end-type"] && req.body["end-id"]) {
 				const ch = svr.channels[req.body["end-id"]];
 				if (ch) {
@@ -3458,7 +3468,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				}
 			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
+			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -3676,6 +3686,15 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	app.get("/dashboard/other/export", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.json(serverDocument.toObject().config);
+		});
+	});
+
+	// Admin console message history
+	app.get("/dashboard/messages", (req, res) => {
+		checkAuth(req, res, () => {
+			res.render("pages/admin-messages.ejs", {
+				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null
+			});
 		});
 	});
 

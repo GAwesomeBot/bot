@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message History - GAwesomeBot Admin Console</title>
+    <% include ../partials/head %>
+</head>
+<body>
+<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
+    <div class="hero-head">
+        <% include ../partials/header %>
+    </div>
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h1 id="dashboard-title" class="subtitle is-1">
+                <strong>Author Name</strong> Message History
+            </h1>
+        </div>
+    </div>
+    <div class="hero-foot">
+        <div class="container has-text-centered">
+            <div class="button is-danger">
+                <span class="icon">
+                    <i class="fa fa-times"></i>
+                </span>
+                &nbsp; Remove
+            </div>
+        </div>
+        <br>
+    </div>
+</section>
+<section class="section is-white">
+    <div class="container">
+        <article class="message is-primary">
+            <div class="message-body">
+                <div class="content">
+                    This message has been <strong>edited by it's author</strong> after they posted the original. Here you can <strong>compare</strong> the edit history or <strong>remove</strong> this message to prevent other server Admins from viewing it.
+                </div>
+            </div>
+        </article>
+        <div class="columns">
+            <div class="column">
+                <div class="box">
+                    <h4 class="title is-4">Original Message</h4>
+                    Some crazy original message
+                </div>
+            </div>
+            <div class="column">
+                <div class="box">
+                    <h4 class="title is-4">Latest Message</h4>
+                    Some crazy latest message
+                </div>
+            </div>
+        </div>
+        <div class="has-text-centered">
+        <div class="button" onclick="$('#fullHistory').slideToggle(86);">
+            <span class="icon">
+                <i class="fa fa-chevron-down"></i>
+            </span>
+            &nbsp; View Full History
+        </div>
+        </div>
+        <div id="fullHistory" style="display: none;">
+            <hr>
+        <div class="columns">
+            <div class="column">
+                <div class="box">
+                    <h4 class="title is-4">Message Edit #1</h4>
+                    Some crazy edited message
+                </div>
+            </div>
+            <div class="column">
+                <div class="box">
+                    <h4 class="title is-4">Message Edit #2</h4>
+                    Some crazy edited message
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <div class="box">
+                    <h4 class="title is-4">Message Edit #3</h4>
+                    Some crazy edited message
+                </div>
+            </div>
+            <div class="column">
+                <div class="box">
+                    <h4 class="title is-4">Message Edit #4</h4>
+                    Some crazy edited message
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</section>
+
+<% include ../partials/footer %>
+<% include ../partials/scroll-top-button %>
+</body>
+</html>
