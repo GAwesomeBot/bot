@@ -38,17 +38,20 @@ class Ready extends BaseEvent {
 			this.ensureDocuments().then(async newServerDocuments => {
 				if (newServerDocuments && newServerDocuments.length > 0) {
 					winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-					Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
+					await Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
 						winston.warn(`Failed to insert new server documents..`, err);
 					}).then(async () => {
 						winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
 						await this.setBotActivity();
 					});
+					this.client.emit("allDocumentsIn");
 				} else {
+					this.client.emit("allDocumentsIn");
 					await this.setBotActivity();
 				}
 			});
 		} catch (err) {
+			this.client.emit("allDocumentsIn");
 			await this.setBotActivity();
 		}
 	}

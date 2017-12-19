@@ -44,7 +44,7 @@ module.exports = async (bot, server, serverDocument) => {
 		embed: {
 			color: 0x43B581,
 			title: `Hello! ${bot.user.tag} (that's me) has been added to "${server}", a server you moderate!`,
-			description: `Use \`${server.commandPrefix}help\` to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
+			description: `Use \`${bot.getCommandPrefix(server, serverDocument)}help\` to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
 			footer: {
 				text: `${guildCount % 1000 === 0 ? `*Wow, you're server #${guildCount} for me!* 🎉` : ""}`,
 			},
