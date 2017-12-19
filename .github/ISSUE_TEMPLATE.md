@@ -16,6 +16,7 @@ This issue tracker is only for bug reports and enhancement suggestions. You won'
   - [ ] The problem occurs on a self-host
 - Node.JS version (If applicable):
 - Operating System (If applicable):
+- GAwesomeBot version AND branch:
 - Priority this issue should have – please be realistic and elaborate if possible:
   - [ ] Low
   - [ ] Medium
