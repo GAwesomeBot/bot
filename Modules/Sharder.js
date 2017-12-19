@@ -59,6 +59,7 @@ class Sharder {
 		this.token = token ? token : process.env.CLIENT_TOKEN;
 		this.host = process.env.GAB_HOST ? process.env.GAB_HOST : undefined;
 		this.count = count;
+		this.mode = process.env.NODE_ENV === "production" ? "production" : "development";
 		this.SharderIPC = require("./").SharderIPC;
 		this.Collection = require("discord.js").Collection;
 		this.IPC = new this.SharderIPC(this, winston);
@@ -81,6 +82,7 @@ class Sharder {
 			SHARD_ID: id,
 			SHARD_COUNT: this.count,
 			GAB_HOST: this.host,
+			NODE_ENV: this.mode,
 		});
 		let shard = new Shard(id, worker.process, this, worker);
 		this.shards.set(id, shard);
