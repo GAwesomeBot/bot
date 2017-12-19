@@ -550,8 +550,8 @@ class Client extends DJSClient {
 								const findDocument = await Users.findOrCreate({ _id: member.id }).catch(err => {
 									winston.warn(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 								});
-								const userDocument = findDocument.doc;
-								if (userDocument) {
+								if (findDocument && findDocument.doc) {
+									const userDocument = findDocument.doc;
 									userDocument.points += 100;
 									await userDocument.save().catch(usrErr => {
 										winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
