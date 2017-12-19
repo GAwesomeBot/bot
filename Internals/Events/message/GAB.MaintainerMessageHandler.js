@@ -41,7 +41,7 @@ class MaintainerMessageCreate extends BaseEvent {
 					msg.channel.send({
 						embed: {
 							color: 0xFF0000,
-							title: `Sorry, but you are missing some perms to run this!`,
+							title: `Sorry, you're not authorized to run this!`,
 							description: `You are unable to run the \`${msg.command}\` command, because you're lacking permissions! 😦`,
 						},
 					});
