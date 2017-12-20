@@ -22,12 +22,7 @@ module.exports = () => {
 			}
 
 			get commandPrefix () {
-				if (this._commandPrefix) return this._commandPrefix;
-				Object.defineProperty(this, "_commandPrefix", {
-					value: this.client.getCommandPrefix(this, this.serverDocument),
-					enumerable: false,
-				});
-				return this._commandPrefix;
+				return this.client.getCommandPrefix(this, this.serverDocument);
 			}
 		}
 		return GABGuild;
