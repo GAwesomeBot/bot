@@ -816,7 +816,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				}
 			}, (err, users) => {
 				if (!err && users) {
-					let response = users.sort().map(usr => usr.username || undefined);
+					let response = users.sort().map(usr => usr.username || null);
 					response.spliceNullElements();
 					res.json(response);
 				} else {
