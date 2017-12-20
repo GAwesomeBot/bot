@@ -12,6 +12,7 @@ module.exports = {
 	Sharder: require("./Sharder.js"),
 	SharderIPC: require("./IPC.js"),
 	Traffic: require("./Traffic.js"),
+	Trivia: require("./Trivia.js"),
 	Updater: require("./Updater.js"),
 	Utils: require("./Utils/index"),
 };

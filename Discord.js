@@ -5,7 +5,7 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic } = require("./Modules/index");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
@@ -945,7 +945,7 @@ class Client extends DJSClient {
 					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
 				}
 				serverDocument.save().catch(err => {
-					winston.error(`Failed to re-save server document for logging a message`, err);
+					winston.error(`Failed to re-save server document for logging a message`, err.name, err);
 				});
 			}
 		} catch (err) {
@@ -1217,6 +1217,27 @@ bot.IPC.on("shardData", async (msg, callback) => {
 	data.PID = process.pid;
 	data.ID = bot.shardID;
 	callback(data);
+});
+
+bot.IPC.on("modifyActivity", async msg => {
+	switch (msg.activity) {
+		case "trivia": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = bot.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = svr.serverDocument;
+			let channelDocument = serverDocument.channels.id(ch.id);
+			if (!channelDocument) {
+				serverDocument.channels.push({ _id: ch.id });
+				channelDocument = serverDocument.channels.id(ch.id);
+			}
+			if (msg.action === "end") await Trivia.end(bot, svr, serverDocument, ch, channelDocument);
+			serverDocument.save();
+			break;
+		}
+	}
 });
 
 bot.IPC.on("updating", async (msg, callback) => {
@@ -1568,8 +1589,12 @@ bot.on("message", async msg => {
 			}
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
-				bot.cache.get(msg.guild.id).save().catch(err => {
-					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id, docVersion: bot.cache.get(msg.guild.id).__v }, err);
+				bot.cache.get(msg.guild.id).save().catch(async err => {
+					// Version Error? Wait a little and retry.
+					const retry = () => bot.cache.get(msg.guild.id).save().catch(async error => {
+						winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id, docVersion: (await bot.cache.get(msg.guild.id)).__v }, error);
+					});
+					if (err.name === "VersionError") setTimeout(retry, 100);
 				});
 			}
 		} catch (err) {

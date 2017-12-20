@@ -5,7 +5,11 @@
 	<% include ../partials/head %>
 
 	<script>
+	let isEnding = false;
 	function endSession(id, type) {
+		if (isEnding) return;
+		isEnding = true;
+	  	$(`#endTriviaGame-${id}`).html("Ending Game...");
 		$.ajax({
 			type: "POST",
 			url: "<%= currentPage %>?svrid=<%= serverData.id %>",
@@ -14,7 +18,7 @@
 				"end-id": id
 			},
 			success: function() {
-				window.location.reload();
+				$(`#endTriviaGame-${id}`).html("Game Ended.").attr("onclick", null);
 			}
 		});
 	}
@@ -51,33 +55,36 @@
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												<%= trivia[i].channel.name %>
+												#<%= trivia[i].channel.name %>
 											</p>
-											<span class="card-header-icon">
-												<i class="fa fa-hashtag"></i>
-											</span>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
-												<%= trivia[i].set.charAt(0) + trivia[i].set.slice(1) %>
+												<%= trivia[i].set === "default" ? "No Custom Set" : trivia[i].set.charAt(0).toUpperCase() + trivia[i].set.slice(1) %>
 											</h3>
 											<div class="level is-mobile">
 												<div class="level-item has-text-centered">
-													<p class="heading">Questions</p>
-													<p class="title"><%= trivia[i].max_score %></p>
+													<div>
+														<p class="heading">Questions</p>
+														<p class="title"><%= trivia[i].max_score %></p>
+													</div>
 												</div>
 												<div class="level-item has-text-centered">
-													<p class="heading">Score</p>
-													<p class="title"><%= trivia[i].score %></p>
+													<div>
+														<p class="heading">Score</p>
+														<p class="title"><%= trivia[i].score %></p>
+													</div>
 												</div>
 												<div class="level-item has-text-centered">
-													<p class="heading">Players</p>
-													<p class="title"><%= trivia[i].responders %></p>
+													<div>
+														<p class="heading">Players</p>
+														<p class="title"><%= trivia[i].responders %></p>
+													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= trivia[i].channel.id %>', 'trivia');" class="card-footer-item">
+											<a onclick="endSession('<%= trivia[i].channel.id %>', 'trivia');" id="endTriviaGame-<%= trivia[i].channel.id %>" class="card-footer-item">
 												End Game
 											</a>
 										</footer>

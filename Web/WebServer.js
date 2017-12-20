@@ -3365,7 +3365,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 							},
 							set: channelDocument.trivia.set_id,
 							score: channelDocument.trivia.score,
-							max_score: channelDocument.trivia.max_score,
+							max_score: channelDocument.trivia.past_questions.length - 1,
 							responders: channelDocument.trivia.responders.length,
 						});
 					}
@@ -3443,31 +3443,21 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	app.post("/dashboard/other/ongoing-activities", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			if (req.body["end-type"] && req.body["end-id"]) {
-				const ch = svr.channels[req.body["end-id"]];
-				if (ch) {
-					let channelDocument = serverDocument.channels.id(ch.id);
-					if (!channelDocument) {
-						serverDocument.channels.push({ _id: ch.id });
-						channelDocument = serverDocument.channels.id(ch.id);
-					}
-
-					switch (req.body["end-type"]) {
-						case "trivia":
-							Trivia.end(bot, svr, serverDocument, ch, channelDocument);
-							break;
-						case "poll":
-							Polls.end(serverDocument, ch, channelDocument);
-							break;
-						case "giveaway":
-							Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
-							break;
-						case "lottery":
-							Lotteries.end(db, svr, serverDocument, ch, channelDocument);
-							break;
-					}
+				switch (req.body["end-type"]) {
+					case "trivia":
+						bot.IPC.send("modifyActivity", { action: "end", activity: "trivia", guild: svr.id, channel: req.body["end-id"] });
+						break;
+					case "poll":
+						Polls.end(serverDocument, ch, channelDocument);
+						break;
+					case "giveaway":
+						Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
+						break;
+					case "lottery":
+						Lotteries.end(db, svr, serverDocument, ch, channelDocument);
+						break;
 				}
 			}
-
 			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});

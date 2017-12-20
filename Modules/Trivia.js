@@ -2,12 +2,26 @@ const defaultTriviaSet = require("./../Configurations/trivia.json");
 const levenshtein = require("fast-levenshtein");
 const { LoggingLevels } = require("../Internals/Constants");
 
+const questionTitles = [
+	"Do you know this one❓",
+	"Oh, here's a good one❗",
+	"I bet you don't know this one❗",
+	"I'd be surprised if you know this❗",
+	"And, what about this one❓",
+	"Are you just going to guess this one❓",
+	"Maybe skip this tough one❓",
+	"Are you sure you're not using Wikipedia at this point❓",
+	"Maybe give this easy one to someone else❓",
+	"Hey, stop googling! You know who you are❗",
+	"Who comes up with these❓",
+];
+
 module.exports = class Trivia {
-	static async start (bot, db, svr, serverDocument, member, ch, channelDocument, set) {
+	static async start (bot, svr, serverDocument, member, ch, channelDocument, set) {
 		if (channelDocument.trivia.isOngoing) {
 			ch.send({
 				embed: {
-					color: 0xff473b,
+					color: 0xCC0F16,
 					description: "There is already an ongoing trivia game in this channel, no need to start one 🏏",
 					footer: {
 						text: `Run \`${bot.getCommandPrefix(svr, serverDocument)}trivia end\` to end the current game`,
@@ -15,14 +29,19 @@ module.exports = class Trivia {
 				},
 			});
 		} else {
-			if (set) {
+			if (set !== "default") {
 				const triviaSetDocument = serverDocument.config.trivia_sets.id(set);
 				if (triviaSetDocument) {
 					channelDocument.trivia.set_id = set;
 				} else {
 					ch.send({
-						color: 0xff473b,
-						description: `Trivia set \`${set}\` not found. An admin can add it in the admin console, though!`,
+						embed: {
+							color: 0xCC0F16,
+							description: `Trivia set \`${set}\` not found.`,
+							footer: {
+								text: `An Admin can create one in the Admin Console!`,
+							},
+						},
 					});
 					return;
 				}
@@ -35,16 +54,22 @@ module.exports = class Trivia {
 			channelDocument.trivia.responders = [];
 			bot.logMessage(serverDocument, LoggingLevels.INFO, `User "${member}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
 			ch.send({
-				color: 0x50ff60,
-				description: `Trivia game started by ${member} ${set ? `(set: ${set})` : ""}🎮`,
-				footer: {
-					text: `No cheating, nobody likes cheaters`,
+				embed: {
+					color: 0x50ff60,
+					description: `Trivia game started by ${member} 🎮`,
+					fields: set === "default" ? undefined : [{
+						name: `Trivia Set`,
+						value: set,
+					}],
+					footer: {
+						text: `No cheating! Nobody likes cheaters`,
+					},
 				},
-			}).then(() => this.next(bot, db, svr, serverDocument, ch, channelDocument));
+			}).then(() => this.next(bot, svr, serverDocument, ch, channelDocument));
 		}
 	}
 
-	static async next (bot, db, svr, serverDocument, ch, channelDocument) {
+	static async next (bot, svr, serverDocument, ch, channelDocument) {
 		if (channelDocument.trivia.isOngoing) {
 			const doNext = () => {
 				let set = defaultTriviaSet;
@@ -56,10 +81,17 @@ module.exports = class Trivia {
 					if (question) {
 						ch.send({
 							embed: {
-								color: 0x2b67ff,
-								description: `**${question.question}**\n❓\tCategory: ${question.category}`,
+								color: 0x3669FA,
+								description: questionTitles[Math.floor(Math.random() * questionTitles.length)],
+								fields: [{
+									name: "Category",
+									value: question.category,
+								}, {
+									name: "Question",
+									value: question.question,
+								}],
 								footer: {
-									text: `${bot.getCommandPrefix(svr, serverDocument)}trivia <answer>`,
+									text: `${svr.commandPrefix}trivia <answer>`,
 								},
 							},
 							disableEveryone: true,
@@ -70,15 +102,16 @@ module.exports = class Trivia {
 				} else {
 					this.end(bot, svr, serverDocument, ch, channelDocument);
 				}
-				serverDocument.save();
 			};
 
 			if (channelDocument.trivia.current_question.answer) {
 				ch.send({
-					color: "#ff9200",
-					description: `The answer was \`${channelDocument.trivia.current_question.answer}\` 😛`,
-					footer: {
-						text: "Here comes the next one...",
+					embed: {
+						color: 0xff9200,
+						description: `The answer was \`${channelDocument.trivia.current_question.answer}\` 😛`,
+						footer: {
+							text: "Here comes the next one...",
+						},
 					},
 				}).then(doNext);
 			} else {
@@ -87,7 +120,7 @@ module.exports = class Trivia {
 		}
 	}
 
-	static async question (set, channelDocument) {
+	static question (set, channelDocument) {
 		let question;
 		while ((!question || channelDocument.trivia.past_questions.includes(question.question)) && channelDocument.trivia.past_questions.length < set.length) {
 			question = set.random;
@@ -100,7 +133,7 @@ module.exports = class Trivia {
 		return question;
 	}
 
-	static async answer (bot, db, svr, serverDocument, usr, ch, channelDocument, response) {
+	static async answer (bot, svr, serverDocument, usr, ch, channelDocument, response) {
 		if (channelDocument.trivia.isOngoing) {
 			channelDocument.trivia.attempts++;
 			let triviaResponderDocument = channelDocument.trivia.responders.id(usr.id);
@@ -109,12 +142,12 @@ module.exports = class Trivia {
 				triviaResponderDocument = channelDocument.trivia.responders.id(usr.id);
 			}
 
-			if (this.check(channelDocument.trivia.current_question.answer, response)) {
+			if (await this.check(channelDocument.trivia.current_question.answer, response)) {
 				if (channelDocument.trivia.current_question.attempts <= 2) {
 					channelDocument.trivia.score++;
 					triviaResponderDocument.score++;
 					if (serverDocument.config.commands.points.isEnabled && svr.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(ch.id)) {
-						const findDocument = await db.users.findOrCreate({ _id: usr.id }).catch(err => err);
+						const findDocument = await global.Users.findOrCreate({ _id: usr.id }).catch(err => err);
 						if (findDocument.doc) {
 							findDocument.doc.points += 5;
 							findDocument.doc.save();
@@ -122,17 +155,19 @@ module.exports = class Trivia {
 					}
 				}
 				ch.send({
-					color: 0x50ff60,
-					description: `${usr} got it right! 🎉 The answer is \`${channelDocument.trivia.current_question.answer}\`.`,
-					footer: {
-						text: "Get ready for the next one...",
+					embed: {
+						color: 0x50ff60,
+						description: `${usr} got it right! 🎉 The answer is \`${channelDocument.trivia.current_question.answer}\`.`,
+						footer: {
+							text: "Get ready for the next one...",
+						},
 					},
 				}).then(() => {
 					channelDocument.trivia.current_question.answer = null;
-					this.next(bot, db, svr, serverDocument, ch, channelDocument);
+					this.next(bot, svr, serverDocument, ch, channelDocument);
 				});
 			} else {
-				ch.send(`${usr.mention} Nope. 🕸`);
+				ch.send(`${usr} Nope. 🕸`);
 			}
 		}
 	}
@@ -178,13 +213,14 @@ module.exports = class Trivia {
 			}
 
 			ch.send({
-				color: 0x2b67ff,
-				description: info,
-				footer: {
-					text: `Can't get enough? Run \`${bot.getCommandPrefix(svr, serverDocument)}trivia start\` to start again!`,
+				embed: {
+					color: 0x2b67ff,
+					description: info,
+					footer: {
+						text: `Can't get enough? Run \`${bot.getCommandPrefix(svr, serverDocument)}trivia start\` to start again!`,
+					},
 				},
 			});
-			serverDocument.save();
 		}
 	}
 };
