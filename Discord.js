@@ -547,7 +547,7 @@ class Client extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								const userDocument = await Users.find({ _id: member.id }).catch(err => {
+								const userDocument = await Users.findOne({ _id: member.id }).catch(err => {
 									winston.warn(`Failed to find user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 								});
 								if (userDocument) {
