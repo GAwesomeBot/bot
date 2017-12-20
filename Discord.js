@@ -547,11 +547,10 @@ class Client extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								const findDocument = await Users.find({ _id: member.id }).catch(err => {
+								const userDocument = await Users.find({ _id: member.id }).catch(err => {
 									winston.warn(`Failed to find user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 								});
-								if (findDocument && findDocument.doc) {
-									const userDocument = findDocument.doc;
+								if (userDocument) {
 									userDocument.points += 100;
 									await userDocument.save().catch(usrErr => {
 										winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
@@ -1569,9 +1568,8 @@ bot.on("message", async msg => {
 			}
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
-				bot.cache.get(msg.guild.id).save().catch(async err => {
-					console.log(err);
-					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id, docVersion: (await bot.cache.get(msg.guild.id)).__v }, err);
+				bot.cache.get(msg.guild.id).save().catch(err => {
+					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id, docVersion: bot.cache.get(msg.guild.id).__v }, err);
 				});
 			}
 		} catch (err) {
