@@ -2,7 +2,8 @@ const { Trivia } = require("../../Modules/");
 
 module.exports = async (main, { serverDocument, channelDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		const action = msg.suffix.split(" ")[0].toLowerCase();
+		const split = msg.suffix.split(" ");
+		const action = split.shift().toLowerCase().trim();
 		if (action !== "start" && !channelDocument.trivia.isOngoing) {
 			msg.channel.send({
 				embed: {
@@ -18,9 +19,7 @@ module.exports = async (main, { serverDocument, channelDocument }, msg, commandD
 		let set = "default";
 		switch (action) {
 			case "start":
-				if (msg.suffix.includes(" ")) {
-					set = msg.suffix.substring(msg.suffix.indexOf(" ") + 1);
-				}
+				if (msg.suffix.includes(" ")) set = split.join(" ");
 				await Trivia.start(main.bot, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, set);
 				break;
 			case "end":
