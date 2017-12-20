@@ -363,7 +363,7 @@ class MessageCreate extends BaseEvent {
 											embed: {
 												color: 0xFF0000,
 												title: `Something went wrong! 😱`,
-												description: `I was unable to find the command file for \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
+												description: `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 												footer: {
 													text: `Contact your GAB maintainer for more support.`,
 												},

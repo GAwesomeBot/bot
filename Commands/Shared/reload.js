@@ -1,6 +1,7 @@
 module.exports = async ({ bot }, msg, commandData) => {
 	const commands = require("../../Configurations/commands");
-	let params = msg.suffix.trim().split(/\s+/);
+	let params = [];
+	if (msg.suffix)	params = msg.suffix.trim().split(/\s+/);
 	if (!params.length) {
 		const description = [
 			`To reload a PM command, use \`pm.<command>\`, where \`<command>\` is your PM command.`,

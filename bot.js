@@ -322,6 +322,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			callback();
 		});
 
+		sharder.IPC.on("modifyActivity", async msg => {
+			const shardid = sharder.guilds.get(msg.guild);
+			if (sharder.shards.has(shardid)) sharder.IPC.send("modifyActivity", msg, shardid);
+		});
+
 		// Shard requests all shards to be marked Unavailable
 		sharder.IPC.on("updating", (msg, callback) => sharder.IPC.send("updating", msg, "*").then(callback));
 
