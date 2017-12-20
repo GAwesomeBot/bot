@@ -545,10 +545,10 @@ class Client extends DJSClient {
 									});
 								}
 							}
-							// Add 100 AwesomePoints as reward
+							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								const findDocument = await Users.findOrCreate({ _id: member.id }).catch(err => {
-									winston.warn(`Failed to find or create user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
+								const findDocument = await Users.find({ _id: member.id }).catch(err => {
+									winston.warn(`Failed to find user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
 								});
 								if (findDocument && findDocument.doc) {
 									const userDocument = findDocument.doc;
@@ -1569,8 +1569,9 @@ bot.on("message", async msg => {
 			}
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
-				bot.cache.get(msg.guild.id).save().catch(err => {
-					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id }, err);
+				bot.cache.get(msg.guild.id).save().catch(async err => {
+					console.log(err);
+					winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id, docVersion: (await bot.cache.get(msg.guild.id)).__v }, err);
 				});
 			}
 		} catch (err) {
