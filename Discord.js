@@ -941,6 +941,7 @@ class Client extends DJSClient {
 					userid: usrid ? usrid : undefined,
 				});
 				if (serverDocument.logs.length > 200) {
+					serverDocument = await serverDocument.save();
 					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
 				}
 				serverDocument.save().catch(err => {
