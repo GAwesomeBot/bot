@@ -1,5 +1,5 @@
 const { get } = require("snekfetch");
-const ReactionMenu = require("../../Modules/ReactionBasedMenu");
+const ReactionMenu = require("../../Modules/MessageUtils/ReactionBasedMenu");
 
 module.exports = async (main, { serverDocument }, msg, commandData) => {
 	/**
