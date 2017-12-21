@@ -36,7 +36,7 @@
     "feed-read": "*",
     "fs-nextra": "^0.3.2",
     "mathjs": "^3.18.0",
-    "moment": "^2.20.0",
+    "moment": "^2.20.1",
     "mongoose": "^4.13.7",
     "mongoose-findorcreate": "*",
     "mstranslator": "*",
