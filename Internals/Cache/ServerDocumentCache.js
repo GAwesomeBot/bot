@@ -1,20 +1,21 @@
 const BaseCache = require("./BaseCache");
 
 module.exports = class ServerDocumentCache extends BaseCache {
-	constructor (client) {
-		super(client, Servers);
+	constructor () {
+		super(Servers);
 	}
 
-	get (id) {
+	async get (id) {
 		let existing = super.get(id);
 		if (existing) return existing;
-		this.holds.findOne({ _id: id }).exec()
-			.then(serverDocument => {
-				super.set(serverDocument._id, serverDocument);
-			})
+		return this.holds.findOne({ _id: id }).exec()
+			.then(serverDocument => super.set(serverDocument._id, serverDocument))
 			.catch(err => {
 				winston.warn(`Failed to get server document for cache!`, { guild: id }, err);
 			});
+	}
+
+	getSync (id) {
 		return super.get(id);
 	}
 
@@ -25,5 +26,6 @@ module.exports = class ServerDocumentCache extends BaseCache {
 		} catch (err) {
 			winston.warn(`Failed to get new server document for cache update!`, { guild: id }, err);
 		}
+		return super.get(id);
 	}
 };

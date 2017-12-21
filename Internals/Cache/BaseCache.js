@@ -1,8 +1,7 @@
 const { Error } = require("../Errors/");
 
 module.exports = class BaseCache {
-	constructor (client, holds) {
-		Object.defineProperty(this, "client", { value: client });
+	constructor (holds) {
 		Object.defineProperty(this, "holds", { value: holds });
 		this._cache = new Map();
 	}

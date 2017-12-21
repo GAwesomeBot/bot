@@ -14,7 +14,7 @@ class VoteHandler extends BaseEvent {
 		return true;
 	}
 	async prerequisite (msg) {
-		this.serverDocument = this.bot.cache.get(msg.guild.id);
+		this.serverDocument = await this.bot.cache.get(msg.guild.id);
 	}
 
 	async handle (msg) {

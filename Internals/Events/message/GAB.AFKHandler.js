@@ -16,7 +16,7 @@ class AFKHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = this.bot.cache.get(msg.guild.id);
+		this.serverDocument = await this.bot.cache.get(msg.guild.id);
 	}
 
 	async handle (msg) {

@@ -10,15 +10,15 @@ const ascii = `
  \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 			`;
 
+const { Console, Sharder, Traffic, Boot } = require("./Modules/");
+// Set up a winston instance for the Master Process
+global.winston = new Console("master");
+
 const database = require("./Database/Driver.js");
 const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
-const { Console, Sharder, Traffic, Boot } = require("./Modules/");
 const configWarnings = [];
-
-// Set up a winston instance for the Master Process
-global.winston = new Console("master");
 
 winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawesomebot.log`)}.`);
 

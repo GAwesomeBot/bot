@@ -35,7 +35,7 @@ module.exports = class Giveaways {
 	}
 
 	static async end (bot, server, channel) {
-		const serverDocument = bot.cache.get(server.id);
+		const serverDocument = await bot.cache.get(server.id);
 		if (serverDocument) {
 			const channelDocument = serverDocument.channels.id(channel.id);
 			if (channelDocument.giveaway.isOngoing) {
