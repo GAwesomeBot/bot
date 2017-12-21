@@ -5,9 +5,9 @@ module.exports = async (main, msg, commandData) => {
 		let hrstart = process.hrtime();
 		let suffix = msg.suffix;
 		try {
-			if (msg.suffix.startsWith("```js") && msg.suffix.endsWith("```")) suffix = msg.suffix.substring(5, msg.suffix.length - 3);
+			if (suffix.startsWith("```js") && suffix.endsWith("```")) suffix = suffix.substring(5, suffix.length - 3);
 			const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
-			suffix = msg.suffix
+			suffix = suffix
 				.replace(/(this\.bot\.token|this\.client\.token|msg\.client\.token)/g, "\"mfaNop\"")
 				.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
 			let { discord, tokens } = require("../../Configurations/auth");
