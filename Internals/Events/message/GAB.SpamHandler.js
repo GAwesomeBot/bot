@@ -9,7 +9,7 @@ class SpamHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = this.bot.cache.get(msg.guild.id);
+		this.serverDocument = await this.bot.cache.get(msg.guild.id);
 		this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
 		if (!this.channelDocument) {
 			this.serverDocument.channels.push({ _id: msg.channel.id });
@@ -48,7 +48,7 @@ class SpamHandler extends BaseEvent {
 							spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
 							if (spamDocument) {
 								spamDocument.remove();
-								await this.bot.cache.get(msg.guild.id).save().catch(err => {
+								(await this.bot.cache.get(msg.guild.id)).save().catch(err => {
 									winston.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
 								});
 							}

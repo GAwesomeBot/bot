@@ -4,6 +4,7 @@ const {
 	NewServer: getNewServerData,
 	PostShardedData,
 	Utils,
+	Cache,
 } = require("../../../Modules/");
 const {
 	ClearServerStats: clearStats,
@@ -135,6 +136,7 @@ class Ready extends BaseEvent {
 		await PostShardedData(this.bot);
 		await winston.debug(`Reloading all commands.`);
 		this.bot.reloadAllCommands();
+		await Cache(this.client);
 		this.showStartupMessage();
 	}
 

@@ -11,7 +11,6 @@ module.exports = {
 	],
 	ready: [
 		"GAB.Ready",
-		"GAB.Cache",
 	],
 	resumed: [
 

@@ -14,7 +14,22 @@ const trafficSchema = require("./Schemas/trafficSchema");
 
 const { addToGlobal } = require("../Modules/Utils/GlobalDefines.js");
 
-exports.initialize = url => new Promise((resolve, reject) => {
+exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
+	if (client) {
+		/* eslint-disable prefer-arrow-callback, no-invalid-this */
+		serverSchema.plugin(function hookIntoSchema (schema) {
+			winston.debug(`Hooking into the server schema...`);
+			schema.post("save", async function _ () {
+				if (global.ThatClientThatDoesCaching.cache) {
+					let cachedDocument = global.ThatClientThatDoesCaching.cache.getSync(this._id);
+					if (this.__v && cachedDocument && cachedDocument.__v && this.__v !== cachedDocument.__v) {
+						winston.verbose(`The document for ${this._id} has a new version! Updating...`, { old: cachedDocument.__v, new: this.__v, guild: this._id });
+						global.ThatClientThatDoesCaching.update(this._id);
+					}
+				}
+			});
+		});
+	}
 	mongoose.connect(url, {
 		useMongoClient: true,
 		promiseLibrary: global.Promise,
@@ -57,3 +72,5 @@ exports.initialize = url => new Promise((resolve, reject) => {
 });
 
 exports.get = exports.getConnection = () => global.Database;
+
+exports.serverSchema = serverSchema;

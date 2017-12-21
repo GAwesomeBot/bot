@@ -26,6 +26,9 @@ const configJS = require("./Configurations/config.js");
 global.configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 
+// Set up a global instance of Winston for this Shard
+global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
+
 const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 
@@ -35,9 +38,6 @@ const cJSON = require("circular-json");
 const privateCommandModules = {};
 const commandModules = {};
 const sharedModules = {};
-
-// Set up a global instance of Winston for this Shard
-global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
 
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
@@ -941,7 +941,6 @@ class Client extends DJSClient {
 					userid: usrid ? usrid : undefined,
 				});
 				if (serverDocument.logs.length > 200) {
-					await serverDocument.save();
 					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
 				}
 				serverDocument.save().catch(err => {
@@ -1034,9 +1033,10 @@ const bot = new Client({
 });
 
 ObjectDefines(bot);
+global.ThatClientThatDoesCaching = bot;
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
-database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL).catch(err => {
+database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL, global.ThatClientThatDoesCaching).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
 }).then(async () => {
@@ -1045,7 +1045,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	bot.events = new EventHandler(bot, configJS);
 	await bot.events.init();
 	// Store server documents by ID
-	bot.cache = new ServerDocumentCache(this);
+	bot.cache = new ServerDocumentCache();
 	bot.traffic = new Traffic(bot.IPC, true);
 });
 
@@ -1109,7 +1109,7 @@ bot.IPC.on("unmuteMember", async msg => {
 bot.IPC.on("createMOTD", async msg => {
 	try {
 		const guild = bot.guilds.get(msg.guild);
-		const serverDocument = bot.cache.get(guild.id);
+		const serverDocument = await bot.cache.get(guild.id);
 
 		MessageOfTheDay(bot, guild, serverDocument.config.message_of_the_day);
 	} catch (err) {
@@ -1124,7 +1124,7 @@ bot.IPC.on("postAllData", async () => {
 bot.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	const serverDocument = bot.cache.get(guild.id);
+	const serverDocument = await bot.cache.get(guild.id);
 	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.first();
 	let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
 	serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
@@ -1134,7 +1134,7 @@ bot.IPC.on("createPublicInviteLink", async msg => {
 bot.IPC.on("deletePublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
-	const serverDocument = bot.cache.get(guild.id);
+	const serverDocument = await bot.cache.get(guild.id);
 	let invites = await guild.fetchInvites();
 	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
@@ -1589,12 +1589,11 @@ bot.on("message", async msg => {
 			}
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
-				bot.cache.get(msg.guild.id).save().catch(async err => {
-					// Version Error? Wait a little and retry.
-					const retry = () => bot.cache.get(msg.guild.id).save().catch(async error => {
-						winston.warn(`Failed to save server data for MESSAGE event >.>\n`, { guild: msg.guild.id, docVersion: (await bot.cache.get(msg.guild.id)).__v }, error);
-					});
-					if (err.name === "VersionError") setTimeout(retry, 100);
+				(await bot.cache.get(msg.guild.id)).save().catch(async err => {
+					if (err.name === "VersionError") {
+						winston.verbose(`Cached document is out of sync! Updating...`, { oldV: (await bot.cache.get(msg.guild.id)).__v, guild: msg.guild.id });
+						bot.cache.update(msg.guild.id);
+					}
 				});
 			}
 		} catch (err) {
@@ -1725,6 +1724,7 @@ bot.once("ready", async () => {
 		await winston.silly("Running webserver");
 		WebServer(bot, auth, configJS, winston);
 		bot.isReady = true;
+		global.ThatClientThatDoesCaching = bot;
 	} catch (err) {
 		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 		process.exit(1);

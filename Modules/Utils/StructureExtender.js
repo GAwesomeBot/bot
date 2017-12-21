@@ -18,7 +18,7 @@ module.exports = () => {
 			}
 
 			get serverDocument () {
-				return this.client.cache.get(this.id);
+				return this.client.cache.getSync(this.id);
 			}
 
 			get commandPrefix () {

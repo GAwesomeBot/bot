@@ -141,7 +141,7 @@ class MessageCreate extends BaseEvent {
 			}
 		} else {
 			// Handle public messages
-			const serverDocument = this.bot.cache.get(msg.guild.id);
+			const serverDocument = await this.bot.cache.get(msg.guild.id);
 			if (serverDocument) {
 				// Get channel data
 				let channelDocument = serverDocument.channels.id(msg.channel.id);
