@@ -19,7 +19,7 @@ module.exports = async (main, { serverDocument, channelDocument }, msg, commandD
 		let set = "default";
 		switch (action) {
 			case "start":
-				if (msg.suffix.includes(" ")) set = split.join(" ");
+				if (msg.suffix.includes(" ") && split.length) set = split.join(" ");
 				await Trivia.start(main.bot, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, set);
 				break;
 			case "end":
