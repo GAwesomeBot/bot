@@ -971,6 +971,11 @@ const commands = {
 		help: {
 			description: "Gives help.",
 		},
+		leval: {
+			description: "Evaluates something in the command's context.",
+			usage: "[code]",
+			isMultiline: true,
+		},
 	},
 };
 
