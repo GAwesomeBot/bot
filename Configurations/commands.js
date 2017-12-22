@@ -976,6 +976,12 @@ const commands = {
 			usage: "[code]",
 			isMultiline: true,
 		},
+
+		seval: {
+			description: "Evaluates something in the shard context.",
+			usage: "[shard] <code>",
+			isMultiline: true,
+		},
 	},
 };
 
