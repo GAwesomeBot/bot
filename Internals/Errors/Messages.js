@@ -18,22 +18,10 @@ const Messages = {
 	AWAIT_EXPIRED: `The await for the message expired!`,
 	AWAIT_QUIT: `The user quitted the menu!`,
 
-	// CLI errors
-	CLI_PARAM_INVALID: (paramName, receivedType, allowedTypes) => {
-		function mapTo (string) {
-			if (typeof string !== "string") string = string.constructor.name;
-			return string;
-		}
-
-		if (Array.isArray(allowedTypes)) {
-			allowedTypes = allowedTypes.map(mapTo).join("|");
-		}
-		if (typeof allowedTypes !== "string") allowedTypes = mapTo(allowedTypes);
-		return `Invalid type of "${paramName}" argument: should be ${allowedTypes}, passed ${receivedType}`;
-	},
 	// Shared Command related
 	UNAUTHORIZED_USER: user => `"${user.tag}" is not part of the sudo or normal maintainer list.`,
 	SHARED_INVALID_MODE: (mode, command) => `"${mode}" is an invalid mode for command ${command}`,
+	
 	// CLI errors
 	CLI_PARAM_INVALID: (paramName, receivedType, allowedTypes) => {
 		function mapTo (string) {
