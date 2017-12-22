@@ -311,21 +311,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (index > -1) configWarnings.splice(index, 1);
 			callback();
 		});
-<<<<<<< HEAD
 
 		sharder.IPC.on("freezeShard", async (msg, callback) => {
 			if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("freeze", {}, Number(msg.shard));
 			callback();
 		});
-
-=======
-
-		sharder.IPC.on("freezeShard", async (msg, callback) => {
-			if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("freeze", {}, Number(msg.shard));
-			callback();
-		});
-
->>>>>>> 9fedd170ec07bb8ae56177d1178bf76c90a77cc2
 		sharder.IPC.on("restartShard", async (msg, callback) => {
 			if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("restart", { soft: msg.soft }, Number(msg.shard));
 			callback();
