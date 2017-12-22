@@ -72,5 +72,3 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 });
 
 exports.get = exports.getConnection = () => global.Database;
-
-exports.serverSchema = serverSchema;
