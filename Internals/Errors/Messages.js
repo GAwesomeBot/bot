@@ -21,7 +21,7 @@ const Messages = {
 	// Shared Command related
 	UNAUTHORIZED_USER: user => `"${user.tag}" is not part of the sudo or normal maintainer list.`,
 	SHARED_INVALID_MODE: (mode, command) => `"${mode}" is an invalid mode for command ${command}`,
-	
+
 	// CLI errors
 	CLI_PARAM_INVALID: (paramName, receivedType, allowedTypes) => {
 		function mapTo (string) {
