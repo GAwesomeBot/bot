@@ -1,6 +1,6 @@
 const request = require("snekfetch");
 
-const	idKeys = [
+const idKeys = [
 	"amgAlbumId",
 	"amgArtistId",
 	"amgVideoId",
