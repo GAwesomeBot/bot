@@ -109,9 +109,7 @@ class Client extends DJSClient {
 
 		this.setTimeout(() => {
 			if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
-				this.messageListeners[channel.id][user.id].reject(new GABError("AWAIT_EXPIRED"));
-				delete this.messageListeners[channel.id][user.id];
-				if (Object.keys(this.messageListeners[channel.id]).length === 0) delete this.messageListeners[channel.id];
+				this.deleteAwaitPMMessage(channel, user);
 			}
 		}, timeout);
 
