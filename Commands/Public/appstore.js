@@ -2,33 +2,6 @@ const iTunes = require("../../Modules/Utils/SearchiTunes");
 const ArgParser = require("../../Modules/MessageUtils/Parser");
 
 module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
-	/**
-	 * @param {Discord.Message} msg The message object
-	 * Suffix is present in the msg object
-	 * @type {Object}
-	 * @param commandData Object containing the command name, usage and description.
-	 * Use `bot.getPMCommandMetadata(commandData.name)` for other things
-	 */
-	/**
-	 * @type {Object}
-	 * @param documents Object containing all documents you need.
-	 * Available documents:
-	 * * serverDocument
-	 * * channelDocument
-	 * * memberDocument
-	 * * userDocument
-	 */
-	/**
-	 * @type {Object}
-	 * @param main Object containing the most important things
-	 * Feel free to deconstruct it using { Value }
-	 * @property {Discord.Client} bot The bot object
-	 * @property {Object} configJS The config js object
-	 * @property {Object} Utils Util object
-	 * @property {Object} utils Util object
-	 * @property {Object} Constants Constants Object
-	 * configJSON is in the global
-	 */
 	if (msg.suffix) {
 		let apps = ArgParser.parseQuoteArgs(msg.suffix, ",");
 		let results = [];
