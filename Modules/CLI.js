@@ -5,8 +5,10 @@ const {
 	},
 } = require("../Internals/index");
 class CLI {
-	constructor (sharder) {
+	constructor (sharder, db, traffic) {
 		this.sharder = sharder;
+		this.db = this.database = db;
+		this.traffic = traffic;
 		this.stdin = process.stdin;
 		this.currentlyRunningCommand = null;
 	}

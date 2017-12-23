@@ -107,7 +107,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 		traffic.init();
 
 		winston.verbose("Creating a STDIN CLI instance.");
-		const cli = new CLI(sharder);
+		const cli = new CLI(sharder, db, traffic);
 		cli.setup();
 
 		// Sharder events
