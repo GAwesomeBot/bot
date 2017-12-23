@@ -1,10 +1,10 @@
-module.exports = async (main, msg, commandData) => {
+module.exports = async ({ Constants: { Colors } }, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix === ".") {
 			msg.author.userDocument.afk_message = null;
 			msg.channel.send({
 				embed: {
-					color: 0x00FF00,
+					color: Colors.GREEN,
 					title: `Welcome back! 🎊`,
 					description: `I removed your global AFK message.`,
 					footer: {
@@ -16,7 +16,7 @@ module.exports = async (main, msg, commandData) => {
 			msg.author.userDocument.afk_message = msg.suffix;
 			msg.channel.send({
 				embed: {
-					color: 0x00FF00,
+					color: Colors.GREEN,
 					description: `Alright, I'll show that when someone mentions you on a server. 👌`,
 					footer: {
 						text: `Use "${commandData.name} ." to remove it`,
@@ -30,7 +30,7 @@ module.exports = async (main, msg, commandData) => {
 	} else if (msg.author.userDocument.afk_message) {
 		msg.channel.send({
 			embed: {
-				color: 0x3669FA,
+				color: Colors.BLUE,
 				description: `Your current global AFK message is: \`\`\`\n${msg.author.userDocument.afk_message.replace(/```/g, "")}\`\`\``,
 				footer: {
 					text: `Use "${commandData.name} <message>" to change it or "${commandData.name} ." to remove it.`,
@@ -40,7 +40,7 @@ module.exports = async (main, msg, commandData) => {
 	} else {
 		msg.channel.send({
 			embed: {
-				color: 0xFF0000,
+				color: Colors.LIGHT_RED,
 				description: `You don't have a global AFK message set right now! ⌨️`,
 				footer: {
 					text: `You can set one by running "${commandData.name} <message>"`,

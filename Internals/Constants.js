@@ -27,3 +27,17 @@ exports.LoggingLevels = {
 	WARN: "warn",
 	SAVE: "save",
 };
+
+exports.Colors = {
+	RED: 0xFF0000,
+	LIGHT_RED: 0xCC0F16,
+
+	LIGHT_ORANGE: 0xE55B0A,
+
+	GREEN: 0x00FF00,
+	LIGHT_GREEN: 0x43B581,
+
+	BLUE: 0x3669FA,
+
+	YELLOW: 0xFFFF00,
+};

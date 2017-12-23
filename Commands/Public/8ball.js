@@ -2,7 +2,7 @@
  * 8ball!
  */
 module.exports = async (main, documents, msg, commandData) => {
-	const { Utils: { PromiseWait } } = main;
+	const { Utils: { PromiseWait }, Constants: { Colors } } = main;
 	if (msg.suffix) {
 		// Deal with it™️
 		let randomWaitTimes = [1000, 1500, 3000, 2500, 2000, 1250, 500, 300, 100, 600];
@@ -90,7 +90,7 @@ module.exports = async (main, documents, msg, commandData) => {
 		];
 		const m = await msg.channel.send({
 			embed: {
-				color: 0x3669FA,
+				color: Colors.BLUE,
 				description: `Asking the 🎱 your question..`,
 				footer: {
 					text: `Please wait...`,
@@ -109,7 +109,7 @@ module.exports = async (main, documents, msg, commandData) => {
 		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
 		msg.channel.send({
 			embed: {
-				color: 0xFF0000,
+				color: Colors.RED,
 				description: `You tell me... 😜`,
 				footer: {
 					text: `Psst. You need to ask the 8ball a question, ya'know?`,
