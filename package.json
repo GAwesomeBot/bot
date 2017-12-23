@@ -50,7 +50,7 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "searchitunes": "*",
-    "showdown": "^1.8.5",
+    "showdown": "^1.8.6",
     "snekfetch": "^3.6.1",
     "socket.io": "^2.0.4",
     "string": "*",
