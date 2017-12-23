@@ -11,6 +11,7 @@ module.exports = {
 	RankScoreCalculator: (messages, voice) => messages + voice,
 	RegExpMaker: require("./RegExpMaker.js"),
 	RSS: require("./RSS.js"),
+	SearchiTunes: require("./SearchiTunes.js"),
 	SetCountdown: require("./SetCountdown.js"),
 	SetReminder: require("./SetReminder.js"),
 	StreamChecker: require("./StreamChecker.js"),

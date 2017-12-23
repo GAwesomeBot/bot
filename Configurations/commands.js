@@ -83,7 +83,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		appstore: {
-			usage: `<query>`,
+			usage: `<...query>`,
 			description: `Searches the Apple App Store for one or more apps`,
 			defaults: {
 				isEnabled: true,
@@ -93,7 +93,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		archive: {
-			usage: `<count>`,
+			usage: `<count> [<last ID>]`,
 			description: `Provides a JSON file with the last \`n\` messages in chat`,
 			defaults: {
 				isEnabled: true,

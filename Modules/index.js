@@ -6,6 +6,7 @@ module.exports = {
 	ExtensionRunner: require("./ExtensionRunner.js"),
 	GetGuild: require("./GetGuild.js"),
 	Imgur: require("./Imgur"),
+	MessageUtils: require("./MessageUtils/index"),
 	MicrosoftTranslate: require("./MicrosoftTranslate.js"),
 	NewServer: require("./NewServer.js"),
 	Polls: require("./Polls.js"),
