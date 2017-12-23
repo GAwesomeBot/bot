@@ -25,23 +25,26 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, comm
 				if (data.attributes.endDate !== null) {
 					airing += ` — ${data.attributes.endDate}`;
 				}
+				const fields = [];
 				let totalResult = "";
-				if (data.attributes.averageRating) {
-					totalResult += `Rating is ${data.attributes.averageRating}%`;
-				}
-				if (data.attributes.ageRating && data.attributes.averageRating) {
-					totalResult += ` | Rated ${data.attributes.ageRating}`;
-				} else {
-					totalResult += `Rated ${data.attributes.ageRating}`;
-				}
 				if (!data.attributes.episodeCount) {
 					data.attributes.episodeCount = "N/A";
 				}
 				if (data.attributes.episodeLength) {
-					totalResult += ` | ${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"}, each lasting ${data.attributes.episodeLength} minutes.`;
+					totalResult += `${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"},${data.attributes.episodeCount === 1 ? "" : " each"} lasting ${data.attributes.episodeLength} minutes.`;
 				} else {
-					totalResult += ` | ${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"}.`;
+					totalResult += `${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"}.`;
 				}
+				data.attributes.averageRating && fields.push({
+					name: `Rating`,
+					value: `${data.attributes.averageRating}%`,
+					inline: true,
+				});
+				data.attributes.ageRating && fields.push({
+					name: `Age Rating`,
+					value: `**${data.attributes.ageRating}**`,
+					inline: true,
+				});
 				return {
 					embed: {
 						color: 0x00FF00,
@@ -52,8 +55,9 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, comm
 						url: `https://kitsu.io/anime/${data.attributes.slug}`,
 						description: `${data.attributes.synopsis.split("").splice(0, 1500).join("")}${data.attributes.synopsis.length > 1500 ? `...\nRead more [here](https://kitsu.io/anime/${data.attributes.slug})` : ""}`,
 						footer: {
-							text: `${totalResult}\nClick on the "Anime Name" to see the webpage!`,
+							text: `${totalResult} | Click on the "Anime Name" to see the webpage!`,
 						},
+						fields,
 						image: {
 							url: `${data.attributes.posterImage.original}`,
 						},
