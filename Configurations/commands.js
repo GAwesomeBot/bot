@@ -945,19 +945,19 @@ const commands = {
 		// 	description: ``,
 		// 	aliases: [],
 		//	example: [],
-		//  configJSON: "",
+		//  perm: "",
 		// },
 		eval: {
 			usage: `<expression>`,
 			description: `Evaluate some JavaScript code`,
 			aliases: ["ev"],
-			configJSON: "eval",
+			perm: "eval",
 		},
 		reload: {
 			usage: `...<pm or public>.<command> or "*"`,
 			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
-			configJSON: "administration",
+			perm: "administration",
 		},
 	},
 };

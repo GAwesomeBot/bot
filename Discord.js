@@ -319,11 +319,11 @@ class Client extends DJSClient {
 		command = this.getSharedCommandName(command);
 		if (!(configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id))) throw new GABError("UNAUTHORIZED_USER", user);
 		let commandData = this.getSharedCommandMetadata(command);
-		switch (commandData.configJSON) {
+		switch (commandData.perm) {
 			case "eval": {
 				let value = configJSON.perms.eval;
 				switch (value) {
-					case 0: return false;
+					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
 						// Maintainers
 						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
@@ -341,7 +341,7 @@ class Client extends DJSClient {
 			case "admin": {
 				let value = configJSON.perms.administration;
 				switch (value) {
-					case 0: return false;
+					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
 						// Maintainers
 						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
@@ -358,7 +358,7 @@ class Client extends DJSClient {
 			case "shutdown": {
 				let value = configJSON.perms.shutdown;
 				switch (value) {
-					case 0: return false;
+					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
 						// Maintainers
 						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
@@ -371,6 +371,9 @@ class Client extends DJSClient {
 					}
 				}
 				break;
+			}
+			case "any": {
+				return true;
 			}
 			default: {
 				throw new GABError("SHARED_INVALID_MODE", commandData.configJSON, command);
