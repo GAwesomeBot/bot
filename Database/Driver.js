@@ -23,7 +23,7 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 				if (global.ThatClientThatDoesCaching.cache) {
 					let cachedDocument = global.ThatClientThatDoesCaching.cache.getSync(this._id);
 					if (this.__v && cachedDocument && cachedDocument.__v && this.__v !== cachedDocument.__v) {
-						winston.verbose(`The document for ${this._id} has a new version! Updating...`, { old: cachedDocument.__v, new: this.__v, guild: this._id });
+						winston.info(`The document for ${this._id} has a new version! Updating...`, { old: cachedDocument.__v, new: this.__v, guild: this._id });
 						global.ThatClientThatDoesCaching.cache.update(this._id);
 					}
 				}

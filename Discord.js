@@ -5,7 +5,7 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia } = require("./Modules/index");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
@@ -38,6 +38,10 @@ const cJSON = require("circular-json");
 const privateCommandModules = {};
 const commandModules = {};
 const sharedModules = {};
+const privateCommandFiles = require("./Commands/Private");
+
+// Set up a global instance of Winston for this Shard
+global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
 
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
@@ -93,27 +97,31 @@ class Client extends DJSClient {
 	 * @param {Function} [filter] The filter to run on the message
 	 */
 	async awaitPMMessage (channel, user, timeout = 60000, filter = () => true) {
-		if (!this.messageListeners[channel.id]) this.messageListeners[channel.id] = {};
+		if (this.shardID === "0") {
+			if (!this.messageListeners[channel.id]) this.messageListeners[channel.id] = {};
 
-		const entry = {
-			filter,
-		};
-		entry.promise = new Promise((resolve, reject) => {
-			Object.assign(entry, {
-				resolve,
-				reject,
+			const entry = {
+				filter,
+			};
+			entry.promise = new Promise((resolve, reject) => {
+				Object.assign(entry, {
+					resolve,
+					reject,
+				});
 			});
-		});
 
-		this.messageListeners[channel.id][user.id] = entry;
+			this.messageListeners[channel.id][user.id] = entry;
 
-		this.setTimeout(() => {
-			if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
-				this.deleteAwaitPMMessage(channel, user);
-			}
-		}, timeout);
+			this.setTimeout(() => {
+				if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
+					this.deleteAwaitPMMessage(channel, user);
+				}
+			}, timeout);
 
-		return this.messageListeners[channel.id][user.id].promise;
+			return this.messageListeners[channel.id][user.id].promise;
+		} else {
+			return this.IPC.send("awaitMessage", { ch: channel.id, usr: user.id, timeout, filter });
+		}
 	}
 
 	deleteAwaitPMMessage (channel, user) {
@@ -418,14 +426,14 @@ class Client extends DJSClient {
 	}
 
 	/**
-	 * Finds a server (by name, ID, server nick, etc.) for a user
-	 * @param {String} string The string to search servers with
-	 * @param {Discord.User|Discord.GuildMember} user The user to search the guild for
-	 * @param {Document} userDocument The database document for the user
-	 * @returns {Promise<?Discord.Guild>} The first guild found with the user
+	 * Relays a command job to a shard that has sufficient data.
+	 * @param {String} command The Relay command to execute
+	 * @param {Object} filter An object of arguments passed to the "find" function of the Relay command
+	 * @param {Object} params An object of arguments passed to the execution function of the Relay command
+	 * @returns {Promise<?Boolean>} True when the master replies with a success, false if find failed. If an error occurred, the destination shard is expected to handle according to command logic.
 	 */
-	serverSearch () {
-		return Promise.reject(new GABError("FEATURE_TODO"));
+	relayCommand (command, filter, params) {
+		return this.IPC.send("relay", { command: command, findParams: filter, execParams: params });
 	}
 
 	/**
@@ -946,7 +954,7 @@ class Client extends DJSClient {
 					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
 				}
 				serverDocument.save().catch(err => {
-					winston.error(`Failed to re-save server document for logging a message`, err.name, err);
+					winston.error(`Failed to re-save server document for logging a message`, { error: err.name, docVersion: serverDocument.__v, guild: serverDocument._id });
 				});
 			}
 		} catch (err) {
@@ -1088,7 +1096,12 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 	} else {
 		let guild = bot.guilds.get(payload.guild);
 		let val = GG.generate(guild, payload.settings);
-		return callback({ guild: payload.guild, settings: payload.settings, result: cJSON.stringify(val) });
+		try {
+			return callback({ guild: payload.guild, settings: payload.settings, result: cJSON.stringify(val) });
+		} catch (err) {
+			console.log(err);
+			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err, guildData: val });
+		}
 	}
 });
 
@@ -1229,17 +1242,65 @@ bot.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = svr.serverDocument;
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
 			let channelDocument = serverDocument.channels.id(ch.id);
 			if (!channelDocument) {
 				serverDocument.channels.push({ _id: ch.id });
 				channelDocument = serverDocument.channels.id(ch.id);
 			}
 			if (msg.action === "end") await Trivia.end(bot, svr, serverDocument, ch, channelDocument);
-			serverDocument.save();
+			try {
+				serverDocument.save();
+			} catch (err) {
+				winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
+			break;
+		}
+		case "poll": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = svr.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
+			let channelDocument = serverDocument.channels.id(ch.id);
+			if (!channelDocument) {
+				serverDocument.channels.push({ _id: ch.id });
+				channelDocument = serverDocument.channels.id(ch.id);
+			}
+			if (msg.action === "end") await Polls.end(serverDocument, ch, channelDocument);
+			try {
+				serverDocument.save();
+			} catch (err) {
+				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
 			break;
 		}
 	}
+});
+
+bot.IPC.on("relay", async (msg, callback) => {
+	const command = privateCommandFiles[msg.command];
+	const main = {
+		bot,
+		configJS,
+	};
+	const commandData = {
+		name: msg.command,
+		usage: bot.getPublicCommandMetadata(msg.command).usage,
+		description: bot.getPublicCommandMetadata(msg.command).description,
+	};
+	if (command) return callback(await command[msg.action](main, msg.params, commandData));
+});
+
+bot.IPC.on("awaitMessage", async (msg, callback) => {
+	const user = await bot.users.fetch(msg.usr, true);
+	let channel = await bot.channels.get(msg.ch);
+	if (!channel) channel = user.dmChannel;
+	if (!channel) channel = await user.createDM();
+	return callback((await bot.awaitPMMessage(channel, user, msg.timeout ? msg.timeout : undefined, msg.filter ? msg.filter : undefined)).content);
 });
 
 bot.IPC.on("updating", async (msg, callback) => {

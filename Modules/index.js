@@ -8,6 +8,7 @@ module.exports = {
 	Imgur: require("./Imgur"),
 	MicrosoftTranslate: require("./MicrosoftTranslate.js"),
 	NewServer: require("./NewServer.js"),
+	Polls: require("./Polls.js"),
 	PostShardedData: require("./PostShardedData.js"),
 	PostTotalData: require("./PostTotalData.js"),
 	Sharder: require("./Sharder.js"),

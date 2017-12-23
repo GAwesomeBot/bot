@@ -51,7 +51,7 @@ module.exports = class EventHandler {
 			for (let eventFile in this._cache[eventName]) {
 				promiseArray.push(this._cache[eventName][eventFile]._handle(...args));
 			}
-			if (promiseArray.length) await Promise.all(promiseArray);
+			if (promiseArray.length) return Promise.all(promiseArray);
 		}
 	}
 };

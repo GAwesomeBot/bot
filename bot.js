@@ -323,6 +323,23 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (sharder.shards.has(shardid)) sharder.IPC.send("modifyActivity", msg, shardid);
 		});
 
+		sharder.IPC.on("relay", async (msg, reply) => {
+			const findResults = await sharder.IPC.send("relay", { command: msg.command, params: msg.findParams, action: "find" }, "*");
+
+			if (findResults.every(result => result === false)) return reply("none");
+			if (findResults.filter(result => result !== false).length !== 1) return reply("multi");
+			reply(true);
+
+			if (!msg.execParams) msg.execParams = {};
+			const guildID = findResults.find(result => result !== false);
+			const shardID = sharder.guilds.get(guildID);
+			msg.execParams.guildid = guildID;
+
+			sharder.IPC.send("relay", { command: msg.command, params: msg.execParams, action: "run" }, shardID);
+		});
+
+		sharder.IPC.on("awaitMessage", async (msg, callback) => callback(await sharder.IPC.send("awaitMessage", msg, 0)));
+
 		// Shard requests all shards to be marked Unavailable
 		sharder.IPC.on("updating", (msg, callback) => sharder.IPC.send("updating", msg, "*").then(callback));
 

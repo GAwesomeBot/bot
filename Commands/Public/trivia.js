@@ -40,7 +40,7 @@ module.exports = async (main, { serverDocument, channelDocument }, msg, commandD
 			value: `${channelDocument.trivia.past_questions.length} Question${channelDocument.trivia.past_questions.length === 1 ? "" : "s"} completed\nScore: ${channelDocument.trivia.score}`,
 			inline: true,
 		}];
-		if (channelDocument.trivia.set_id !== "default") {
+		if (channelDocument.trivia.set_id !== "default" && channelDocument.trivia.set_id) {
 			fields.push({
 				name: `Current Set`,
 				value: channelDocument.trivia.set_id,

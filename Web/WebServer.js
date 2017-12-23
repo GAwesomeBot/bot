@@ -1757,9 +1757,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	// Save serverDocument after admin console form data is received
 	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
 		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
+		bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
 		serverDocument.save(err => {
 			dashboardUpdate(req.path, svr.id);
-			bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
 			if (err) {
 				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
 				renderError(res, "An internal error occurred!");
@@ -3448,7 +3448,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						bot.IPC.send("modifyActivity", { action: "end", activity: "trivia", guild: svr.id, channel: req.body["end-id"] });
 						break;
 					case "poll":
-						Polls.end(serverDocument, ch, channelDocument);
+						bot.IPC.send("modifyActivity", { action: "end", activity: "poll", guild: svr.id, channel: req.body["end-id"] })
 						break;
 					case "giveaway":
 						Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
@@ -3457,8 +3457,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						Lotteries.end(db, svr, serverDocument, ch, channelDocument);
 						break;
 				}
+				res.sendStatus(200);
+			} else {
+				res.sendStatus(400);
 			}
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

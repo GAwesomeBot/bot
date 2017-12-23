@@ -481,7 +481,7 @@ class MessageCreate extends BaseEvent {
 			}
 		}
 		// TODO: Remove this
-		console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
+		// Console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 	}
 
 	/**

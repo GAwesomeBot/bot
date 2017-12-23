@@ -87,7 +87,7 @@ module.exports = new mongoose.Schema({
 		responses: [
 			new mongoose.Schema({
 				_id: String,
-				vode: {
+				vote: {
 					type: Number,
 					min: 0,
 				},
