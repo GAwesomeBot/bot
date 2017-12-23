@@ -74,8 +74,8 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, comm
 			if (list.length === 1) {
 				msg.channel.send(results[0]);
 			} else {
-				// eslint-disable-next-line no-new
-				new ReactionMenu(msg, list, results);
+				let menu = new ReactionMenu(msg, list, results);
+				await menu.init();
 			}
 		} else {
 			winston.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });

@@ -41,11 +41,9 @@ class ReactionBasedMenu {
 			description: `{list}`,
 			footer: `Page {current page} out of {total pages}`,
 		};
-
-		this.initCollector();
 	}
 
-	async initCollector () {
+	async init (timeout = 120000) {
 		if (this.options.length > 10) {
 			this.options = this.options.chunk(10);
 			this.totalPages = this.options.length;
@@ -55,7 +53,7 @@ class ReactionBasedMenu {
 		await this.prepareReactions();
 		this.collector = this.msg.createReactionCollector(
 			(reaction, user) => user.id === this.originalMsg.author.id && this.emojiArray.includes(reaction.emoji.name),
-			{ time: 120000 }
+			{ time: timeout }
 		);
 		this.handle();
 	}
