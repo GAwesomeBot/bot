@@ -70,7 +70,7 @@
 							<label class="label">Chatterbot</label>
 							<p class="control">
 								<label class="checkbox">
-								<input name="chatterbot-isEnabled" type="checkbox" <%= configData.chatterbot ? "checked" : "" %>
+								<input name="chatterbot-isEnabled" type="checkbox" <%= configData.chatterbot.isEnabled ? "checked" : "" %>
 									onclick="$('#chatterbot_enabled_channel_ids-options').toggleClass('is-hidden');">
 									Allow members to converse with GAwesomeBot
 								</label>

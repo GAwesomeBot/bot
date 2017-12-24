@@ -1,5 +1,3 @@
-const Polls = require("./../../Modules/Polls.js");
-
 module.exports = async (main, msg, commandData) => {
 	if (msg.suffix && msg.suffix.includes("|")) {
 		const params = msg.suffix.split("|");

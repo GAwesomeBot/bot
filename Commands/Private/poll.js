@@ -21,7 +21,6 @@ module.exports = {
 		}
 		return false;
 	},
-	// Params = usrid, initMsg, guildid, chname, svrid
 	run: async (main, params) => {
 		const usr = await main.bot.users.fetch(params.usrid, true);
 		try {
