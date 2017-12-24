@@ -38,6 +38,7 @@ exports.Colors = {
 	LIGHT_GREEN: 0x43B581,
 
 	BLUE: 0x3669FA,
+	LIGHT_BLUE: 0x9ECDF2,
 
 	YELLOW: 0xFFFF00,
 };

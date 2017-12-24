@@ -1,6 +1,4 @@
 /* eslint-disable max-len */
-require("./Internals/Fastboot")();
-
 const ascii = `
   _____                                               ____        _
  / ____|   /\\                                        |  _ \\      | |

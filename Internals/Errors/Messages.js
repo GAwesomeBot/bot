@@ -21,6 +21,14 @@ const Messages = {
 	// Shared Command related
 	UNAUTHORIZED_USER: user => `"${user.tag}" is not part of the sudo or normal maintainer list.`,
 	SHARED_INVALID_MODE: (mode, command) => `"${mode}" is an invalid mode for command ${command}`,
+
+	// Action-related
+	MISSING_ACTION_TYPE: `You forgot to specify a type!`,
+
+	// Modlog
+	INVALID_MODLOG_CHANNEL: channel => `"${channel}" is an invalid modlog channel!`,
+	MISSING_MODLOG_CHANNEL: `This server doesn't have a configured modlog channel`,
+	MODLOG_ENTRY_NOT_FOUND: id => `ModLog entry with case ID "${id}" was not found!`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

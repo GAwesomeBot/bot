@@ -1,5 +1,4 @@
 const process = require("process");
-require("./Internals/Fastboot")(`shard-${process.env.SHARD_ID}`);
 
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
@@ -39,9 +38,6 @@ const privateCommandModules = {};
 const commandModules = {};
 const sharedModules = {};
 const privateCommandFiles = require("./Commands/Private");
-
-// Set up a global instance of Winston for this Shard
-global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
 
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
@@ -493,6 +489,40 @@ class Client extends DJSClient {
 
 			reject(new GABError("FAILED_TO_FIND", "role", server, string));
 		});
+	}
+
+	/**
+	 * Checks if a member can take actions on another member
+	 * @param {Discord.Guild} guild The guild to check the permissions in
+	 * @param {Discord.GuildMember} member The message member
+	 * @param {Discord.GuildMember} [affectedUser] The affected member
+	 * @returns {Object} Object containing the results
+	 */
+	async canDoActionOnMember (guild, member, affectedUser = null, type = null) {
+		if (type) {
+			switch (type.toLowerCase()) {
+				case "ban": {
+					let obj = {
+						canClientBan: false,
+						memberAboveAffected: false,
+					};
+					if (affectedUser && affectedUser.bannable) obj.canClientBan = true;
+					if (member.highestRole && affectedUser && affectedUser.highestRole) {
+						if (member.highestRole.comparePositionTo(affectedUser.highestRole) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					if (affectedUser === null) {
+						obj.canClientBan = guild.me.permissions.has("BAN_MEMBERS");
+						obj.memberAboveAffected = true;
+					}
+					return obj;
+				}
+			}
+		} else {
+			throw new GABError("MISSING_ACTION_TYPE");
+		}
 	}
 
 	/**
