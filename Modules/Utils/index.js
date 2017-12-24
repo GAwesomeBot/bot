@@ -4,7 +4,7 @@ module.exports = {
 	GetValue: require("./GetValue.js"),
 	Gist: require("./GitHubGist.js"),
 	GlobalDefines: require("./GlobalDefines.js"),
-	IsURL: url => /^https?/.test(url),
+	IsURL: url => /^http?/gim.test(url),
 	MessageOfTheDay: require("./MessageOfTheDay.js"),
 	ObjectDefines: require("./ObjectDefines.js"),
 	PromiseWait: waitFor => new Promise(resolve => setTimeout(resolve, waitFor)),
