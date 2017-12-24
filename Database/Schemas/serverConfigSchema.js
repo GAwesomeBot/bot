@@ -590,4 +590,8 @@ module.exports = {
 		})],
 	}, { usePushEach: true })],
 	voicetext_channels: [String],
+	ban_gif: {
+		type: String,
+		default: "https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif",
+	},
 };
