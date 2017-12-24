@@ -15,7 +15,6 @@ module.exports = {
 		}
 		if (res) {
 			if (!res.body["up-to-date"] && !res.body.latest) {
-				winston.debug(`GAB version ${config.version} was not found on branch ${config.branch}, you may need to reinstall GAB in order to use the Updater.`);
 				return 404;
 			}
 			return res.body;

@@ -10,7 +10,7 @@ const ascii = `
  \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 			`;
 
-const { Console, Sharder, Traffic, Boot } = require("./Modules/");
+const { Console, Sharder, Traffic, Boot, Updater } = require("./Modules/");
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
 
@@ -70,6 +70,12 @@ database.initialize(configJS.databaseURL).catch(err => {
 		if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
 			winston.warn("Your session secret value appears to be default. Please note that this value is public!");
 			configWarnings.push("Your config.js secret value has not been reconfigured. This value is public!");
+		}
+
+		winston.silly("Confirming config.json values.");
+		if (await Updater.check(configJSON) === 404) {
+			winston.warn(`GAB version ${configJSON.version} was not found on branch ${configJSON.branch}, you may need to reinstall GAB for the Updater to be enabled again.`);
+			configWarnings.push(`GAwesomeBot ${configJSON.version} is not a valid version on branch ${configJSON.branch}. The Updater has been disabled to avoid update conflicts.`);
 		}
 
 		winston.silly("Confirming environment setup.");
