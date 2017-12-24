@@ -113,7 +113,7 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 				return m.edit({
 					embed: {
 						description: `Ban canceled! 😓`,
-						color: Colors.LIGHT_BLUE,
+						color: Colors.LIGHT_ORANGE,
 					},
 				});
 			}
