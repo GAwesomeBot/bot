@@ -94,10 +94,12 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 				},
 			});
 			const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 60000 })).first();
-			try {
-				await mm.delete();
-			} catch (_) {
-				// Meh
+			if (mm) {
+				try {
+					await mm.delete();
+				} catch (_) {
+					// Meh
+				}
 			}
 			if (mm && configJS.yesStrings.includes(mm.content.toLowerCase().trim())) {
 				if (isGuildMember) {
