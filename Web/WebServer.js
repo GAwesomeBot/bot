@@ -97,20 +97,17 @@ const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => c
 	rawPosition: ch.rawPosition,
 })).sort((a, b) => a.rawPosition - b.rawPosition);
 
-const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => {
-	const color = role.color.toString(16);
-	return {
-		name: role.name,
-		id: role.id,
-		color: "000000".substring(0, 6 - color.length) + color,
-		position: role.position,
-	};
-}).sort((a, b) => b.position - a.position);
+const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
+	name: role.name,
+	id: role.id,
+	color: role.color,
+	position: role.position,
+})).sort((a, b) => b.position - a.position);
 
 const getAuthUser = user => ({
 	username: user.username,
 	id: user.id,
-	avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.jpg` : "/static/img/discord-icon.png",
+	avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : "/static/img/discord-icon.png",
 });
 
 const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400)}d` : `${Math.floor(uptime / 3600)}h`;
@@ -140,6 +137,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		process.nextTick(() => done(null, profile));
 	}));
 	passport.serializeUser((user, done) => {
+		delete user.email;
 		done(null, user);
 	});
 	passport.deserializeUser((id, done) => {
