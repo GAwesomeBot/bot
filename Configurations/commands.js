@@ -154,7 +154,7 @@ const commands = {
 			category: `Fun 🎪`,
 		},
 		choose: {
-			usage: `<option 1>|<option 2>[|...]`,
+			usage: `<option 1> [|] <option 2> [|...]`,
 			description: `Randomly chooses from a set of options`,
 			defaults: {
 				isEnabled: true,
