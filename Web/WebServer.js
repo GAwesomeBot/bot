@@ -94,7 +94,8 @@ const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => c
 	name: ch.name,
 	id: ch.id,
 	position: ch.position,
-})).sort((a, b) => a.position - b.position);
+	rawPosition: ch.rawPosition,
+})).sort((a, b) => a.rawPosition - b.rawPosition);
 
 const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => {
 	const color = role.color.toString(16);
@@ -768,7 +769,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					const svr = await getGuild.get(bot, req.query.svrid, {
 							resolve: ["id", "ownerID", "name", "icon"],
 							members: ["id", "roles", "user", "nickname"],
-							channels: ["id", "type", "name", "position"],
+							channels: ["id", "type", "name", "position", "rawPosition"],
 							roles: ["name", "id", "position", "color"],
 							convert: { id_only: true },
 						});
