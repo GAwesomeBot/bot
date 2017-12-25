@@ -87,7 +87,7 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 				embed: {
 					color: Colors.LIGHT_BLUE,
 					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s imput..`,
-					description: isJustUserID ? `Are you sure you want to ban **${isGuildMember ? `@${client.getName(msg.channel.guild, serverDocument, member)}` : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.channel.guild, serverDocument, member)}**?`,
+					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? client.getName(msg.guild, serverDocument, member) : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.guild, serverDocument, member)}**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
 					footer: {
 						text: `They won't be able to join again unless they get unbanned!`,
 					},
@@ -108,6 +108,7 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 					msg.guild.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
 				}
 				dmBanned(member.id);
+				await CreateModLog(msg.guild, "Ban", member, msg.author, reason);
 				return banned(m);
 			} else {
 				return m.edit({
