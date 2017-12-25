@@ -29,7 +29,8 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 		msg.channel.send({
 			embed: {
 				color: Colors.BLUE,
-				description: `Your current AFK message is: \`\`\`\n${memberDocument.afk_message.replace(/```/g, "")}\`\`\``,
+				title: `Your current AFK message is:`,
+				description: `${memberDocument.afk_message}`,
 				footer: {
 					text: `Use "${msg.guild.commandPrefix}${commandData.name} <message>" to change it or "${msg.guild.commandPrefix}${commandData.name} ." to remove it.`,
 				},

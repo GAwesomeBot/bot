@@ -34,7 +34,7 @@ class AFKHandler extends BaseEvent {
 								},
 								color: 0x3669FA,
 								title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
-								description: `\`\`\`${targetMemberDocument.afk_message}\`\`\``,
+								description: `${targetMemberDocument.afk_message}`,
 							},
 						});
 					} else {
@@ -50,7 +50,7 @@ class AFKHandler extends BaseEvent {
 									},
 									color: 0x3669FA,
 									title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
-									description: `\`\`\`${targetUserDocument.afk_message}\`\`\``,
+									description: `${targetUserDocument.afk_message}`,
 								},
 							});
 						}

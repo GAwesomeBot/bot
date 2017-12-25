@@ -153,9 +153,24 @@ class Client extends DJSClient {
 			};
 		} else if (cmdstr) {
 			let command = cmdstr.split(/\s+/)[0].toLowerCase();
-			let suffix = cmdstr.split(/\s+/)
+			let suffix = cmdstr.replace(/[\r\n\t]/g, match => {
+				const escapes = {
+					"\r": "{r}",
+					"\n": "{n}",
+					"\t": "{t}",
+				};
+				return escapes[match] || match;
+			}).split(/\s+/)
 				.splice(1)
 				.join(" ")
+				.replace(/[{r}{n}{t}]/g, match => {
+					const escapes = {
+						"{r}": "\r",
+						"{n}": "\n",
+						"{t}": "\t",
+					};
+					return escapes[match] || match;
+				})
 				.trim();
 			commandObject = {
 				command: command,
