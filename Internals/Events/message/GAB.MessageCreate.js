@@ -409,54 +409,53 @@ class MessageCreate extends BaseEvent {
 									}
 								}
 							}
+							const prompt = msg.content.split(/\s+/)
+								.splice(1)
+								.join(" ")
+								.trim();
+							let shouldRunChatterbot = true;
+							if (prompt.toLowerCase().trim() === "help") {
+								msg.channel.send({
+									embed: {
+										color: 0x3669FA,
+										title: `Hey there, it seems like you are lost!`,
+										description: `Use \`${msg.guild.commandPrefix}help\` to learn how to use me on this server! 😄`,
+									},
+								});
+								shouldRunChatterbot = false;
+							}
 							// Check if it's a chatterbot prompt
-							if (!extensionApplied && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
-								const prompt = msg.content.split(/\s+/)
-									.splice(1)
-									.join(" ")
-									.trim();
+							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
 								await this.setCooldown(serverDocument, channelDocument);
-								// Default help response
-								if (prompt.toLowerCase().trim() === "help") {
-									msg.channel.send({
+								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+								this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
+								const m = await msg.channel.send({
+									embed: {
+										color: 0x3669FA,
+										description: `The chatter bot is thinking...`,
+									},
+								});
+								const response = await this.chatterPrompt(msg.author.id, prompt).catch(err => {
+									winston.verbose(`Failed to get chatter prompt.`, err);
+									m.edit({
 										embed: {
-											color: 0x3669FA,
-											title: `Hey there, it seems like you are lost!`,
-											description: `Use \`${msg.guild.commandPrefix}help\` to learn how to use me on this server! 😄`,
+											color: 0xFF0000,
+											description: `Sorry, I didn't catch that. Could you repeat yourself?`,
 										},
 									});
-									// Process chatterbot prompt
-								} else {
-									winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-									this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
-									const m = await msg.channel.send({
+								});
+								if (response) {
+									await m.edit({
 										embed: {
-											color: 0x3669FA,
-											description: `The chatter bot is thinking...`,
+											title: `The Program-O Chatter Bot replied with:`,
+											url: `https://program-o.com`,
+											description: response,
+											thumbnail: {
+												url: `https://cdn.program-o.com/images/program-o-luv-bunny.png`,
+											},
+											color: 0x00FF00,
 										},
 									});
-									const response = await this.chatterPrompt(msg.author.id, msg.cleanContent).catch(err => {
-										winston.verbose(`Failed to get chatter prompt.`, err);
-										m.edit({
-											embed: {
-												color: 0xFF0000,
-												description: `Sorry, I didn't catch that. Could you repeat yourself?`,
-											},
-										});
-									});
-									if (response) {
-										await m.edit({
-											embed: {
-												title: `The Program-O Chatter Bot replied with:`,
-												url: `https://program-o.com`,
-												description: response,
-												thumbnail: {
-													url: `https://cdn.program-o.com/images/program-o-luv-bunny.png`,
-												},
-												color: 0x00FF00,
-											},
-										});
-									}
 								}
 							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.bot.user.id) && serverDocument.config.tag_reaction.isEnabled) {
 								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.bot.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
@@ -480,7 +479,6 @@ class MessageCreate extends BaseEvent {
 				}
 			}
 		}
-		// TODO: Remove this
 		// Console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 	}
 
