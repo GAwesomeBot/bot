@@ -26,22 +26,22 @@ module.exports = class ModLog {
 		let serverDocument = guild.serverDocument;
 		if (serverDocument && serverDocument.modlog.isEnabled && serverDocument.modlog.channel_id) {
 			const ch = guild.channels.get(serverDocument.modlog.channel_id);
-			if (ch && ch.type === 0) {
+			if (ch && ch.type === "text") {
 				let affectedUser;
 				if (member) {
-					affectedUser = this.getUserText(member instanceof GuildMember ? member.user : member);
+					affectedUser = ModLog.getUserText(member instanceof GuildMember ? member.user : member);
 				}
 				let creatorStr;
 				if (creator) {
-					creatorStr = this.getUserText(creator instanceof GuildMember ? creator.user : creator);
+					creatorStr = ModLog.getUserText(creator instanceof GuildMember ? creator.user : creator);
 				}
-				let description = this.getEntryText(++serverDocument.modlog.current_id, type, affectedUser, creatorStr, reason);
+				let description = ModLog.getEntryText(++serverDocument.modlog.current_id, type, affectedUser, creatorStr, reason);
 				let m;
 				try {
 					m = await ch.send({
 						embed: {
 							description,
-							color: Colors.LIGHT_ORANGE,
+							color: Colors.YELLOW,
 							footer: {
 								text: `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason.`,
 							},
@@ -62,10 +62,10 @@ module.exports = class ModLog {
 					return serverDocument.save().then(() => serverDocument.modlog.current_id);
 				}
 			} else {
-				throw new Error("INVALID_MODLOG_CHANNEL", ch);
+				return new Error("INVALID_MODLOG_CHANNEL", ch);
 			}
 		} else {
-			throw new Error("MISSING_MODLOG_CHANNEL");
+			return new Error("MISSING_MODLOG_CHANNEL");
 		}
 	}
 };
