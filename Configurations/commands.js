@@ -84,6 +84,7 @@ const commands = {
 		},
 		appstore: {
 			usage: `<...query>`,
+			aliases: ["istore"],
 			description: `Searches the Apple App Store for one or more apps`,
 			defaults: {
 				isEnabled: true,
@@ -434,16 +435,6 @@ const commands = {
 			},
 			category: `Moderation ⚒`,
 		},
-		linkme: {
-			usage: `<query>`,
-			description: `Searches the Google Play Store for one or more apps`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Search & Media 🎬`,
-		},
 		list: {
 			usage: `[<content> or <item no.>] [|"." or "done" or <content>]`,
 			description: `In-chat to-do list`,
@@ -553,6 +544,17 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `GAwesomeBot 🤖`,
+		},
+		playstore: {
+			usage: `<...query>`,
+			aliases: ["gplay"],
+			description: `Searches the Google Play Store for one or more apps`,
+			defaults: {
+				isEnabled: true,
+				isNSFWFiltered: false,
+				adminLevel: 0,
+			},
+			category: `Search & Media 🎬`,
 		},
 		points: {
 			usage: `[<user> or "me"]`,
