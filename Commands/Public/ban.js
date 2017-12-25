@@ -4,7 +4,7 @@ const ArgParser = require("../../Modules/MessageUtils/Parser");
 module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		const args = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
-		let member = args.shift();
+		let member = args.shift().trim();
 		let isGuildMember = false;
 		let reason = (args.length && args.join(" ")) || "Unspecified reason...";
 		const isJustUserID = /^\d+$/.test(member);
@@ -68,7 +68,7 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 								},
 								{
 									name: `Staff Member`,
-									value: `${msg.author.tag}`,
+									value: `@${msg.author.tag}`,
 									inline: true,
 								},
 							],
