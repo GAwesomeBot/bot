@@ -163,14 +163,7 @@ class Client extends DJSClient {
 			}).split(/\s+/)
 				.splice(1)
 				.join(" ")
-				.replace(/[{r}{n}{t}]/g, match => {
-					const escapes = {
-						"{r}": "\r",
-						"{n}": "\n",
-						"{t}": "\t",
-					};
-					return escapes[match] || match;
-				})
+				.format({ n: "\n", r: "\r", t: "\t" })
 				.trim();
 			commandObject = {
 				command: command,
