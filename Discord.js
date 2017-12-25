@@ -1135,8 +1135,10 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 		let guild = bot.guilds.get(payload.guild);
 		let val = GG.generate(guild, payload.settings);
 		try {
-			return callback({ guild: payload.guild, settings: payload.settings, result: cJSON.stringify(val) });
+			return callback({ guild: payload.guild, settings: payload.settings, result: JSON.stringify(val) });
 		} catch (err) {
+			console.log(val);
+
 			console.log(err);
 			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err, guildData: val });
 		}
@@ -1324,6 +1326,7 @@ bot.IPC.on("relay", async (msg, callback) => {
 	const main = {
 		bot,
 		configJS,
+		Constants: require("./Internals/index").Constants,
 	};
 	const commandData = {
 		name: msg.command,

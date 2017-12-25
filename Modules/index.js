@@ -5,6 +5,7 @@ module.exports = {
 	ConvertCurrency: require("./ConvertCurrency.js"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
 	GetGuild: require("./GetGuild.js"),
+	Giveaways: require("./Giveaways.js"),
 	Imgur: require("./Imgur"),
 	MessageUtils: require("./MessageUtils/index"),
 	MicrosoftTranslate: require("./MicrosoftTranslate.js"),

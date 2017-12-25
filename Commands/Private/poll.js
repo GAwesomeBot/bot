@@ -302,7 +302,7 @@ module.exports = {
 								icon_url: main.bot.user.avatarURL(),
 								url: "https://github.com/GilbertGobbels/GAwesomeBot",
 							},
-							color: 0xFF0000,
+							color: 0xE55B0A,
 							description: `🔐 You don't have permission to use this command on ${svr.name}`,
 						},
 					});

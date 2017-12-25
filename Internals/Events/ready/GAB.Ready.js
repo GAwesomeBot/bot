@@ -5,10 +5,10 @@ const {
 	PostShardedData,
 	Utils,
 	Cache,
+	Giveaways,
 } = require("../../../Modules/");
 const {
 	ClearServerStats: clearStats,
-	Giveaways,
 	MessageOfTheDay: createMessageOfTheDay,
 	SetCountdown: setCountdown,
 	SetReminder: setReminder,

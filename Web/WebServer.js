@@ -272,18 +272,18 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 	const getServerData = async (serverDocument, webp = false) => {
 		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "owner", "id", "name"], members: ["nickname"] });
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "ownerID", "id", "name"], members: ["nickname"] });
 		if (svr) {
-			const owner = svr.owner;
+			const owner = await bot.users.fetch(svr.ownerID, true);
 			data = {
 				name: svr.name,
 				id: svr.id,
 				icon: bot.getAvatarURL(svr.id, svr.icon, "icons", webp),
 				owner: {
-					username: owner.user.username,
-					id: owner.user.id,
-					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar, "avatars", webp),
-					name: owner.nickname || owner.user.username,
+					username: owner.username,
+					id: owner.id,
+					avatar: bot.getAvatarURL(owner.id, owner.avatar, "avatars", webp),
+					name: owner.username,
 				},
 				members: Object.keys(svr.members).length,
 				messages: serverDocument.messages_today,
@@ -1754,23 +1754,22 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Save serverDocument after admin console form data is received
-	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
+	const saveAdminConsoleOptions = async (consolemember, svr, serverDocument, req, res, override) => {
 		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
-		bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
-		serverDocument.save(err => {
+		try {
+			await bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
 			dashboardUpdate(req.path, svr.id);
-			if (err) {
-				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
-				renderError(res, "An internal error occurred!");
-				return;
-			}
 			bot.IPC.send("cacheUpdate", { guild: serverDocument._id });
 			if (override) {
 				res.sendStatus(200);
 			} else {
 				res.redirect(req.originalUrl);
 			}
-		});
+		} catch (err) {
+			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
+			renderError(res, "An internal error occurred!");
+			return;
+		}
 	};
 
 	// Save config.json after maintainer console form data is received
