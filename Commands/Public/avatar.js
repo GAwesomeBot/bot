@@ -1,6 +1,6 @@
-module.exports = async ({ client, Constants: { Colors } }, documents, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, msg, commandData) => {
 	const handleMissingMember = () => {
-		winston.verbose(`Couldn't find any member or the member doesn't exist so "${commandData.name}" command can't be ran`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		winston.verbose(`Couldn't find any user or the user doesn't exist so "${commandData.name}" command can't be ran`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.channel.send({
 			embed: {
 				color: Colors.LIGHT_ORANGE,
@@ -13,21 +13,25 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 		});
 	};
 
-	const sendAvatarImage = (m, avatar) => {
+	const sendAvatarImage = (m, isUserOnly) => {
 		msg.channel.send({
 			embed: {
-				title: `__${m.user.username}__'s Avatar`,
+				title: `@__${isUserOnly ? m.tag : client.getName(msg.guild, serverDocument, m)}__'s Avatar`,
 				color: Colors.BLUE,
 				image: {
-					url: avatar,
+					url: isUserOnly ? m.displayAvatarURL() : m.user.displayAvatarURL(),
 				},
 			},
 		});
 	};
 
 	let member = msg.member;
-	if (msg.suffix && msg.suffix !== "me") {
-		member = client.memberSearch(msg.suffix, msg.guild);
+	let fetchedUsr = false;
+	if (msg.suffix && msg.suffix !== "me" && !/^\d+$/.test(msg.suffix.trim())) {
+		member = client.memberSearch(msg.suffix.trim(), msg.guild);
+	} else if (msg.suffix && /^\d+$/.test(msg.suffix.trim())) {
+		member = client.users.fetch(msg.suffix.trim(), true);
+		fetchedUsr = true;
 	}
 	if (member) {
 		if (member instanceof Promise) {
@@ -36,9 +40,9 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 			} catch (err) {
 				return handleMissingMember();
 			}
-			if (member && member.user) sendAvatarImage(member, member.user.displayAvatarURL());
+			if (member && ((!fetchedUsr && member.user) || (fetchedUsr && member))) sendAvatarImage(member, fetchedUsr);
 		} else {
-			sendAvatarImage(member, member.user.displayAvatarURL());
+			sendAvatarImage(member, false);
 		}
 	} else {
 		handleMissingMember();
