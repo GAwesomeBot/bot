@@ -3449,7 +3449,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						bot.IPC.send("modifyActivity", { action: "end", activity: "poll", guild: svr.id, channel: req.body["end-id"] })
 						break;
 					case "giveaway":
-						Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
+						bot.IPC.send("modifyActivity", { action: "end", activity: "giveaway", guild: svr.id, channel: req.body["end-id"] });
 						break;
 					case "lottery":
 						Lotteries.end(db, svr, serverDocument, ch, channelDocument);

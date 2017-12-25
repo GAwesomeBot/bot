@@ -4,7 +4,7 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls } = require("./Modules/index");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
@@ -32,7 +32,6 @@ const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 
 const ProcessAsPromised = require("process-as-promised");
-const cJSON = require("circular-json");
 
 const privateCommandModules = {};
 const commandModules = {};
@@ -1291,7 +1290,8 @@ bot.IPC.on("modifyActivity", async msg => {
 			}
 			if (msg.action === "end") await Trivia.end(bot, svr, serverDocument, ch, channelDocument);
 			try {
-				serverDocument.save();
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
 			} catch (err) {
 				winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
 			}
@@ -1312,7 +1312,25 @@ bot.IPC.on("modifyActivity", async msg => {
 			}
 			if (msg.action === "end") await Polls.end(serverDocument, ch, channelDocument);
 			try {
-				serverDocument.save();
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
+			} catch (err) {
+				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
+			break;
+		}
+		case "giveaway": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = svr.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
+			if (msg.action === "end") await Giveaways.end(bot, svr, ch, serverDocument);
+			try {
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
 			} catch (err) {
 				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
 			}

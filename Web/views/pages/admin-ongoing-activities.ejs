@@ -18,7 +18,7 @@
 				"end-id": id
 			},
 			success: function() {
-				$(`#endSession-${type}-${id}`).html(`${type === "trivia" ? "Game" : "Session"} ended.`).attr("onclick", null);
+				$(`#endSession-${type}-${id}`).html(`${type === "trivia" ? "Game" : "Activity"} ended.`).attr("onclick", null);
 			}
 		});
 	}
@@ -184,11 +184,8 @@
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												<%= giveaways[i].channel.name %>
+												#<%= giveaways[i].channel.name %>
 											</p>
-											<span class="card-header-icon">
-												<i class="fa fa-hashtag"></i>
-											</span>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
@@ -199,17 +196,21 @@
 											</h5>
 											<div class="level is-mobile">
 												<div class="level-item has-text-centered" title="<%= giveaways[i].rawExpiry %>">
-													<p class="heading">Ends In</p>
-													<p class="title"><%= giveaways[i].relativeExpiry %>h</p>
+													<div>
+														<p class="heading">Ends In</p>
+														<p class="title"><%= giveaways[i].relativeExpiry %>h</p>
+													</div>
 												</div>
 												<div class="level-item has-text-centered">
-													<p class="heading">Participants</p>
-													<p class="title"><%= giveaways[i].participants %></p>
+													<div>
+														<p class="heading">Participants</p>
+														<p class="title"><%= giveaways[i].participants %></p>
+													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= giveaways[i].channel.id %>', 'giveaway');" class="card-footer-item" title="Secret will still be given away">
+											<a onclick="endSession('<%= giveaways[i].channel.id %>', 'giveaway');" id="endSession-giveaway-<%= giveaways[i].channel.id %>" class="card-footer-item" title="Secret will still be given away">
 												End Giveaway
 											</a>
 										</footer>
