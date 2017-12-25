@@ -88,7 +88,7 @@ class MessageCreate extends BaseEvent {
 						Utils,
 						Constants,
 					}, msg, {
-						name: this.client.getPublicCommandName(msg.command),
+						name: msg.command,
 						usage: this.bot.getPMCommandMetadata(msg.command).usage,
 					});
 				} catch (err) {
@@ -351,7 +351,7 @@ class MessageCreate extends BaseEvent {
 											userDocument,
 										};
 										const commandData = {
-											name: msg.command,
+											name: this.client.getPublicCommandName(msg.command),
 											usage: this.bot.getPublicCommandMetadata(cmd).usage,
 											description: this.bot.getPublicCommandMetadata(cmd).description,
 										};
