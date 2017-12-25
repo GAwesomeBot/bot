@@ -414,7 +414,7 @@ class MessageCreate extends BaseEvent {
 								.join(" ")
 								.trim();
 							let shouldRunChatterbot = true;
-							if (prompt.toLowerCase().trim() === "help") {
+							if ((msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command) && prompt.toLowerCase().trim() === "help") {
 								msg.channel.send({
 									embed: {
 										color: 0x3669FA,
