@@ -3,8 +3,9 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 		winston.verbose(`Couldn't find any member or the member doesn't exist so "${commandData.name}" command can't be ran`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.channel.send({
 			embed: {
-				color: Colors.LIGHT_RED,
-				description: `I don't know who that is, so you can admire my beautiful bot face instead! 💖`,
+				color: Colors.LIGHT_ORANGE,
+				title: `I don't know who that is!`,
+				description: `You can admire my beautiful face instead! 💖`,
 				image: {
 					url: client.user.displayAvatarURL(),
 				},
