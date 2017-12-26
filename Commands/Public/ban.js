@@ -87,13 +87,13 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				embed: {
 					color: Colors.INPUT,
 					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s input..`,
-					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? client.getName(msg.guild, serverDocument, member) : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.guild, serverDocument, member)}**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
+					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? `${client.getName(msg.guild, serverDocument, member)} (${member})` : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.guild, serverDocument, member)} (${member})**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
 					footer: {
 						text: `They won't be able to join again until they get unbanned!`,
 					},
 				},
 			});
-			const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 60000 })).first();
+			const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 120000 })).first();
 			if (mm) {
 				try {
 					await mm.delete();
