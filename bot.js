@@ -181,6 +181,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 			}
 		});
 
+		sharder.IPC.on("validateGuild", async (guildid, callback) => {
+			if (sharder.guilds.has(guildid)) return callback(true);
+			else return callback(false);
+		});
+
 		// Shard has modified Console data
 		sharder.IPC.on("dashboardUpdate", async msg => {
 			winston.silly(`Broadcasting update to dashboard at ${msg.location}.`);
