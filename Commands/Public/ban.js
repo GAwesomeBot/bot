@@ -49,7 +49,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				image: {
 					url: serverDocument.config.ban_gif,
 				},
-				color: Colors.LIGHT_GREEN,
+				color: Colors.SUCCESS,
 				description: `Bye-Bye **@${isGuildMember ? client.getName(msg.guild, serverDocument, member) : `${member.tag}`}** 🔨`,
 			},
 		});
@@ -59,7 +59,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					await client.users.get(id).send({
 						embed: {
 							color: Colors.RED,
-							description: `Oh noes, you just got banned from \`${msg.guild}\`!`,
+							description: `Snap, you just got banned from \`${msg.guild}\`!`,
 							fields: [
 								{
 									name: `Reason`,
@@ -85,11 +85,11 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		if (member) {
 			let m = await msg.channel.send({
 				embed: {
-					color: Colors.LIGHT_BLUE,
-					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s imput..`,
+					color: Colors.INFO,
+					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s input..`,
 					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? client.getName(msg.guild, serverDocument, member) : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.guild, serverDocument, member)}**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
 					footer: {
-						text: `They won't be able to join again unless they get unbanned!`,
+						text: `They won't be able to join again until they get unbanned!`,
 					},
 				},
 			});
@@ -114,14 +114,14 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				return m.edit({
 					embed: {
 						description: `Ban canceled! 😓`,
-						color: Colors.LIGHT_ORANGE,
+						color: Colors.INFO,
 					},
 				});
 			}
 		} else {
 			msg.channel.send({
 				embed: {
-					color: Colors.LIGHT_RED,
+					color: Colors.SOFT_ERR,
 					description: `I couldn't find a matching member on this server...`,
 					footer: {
 						text: `If you have a user ID you can run "${msg.guild.commandPrefix}${commandData.name} ID" to ban them!`,
