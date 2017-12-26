@@ -43,11 +43,14 @@ exports.Colors = {
 	SUCCESS: 0x00FF00,
 
 	LIGHT_GREEN: 0x43B581,
+	RESPONSE: 0x43B581,
 
 	BLUE: 0x3669FA,
 	INFO: 0x3669FA,
 
 	LIGHT_BLUE: 0x9ECDF2,
+	INPUT: 0x9ECDF2,
+	PROMPT: 0x9ECDF2,
 
 	YELLOW: 0xFFFF00,
 	INVALID: 0xFFFF00,
@@ -56,5 +59,17 @@ exports.Colors = {
 // Should all be functions for consistency, even if the string is hardcoded.
 exports.Text = {
 	COMMAND_ERR: () => "Something went wrong! 😱",
-	INVALID_USAGE: commandData => `🗯 Correct usage is: \`${commandData.name} ${commandData.usage}\``,
+	INVALID_USAGE: (commandData, prefix = null) => `🗯 Correct usage is: \`${prefix ? prefix : ""}${commandData.name} ${commandData.usage}\``,
+};
+
+// Hardcoded names for the child process manager
+exports.ChildProcessTypes = {
+	MATH: "mathjs",
+};
+
+exports.ChildProcessCommands = {
+	MATHJS: {
+		EVAL: "eval",
+		HELP: "help",
+	},
 };

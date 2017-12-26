@@ -1,21 +1,11 @@
-const mathjs = require("mathjs");
-let safeEval = mathjs.eval;
-
-mathjs.import({
-	import: () => `Function "import" is disabled inside calculations!`,
-	createUnit: () => `Function "createUnit" is disabled inside calculations!`,
-	eval: () => `Function "eval" is disabled inside calculations!`,
-	parse: () => `Function "parse" is disabled inside calculations!`,
-	simplify: () => `Function "simplify" is disabled inside calculations!`,
-	derivative: () => `Function "derivative" is disabled inside calculations!`,
-}, { override: true });
-
-module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text, ChildProcessTypes, ChildProcessCommands: { MATHJS: MathJS } } }, documents, msg, commandData) => {
 	if (msg.suffix) {
 		let args = msg.suffix.split(/\s+/);
 		if (args[0].trim().toLowerCase() === "help") {
 			try {
-				let helpstr = mathjs.help(args[1].trim());
+				args.shift();
+				args = args.join(" ");
+				let helpstr = await client.childProcessManager.getValueFromWorker(ChildProcessTypes.MATH, { command: MathJS.HELP, requestedInfo: args });
 				msg.channel.send({
 					embed: {
 						color: Colors.INFO,
@@ -24,7 +14,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				});
 			} catch (err) {
 				let description = [
-					`Couldn't find any help message for \`${args[1]}\`!`,
+					`Couldn't find any help message for \`${args}\`!`,
 					"",
 					"We use **[MathJS](http://mathjs.org/)** to calculate your equations.",
 					"Read more about what it can and can't do by clicking [here](http://mathjs.org/)",
@@ -49,10 +39,10 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				},
 			});
 			try {
-				let res = safeEval(msg.suffix.trim());
+				let res = await client.childProcessManager.getValueFromWorker(ChildProcessTypes.MATH, { command: MathJS.EVAL, requestedInfo: msg.suffix.trim() });
 				m.edit({
 					embed: {
-						color: Colors.SUCCESS,
+						color: Colors.RESPONSE,
 						title: `Here is your result!`,
 						author: {
 							name: `Results provided by MathJS`,
@@ -78,12 +68,15 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 			}
 		}
 	} else {
-		winston.silly(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		winston.verbose(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.channel.send({
 			embed: {
 				color: Colors.INVALID,
 				title: `What would you like to calculate today? 🤓`,
-				description: Text.INVALID_USAGE(commandData),
+				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
+				footer: {
+					text: `I may be smart but I can't guess what you'd want to calculate!`,
+				},
 			},
 		});
 	}
