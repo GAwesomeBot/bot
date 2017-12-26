@@ -59,7 +59,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					await client.users.get(id).send({
 						embed: {
 							color: Colors.RED,
-							description: `Snap, you just got banned from \`${msg.guild}\`!`,
+							description: `Oh snap, you just got banned from \`${msg.guild}\`!`,
 							fields: [
 								{
 									name: `Reason`,
@@ -85,7 +85,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		if (member) {
 			let m = await msg.channel.send({
 				embed: {
-					color: Colors.INFO,
+					color: Colors.INPUT,
 					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s input..`,
 					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? client.getName(msg.guild, serverDocument, member) : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.guild, serverDocument, member)}**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
 					footer: {
@@ -134,7 +134,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			embed: {
 				color: Colors.INVALID,
 				title: `Do you want me to ban you? 😮`,
-				description: Text.INVALID_USAGE(commandData),
+				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
 			},
 		});
 		const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 60000 })).first();

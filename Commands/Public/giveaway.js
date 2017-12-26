@@ -31,7 +31,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channe
 					});
 				}
 			} else {
-				winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+				winston.verbose(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
 				msg.channel.send({
 					embed: {
 						color: Colors.INVALID,
