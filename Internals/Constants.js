@@ -52,3 +52,9 @@ exports.Colors = {
 	YELLOW: 0xFFFF00,
 	INVALID: 0xFFFF00,
 };
+
+// Should all be functions for consistency, even if the string is hardcoded.
+exports.Text = {
+	COMMAND_ERR: () => "Something went wrong! 😱",
+	INVALID_USAGE: commandData => `🗯 Correct usage is: \`${commandData.name} ${commandData.usage}\``,
+};

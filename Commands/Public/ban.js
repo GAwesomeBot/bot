@@ -1,7 +1,7 @@
 const { create: CreateModLog } = require("../../Modules/ModLog");
 const ArgParser = require("../../Modules/MessageUtils/Parser");
 
-module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		const args = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
 		let member = args.shift().trim();
@@ -132,11 +132,9 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 	} else {
 		let m = await msg.channel.send({
 			embed: {
-				color: Colors.LIGHT_RED,
-				description: `Do you want me to ban you? 😮`,
-				footer: {
-					text: `You should mention someone who you want to ban, and give an optional reason...`,
-				},
+				color: Colors.INVALID,
+				title: `Do you want me to ban you? 😮`,
+				description: Text.INVALID_USAGE(commandData),
 			},
 		});
 		const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 60000 })).first();
@@ -148,7 +146,7 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 			}
 			m.edit({
 				embed: {
-					color: Colors.RED,
+					color: Colors.SOFT_ERR,
 					description: `Ok! Bye-Bye!`,
 					footer: {
 						text: `Just kidding! I'd never ban you. ❤️`,
