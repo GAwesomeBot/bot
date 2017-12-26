@@ -124,8 +124,8 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		calc: {
-			usage: `<expression>`,
-			description: `Quickly evaluate a mathematical expression`,
+			usage: `<expression> or "help" <function>`,
+			description: `Quickly calculate a mathematical expression`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
