@@ -19,7 +19,6 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				msg.channel.send({
 					embed: {
 						color: Colors.INFO,
-						title: `Help for __${args[1]}__`,
 						description: `\`\`\`css\n${helpstr}\`\`\``,
 					},
 				});
