@@ -14,6 +14,7 @@ module.exports = {
 	Polls: require("./Polls.js"),
 	PostShardedData: require("./PostShardedData.js"),
 	PostTotalData: require("./PostTotalData.js"),
+	RandomAnimals: require("./RandomAnimals.js"),
 	Sharder: require("./Sharder.js"),
 	SharderIPC: require("./IPC.js"),
 	Traffic: require("./Traffic.js"),
