@@ -6,7 +6,7 @@ module.exports = async ({ client, Constants: { Colors }, configJS }, { serverDoc
 		const args = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
 		let member = args.shift().trim();
 		let isGuildMember = false;
-		let reason = (args.length && args.join(" ")) || "Unspecified reason...";
+		let reason = (args.length && args.join(" ").trim()) || "Unspecified reason...";
 		const isJustUserID = /^\d+$/.test(member);
 		try {
 			member = await client.memberSearch(member, msg.guild);
