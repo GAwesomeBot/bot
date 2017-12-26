@@ -1,7 +1,8 @@
 /* eslint-disable callback-return */
 
-const winston = new (require("../../Modules/Console"))(`MathJS`);
-const { WorkerCommands: { MATHJS: MathJSCommands } } = require("../Constants");
+const process = require("process");
+const winston = new (require("../Modules/Console"))(`Worker -- Shard ${Number(process.env.SHARD_ID)}`);
+const { WorkerCommands: { MATHJS: MathJSCommands } } = require("./Constants");
 
 const mathjs = require("mathjs");
 const safeEval = mathjs.eval;
@@ -18,9 +19,8 @@ mathjs.import({
 const Process = require("process-as-promised");
 
 const p = new Process();
-const process = require("process");
 
-p.on("runCommand", (data, callback) => {
+p.on("runMathCommand", (data, callback) => {
 	winston.silly(`Received data from master shard...`, data);
 	let retData = { error: null, result: null };
 	switch (data.command) {
@@ -45,6 +45,9 @@ p.on("runCommand", (data, callback) => {
 			break;
 		}
 	}
-	winston.silly(`My job is done! Goodnight Europe...!`);
-	process.exit(0);
+	winston.silly(`Processed math equation and returned the results!`);
 });
+
+(async () => {
+	await p.send("ready", { shard: process.env.SHARD_ID });
+})();

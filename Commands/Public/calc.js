@@ -5,7 +5,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 			try {
 				args.shift();
 				args = args.join(" ");
-				let helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, requestedInfo: args });
+				let helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, data: args });
 				msg.channel.send({
 					embed: {
 						color: Colors.INFO,
@@ -30,7 +30,6 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				});
 			}
 		} else {
-			let hrstart = process.hrtime();
 			let m = await msg.channel.send({
 				embed: {
 					color: Colors.INFO,
@@ -39,7 +38,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				},
 			});
 			try {
-				let res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, requestedInfo: msg.suffix.trim() });
+				let res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, data: msg.suffix.trim() });
 				m.edit({
 					embed: {
 						color: Colors.RESPONSE,
@@ -49,9 +48,6 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 							url: `http://mathjs.org/`,
 						},
 						description: `\`\`\`css\n${res}\`\`\``,
-						footer: {
-							text: `Expression took ${process.hrtime(hrstart)[0]}s and ${Math.floor(process.hrtime(hrstart)[1] / 1000000)}ms to calculate!`,
-						},
 					},
 				});
 			} catch (err) {

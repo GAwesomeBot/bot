@@ -1071,6 +1071,12 @@ class Client extends DJSClient {
 		this._intervals.clear();
 		return this.manager.destroy();
 	}
+
+	async init () {
+		await super.login(process.env.CLIENT_TOKEN);
+		await this.workerManager.startWorker();
+		return process.env.CLIENT_TOKEN;
+	}
 }
 
 StructureExtender();
@@ -1112,7 +1118,7 @@ process.on("uncaughtException", err => {
 bot.IPC = new ProcessAsPromised();
 
 winston.debug("Logging in to Discord Gateway.");
-bot.login(process.env.CLIENT_TOKEN).then(() => {
+bot.init().then(() => {
 	winston.info("Successfully connected to Discord!");
 	bot.IPC.send("ready", { id: bot.shard.id });
 	process.setMaxListeners(0);
