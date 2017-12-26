@@ -1,11 +1,11 @@
-module.exports = async ({ client, Constants: { Colors, Text, ChildProcessTypes, ChildProcessCommands: { MATHJS: MathJS } } }, documents, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, WorkerCommands: { MATHJS: MathJS } } }, documents, msg, commandData) => {
 	if (msg.suffix) {
 		let args = msg.suffix.split(/\s+/);
 		if (args[0].trim().toLowerCase() === "help") {
 			try {
 				args.shift();
 				args = args.join(" ");
-				let helpstr = await client.childProcessManager.getValueFromWorker(ChildProcessTypes.MATH, { command: MathJS.HELP, requestedInfo: args });
+				let helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, requestedInfo: args });
 				msg.channel.send({
 					embed: {
 						color: Colors.INFO,
@@ -39,7 +39,7 @@ module.exports = async ({ client, Constants: { Colors, Text, ChildProcessTypes, 
 				},
 			});
 			try {
-				let res = await client.childProcessManager.getValueFromWorker(ChildProcessTypes.MATH, { command: MathJS.EVAL, requestedInfo: msg.suffix.trim() });
+				let res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, requestedInfo: msg.suffix.trim() });
 				m.edit({
 					embed: {
 						color: Colors.RESPONSE,

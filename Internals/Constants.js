@@ -63,11 +63,11 @@ exports.Text = {
 };
 
 // Hardcoded names for the child process manager
-exports.ChildProcessTypes = {
+exports.WorkerTypes = {
 	MATH: "mathjs",
 };
 
-exports.ChildProcessCommands = {
+exports.WorkerCommands = {
 	MATHJS: {
 		EVAL: "eval",
 		HELP: "help",

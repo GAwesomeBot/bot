@@ -1,7 +1,7 @@
 /* eslint-disable callback-return */
 
 const winston = new (require("../../Modules/Console"))(`MathJS`);
-const { ChildProcessCommands: { MATHJS: MathJSCommands } } = require("../Constants");
+const { WorkerCommands: { MATHJS: MathJSCommands } } = require("../Constants");
 
 const mathjs = require("mathjs");
 const safeEval = mathjs.eval;

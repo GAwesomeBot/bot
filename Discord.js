@@ -19,7 +19,7 @@ const {
 		Error: GABError,
 	},
 	EventHandler,
-	ChildProcessManager,
+	WorkerManager,
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
@@ -64,7 +64,7 @@ class Client extends DJSClient {
 
 		this.messageListeners = {};
 
-		this.childProcessManager = new ChildProcessManager(this);
+		this.workerManager = new WorkerManager(this);
 	}
 
 	/**
