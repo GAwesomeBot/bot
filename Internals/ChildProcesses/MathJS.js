@@ -21,7 +21,7 @@ const p = new Process();
 const process = require("process");
 
 p.on("runCommand", (data, callback) => {
-	winston.silly(`Received data for calc command...`, data);
+	winston.silly(`Received data from master shard...`, data);
 	let retData = { error: null, result: null };
 	switch (data.command) {
 		case MathJSCommands.EVAL: {
