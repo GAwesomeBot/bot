@@ -8,7 +8,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 	else if (isNaN(number)) number = serverDocument.config.command_fetch_properties.default_count;
 	else number = parseInt(number);
 
-	const { body, status, statusText } = await get(APIs.CATFACT).query("limit", number);
+	const { body, status, statusText } = await get(APIs.CATFACT()).query("limit", number);
 	if (status === 200 && body && body.data.length) {
 		const facts = [];
 		body.data.forEach(d => {

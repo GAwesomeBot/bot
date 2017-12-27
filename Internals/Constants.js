@@ -96,8 +96,7 @@ exports.NumberEmojis = {
 	ten: "🔟",
 };
 
-// Some APIs will be functions. Sorry, but we're not consistent with this one!
 exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
-	CATFACT: `https://catfact.ninja/facts`,
+	CATFACT: () => `https://catfact.ninja/facts`,
 };
