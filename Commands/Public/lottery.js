@@ -9,12 +9,12 @@ const multipliers = {
 const { Lotteries } = require("../../Modules/");
 const moment = require("moment");
 
-module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, channelDocument, userDocument }, msg, commandData) => {
+module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, userDocument }, msg, commandData) => {
 	const notOngoing = () => {
 		msg.channel.send({
 			embed: {
-				color: Colors.INFO,
-				description: "There isn't a GAwesomePoints lottery going on right now.",
+				color: Colors.SOFT_ERR,
+				description: "There isn't a **GAwesomePoint** lottery going on right now.",
 				footer: {
 					text: `Use "${msg.guild.commandPrefix}${commandData.name} start" to start one.`,
 				},
@@ -30,7 +30,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 						embed: {
 							color: Colors.SOFT_ERR,
 							title: "There's already a lottery going on in this channel 🕰",
-							description: `It currently has ${participantTotal} ${participantTotal === 1 ? "person" : "users"} with their eyes on the prize 👀`,
+							description: `It currently has ${participantTotal} ${participantTotal === 1 ? "person" : "users"} with their eyes on the prize! 👀`,
 							footer: {
 								text: `You must wait for the current lottery to end before you can start a new one.`,
 							},
@@ -41,29 +41,35 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 						embed: {
 							color: Colors.PROMPT,
 							title: "What size should this lottery have? 💲",
-							fields: [{
-								name: "Small 💸",
-								value: "1x multiplier",
-								inline: true,
-							}, {
-								name: "Standard 💵",
-								value: "2x multiplier",
-								inline: true,
-							}, {
-								name: "Big 💰",
-								value: "5x multiplier",
-								inline: true,
-							}, {
-								name: "Huge 💳",
-								value: "10x multiplier",
-								inline: true,
-							}, {
-								name: "Massive 🤑",
-								value: "100x multiplier",
-								inline: true,
-							}],
+							fields: [
+								{
+									name: "Small 💸",
+									value: "1x multiplier",
+									inline: true,
+								},
+								{
+									name: "Standard 💵",
+									value: "2x multiplier",
+									inline: true,
+								},
+								{
+									name: "Big 💰",
+									value: "5x multiplier",
+									inline: true,
+								},
+								{
+									name: "Huge 💳",
+									value: "10x multiplier",
+									inline: true,
+								},
+								{
+									name: "Massive 🤑",
+									value: "100x multiplier",
+									inline: true,
+								},
+							],
 							footer: {
-								text: "Multiplier counts for ticket prices and the prize, you have 2 minutes to respond. The default is standard.",
+								text: "Multipliers count for ticket prices and the prize, you have 2 minutes to respond. The default is standard.",
 							},
 						},
 					});
@@ -73,13 +79,13 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 						time: 120000,
 					})).first();
 
-					if (!["massive", "100", "huge", "10", "big", "5", "standard", "2", "small", "1", "massive 🤑", "huge 💳", "big 💰", "standard 💵", "small 💸"].includes(response.content.toLowerCase().trim())) {
+					if (response && !["massive", "100", "huge", "10", "big", "5", "standard", "2", "small", "1", "massive 🤑", "huge 💳", "big 💰", "standard 💵", "small 💸"].includes(response.content.toLowerCase().trim())) {
 						response.channel.send({
 							embed: {
 								color: Colors.INVALID,
-								description: "That isn't a valid lottery size 😲",
+								description: "That isn't a valid lottery size... 😲",
 								footer: {
-									text: `I will use the default of 2x instead!`,
+									text: `We will use the default of 2x instead!`,
 								},
 							},
 						});
@@ -116,9 +122,9 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 						return msg.channel.send({
 							embed: {
 								color: Colors.SOFT_ERR,
-								description: "You aren't rich enough to start this lottery 🍸",
+								description: "You aren't rich enough to start this lottery... 🍸",
 								footer: {
-									text: "Try a smaller sized lottery",
+									text: "Try a smaller sized lottery instead",
 								},
 							},
 						});
@@ -127,8 +133,8 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 					msg.channel.send({
 						embed: {
 							color: Colors.SUCCESS,
-							title: "GAwesomePoints lottery started! 🌟",
-							description: `Anyone can use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} enroll\` or \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} join\` for a chance to win! 🤑`,
+							title: "GAwesomePoint lottery started! 🌟",
+							description: `Anyone can use \`${msg.guild.commandPrefix}${commandData.name} enroll\` or \`${msg.guild.commandPrefix}${commandData.name} join\` for a chance to win! 🤑`,
 							footer: {
 								text: `The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}`,
 							},
@@ -157,7 +163,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 							msg.channel.send({
 								embed: {
 									color: Colors.SUCCESS,
-									title: "Thank you for purchasing a GAwesomeBot lottery ticket 🎟",
+									title: "Thank you for purchasing a GAwesomePoint lottery ticket 🎟",
 									description: `That cost you ${ticketPrice} point${ticketPrice === 1 ? "" : "s"} - the winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}.`,
 									footer: {
 										text: `You now have ${userTicketCount + 1} ticket${userTicketCount === 0 ? "" : "s"}. No refunds.`,
@@ -190,7 +196,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 						if (!winner) {
 							msg.channel.send({
 								embed: {
-									color: Colors.SUCCESS,
+									color: Colors.SOFT_ERR,
 									description: "The lottery ended with no winner 😥",
 								},
 							});
@@ -209,11 +215,11 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 				break;
 			}
 			default: {
-				winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
+				winston.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
 				msg.channel.send({
 					embed: {
 						color: Colors.INVALID,
-						description: Text.INVALID_USAGE(commandData),
+						description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
 					},
 				});
 				break;
@@ -224,23 +230,43 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 		const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
 		const ticketPrice = Math.floor(participantTotal * channelDocument.lottery.multiplier);
 		const multiplier = channelDocument.lottery.multiplier;
+		const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
 		msg.channel.send({
 			embed: {
 				color: Colors.INFO,
-				title: `GAwesomePoints lottery started by "${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}" 💸`,
-				fields: [{
-					name: `${multipliers[multiplier] ? multipliers[multiplier] : "Unknown Size"}`,
-					value: `${multiplier}x multiplier`,
-					inline: true,
-				}, {
-					name: "Ticket holders",
-					value: `${participantTotal} ${participantTotal === 1 ? "user" : "users"}`,
-					inline: true,
-				}, {
-					name: "Current Ticket Price",
-					value: `${ticketPrice} GAwesomePoint${ticketPrice === 1 ? "" : "s"}`,
-					inline: false,
-				}],
+				title: `GAwesomePoint lottery started by "@__${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}__" 💸`,
+				fields: [
+					{
+						name: "Current Ticket Price",
+						value: `${ticketPrice} **GAwesomePoint${ticketPrice === 1 ? "" : "s"}**`,
+						inline: true,
+					},
+					{
+						name: `${multipliers[multiplier] ? multipliers[multiplier] : "Unknown Size"}`,
+						value: `${multiplier}x multiplier`,
+						inline: true,
+					},
+					{
+						name: `Current Prize`,
+						value: `${prize} **GAwesomePoint${prize === 1 ? "" : "s"}**`,
+						inline: true,
+					},
+					{
+						name: `${EmptySpace}`,
+						value: `${EmptySpace}`,
+						inline: true,
+					},
+					{
+						name: "Ticket holders",
+						value: `${participantTotal} ${participantTotal === 1 ? "person" : "users"}`,
+						inline: true,
+					},
+					{
+						name: `${EmptySpace}`,
+						value: `${EmptySpace}`,
+						inline: true,
+					},
+				],
 				footer: {
 					text: `The winner will be announced ${moment(channelDocument.lottery.expiry_timestamp).fromNow()}`,
 				},

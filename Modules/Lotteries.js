@@ -5,7 +5,7 @@ const multipliers = {
 	huge: 10,
 	massive: 100,
 };
-const Constants = require("../Internals/Constants.js");
+const { Colors, LoggingLevels } = require("../Internals/Constants.js");
 
 module.exports = {
 	multipliers,
@@ -40,15 +40,20 @@ module.exports = {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
 					const userDocument = (await Users.findOrCreate({ _id: winner.id })).doc;
 					userDocument.points += prize;
+					try {
+						await userDocument.save();
+					} catch (_) {
+						// Meh
+					}
 					const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
 					ch.send({
-						content: `${winner}`,
+						content: `${winner},`,
 						embed: {
-							color: Constants.Colors.INFO,
-							title: `Congratulations ${bot.getName(svr, serverDocument, winner)}! 🎊`,
-							description: `You won the lottery for **${prize}** GAwesomePoints out of ${participantTotal} participant${participantTotal === 1 ? "" : "s"}.`,
+							color: Colors.INFO,
+							title: `Congratulations @__${bot.getName(svr, serverDocument, winner)}__! 🎊`,
+							description: `You won the lottery for **${prize}** GAwesomePoint${prize === 1 ? "" : "s"} out of ${participantTotal} participant${participantTotal === 1 ? "" : "s"}.`,
 							footer: {
-								text: "Enjoy the cash 💰",
+								text: "Enjoy the cash! 💰",
 							},
 						},
 					});
@@ -56,7 +61,7 @@ module.exports = {
 				return winner;
 			} catch (err) {
 				winston.debug(`An error occurred while attempting to end a lottery (*0*)\n`, err);
-				bot.logMessage(serverDocument, Constants.LoggingLevels.ERROR, `An error occurred while attempting to end the lottery.`, ch.id);
+				bot.logMessage(serverDocument, LoggingLevels.ERROR, `An error occurred while attempting to end the lottery.`, ch.id);
 			}
 		}
 	},

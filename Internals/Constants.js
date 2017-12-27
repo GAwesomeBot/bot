@@ -103,3 +103,7 @@ exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: () => `https://catfact.ninja/facts`,
 };
+
+// You may think there is nothing here
+// In reality, there's a 0-width space
+exports.EmptySpace = `​`;
