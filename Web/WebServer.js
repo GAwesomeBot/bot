@@ -1757,8 +1757,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	const saveAdminConsoleOptions = async (consolemember, svr, serverDocument, req, res, override) => {
 		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
 		try {
-			await bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
+			bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
 			dashboardUpdate(req.path, svr.id);
+			await serverDocument.save();
 			bot.IPC.send("cacheUpdate", { guild: serverDocument._id });
 			if (override) {
 				res.sendStatus(200);
@@ -3329,7 +3330,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				configData: {
 					name_display: serverDocument.config.name_display,
 				},
-				nameExample: bot.getName(svr, serverDocument, consolemember),
+				exampleUsername: consolemember.user.username,
+				exampleNickname: consolemember.nickname,
+				exampleDiscriminator: consolemember.user.discriminator,
+				currentExample: bot.getName(svr, serverDocument, consolemember),
 			});
 		});
 	});

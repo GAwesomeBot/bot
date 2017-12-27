@@ -5,6 +5,33 @@
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
+	<script>
+		const username = "<%= exampleUsername%>";
+		const nickname = "<%= exampleNickname %>";
+		const discriminator = "<%= exampleDiscriminator %>";
+		$(document).on("ready", () => {
+			const example = $("#currentExample");
+			const useNickname = $("#name_display-use_nick");
+			const useDiscriminator = $("#name_display-show_discriminator");
+			useNickname.click(() => {
+				if (useNickname.is(":checked") && nickname !== "") {
+					example.text(nickname);
+				} else {
+					example.text(username);
+				}
+				if (useDiscriminator.is(":checked")) {
+					example.text(`${example.text().trim()}#${discriminator}`);
+				}
+			});
+			useDiscriminator.click(() => {
+			  	if (useDiscriminator.is(":checked")) {
+					example.text(example.text() + `#${discriminator}`);
+			  	} else {
+					example.text(example.text().trim().slice(0, -5));
+			  	}
+			});
+		});
+	</script>
 </head>
 <body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
@@ -23,7 +50,7 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								This section lets you control <strong>how usernames look</strong> on your server. Should GAwesomeBot use member nicknames if available? Do you want the 0-9999 username discriminator to be shown? The preview below shows how your name would be displayed with the current settings. It's updated after you reload the page.
+								This section lets you control <strong>how usernames look</strong> on your server. Should GAwesomeBot use member nicknames if available? Do you want the 0-9999 username discriminator to be shown? The preview below shows how your name would be displayed with the current settings.
 							</div>
 						</div>
 					</article>
@@ -34,16 +61,14 @@
 									<h2 class="subtitle">
 										Example with current settings:
 									</h2>
-									<h1 class="title">
-										<%= nameExample %>
-									</h1>
+									<h1 class="title" id="currentExample"><%= currentExample %></h1>
 								</div>
 							</div>
 						</div>
 						<div class="field">
 							<div class="control">
 								<label class="checkbox">
-								<input name="name_display-use_nick" type="checkbox" <%= configData.name_display.use_nick ? "checked" : "" %>>
+								<input id="name_display-use_nick" name="name_display-use_nick" type="checkbox" <%= configData.name_display.use_nick ? "checked" : "" %>>
 									Use member <strong>nickname</strong> if available
 								</label>
 								<span class="help">Nicknames are assigned per-server. Discord uses them in place of usernames in the member list.</span>
@@ -52,7 +77,7 @@
 						<div class="field">
 							<div class="control">
 								<label class="checkbox">
-								<input name="name_display-show_discriminator" type="checkbox" <%= configData.name_display.show_discriminator ? "checked" : "" %>>
+								<input id="name_display-show_discriminator" name="name_display-show_discriminator" type="checkbox" <%= configData.name_display.show_discriminator ? "checked" : "" %>>
 									Show user <strong>discriminator</strong> after name
 								</label>
 								<span class="help">0-9999 number that distinguishes a user from the 10000 others that could have the same username.</span>
