@@ -1,15 +1,14 @@
 const { get } = require("snekfetch");
 const PaginatedMenu = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	let number = msg.suffix;
 	if (number < 1) number = serverDocument.config.command_fetch_properties.default_count;
 	else if (number > serverDocument.config.command_fetch_properties.max_count) number = serverDocument.config.command_fetch_properties.max_count;
 	else if (isNaN(number)) number = serverDocument.config.command_fetch_properties.default_count;
 	else number = parseInt(number);
 
-	let API = `https://catfact.ninja/facts`;
-	const { body, status, statusText } = await get(API).query("limit", number);
+	const { body, status, statusText } = await get(APIs.CATFACT).query("limit", number);
 	if (status === 200 && body && body.data.length) {
 		const facts = [];
 		body.data.forEach(d => {

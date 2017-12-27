@@ -1,7 +1,7 @@
 const { get } = require("snekfetch");
 const ReactionMenu = require("../../Modules/MessageUtils/ReactionBasedMenu");
 
-module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		let split = msg.suffix.split(/\s+/);
 		let number = split.pop(), query = split.join(" ");
@@ -13,8 +13,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, comm
 		else if (number > serverDocument.config.command_fetch_properties.max_count) number = serverDocument.config.command_fetch_properties.max_count;
 		else number = parseInt(number);
 
-		const API = `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(query)}`;
-		let { body, status } = await get(API).set("Accept", "application/vnd.api+json");
+		let { body, status } = await get(APIs.ANIME(query)).set("Accept", "application/vnd.api+json");
 		body = JSON.parse(body.toString());
 		if (status === 200 && body.data && body.data.length) {
 			const list = [];
