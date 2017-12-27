@@ -27,6 +27,7 @@
 							</div>
 						</div>
 					</article>
+					<% if (!configData.isBanned) { %>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="field">
 							<p class="control">
@@ -84,6 +85,23 @@
 						<% include ../partials/form-buttons %>
 						<% include ../partials/form-buttons-bar %>
 					</form>
+					<% } else { %>
+					<article class="message is-danger is-bold">
+						<div class="message-header">
+							<span>
+								<span class="icon">
+  									<i class="fa fa-ban"></i>
+								</span>
+								&nbsp;Uh-oh! You've been banned.
+							</span>
+						</div>
+						<div class="message-body">
+							<div class="content">
+								A Maintainer has permanently removed your entry from the activity page, and restricted your ability to display public data. For more information on how activity bans work, visit <a href="/wiki/Configuration#public-data">this wiki article</a>. If you feel like this is an error, please contact your GAwesomeBot maintainer.
+							</div>
+						</div>
+					</article>
+					<% } %>
 				</div>
 			</div>
 		</div>

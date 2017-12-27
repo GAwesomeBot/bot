@@ -6,7 +6,7 @@ function searchServers(query) {
 document.getElementById("search-button").href = "javascript:searchServers(document.getElementById('search-input').value);";
 document.getElementById("search-input").setAttribute("list", "servers");
 document.getElementById("search-input").onkeydown = function() {
-	if(event.keyCode==13) {
+	if (event.keyCode === 13) {
 		searchServers(this.value);
 	}
 };
@@ -56,6 +56,15 @@ function switchLayout(type) {
 			break;
 	}
 }
+<% if (isMaintainer) { %>
+function banGuild(svrid) {
+	if (confirm("Are you sure you want to remove this guild from the activity page? It will no longer be visible on this page.")) {
+		$.post("/dashboard/servers/server-list?svrid=maintainer", { removeFromActivity: svrid }).done(() => {
+			$(`#cardContent-${svrid}`).html("<h4 class='has-text-centered is-4 title'>Removed from the public server list</h4>")
+		});
+	}
+}
+<% } %>
 </script>
 
 <nav class="level">
@@ -141,9 +150,18 @@ function switchLayout(type) {
 									<img src="<%= data.serverData[i].icon %>" alt=":(">
 								</figure>
 							</div>
-							<div class="card-content" style="max-height: 255px;overflow-y: scroll;">
-								<h3 class="title is-5"><%= data.serverData[i].name %></h3>
-								<h5 class="subtitle is-5"><%= data.serverData[i].category %></h5>
+							<div id="cardContent-<%= data.serverData[i].id %>" class="card-content" style="max-height: 255px;overflow-y: scroll;">
+								<div class="columns">
+									<div class="column">
+									<h5 class="title is-5"><%= data.serverData[i].name %></h5>
+										<h5 class="subtitle is-5"><%= data.serverData[i].category %></h5>
+									</div>
+									<% if (isMaintainer) { %>
+									<div class="column is-one-fifth">
+										<button class="delete is-pulled-right" onclick="banGuild('<%= data.serverData[i].id %>');" title='Remove "<%= data.serverData[i].name %>" from the activity page'></button>
+									</div>
+									<% } %>
+								</div>
 								<div class="level is-mobile">
 									<div class="level-item has-text-centered">
 										<div>

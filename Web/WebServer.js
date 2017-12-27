@@ -272,9 +272,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 	const getServerData = async (serverDocument, webp = false) => {
 		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "ownerID", "id", "name"], members: ["nickname"] });
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "ownerID", "id", "name"], members: ["nickname", "user"] });
 		if (svr) {
-			const owner = await bot.users.fetch(svr.ownerID, true);
+			const owner = bot.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
 			data = {
 				name: svr.name,
 				id: svr.id,
@@ -507,6 +507,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			const renderPage = data => {
 				res.render("pages/activity.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(getAuthUser(req.user).id) : false,
 					rawServerCount: guildAmount,
 					rawUserCount: userAmount,
 					totalMessageCount: messageCount,
@@ -558,7 +559,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					};
 				} else {
 					matchCriteria._id = {
-						$in: await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from"),
+						$in: (await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from")).filter(svrid => !configJSON.activityBlocklist.includes(svrid)),
 					};
 				}
 				if (req.query.category !== "All") {
@@ -596,7 +597,6 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						};
 						break;
 				}
-
 				db.servers.count(matchCriteria, (err, rawCount) => {
 					if (err || rawCount === null) {
 						rawCount = guildAmount;
@@ -3482,6 +3482,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				currentPage: req.path,
 				configData: {
 					public_data: serverDocument.config.public_data,
+					isBanned: configJSON.activityBlocklist.includes(svr.id),
 				},
 			});
 		});
@@ -3797,6 +3798,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			} else {
 				renderPage();
 			}
+		});
+	});
+	app.post("/dashboard/servers/server-list", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			if (req.body.removeFromActivity) {
+				configJSON.activityBlocklist.push(req.body.removeFromActivity);
+			}
+			saveMaintainerConsoleOptions(consolemember, req, res, true);
 		});
 	});
 
