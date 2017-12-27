@@ -74,3 +74,24 @@ exports.WorkerCommands = {
 		HELP: "help",
 	},
 };
+
+// Emojis used in menu-like things
+exports.PageEmojis = {
+	back: "◀",
+	stop: "⏹",
+	forward: "▶",
+};
+
+// Numbered emojis from one to ten
+exports.NumberEmojis = {
+	one: "1⃣",
+	two: "2⃣",
+	three: "3⃣",
+	four: "4⃣",
+	five: "5⃣",
+	six: "6⃣",
+	seven: "7⃣",
+	eight: "8⃣",
+	nine: "9⃣",
+	ten: "🔟",
+};

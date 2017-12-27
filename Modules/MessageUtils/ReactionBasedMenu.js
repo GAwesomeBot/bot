@@ -1,27 +1,15 @@
-const { Colors } = require("../../Internals/Constants");
+const { Colors, PageEmojis, NumberEmojis } = require("../../Internals/Constants");
+const { EventEmitter } = require("events");
 
-class ReactionBasedMenu {
+class ReactionBasedMenu extends EventEmitter {
 	constructor (msg, options, results, embed = null) {
+		super();
 		this.client = msg.client;
 		this.originalMsg = msg;
 
-		this.emojis = {
-			back: "◀",
-			forward: "▶",
-			stop: "⏹",
-		};
-		this.numberEmojis = {
-			one: "1⃣",
-			two: "2⃣",
-			three: "3⃣",
-			four: "4⃣",
-			five: "5⃣",
-			six: "6⃣",
-			seven: "7⃣",
-			eight: "8⃣",
-			nine: "9⃣",
-			ten: "🔟",
-		};
+		this.emojis = PageEmojis;
+
+		this.numberEmojis = NumberEmojis ;
 		this.emojiArray = [...Object.values(this.emojis), ...Object.values(this.numberEmojis)];
 		/** Array of possible options */
 		this.options = options;
@@ -33,8 +21,6 @@ class ReactionBasedMenu {
 		this.totalPages = 0;
 		this.shouldAdd1 = true;
 
-		this.choice = null;
-
 		this.embed = embed ? embed : {
 			title: `Choose a number`,
 			color: Colors.BLUE,
@@ -43,7 +29,7 @@ class ReactionBasedMenu {
 		};
 	}
 
-	async init (timeout = 120000) {
+	async init (timeout = 120000, emitOnly = false) {
 		if (this.options.length > 10) {
 			this.options = this.options.chunk(10);
 			this.totalPages = this.options.length;
@@ -55,7 +41,7 @@ class ReactionBasedMenu {
 			(reaction, user) => user.id === this.originalMsg.author.id && this.emojiArray.includes(reaction.emoji.name),
 			{ time: timeout }
 		);
-		this.handle();
+		this.handle(emitOnly);
 	}
 
 	async sendInitialMessage () {
@@ -95,57 +81,57 @@ class ReactionBasedMenu {
 		await this.msg.react(this.emojis.stop);
 	}
 
-	async handle () {
+	async handle (emitOnly) {
 		this.collector.on("collect", async reaction => {
 			if (reaction.emoji.name === this.emojis.stop) return this.collector.stop();
-			if (Object.values(this.numberEmojis).includes(reaction.emoji.name)) return this._handleNumberInput(reaction);
+			if (Object.values(this.numberEmojis).includes(reaction.emoji.name)) return this._handleNumberInput(reaction, emitOnly);
 			if (["◀", "▶"].includes(reaction.emoji.name)) return this._handlePageChange(reaction);
 		});
 
 		this.collector.once("end", this._handleStop.bind(this));
 	}
 
-	async _handleNumberInput (reaction) {
+	async _handleNumberInput (reaction, emitOnly) {
 		this.collector.stop("manual");
 		switch (reaction.emoji.name) {
 			case "1⃣": {
-				this._updateChoice(0);
+				this._updateChoice(0, emitOnly);
 				break;
 			}
 			case "2⃣": {
-				this._updateChoice(1);
+				this._updateChoice(1, emitOnly);
 				break;
 			}
 			case "3⃣": {
-				this._updateChoice(2);
+				this._updateChoice(2, emitOnly);
 				break;
 			}
 			case "4⃣": {
-				this._updateChoice(3);
+				this._updateChoice(3, emitOnly);
 				break;
 			}
 			case "5⃣": {
-				this._updateChoice(4);
+				this._updateChoice(4, emitOnly);
 				break;
 			}
 			case "6⃣": {
-				this._updateChoice(5);
+				this._updateChoice(5, emitOnly);
 				break;
 			}
 			case "7⃣": {
-				this._updateChoice(6);
+				this._updateChoice(6, emitOnly);
 				break;
 			}
 			case "8⃣": {
-				this._updateChoice(7);
+				this._updateChoice(7, emitOnly);
 				break;
 			}
 			case "9⃣": {
-				this._updateChoice(8);
+				this._updateChoice(8, emitOnly);
 				break;
 			}
 			case "🔟": {
-				this._updateChoice(9);
+				this._updateChoice(9, emitOnly);
 				break;
 			}
 		}
@@ -212,8 +198,12 @@ class ReactionBasedMenu {
 		}
 	}
 
-	async _updateChoice (number) {
-		this.msg.edit(this.results[number + (this.currentPage * 10)]);
+	async _updateChoice (number, emitOnly) {
+		if (emitOnly) {
+			this.emit("choice", number + (this.currentPage * 10));
+		} else {
+			this.msg.edit(this.results[number + (this.currentPage * 10)]);
+		}
 	}
 }
 
