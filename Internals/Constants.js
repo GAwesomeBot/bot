@@ -54,6 +54,9 @@ exports.Colors = {
 
 	YELLOW: 0xFFFF00,
 	INVALID: 0xFFFF00,
+
+	TRIVIA_START: 0x50FF60,
+	TRIVIA_END: 0x2B67FF,
 };
 
 // Should all be functions for consistency, even if the string is hardcoded.
