@@ -247,19 +247,19 @@
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												<%= lotteries[i].channel.name %>
+												#<%= lotteries[i].channel.name %>
 											</p>
-											<span class="card-header-icon">
-												<i class="fa fa-hashtag"></i>
-											</span>
 										</header>
 										<div class="card-content">
 											<h4 class="title is-4 has-text-centered">
-												<strong><%= lotteries[i].participants %></strong> participants so far
+												<strong><%= lotteries[i].tickets %></strong> tickets sold so far
 											</h4>
+											<h5 class="subtitle is-5 has-text-centered">
+												Created by <strong><%= lotteries[i].creator %></strong>
+											</h5>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= lotteries[i].channel.id %>', 'lottery');" class="card-footer-item" title="AwesomePoints will still be given away">
+											<a onclick="endSession('<%= lotteries[i].channel.id %>', 'lottery');" id="endSession-lottery-<%= lotteries[i].channel.id %>" class="card-footer-item" title="GAwesomePoints will still be given away">
 												End Lottery
 											</a>
 										</footer>

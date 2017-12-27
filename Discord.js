@@ -4,7 +4,7 @@ const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways } = require("./Modules/index");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
@@ -983,19 +983,19 @@ class Client extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
-				serverDocument.logs.push({
-					level: level,
-					content: content,
-					channelid: chid ? chid : undefined,
-					userid: usrid ? usrid : undefined,
-				});
+				Servers.update({ _id: serverDocument._id }, {
+					$push: {
+						logs: {
+							level: level,
+							content: content,
+							channelid: chid ? chid : undefined,
+							userid: usrid ? usrid : undefined,
+						},
+					},
+				}).exec();
 				if (serverDocument.logs.length > 200) {
-					serverDocument = await serverDocument.save();
-					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
+					Servers.update({ _id: serverDocument._id }, { $pull: { logs: { timestamp: serverDocument.logs[0].timestamp } } }).exec();
 				}
-				serverDocument.save().catch(err => {
-					winston.error(`Failed to re-save server document for logging a message`, { error: err.name, docVersion: serverDocument.__v, guild: serverDocument._id });
-				});
 			}
 		} catch (err) {
 			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
@@ -1344,6 +1344,27 @@ bot.IPC.on("modifyActivity", async msg => {
 				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
 			}
 			break;
+		}
+		case "lottery": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = bot.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
+			let channelDocument = serverDocument.channels.id(ch.id);
+			if (!channelDocument) {
+				serverDocument.channels.push({ _id: ch.id });
+				channelDocument = serverDocument.channels.id(ch.id);
+			}
+			if (msg.action === "end") await Lotteries.end(bot, svr, serverDocument, ch, channelDocument);
+			try {
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
+			} catch (err) {
+				winston.warn(`A ${err.name} occurred while attempting to end a Lottery.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
 		}
 	}
 });

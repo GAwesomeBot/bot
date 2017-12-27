@@ -3368,7 +3368,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						});
 					}
 					if (channelDocument.poll.isOngoing) {
-						const creator = svr.members[channelDocument.poll.creator_id] || { user: "invalid-user" };
+						const creator = svr.members[channelDocument.poll.creator_id] || { user: { username: "invalid-user" } };
 						ongoingPolls.push({
 							title: channelDocument.poll.title,
 							channel: {
@@ -3397,12 +3397,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						});
 					}
 					if (channelDocument.lottery.isOngoing) {
+						const creator = svr.members[channelDocument.lottery.creator_id] || { user: { username: "invalid-user" } };
 						ongoingLotteries.push({
 							channel: {
 								name: ch.name,
 								id: ch.id,
 							},
-							participants: channelDocument.giveaway.participant_ids.length,
+							tickets: channelDocument.lottery.participant_ids.length,
+							creator: creator.user.username,
 						});
 					}
 				}
@@ -3452,7 +3454,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						bot.IPC.send("modifyActivity", { action: "end", activity: "giveaway", guild: svr.id, channel: req.body["end-id"] });
 						break;
 					case "lottery":
-						Lotteries.end(db, svr, serverDocument, ch, channelDocument);
+						bot.IPC.send("modifyActivity", { action: "end", activity: "lottery", guild: svr.id, channel: req.body["end-id"] });
 						break;
 				}
 				res.sendStatus(200);

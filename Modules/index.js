@@ -7,6 +7,7 @@ module.exports = {
 	GetGuild: require("./GetGuild.js"),
 	Giveaways: require("./Giveaways.js"),
 	Imgur: require("./Imgur"),
+	Lotteries: require("./Lotteries.js"),
 	MessageUtils: require("./MessageUtils/index"),
 	MicrosoftTranslate: require("./MicrosoftTranslate.js"),
 	ModLog: require("./ModLog.js"),
