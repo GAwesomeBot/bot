@@ -9,8 +9,8 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				title: `I choose:`,
 				description: `\`\`\`css\n${choices.random.trim()}\`\`\``,
 				footer: {
-					text: `I chose this out of ${choices.length} options!`,
-				}
+					text: `I chose this out of ${choices.length} option${choices.length === 1 ? "" : "s"}!`,
+				},
 			},
 		});
 	} else {
