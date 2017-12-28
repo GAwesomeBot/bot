@@ -20,9 +20,9 @@ function submitForm() {
 			form.removeClass("is-loading");
 			if (data !== "OK" && data.status !== 200 && data.status !== 302) {
 				form.find("span:nth-child(1)").html("<i class='fa fa-exclamation'></i>");
-				form.find("span:nth-child(2)").html("Error!");
+				form.find("span:nth-child(2)").html("Error");
 			}
-			else form.find("span:nth-child(2)").html("Saved!");
+			else form.find("span:nth-child(2)").html("Saved");
 		});
 }
 
