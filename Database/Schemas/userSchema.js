@@ -29,7 +29,7 @@ module.exports = new mongoose.Schema({
 			required: true,
 		},
 		expiry_timestamp: {
-			type: Date,
+			type: Number,
 			required: true,
 		},
 	}, { usePushEach: true })],
