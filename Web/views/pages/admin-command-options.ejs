@@ -6,7 +6,13 @@
 
 	<script>
 		$("#ban_gif").on("blur", () => {
-			console.log("HELLO!")
+			if ($("#ban_gif").val() === "Default") {
+				$("#default_ban_gif").hide();
+				$("#ban_gif_field").removeClass("has-addons");
+				return $("#ban_gif_preview").attr("src", "https://imgur.com/3QPLumg.gif");
+			}
+			$("#ban_gif_field").addClass("has-addons");
+			$("#default_ban_gif").show();
 			$("#ban_gif_preview").attr("src", $("#ban_gif").val());
 		});
 	</script>
@@ -120,13 +126,18 @@
 								<img id="ban_gif_preview" alt="Invalid Image URL" src="<%= configData.ban_gif %>">
 								<div class="field">
 									<label class="label">Ban Image</label>
-									<p class="control has-icons-left">
-										<input id="ban_gif" name="ban_gif" class="input" type="text" value="<%= configData.ban_gif %>">
-										<span class="icon is-small is-left">
-											<i class="fa fa-globe"></i>
-										</span>
-										<span class="help">A custom image displayed after using the <code>ban</code> command to ban a user.</span>
-									</p>
+									<div id="ban_gif_field" class="field<% if (configData.ban_gif !== "https://imgur.com/3QPLumg.gif") { %> has-addons<% } %>">
+										<div class="control has-icons-left">
+											<input id="ban_gif" name="ban_gif" class="input" type="text" value="<%= configData.ban_gif === "https://imgur.com/3QPLumg.gif" ? "Default" : configData.ban_gif %>">
+											<span class="icon is-small is-left">
+												<i class="fa fa-globe"></i>
+											</span>
+											<span class="help">A custom image displayed after using the <code>ban</code> command to ban a user.</span>
+										</div>
+										<div id="default_ban_gif" class="control"<% if (configData.ban_gif === "https://imgur.com/3QPLumg.gif") { %> style="display: none;"<% } %>>
+												<a class="button" onclick="$('#ban_gif').val('Default'); $('#ban_gif_preview').attr('src', 'https://imgur.com/3QPLumg.gif'); $('#default_ban_gif').hide(); $('#ban_gif_field').removeClass('has-addons');">Default</a>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
