@@ -57,12 +57,28 @@ function switchLayout(type) {
 	}
 }
 <% if (isMaintainer) { %>
+const guildData = {};
 function banGuild(svrid) {
 	if (confirm("Are you sure you want to remove this guild from the activity page? It will no longer be visible on this page.")) {
 		$.post("/dashboard/servers/server-list?svrid=maintainer", { removeFromActivity: svrid }).done(() => {
-			$(`#cardContent-${svrid}`).html("<h4 class='has-text-centered is-4 title'>Removed from the public server list</h4>")
+			guildData[svrid] = $(`#cardContent-${svrid}`).html();
+			$(`#cardContent-${svrid}`).html(`
+				<a class="has-text-centered is-4" href="javascript:unbanGuild('${svrid}')">
+    			<span class="icon">
+        		<i class="fa fa-refresh"></i>
+    			</span>
+    			Undo ban
+				</a>
+			`);
+			$(`#cardContent-${svrid}`).addClass("has-text-centered");
 		});
 	}
+}
+function unbanGuild(svrid) {
+	$.post("/dashboard/servers/server-list?svrid=maintainer", { unbanFromActivity: svrid }).done(() => {
+		$(`#cardContent-${svrid}`).removeClass("has-text-centered");
+		$(`#cardContent-${svrid}`).html(guildData[svrid]);
+	});
 }
 <% } %>
 </script>

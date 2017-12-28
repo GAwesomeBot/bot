@@ -3483,6 +3483,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				configData: {
 					public_data: serverDocument.config.public_data,
 					isBanned: configJSON.activityBlocklist.includes(svr.id),
+					canUnban: configJSON.maintainers.includes(consolemember.id),
 				},
 			});
 		});
@@ -3804,6 +3805,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		checkAuth(req, res, async consolemember => {
 			if (req.body.removeFromActivity) {
 				configJSON.activityBlocklist.push(req.body.removeFromActivity);
+			}
+			if (req.body.unbanFromActivity) {
+				const index = configJSON.activityBlocklist.indexOf(req.body.unbanFromActivity);
+				if (index > -1) configJSON.activityBlocklist.splice(index, 1);
 			}
 			saveMaintainerConsoleOptions(consolemember, req, res, true);
 		});
