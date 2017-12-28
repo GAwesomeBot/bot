@@ -1,3 +1,6 @@
+const PaginatedEmbed = require("./MessageUtils/PaginatedEmbed");
+const { Colors } = require("../Internals/Constants");
+
 module.exports = {
 	start: async (bot, svr, serverDocument, usr, ch, channelDocument, title, options) => {
 		if (!channelDocument.poll.isOngoing) {
@@ -7,28 +10,28 @@ module.exports = {
 			channelDocument.poll.title = title;
 			channelDocument.poll.options = options;
 			channelDocument.poll.responses = [];
-			let embed_fields = [];
-			options.forEach((option, i) => {
-				embed_fields.push({
-					name: `${i}`,
-					value: `${option}`,
-					inline: true,
-				});
-			});
-			ch.send({
-				embed: {
-					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL(),
-						url: "https://github.com/GilbertGobbels/GAwesomeBot",
-					},
-					description: `${usr} has started a poll in this channel named **${title}**🗳
-													\nUse \`${bot.getCommandPrefix(svr, serverDocument)}poll <no. of option>\` here or PM me \`poll ${svr.name}|#${ch.name}\` to vote.
-													\nThe following options are available:`,
-					color: 0x3669FA,
-					fields: embed_fields,
+
+			let map = options.map((option, i) => [
+				`» ${i + 1} «`,
+				`\t**${option}**`,
+			].join("\n"));
+			map = map.chunk(10);
+			const description = [];
+			for (const innerArray of map) {
+				description.push(innerArray.join("\n"));
+			}
+			const menu = new PaginatedEmbed({
+				channel: ch,
+				author: {
+					id: usr.id,
 				},
+			}, description, {
+				title: `🍻 A poll named "__${title}__" has started!`,
+				color: Colors.INFO,
+				description: `${usr} has started a poll in here! Run \`${svr.commandPrefix}poll\` to see all available choices!\nThe following options are available:\n\n{description}`,
+				footer: `Use "${svr.commandPrefix}poll <option no.>" here or PM me "poll ${svr}|#${ch.name}" to vote.`,
 			});
+			await menu.init();
 		}
 	},
 	getResults: async pollDocument => {
