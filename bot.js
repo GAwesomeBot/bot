@@ -43,7 +43,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 		await winston.info(`Connected to the database successfully.`);
 
 		winston.silly("Confirming MongoDB config values.");
-		await Raw.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
+		await Raw.db.admin().command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 				configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");

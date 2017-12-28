@@ -65,6 +65,9 @@ class Client extends DJSClient {
 		this.messageListeners = {};
 
 		this.workerManager = new WorkerManager(this);
+
+		// Bot IPC
+		this.IPC = new ProcessAsPromised();
 	}
 
 	/**
@@ -1103,6 +1106,16 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	// Store server documents by ID
 	bot.cache = new ServerDocumentCache();
 	bot.traffic = new Traffic(bot.IPC, true);
+
+	winston.debug("Logging in to Discord Gateway.");
+	bot.init().then(() => {
+		winston.info("Successfully connected to Discord!");
+		bot.IPC.send("ready", { id: bot.shard.id });
+		process.setMaxListeners(0);
+	}).catch(err => {
+		winston.error("Failed to connect to Discord :/\n", { err: err });
+		process.exit(1);
+	});
 });
 
 process.on("unhandledRejection", reason => {
@@ -1111,19 +1124,6 @@ process.on("unhandledRejection", reason => {
 
 process.on("uncaughtException", err => {
 	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
-	process.exit(1);
-});
-
-// Bot IPC
-bot.IPC = new ProcessAsPromised();
-
-winston.debug("Logging in to Discord Gateway.");
-bot.init().then(() => {
-	winston.info("Successfully connected to Discord!");
-	bot.IPC.send("ready", { id: bot.shard.id });
-	process.setMaxListeners(0);
-}).catch(err => {
-	winston.error("Failed to connect to Discord :/\n", { err: err });
 	process.exit(1);
 });
 

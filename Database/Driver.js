@@ -31,6 +31,7 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 		});
 	}
 	mongoose.connect(url, {
+		keepAlive: 120,
 		useMongoClient: true,
 		promiseLibrary: global.Promise,
 	});

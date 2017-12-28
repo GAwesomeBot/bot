@@ -476,7 +476,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		res.redirect("/activity/servers");
 	});
 	app.get("/activity/(|servers|users)", (req, res) => {
-		db.servers.aggregate({
+		db.servers.aggregate([{
 			$group: {
 				_id: null,
 				total: {
@@ -494,7 +494,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					},
 				},
 			},
-		}, async (err, result) => {
+		}], async (err, result) => {
 			const guildAmount = await bot.guilds.totalCount;
 			const userAmount = await bot.users.totalCount;
 			let messageCount = 0;
@@ -666,7 +666,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						}
 					});
 				} else {
-					db.users.aggregate({
+					db.users.aggregate([{
 						$group: {
 							_id: null,
 							totalPoints: {
@@ -689,7 +689,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 								},
 							},
 						},
-					}, (err, result) => {
+					}], (err, result) => {
 						let totalPoints = 0;
 						let publicProfilesCount = 0;
 						let reminderCount = 0;
@@ -809,13 +809,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				res.json(getUserList(Object.keys(svr.members).map(member => svr.members[member].user)));
 			});
 		} else {
-			db.users.aggregate({
+			db.users.aggregate([{
 				$project: {
 					username: 1
 				}
-			}, (err, users) => {
+			}], (err, users) => {
 				if (!err && users) {
-					let response = users.sort().map(usr => usr.username || null);
+					let response = users.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
 					response.spliceNullElements();
 					res.json(response);
 				} else {
@@ -3702,7 +3702,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	// Maintainer console overview
 	app.get("/dashboard/maintainer", (req, res) => {
 		checkAuth(req, res, () => {
-			db.servers.aggregate({
+			db.servers.aggregate([{
 				$group: {
 					_id: null,
 					total: {
@@ -3711,7 +3711,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						},
 					},
 				},
-			}, async (err, result) => {
+			}], async (err, result) => {
 				let messageCount = 0;
 				if (!err && result) {
 					messageCount = result[0].total;
