@@ -1949,6 +1949,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					command_fetch_properties: serverDocument.config.command_fetch_properties,
 					command_prefix: serverDocument.config.command_prefix,
 					delete_command_messages: serverDocument.config.delete_command_messages,
+					ban_gif: serverDocument.config.ban_gif,
 				},
 				channelData: getChannelData(svr),
 				botName: svr.members[bot.user.id].nickname || bot.user.username,
@@ -1965,6 +1966,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			}
 			serverDocument.config.delete_command_messages = req.body.delete_command_messages === "on";
 			serverDocument.config.chatterbot.isEnabled = req.body["chatterbot-isEnabled"] === "on";
+			serverDocument.config.ban_gif = req.body["ban_gif"];
 			if (req.body["chatterbot-isEnabled"] === "on") {
 				const channels = getChannelData(svr).map(ch => ch.id);
 				const enabledChannels = Object.keys(req.body).filter(key => key.startsWith("chatterbot_enabled_channel_ids")).map(chstring => chstring.split("-")[1]);

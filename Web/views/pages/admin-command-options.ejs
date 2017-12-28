@@ -4,6 +4,12 @@
 	<title><%= serverData.name %> Command Options - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
+	<script>
+		$("#ban_gif").on("blur", () => {
+			console.log("HELLO!")
+			$("#ban_gif_preview").attr("src", $("#ban_gif").val());
+		});
+	</script>
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
 <body onload="saveFormState();">
@@ -99,11 +105,30 @@
 								<input name="default_count" class="input" type="number" value="<%= configData.command_fetch_properties.default_count %>" min="1" max="10">
 							</p>
 						</div>
-						<div clsas="field">
+						<div class="field">
 							<label class="label">Maximum number of items to fetch</label>
 							<p class="control">
 								<input name="max_count" class="input" type="number" value="<%= configData.command_fetch_properties.max_count %>" min="5" max="25">
 							</p>
+						</div>
+						<br>
+						<h4 class="subtitle is-4">
+							Customization
+						</h4>
+						<div class="columns">
+							<div class="column is-half">
+								<img id="ban_gif_preview" alt="Invalid Image URL" src="<%= configData.ban_gif %>">
+								<div class="field">
+									<label class="label">Ban Image</label>
+									<p class="control has-icons-left">
+										<input id="ban_gif" name="ban_gif" class="input" type="text" value="<%= configData.ban_gif %>">
+										<span class="icon is-small is-left">
+											<i class="fa fa-globe"></i>
+										</span>
+										<span class="help">A custom image displayed after using the <code>ban</code> command to ban a user.</span>
+									</p>
+								</div>
+							</div>
 						</div>
 							<br>
 							<% var formButtonsUnsaved = false; %>
