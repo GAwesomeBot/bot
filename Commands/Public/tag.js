@@ -33,7 +33,7 @@ class TagCommand {
 			this.channel.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
-					description: `Only admins can list all tags ✋`,
+					description: `Only admins can list all tags. ✋`,
 				},
 			});
 			return;
@@ -41,7 +41,7 @@ class TagCommand {
 		const info = this.serverDocument.config.tags.list.map(tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			const useSpacing = tag.isLocked && tag.isCommand;
-			return `**${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`}\n\t${content}`;
+			return `» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «\n\t${content}`;
 		});
 		if (info.length) {
 			const chunks = info.chunk(10);
@@ -49,13 +49,8 @@ class TagCommand {
 			for (const chunk of chunks) {
 				description.push(chunk.join("\n\n"));
 			}
-			const menu = new PaginatedEmbed({
-				channel: this.channel,
-				author: {
-					id: this.msg.author.id,
-				},
-			}, description, {
-				title: `${this.msg.guild.name}'s tags:`,
+			const menu = new PaginatedEmbed(this.msg, description, {
+				title: `${this.msg.guild}'s tags:`,
 				color: this.Colors.RESPONSE,
 				footer: `Page {current description} out of {total descriptions}`,
 			});
@@ -64,7 +59,7 @@ class TagCommand {
 			this.channel.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
-					description: "This server doesn't have any tags yet 📑",
+					description: "This server doesn't have any tags yet! 📑",
 				},
 			});
 		}
@@ -252,7 +247,7 @@ class TagCommand {
 				this.channel.send({
 					embed: {
 						color: this.Colors.SUCCESS,
-						description: `Tag \`${this.tag}\` updated ✏`,
+						description: `Tag \`${this.tag}\` updated! ✏`,
 					},
 				});
 			}
@@ -260,7 +255,7 @@ class TagCommand {
 			this.channel.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
-					description: `Only admins can update this tag ✋`,
+					description: `Only admins can update this tag. ✋`,
 				},
 			});
 		}
@@ -303,7 +298,7 @@ class TagCommand {
 		this.channel.send({
 			embed: {
 				color: this.Colors.SUCCESS,
-				description: "Loaded default tags 📥",
+				description: "Loaded default tags! 📥",
 			},
 		});
 	}
