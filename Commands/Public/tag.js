@@ -122,8 +122,10 @@ class TagCommand {
 			this.channel.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
-					title: `Tag \`${this.suffix}\` does not exist.`,
-					description: `Use \`${this.msg.guild.commandPrefix}${this.commandData.name} ${this.suffix}|<content>\` to create it.`,
+					description: `Tag \`${this.suffix}\` does not exist.`,
+					footer: {
+						text: `Use "${this.msg.guild.commandPrefix}${this.commandData.name} ${this.suffix} | <content>" to create it.`,
+					},
 				},
 			});
 		}
