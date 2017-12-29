@@ -7,6 +7,7 @@ module.exports = {
 	Giveaways: require("./Giveaways.js"),
 	Imgur: require("./Imgur"),
 	Lotteries: require("./Lotteries.js"),
+	MarkdownTable: require("./MarkdownTable.js"),
 	MessageUtils: require("./MessageUtils/index"),
 	MicrosoftTranslate: require("./MicrosoftTranslate.js"),
 	ModLog: require("./ModLog.js"),
