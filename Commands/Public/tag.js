@@ -316,6 +316,6 @@ module.exports = async (main, documents, msg, commandData) => {
 	} else if (tagCommand.parse()) {
 		await tagCommand.execute();
 	} else {
-		await tagCommand.show(this.tag);
+		await tagCommand.show();
 	}
 };
