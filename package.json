@@ -24,7 +24,7 @@
     "connect-mongo": "^2.0.0",
     "convert-units": "*",
     "cookie-parser": "*",
-    "discord.js": "github:hydrabolt/discord.js",
+    "discord.js": "hydrabolt/discord.js",
     "ejs": "*",
     "erlpack": "github:discordapp/erlpack",
     "express": "^4.16.2",
