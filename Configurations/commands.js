@@ -163,6 +163,16 @@ const commands = {
 			},
 			category: `Utility 🔦`,
 		},
+		convert: {
+			usage: "<number> <unit> to <unit>",
+			description: "Converts between units of measurement and currencies",
+			defaults: {
+				isEnabled: true,
+				isNSFWFiltered: false,
+				adminLevel: 0,
+			},
+			category: "Utility 🔦",
+		},
 		cool: {
 			usage: `[<"." or cooldown length][|<cooldown duration>]`,
 			description: `Sets a command cooldown for the channel`,

@@ -33,6 +33,8 @@ const Messages = {
 	// Child Process stuff
 	CHILD_PROCESS_TYPE_INVALID: type => `"${type}" is an invalid child process type!`,
 	CHILD_PROCESS_MISSING_PROPERTY: prop => `${prop} is missing from the chosen child process function!`,
+
+	// Errors related to certain Worker errors
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
