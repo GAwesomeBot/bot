@@ -566,11 +566,19 @@ class Client extends DJSClient {
 	 */
 	async checkRank (server, serverDocument, member, memberDocument, override = false) {
 		if (member && member.id !== this.user.id && !member.user.bot && server) {
-			const currentRankScore = memberDocument.rank_score + override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice);
-			for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
-				if (currentRankScore <= serverDocument.config.ranks_list[i].max_score || i === serverDocument.config.ranks_list.length - 1) {
-					if (memberDocument.rank !== serverDocument.config.ranks_list[i]._id && !override) {
-						memberDocument.rank = serverDocument.config.ranks_list[i]._id;
+			const currentRankScore = memberDocument.rank_score + (override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice));
+			const ranks = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
+			let returnRank;
+			ranks.forEach((rank, i) => {
+				if (returnRank) return;
+				if (member.id === "139836912335716352") {
+					console.log(currentRankScore);
+					console.log(rank._id);
+					console.log(rank.max_score);
+				}
+				if (currentRankScore <= rank.max_score || i === serverDocument.config.ranks_list.length - 1) {
+					if (memberDocument.rank !== rank._id && !override) {
+						memberDocument.rank = rank._id;
 						if (serverDocument.config.ranks_list) {
 							if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.status_messages.member_rank_updated_message.isEnabled) {
 								// Send member_rank_updated_message if necessary
@@ -599,22 +607,23 @@ class Client extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								const userDocument = await Users.findOne({ _id: member.id }).catch(err => {
+								Users.findOne({ _id: member.id }).catch(err => {
 									winston.warn(`Failed to find user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
+								}).then(userDocument => {
+									if (userDocument) {
+										userDocument.points += 100;
+										userDocument.save().catch(usrErr => {
+											winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
+										});
+									}
 								});
-								if (userDocument) {
-									userDocument.points += 100;
-									await userDocument.save().catch(usrErr => {
-										winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
-									});
-								}
 							}
 							// Assign new rank role if necessary
-							if (serverDocument.config.ranks_list[i].role_id) {
-								const role = server.roles.get(serverDocument.config.ranks_list[i].role_id);
+							if (rank.role_id) {
+								const role = server.roles.get(rank.role_id);
 								if (role) {
 									try {
-										await member.addRole(role, `Added member to the role for leveling up in ranks.`);
+										member.addRole(role, `Added member to the role for leveling up in ranks.`).catch(err => err);
 									} catch (err) {
 										winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 											svrid: server.id,
@@ -626,9 +635,10 @@ class Client extends DJSClient {
 							}
 						}
 					}
-					return serverDocument.config.ranks_list[i]._id;
+					returnRank = rank._id;
 				}
-			}
+			});
+			return returnRank;
 		}
 	}
 
@@ -986,6 +996,7 @@ class Client extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
+				const logCount = (await Servers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]).exec())[0].logs;
 				Servers.update({ _id: serverDocument._id }, {
 					$push: {
 						logs: {
@@ -996,8 +1007,8 @@ class Client extends DJSClient {
 						},
 					},
 				}).exec();
-				if (serverDocument.logs.length > 200) {
-					Servers.update({ _id: serverDocument._id }, { $pull: { logs: { timestamp: serverDocument.logs[0].timestamp } } }).exec();
+				if (logCount >= 200) {
+					await Servers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } }).exec();
 				}
 			}
 		} catch (err) {

@@ -9,7 +9,7 @@
 module.exports = async (bot, server, serverDocument) => {
 	// Rank members by activity score for the week
 	const topMembers = [];
-	serverDocument.members.forEach(async memberDocument => {
+	await Promise.all(serverDocument.members.map(async memberDocument => {
 		const member = server.members.get(memberDocument._id);
 		if (member && member.id !== bot.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
@@ -21,7 +21,7 @@ module.exports = async (bot, server, serverDocument) => {
 		} else {
 			memberDocument.remove();
 		}
-	});
+	}));
 	topMembers.sort((a, b) => a[1] - b[1]);
 
 	/**
@@ -67,7 +67,7 @@ module.exports = async (bot, server, serverDocument) => {
 	// Save changes to serverDocument
 	try {
 		await serverDocument.save();
-		winston.info(`Cleared stats for server "${server}"`, { svrid: server.id });
+		winston.debug(`Cleared stats for server "${server}"`, { svrid: server.id });
 	} catch (err) {
 		winston.warn(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
 	}

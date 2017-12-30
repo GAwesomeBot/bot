@@ -29,32 +29,41 @@ exports.LoggingLevels = {
 };
 
 exports.Colors = {
+	// An *uncaught* error occurred, the command could not finish executing
 	RED: 0xFF0000,
 	ERROR: 0xFF0000,
 	ERR: 0xFF0000,
 
+	// An expected problem was found, the command finished executing. Problems such as no results, etc.
 	LIGHT_RED: 0xCC0F16,
 	SOFT_ERR: 0xCC0F16,
 
+	// The user executing the commands was missing permissions required to execute the command
 	LIGHT_ORANGE: 0xE55B0A,
 	MISSING_PERMS: 0xE55B0A,
 
+	// The user requested data to be updated, or the bot to perform an action. This finished with success
 	GREEN: 0x00FF00,
 	SUCCESS: 0x00FF00,
 
+	// The user requested data to be returned. The bot fetched the data with success
 	LIGHT_GREEN: 0x43B581,
 	RESPONSE: 0x43B581,
 
+	// The bot is notifying the user of something, either in response to a command, or resulting from an event
 	BLUE: 0x3669FA,
 	INFO: 0x3669FA,
 
+	// The bot is requesting more data from the user before it can continue executing the command
 	LIGHT_BLUE: 0x9ECDF2,
 	INPUT: 0x9ECDF2,
 	PROMPT: 0x9ECDF2,
 
+	// The user passed invalid command parameters to the bot, and the command could not be parsed
 	YELLOW: 0xFFFF00,
 	INVALID: 0xFFFF00,
 
+	// A trivia game has started or ended
 	TRIVIA_START: 0x50FF60,
 	TRIVIA_END: 0x2B67FF,
 };
