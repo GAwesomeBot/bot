@@ -387,6 +387,7 @@ class Client extends DJSClient {
 				}
 				break;
 			}
+			case "none":
 			case "any": {
 				return true;
 			}
@@ -571,11 +572,6 @@ class Client extends DJSClient {
 			let returnRank;
 			ranks.forEach((rank, i) => {
 				if (returnRank) return;
-				if (member.id === "139836912335716352") {
-					console.log(currentRankScore);
-					console.log(rank._id);
-					console.log(rank.max_score);
-				}
 				if (currentRankScore <= rank.max_score || i === serverDocument.config.ranks_list.length - 1) {
 					if (memberDocument.rank !== rank._id && !override) {
 						memberDocument.rank = rank._id;
