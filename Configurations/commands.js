@@ -193,16 +193,6 @@ const commands = {
 			},
 			category: `Utility 🔦`,
 		},
-		debug: {
-			usage: `["-v"]`,
-			description: `Provides information about the bot, optionally, some system architecture information`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `GAwesomeBot 🤖`,
-		},
 		disable: {
 			usage: `[<command> <command>...]`,
 			description: `Turns off a command or commands in the channel`,
@@ -960,6 +950,11 @@ const commands = {
 			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
 			perm: "administration",
+		},
+		debug: {
+			usage: `["-h"]`,
+			description: `Provides information about the bot, optionally, some system architecture information`,
+			perm: "none",
 		},
 	},
 };

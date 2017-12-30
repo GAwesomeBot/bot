@@ -25,8 +25,8 @@ module.exports = {
 		try {
 			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`);
 		} catch (err) {
-			winston.warn(`Failed to fetch version metadata. ~.~\n`, err);
-			throw err;
+			res = {};
+			res.status = 404;
 		}
 		if (res) {
 			if (res.status === 404) {

@@ -1,4 +1,5 @@
 const BaseEvent = require("../BaseEvent");
+const { Constants } = require("../../index");
 
 class MaintainerMessageCreate extends BaseEvent {
 	requirements (msg) {
@@ -20,6 +21,7 @@ class MaintainerMessageCreate extends BaseEvent {
 							bot: this.bot,
 							client: this.client,
 							configJS: this.configJS,
+							Constants,
 						}, msg, {
 							name: this.client.getSharedCommandName(msg.command),
 							usage: this.client.getSharedCommandMetadata(msg.command).usage,

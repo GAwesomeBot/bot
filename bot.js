@@ -307,7 +307,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			const afterQueryNano = afterQuery[1] / 1000000;
 			data.master.ping = Math.round((afterQuerySeconds + afterQueryNano) * 100) / 100;
 			data.master.users = await db.users.count().exec();
-			data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
+			if (!msg.noShards) data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
 			callback(data);
 		});
 
