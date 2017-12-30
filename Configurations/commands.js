@@ -164,8 +164,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		convert: {
-			usage: "<number> <unit> to <unit>",
-			description: "Converts between units of measurement and currencies",
+			usage: "<number> <unit> [to] <unit>",
+			description: "Converts between units of measurement or currencies",
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
