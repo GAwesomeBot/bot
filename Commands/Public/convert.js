@@ -6,7 +6,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 			let m = await msg.channel.send({
 				embed: {
 					color: Colors.INFO,
-					title: `⌛ Calculating...`,
+					title: `⌛ Converting...`,
 					description: `This shouldn't take long!`,
 				},
 			});
