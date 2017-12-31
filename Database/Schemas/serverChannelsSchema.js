@@ -87,7 +87,7 @@ module.exports = new mongoose.Schema({
 		responses: [
 			new mongoose.Schema({
 				_id: String,
-				vode: {
+				vote: {
 					type: Number,
 					min: 0,
 				},
@@ -113,5 +113,9 @@ module.exports = new mongoose.Schema({
 		expiry_timestamp: Date,
 		creator_id: String,
 		participant_ids: [String],
+		multiplier: {
+			type: Number,
+			enum: [1, 2, 5, 10, 100],
+		},
 	},
 }, { usePushEach: true });

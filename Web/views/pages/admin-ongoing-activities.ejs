@@ -9,7 +9,7 @@
 	function endSession(id, type) {
 		if (isEnding) return;
 		isEnding = true;
-	  	$(`#endTriviaGame-${id}`).html("Ending Game...");
+	  	$(`#endSession-${type}-${id}`).html("Ending Game...");
 		$.ajax({
 			type: "POST",
 			url: "<%= currentPage %>?svrid=<%= serverData.id %>",
@@ -18,7 +18,7 @@
 				"end-id": id
 			},
 			success: function() {
-				$(`#endTriviaGame-${id}`).html("Game Ended.").attr("onclick", null);
+				$(`#endSession-${type}-${id}`).html(`${type === "trivia" ? "Game" : "Activity"} ended.`).attr("onclick", null);
 			}
 		});
 	}
@@ -48,7 +48,7 @@
 					<h4 class="subtitle is-4">
 						Trivia
 					</h4>
-					<% if(trivia.length>0) { %>
+					<% if(trivia.length > 0) { %>
 						<div class="columns">
 							<% for (let i = 0; i < trivia.length; i++) { %>
 								<div class="column is-half">
@@ -84,7 +84,7 @@
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= trivia[i].channel.id %>', 'trivia');" id="endTriviaGame-<%= trivia[i].channel.id %>" class="card-footer-item">
+											<a onclick="endSession('<%= trivia[i].channel.id %>', 'trivia');" id="endSession-trivia-<%= trivia[i].channel.id %>" class="card-footer-item">
 												End Game
 											</a>
 										</footer>
@@ -121,11 +121,8 @@
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												<%= polls[i].channel.name %>
+												#<%= polls[i].channel.name %>
 											</p>
-											<span class="card-header-icon">
-												<i class="fa fa-hashtag"></i>
-											</span>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
@@ -136,17 +133,21 @@
 											</h5>
 											<div class="level is-mobile">
 												<div class="level-item has-text-centered">
-													<p class="heading">Options</p>
-													<p class="title"><%= polls[i].options %></p>
+													<div>
+														<p class="heading">Options</p>
+														<p class="title"><%= polls[i].options %></p>
+													</div>
 												</div>
 												<div class="level-item has-text-centered">
-													<p class="heading">Responses</p>
-													<p class="title"><%= polls[i].responses %></p>
+													<div>
+														<p class="heading">Responses</p>
+														<p class="title"><%= polls[i].responses %></p>
+													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= polls[i].channel.id %>', 'poll');" class="card-footer-item">
+											<a onclick="endSession('<%= polls[i].channel.id %>', 'poll');" id="endSession-poll-<%= polls[i].channel.id %>" class="card-footer-item">
 												End Poll
 											</a>
 										</footer>
@@ -183,11 +184,8 @@
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												<%= giveaways[i].channel.name %>
+												#<%= giveaways[i].channel.name %>
 											</p>
-											<span class="card-header-icon">
-												<i class="fa fa-hashtag"></i>
-											</span>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
@@ -198,17 +196,21 @@
 											</h5>
 											<div class="level is-mobile">
 												<div class="level-item has-text-centered" title="<%= giveaways[i].rawExpiry %>">
-													<p class="heading">Ends In</p>
-													<p class="title"><%= giveaways[i].relativeExpiry %>h</p>
+													<div>
+														<p class="heading">Ends In</p>
+														<p class="title"><%= giveaways[i].relativeExpiry %>h</p>
+													</div>
 												</div>
 												<div class="level-item has-text-centered">
-													<p class="heading">Participants</p>
-													<p class="title"><%= giveaways[i].participants %></p>
+													<div>
+														<p class="heading">Participants</p>
+														<p class="title"><%= giveaways[i].participants %></p>
+													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= giveaways[i].channel.id %>', 'giveaway');" class="card-footer-item" title="Secret will still be given away">
+											<a onclick="endSession('<%= giveaways[i].channel.id %>', 'giveaway');" id="endSession-giveaway-<%= giveaways[i].channel.id %>" class="card-footer-item" title="Secret will still be given away">
 												End Giveaway
 											</a>
 										</footer>
@@ -245,19 +247,19 @@
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												<%= lotteries[i].channel.name %>
+												#<%= lotteries[i].channel.name %>
 											</p>
-											<span class="card-header-icon">
-												<i class="fa fa-hashtag"></i>
-											</span>
 										</header>
 										<div class="card-content">
 											<h4 class="title is-4 has-text-centered">
-												<strong><%= lotteries[i].participants %></strong> participants so far
+												<strong><%= lotteries[i].tickets %></strong> tickets sold so far
 											</h4>
+											<h5 class="subtitle is-5 has-text-centered">
+												Created by <strong><%= lotteries[i].creator %></strong>
+											</h5>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= lotteries[i].channel.id %>', 'lottery');" class="card-footer-item" title="AwesomePoints will still be given away">
+											<a onclick="endSession('<%= lotteries[i].channel.id %>', 'lottery');" id="endSession-lottery-<%= lotteries[i].channel.id %>" class="card-footer-item" title="GAwesomePoints will still be given away">
 												End Lottery
 											</a>
 										</footer>

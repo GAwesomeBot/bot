@@ -5,6 +5,7 @@ class SafeUser {
 		this.tag = user.tag;
 		this.discriminator = user.discriminator;
 		this.username = user.username;
+		this.id = user.id;
 	}
 }
 const generateGuild = (guild, settings) => {

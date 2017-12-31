@@ -4,4 +4,5 @@ module.exports = {
 	Encryption: require("./Encryption"),
 	Errors: require("./Errors/"),
 	EventHandler: require("./Events/EventHandler"),
+	WorkerManager: require("./WorkerManager"),
 };

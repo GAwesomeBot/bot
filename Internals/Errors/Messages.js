@@ -35,6 +35,19 @@ const Messages = {
 		if (typeof allowedTypes !== "string") allowedTypes = mapTo(allowedTypes);
 		return `Invalid type of "${paramName}" argument: should be ${allowedTypes}, passed ${receivedType}`;
 	},
+	// Action-related
+	MISSING_ACTION_TYPE: `You forgot to specify a type!`,
+
+	// Modlog
+	INVALID_MODLOG_CHANNEL: channel => `"${channel}" is an invalid modlog channel!`,
+	MISSING_MODLOG_CHANNEL: `This server doesn't have a configured modlog channel`,
+	MODLOG_ENTRY_NOT_FOUND: id => `ModLog entry with case ID "${id}" was not found!`,
+
+	// Child Process stuff
+	CHILD_PROCESS_TYPE_INVALID: type => `"${type}" is an invalid child process type!`,
+	CHILD_PROCESS_MISSING_PROPERTY: prop => `${prop} is missing from the chosen child process function!`,
+
+	// Errors related to certain Worker errors
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

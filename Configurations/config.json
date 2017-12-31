@@ -1,13 +1,10 @@
 {
-    "sudoMaintainers": [
-    ],
-    "maintainers": [
-    ],
-    "wikiContributors": [
-    ],
+    "sudoMaintainers": [],
+    "maintainers": [],
+    "wikiContributors": [],
     "userBlocklist": [],
-    "guildBlocklist": [
-    ],
+    "guildBlocklist": [],
+    "activityBlocklist": [],
     "activity": {
         "name": "default",
         "twitchURL": ""

@@ -33,10 +33,8 @@ class AFKHandler extends BaseEvent {
 									url: member.user.displayAvatarURL(),
 								},
 								color: 0x3669FA,
-								author: {
-									name: `@${this.bot.getName(msg.guild, this.serverDocument, member)} is currently AFK.`,
-								},
-								description: `\`\`\`${targetMemberDocument.afk_message}\`\`\``,
+								title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
+								description: `${targetMemberDocument.afk_message}`,
 							},
 						});
 					} else {
@@ -51,10 +49,8 @@ class AFKHandler extends BaseEvent {
 										url: member.user.displayAvatarURL(),
 									},
 									color: 0x3669FA,
-									author: {
-										name: `@${this.bot.getName(msg.guild, this.serverDocument, member)} is currently AFK.`,
-									},
-									description: `\`\`\`${targetUserDocument.afk_message}\`\`\``,
+									title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
+									description: `${targetUserDocument.afk_message}`,
 								},
 							});
 						}

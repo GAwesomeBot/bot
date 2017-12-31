@@ -5,10 +5,10 @@ const {
 	PostShardedData,
 	Utils,
 	Cache,
+	Giveaways,
 } = require("../../../Modules/");
 const {
 	ClearServerStats: clearStats,
-	Giveaways,
 	MessageOfTheDay: createMessageOfTheDay,
 	SetCountdown: setCountdown,
 	SetReminder: setReminder,
@@ -346,6 +346,7 @@ class Ready extends BaseEvent {
 	 */
 	async setReminders () {
 		const promiseArray = [];
+		if (this.bot.shardID !== "0") return;
 		const userDocuments = await Users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});

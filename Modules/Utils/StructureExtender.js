@@ -45,9 +45,17 @@ module.exports = () => {
 					let suffix = null;
 					if (command.includes(" ")) {
 						command = command.split(/\s+/)[0].trim();
-						suffix = data.content.split(/\s+/)
+						suffix = data.content.replace(/[\r\n\t]/g, match => {
+							const escapes = {
+								"\r": "{r}",
+								"\n": "{n}",
+								"\t": "{t}",
+							};
+							return escapes[match] || match;
+						}).split(/\s+/)
 							.splice(1)
 							.join(" ")
+							.format({ n: "\n", r: "\r", t: "\t" })
 							.trim();
 					}
 					Object.defineProperty(this, "_commandObject", {

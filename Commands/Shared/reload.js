@@ -109,7 +109,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 			msg.channel.send({
 				embed: {
 					color: 0xFF0000,
-					title: `Invalid command type (\`${type}\`) or command (\`${cmd}\`)!`,
+					title: `Invalid command type (__${type}__) or command (__${cmd}__)!`,
 					description: `I was unable to find any command data in \`commands.js\` about \`${cmd}\`.`,
 				},
 			});

@@ -83,7 +83,8 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		appstore: {
-			usage: `<query>`,
+			usage: `<...query>`,
+			aliases: ["istore"],
 			description: `Searches the Apple App Store for one or more apps`,
 			defaults: {
 				isEnabled: true,
@@ -93,7 +94,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		archive: {
-			usage: `<count>`,
+			usage: `<count> [<last ID>]`,
 			description: `Provides a JSON file with the last \`n\` messages in chat`,
 			defaults: {
 				isEnabled: true,
@@ -123,8 +124,8 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		calc: {
-			usage: `<expression>`,
-			description: `Quickly evaluate a mathematical expression`,
+			usage: `<expression> or "help" <function>`,
+			description: `Quickly calculate a mathematical expression`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -153,7 +154,7 @@ const commands = {
 			category: `Fun 🎪`,
 		},
 		choose: {
-			usage: `<option 1>|<option 2>[|...]`,
+			usage: `<option 1> [|] <option 2> [|...]`,
 			description: `Randomly chooses from a set of options`,
 			defaults: {
 				isEnabled: true,
@@ -161,6 +162,16 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
+		},
+		convert: {
+			usage: "<number> <unit> [to] <unit>",
+			description: "Converts between units of measurement or currencies",
+			defaults: {
+				isEnabled: true,
+				isNSFWFiltered: false,
+				adminLevel: 0,
+			},
+			category: "Utility 🔦",
 		},
 		cool: {
 			usage: `[<"." or cooldown length][|<cooldown duration>]`,
@@ -191,16 +202,6 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
-		},
-		debug: {
-			usage: `["-v"]`,
-			description: `Provides information about the bot, optionally, some system architecture information`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `GAwesomeBot 🤖`,
 		},
 		disable: {
 			usage: `[<command> <command>...]`,
@@ -434,16 +435,6 @@ const commands = {
 			},
 			category: `Moderation ⚒`,
 		},
-		linkme: {
-			usage: `<query>`,
-			description: `Searches the Google Play Store for one or more apps`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Search & Media 🎬`,
-		},
 		list: {
 			usage: `[<content> or <item no.>] [|"." or "done" or <content>]`,
 			description: `In-chat to-do list`,
@@ -553,6 +544,17 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `GAwesomeBot 🤖`,
+		},
+		playstore: {
+			usage: `<...query>`,
+			aliases: ["gplay"],
+			description: `Searches the Google Play Store for one or more apps`,
+			defaults: {
+				isEnabled: true,
+				isNSFWFiltered: false,
+				adminLevel: 0,
+			},
+			category: `Search & Media 🎬`,
 		},
 		points: {
 			usage: `[<user> or "me"]`,
@@ -945,19 +947,24 @@ const commands = {
 		// 	description: ``,
 		// 	aliases: [],
 		//	example: [],
-		//  configJSON: "",
+		//  perm: "",
 		// },
 		eval: {
 			usage: `<expression>`,
 			description: `Evaluate some JavaScript code`,
 			aliases: ["ev"],
-			configJSON: "eval",
+			perm: "eval",
 		},
 		reload: {
 			usage: `...<pm or public>.<command> or "*"`,
 			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
-			configJSON: "administration",
+			perm: "administration",
+		},
+		debug: {
+			usage: `["-h"]`,
+			description: `Provides information about the bot, optionally, some system architecture information`,
+			perm: "none",
 		},
 	},
 

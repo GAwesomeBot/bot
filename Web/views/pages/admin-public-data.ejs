@@ -3,6 +3,16 @@
 <head>
 	<title><%= serverData.name %> Public Data - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
+	<% if (configData.canUnban) { %>
+	<script>
+		function unbanGuild(svrid) {
+			$("#unbanGuild").addClass("is-loading");
+			$.post("/dashboard/servers/server-list?svrid=maintainer", { unbanFromActivity: svrid }).done(() => {
+				$(`#unbanGuild`).removeClass("is-loading").html("<span class='icon'><i class='fa fa-check'></i></span> &nbsp; Unbanned");
+			});
+		}
+	</script>
+	<% } %>
 
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
@@ -27,6 +37,7 @@
 							</div>
 						</div>
 					</article>
+					<% if (!configData.isBanned) { %>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="field">
 							<p class="control">
@@ -84,6 +95,41 @@
 						<% include ../partials/form-buttons %>
 						<% include ../partials/form-buttons-bar %>
 					</form>
+					<% } else { %>
+					<article class="message is-danger is-bold">
+						<div class="message-header">
+							<span>
+								<span class="icon">
+  									<i class="fa fa-ban"></i>
+								</span>
+								&nbsp;Uh-oh! You've been banned.
+							</span>
+						</div>
+						<div class="message-body">
+							<div class="content">
+								A Maintainer has permanently removed your entry from the activity page, and restricted your ability to display public data. For more information on how activity bans work, visit <a href="/wiki/Configuration#public-data">this wiki article</a>. If you believe this is an error, please contact a Maintainer.
+							</div>
+						</div>
+					</article>
+					<% if (configData.canUnban) { %>
+					<article class="message is-warning">
+						<div class="message-body">
+							<div class="content">
+								As a maintainer, you can unban this guild to restore their ability to display public data.<br><strong>This will be effective immediately, without notifying the server Admins.</strong>
+							</div>
+							<div class="has-text-centered">
+							<a id="unbanGuild" class="button is-warning" onclick="unbanGuild('<%= serverData.id %>')">
+								<span class="icon">
+									<i class="fa fa-shield"></i>
+								</span>
+								&nbsp;
+								Unban
+							</a>		
+							</div>
+						</div>
+					</article>
+					<% } %>
+					<% } %>
 				</div>
 			</div>
 		</div>

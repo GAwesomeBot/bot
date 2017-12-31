@@ -15,7 +15,6 @@ module.exports = {
 		}
 		if (res) {
 			if (!res.body["up-to-date"] && !res.body.latest) {
-				winston.debug(`GAB version ${config.version} was not found on branch ${config.branch}, you may need to reinstall GAB in order to use the Updater.`);
 				return 404;
 			}
 			return res.body;
@@ -26,8 +25,8 @@ module.exports = {
 		try {
 			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`);
 		} catch (err) {
-			winston.warn(`Failed to fetch version metadata. ~.~\n`, err);
-			throw err;
+			res = {};
+			res.status = 404;
 		}
 		if (res) {
 			if (res.status === 404) {

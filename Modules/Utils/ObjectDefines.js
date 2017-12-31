@@ -19,6 +19,19 @@ module.exports = bot => {
 	});
 
 	/**
+	 * Trims all whitespaces from each element in the array
+	 */
+	Object.assign(Array.prototype, {
+		trimAll () {
+			const copy = [];
+			for (const elem of this) {
+				copy.push(typeof elem === "string" ? elem.trim() : elem);
+			}
+			return copy;
+		},
+	});
+
+	/**
 	 * Randomised output from an array
 	 * @returns {*} Random output from the array
 	 * @readonly

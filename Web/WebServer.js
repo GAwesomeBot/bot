@@ -94,22 +94,20 @@ const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => c
 	name: ch.name,
 	id: ch.id,
 	position: ch.position,
-})).sort((a, b) => a.position - b.position);
+	rawPosition: ch.rawPosition,
+})).sort((a, b) => a.rawPosition - b.rawPosition);
 
-const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => {
-	const color = role.color.toString(16);
-	return {
-		name: role.name,
-		id: role.id,
-		color: "000000".substring(0, 6 - color.length) + color,
-		position: role.position,
-	};
-}).sort((a, b) => b.position - a.position);
+const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
+	name: role.name,
+	id: role.id,
+	color: role.color,
+	position: role.position,
+})).sort((a, b) => b.position - a.position);
 
 const getAuthUser = user => ({
 	username: user.username,
 	id: user.id,
-	avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.jpg` : "/static/img/discord-icon.png",
+	avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : "/static/img/discord-icon.png",
 });
 
 const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400)}d` : `${Math.floor(uptime / 3600)}h`;
@@ -139,6 +137,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		process.nextTick(() => done(null, profile));
 	}));
 	passport.serializeUser((user, done) => {
+		delete user.email;
 		done(null, user);
 	});
 	passport.deserializeUser((id, done) => {
@@ -273,18 +272,18 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 	const getServerData = async (serverDocument, webp = false) => {
 		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "owner", "id", "name"], members: ["nickname"] });
+		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "ownerID", "id", "name"], members: ["nickname", "user"] });
 		if (svr) {
-			const owner = svr.owner;
+			const owner = bot.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
 			data = {
 				name: svr.name,
 				id: svr.id,
 				icon: bot.getAvatarURL(svr.id, svr.icon, "icons", webp),
 				owner: {
-					username: owner.user.username,
-					id: owner.user.id,
-					avatar: bot.getAvatarURL(owner.user.id, owner.user.avatar, "avatars", webp),
-					name: owner.nickname || owner.user.username,
+					username: owner.username,
+					id: owner.id,
+					avatar: bot.getAvatarURL(owner.id, owner.avatar, "avatars", webp),
+					name: owner.username,
 				},
 				members: Object.keys(svr.members).length,
 				messages: serverDocument.messages_today,
@@ -477,7 +476,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		res.redirect("/activity/servers");
 	});
 	app.get("/activity/(|servers|users)", (req, res) => {
-		db.servers.aggregate({
+		db.servers.aggregate([{
 			$group: {
 				_id: null,
 				total: {
@@ -495,7 +494,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					},
 				},
 			},
-		}, async (err, result) => {
+		}], async (err, result) => {
 			const guildAmount = await bot.guilds.totalCount;
 			const userAmount = await bot.users.totalCount;
 			let messageCount = 0;
@@ -508,6 +507,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			const renderPage = data => {
 				res.render("pages/activity.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(getAuthUser(req.user).id) : false,
 					rawServerCount: guildAmount,
 					rawUserCount: userAmount,
 					totalMessageCount: messageCount,
@@ -559,7 +559,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					};
 				} else {
 					matchCriteria._id = {
-						$in: await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from"),
+						$in: (await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from")).filter(svrid => !configJSON.activityBlocklist.includes(svrid)),
 					};
 				}
 				if (req.query.category !== "All") {
@@ -597,7 +597,6 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						};
 						break;
 				}
-
 				db.servers.count(matchCriteria, (err, rawCount) => {
 					if (err || rawCount === null) {
 						rawCount = guildAmount;
@@ -667,7 +666,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						}
 					});
 				} else {
-					db.users.aggregate({
+					db.users.aggregate([{
 						$group: {
 							_id: null,
 							totalPoints: {
@@ -690,7 +689,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 								},
 							},
 						},
-					}, (err, result) => {
+					}], (err, result) => {
 						let totalPoints = 0;
 						let publicProfilesCount = 0;
 						let reminderCount = 0;
@@ -768,7 +767,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					const svr = await getGuild.get(bot, req.query.svrid, {
 							resolve: ["id", "ownerID", "name", "icon"],
 							members: ["id", "roles", "user", "nickname"],
-							channels: ["id", "type", "name", "position"],
+							channels: ["id", "type", "name", "position", "rawPosition"],
 							roles: ["name", "id", "position", "color"],
 							convert: { id_only: true },
 						});
@@ -810,13 +809,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				res.json(getUserList(Object.keys(svr.members).map(member => svr.members[member].user)));
 			});
 		} else {
-			db.users.aggregate({
+			db.users.aggregate([{
 				$project: {
 					username: 1
 				}
-			}, (err, users) => {
+			}], (err, users) => {
 				if (!err && users) {
-					let response = users.sort().map(usr => usr.username || null);
+					let response = users.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
 					response.spliceNullElements();
 					res.json(response);
 				} else {
@@ -1755,23 +1754,23 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Save serverDocument after admin console form data is received
-	const saveAdminConsoleOptions = (consolemember, svr, serverDocument, req, res, override) => {
+	const saveAdminConsoleOptions = async (consolemember, svr, serverDocument, req, res, override) => {
 		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
-		serverDocument.save(err => {
-			dashboardUpdate(req.path, svr.id);
+		try {
 			bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
-			if (err) {
-				winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
-				renderError(res, "An internal error occurred!");
-				return;
-			}
+			dashboardUpdate(req.path, svr.id);
+			await serverDocument.save();
 			bot.IPC.send("cacheUpdate", { guild: serverDocument._id });
 			if (override) {
 				res.sendStatus(200);
 			} else {
 				res.redirect(req.originalUrl);
 			}
-		});
+		} catch (err) {
+			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
+			renderError(res, "An internal error occurred!");
+			return;
+		}
 	};
 
 	// Save config.json after maintainer console form data is received
@@ -1950,6 +1949,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					command_fetch_properties: serverDocument.config.command_fetch_properties,
 					command_prefix: serverDocument.config.command_prefix,
 					delete_command_messages: serverDocument.config.delete_command_messages,
+					ban_gif: serverDocument.config.ban_gif,
 				},
 				channelData: getChannelData(svr),
 				botName: svr.members[bot.user.id].nickname || bot.user.username,
@@ -1966,6 +1966,8 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			}
 			serverDocument.config.delete_command_messages = req.body.delete_command_messages === "on";
 			serverDocument.config.chatterbot.isEnabled = req.body["chatterbot-isEnabled"] === "on";
+			serverDocument.config.ban_gif = req.body["ban_gif"];
+			if (req.body["ban_gif"] === "Default") serverDocument.config.ban_gif = "https://imgur.com/3QPLumg.gif";
 			if (req.body["chatterbot-isEnabled"] === "on") {
 				const channels = getChannelData(svr).map(ch => ch.id);
 				const enabledChannels = Object.keys(req.body).filter(key => key.startsWith("chatterbot_enabled_channel_ids")).map(chstring => chstring.split("-")[1]);
@@ -3331,7 +3333,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				configData: {
 					name_display: serverDocument.config.name_display,
 				},
-				nameExample: bot.getName(svr, serverDocument, consolemember),
+				exampleUsername: consolemember.user.username,
+				exampleNickname: consolemember.nickname,
+				exampleDiscriminator: consolemember.user.discriminator,
+				currentExample: bot.getName(svr, serverDocument, consolemember),
 			});
 		});
 	});
@@ -3370,7 +3375,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						});
 					}
 					if (channelDocument.poll.isOngoing) {
-						const creator = svr.members[channelDocument.poll.creator_id] || { user: "invalid-user" };
+						const creator = svr.members[channelDocument.poll.creator_id] || { user: { username: "invalid-user" } };
 						ongoingPolls.push({
 							title: channelDocument.poll.title,
 							channel: {
@@ -3399,12 +3404,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						});
 					}
 					if (channelDocument.lottery.isOngoing) {
+						const creator = svr.members[channelDocument.lottery.creator_id] || { user: { username: "invalid-user" } };
 						ongoingLotteries.push({
 							channel: {
 								name: ch.name,
 								id: ch.id,
 							},
-							participants: channelDocument.giveaway.participant_ids.length,
+							tickets: channelDocument.lottery.participant_ids.length,
+							creator: creator.user.username,
 						});
 					}
 				}
@@ -3448,17 +3455,19 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						bot.IPC.send("modifyActivity", { action: "end", activity: "trivia", guild: svr.id, channel: req.body["end-id"] });
 						break;
 					case "poll":
-						Polls.end(serverDocument, ch, channelDocument);
+						bot.IPC.send("modifyActivity", { action: "end", activity: "poll", guild: svr.id, channel: req.body["end-id"] })
 						break;
 					case "giveaway":
-						Giveaways.end(bot, svr, serverDocument, ch, channelDocument);
+						bot.IPC.send("modifyActivity", { action: "end", activity: "giveaway", guild: svr.id, channel: req.body["end-id"] });
 						break;
 					case "lottery":
-						Lotteries.end(db, svr, serverDocument, ch, channelDocument);
+						bot.IPC.send("modifyActivity", { action: "end", activity: "lottery", guild: svr.id, channel: req.body["end-id"] });
 						break;
 				}
+				res.sendStatus(200);
+			} else {
+				res.sendStatus(400);
 			}
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -3476,6 +3485,8 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				currentPage: req.path,
 				configData: {
 					public_data: serverDocument.config.public_data,
+					isBanned: configJSON.activityBlocklist.includes(svr.id),
+					canUnban: configJSON.maintainers.includes(consolemember.id),
 				},
 			});
 		});
@@ -3691,7 +3702,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	// Maintainer console overview
 	app.get("/dashboard/maintainer", (req, res) => {
 		checkAuth(req, res, () => {
-			db.servers.aggregate({
+			db.servers.aggregate([{
 				$group: {
 					_id: null,
 					total: {
@@ -3700,7 +3711,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						},
 					},
 				},
-			}, async (err, result) => {
+			}], async (err, result) => {
 				let messageCount = 0;
 				if (!err && result) {
 					messageCount = result[0].total;
@@ -3791,6 +3802,18 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			} else {
 				renderPage();
 			}
+		});
+	});
+	app.post("/dashboard/servers/server-list", (req, res) => {
+		checkAuth(req, res, async consolemember => {
+			if (req.body.removeFromActivity) {
+				configJSON.activityBlocklist.push(req.body.removeFromActivity);
+			}
+			if (req.body.unbanFromActivity) {
+				const index = configJSON.activityBlocklist.indexOf(req.body.unbanFromActivity);
+				if (index > -1) configJSON.activityBlocklist.splice(index, 1);
+			}
+			saveMaintainerConsoleOptions(consolemember, req, res, true);
 		});
 	});
 

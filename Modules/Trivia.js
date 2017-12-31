@@ -1,6 +1,6 @@
 const defaultTriviaSet = require("./../Configurations/trivia.json");
 const levenshtein = require("fast-levenshtein");
-const { LoggingLevels } = require("../Internals/Constants");
+const { LoggingLevels, Colors } = require("../Internals/Constants");
 
 const questionTitles = [
 	"Do you know this one❓",
@@ -21,10 +21,10 @@ module.exports = class Trivia {
 		if (channelDocument.trivia.isOngoing) {
 			ch.send({
 				embed: {
-					color: 0xCC0F16,
+					color: Colors.SOFT_ERR,
 					description: "There is already an ongoing trivia game in this channel, no need to start one 🏏",
 					footer: {
-						text: `Run \`${bot.getCommandPrefix(svr, serverDocument)}trivia end\` to end the current game`,
+						text: `Run "${svr.commandPrefix}trivia end" to end the current game`,
 					},
 				},
 			});
@@ -36,7 +36,7 @@ module.exports = class Trivia {
 				} else {
 					ch.send({
 						embed: {
-							color: 0xCC0F16,
+							color: Colors.SOFT_ERR,
 							description: `Trivia set \`${set}\` not found.`,
 							footer: {
 								text: `An Admin can create one in the Admin Console!`,
@@ -52,17 +52,19 @@ module.exports = class Trivia {
 			channelDocument.trivia.past_questions = [];
 			channelDocument.trivia.score = 0;
 			channelDocument.trivia.responders = [];
-			bot.logMessage(serverDocument, LoggingLevels.INFO, `User "${member}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
+			bot.logMessage(serverDocument, LoggingLevels.INFO, `User "${member.tag}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
 			ch.send({
 				embed: {
-					color: 0x50ff60,
+					color: Colors.TRIVIA_START,
 					description: `Trivia game started by ${member} 🎮`,
-					fields: set === "default" ? undefined : [{
-						name: `Trivia Set`,
-						value: set,
-					}],
+					fields: set === "default" ? undefined : [
+						{
+							name: `Trivia Set`,
+							value: `${set}`,
+						},
+					],
 					footer: {
-						text: `No cheating! Nobody likes cheaters`,
+						text: `No cheating! Nobody likes cheaters! 👀`,
 					},
 				},
 			}).then(() => this.next(bot, svr, serverDocument, ch, channelDocument));
@@ -83,18 +85,20 @@ module.exports = class Trivia {
 							embed: {
 								color: 0x3669FA,
 								description: questionTitles[Math.floor(Math.random() * questionTitles.length)],
-								fields: [{
-									name: "Category",
-									value: question.category,
-								}, {
-									name: "Question",
-									value: question.question,
-								}],
+								fields: [
+									{
+										name: "Category",
+										value: `${question.category}`,
+									},
+									{
+										name: "Question",
+										value: `${question.question}`,
+									},
+								],
 								footer: {
 									text: `${svr.commandPrefix}trivia <answer>`,
 								},
 							},
-							disableEveryone: true,
 						});
 					} else {
 						this.end(bot, svr, serverDocument, ch, channelDocument);
@@ -157,7 +161,7 @@ module.exports = class Trivia {
 				ch.send({
 					embed: {
 						color: 0x50ff60,
-						description: `${usr} got it right! 🎉 The answer is \`${channelDocument.trivia.current_question.answer}\`.`,
+						description: `${usr} got it right! 🎉 The answer was \`${channelDocument.trivia.current_question.answer}\`.`,
 						footer: {
 							text: "Get ready for the next one...",
 						},
@@ -167,7 +171,16 @@ module.exports = class Trivia {
 					this.next(bot, svr, serverDocument, ch, channelDocument);
 				});
 			} else {
-				ch.send(`${usr} Nope. 🕸`);
+				ch.send({
+					content: `${usr},`,
+					embed: {
+						color: Colors.INVALID,
+						title: `Nope. 🕸`,
+						footer: {
+							text: `Try again! "${svr.commandPrefix}trivia answer"`,
+						},
+					},
+				});
 			}
 		}
 	}
@@ -194,7 +207,7 @@ module.exports = class Trivia {
 		if (channelDocument.trivia.isOngoing) {
 			channelDocument.trivia.isOngoing = false;
 			channelDocument.trivia.current_question.answer = null;
-			let info = `Thanks for playing! 🏆 Y'all got a score of **${channelDocument.trivia.score}** out of ${channelDocument.trivia.past_questions.length}.`;
+			let info = `Y'all got a score of **${channelDocument.trivia.score}** out of ${channelDocument.trivia.past_questions.length}.`;
 
 			if (channelDocument.trivia.responders.length > 0) {
 				const topResponders = channelDocument.trivia.responders.sort((a, b) => b.score - a.score);
@@ -208,16 +221,17 @@ module.exports = class Trivia {
 				}
 
 				if (member && topResponders[0].score) {
-					info += ` @${bot.getName(svr, serverDocument, member)} correctly answered the most questions ⭐️`;
+					info += `\n@**${bot.getName(svr, serverDocument, member)}** correctly answered the most questions! ⭐️`;
 				}
 			}
 
 			ch.send({
 				embed: {
-					color: 0x2b67ff,
+					color: Colors.TRIVIA_END,
+					title: `Thanks for playing! 🏆`,
 					description: info,
 					footer: {
-						text: `Can't get enough? Run \`${bot.getCommandPrefix(svr, serverDocument)}trivia start\` to start again!`,
+						text: `Can't get enough? Run "${svr.commandPrefix}trivia start" to start again!`,
 					},
 				},
 			});

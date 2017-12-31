@@ -4,5 +4,6 @@ Configurations/auth.js
 node_modules/
 bot-out.log
 .idea/
-Temp/
 package-cache*.json
+
+Temp/*.json

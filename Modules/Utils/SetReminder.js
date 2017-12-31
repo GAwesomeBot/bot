@@ -9,23 +9,26 @@ module.exports = async (bot, userDocument, reminderDocument) => {
 	try {
 		usr = bot.users.get(userDocument._id);
 	} catch (err) {
-		usr = await bot.users.fetch(userDocument._id, false);
+		usr = await bot.users.fetch(userDocument._id, true);
 	}
+	if (!usr) usr = await bot.users.fetch(userDocument._id, true);
 	if (usr) {
 		bot.setTimeout(async () => {
+			const newUserDocument = await Users.findOne({ _id: userDocument._id }).exec();
+			const newReminderDocument = newUserDocument.reminders.id(reminderDocument._id);
 			usr.send({
 				embed: {
 					color: 0x3669FA,
 					title: `Hey, here's the reminder you set!`,
-					description: `${reminderDocument.name}`,
+					description: `${newReminderDocument.name}`,
 				},
 			});
-			reminderDocument.remove();
+			newReminderDocument.remove();
 			try {
-				await userDocument.save();
-				winston.info(`Reminded user of "${reminderDocument.name}"`, { usrid: userDocument._id });
+				await newUserDocument.save();
+				winston.verbose(`Reminded user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id });
 			} catch (err) {
-				winston.error(`Failed to remind user of "${reminderDocument.name}"`, { usrid: userDocument._id }, err);
+				winston.debug(`Failed to remind user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id }, err);
 			}
 		}, reminderDocument.expiry_timestamp - Date.now());
 	}

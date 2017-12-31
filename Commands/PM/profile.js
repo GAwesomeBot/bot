@@ -1,8 +1,8 @@
-module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) => {
+module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors } }, msg, commandData) => {
 	const handleQuit = () => {
 		msg.reply({
 			embed: {
-				color: 0xFF0000,
+				color: Colors.RED,
 				description: `You've exited the profile setup menu!`,
 			},
 		});
@@ -11,7 +11,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 	if (msg.suffix === "setup") {
 		let m = await msg.reply({
 			embed: {
-				color: 0x43B581,
+				color: Colors.LIGHT_GREEN,
 				author: {
 					name: `Profile setup for ${msg.author.tag}`,
 				},
@@ -36,7 +36,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 				case "AWAIT_EXPIRED": {
 					m = await m.edit({
 						embed: {
-							color: 0xE55B0A,
+							color: Colors.LIGHT_ORANGE,
 							description: `You didn't answer in time... We'll keep your profile's publicity the way it currently is.`,
 							footer: {
 								text: `Changed your mind? Type "quit" and restart the process by running "profile setup"`,
@@ -51,7 +51,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 
 		m = await msg.reply({
 			embed: {
-				color: 0x43B581,
+				color: Colors.LIGHT_GREEN,
 				title: `Next, here's your current backround.`,
 				image: {
 					url: IsURL(msg.author.userDocument.profile_background_image) ? msg.author.userDocument.profile_background_image : ``,
@@ -77,7 +77,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 				case "AWAIT_EXPIRED": {
 					m = await m.edit({
 						embed: {
-							color: 0xE55B0A,
+							color: Colors.LIGHT_ORANGE,
 							description: `You didn't answer in time... We'll keep your current profile backround.`,
 							footer: {
 								text: `Changed your mind? Type "quit" and restart the process by running "profile setup"`,
@@ -100,7 +100,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 
 		m = await msg.reply({
 			embed: {
-				color: 0x43B581,
+				color: Colors.LIGHT_GREEN,
 				title: `Done! That will be your new picture. 🏖`,
 				description: `Now, can you please tell us a little about yourself...? (max 2000 characters)`,
 				thumbnail: {
@@ -123,7 +123,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 				case "AWAIT_EXPIRED": {
 					m = await m.edit({
 						embed: {
-							color: 0xE55B0A,
+							color: Colors.LIGHT_ORANGE,
 							description: `You didn't answer in time... We'll keep your current bio.`,
 							footer: {
 								text: `Changed your mind? Type "quit" and restart the process by running "profile setup"`,
@@ -158,7 +158,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL } }, msg, commandData) =
 		});
 		msg.reply({
 			embed: {
-				color: 0x00FF00,
+				color: Colors.GREEN,
 				title: `You're all set! ~~--~~ Click here to see your profile. 👀`,
 				description: `Thanks for your input.`,
 				url: `${configJS.hostingURL}activity/users?q=${encodeURIComponent(`${msg.author.tag}`)}`,

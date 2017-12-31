@@ -1,8 +1,8 @@
-module.exports = async ({ bot, configJS }, msg, commandData) => {
+module.exports = async ({ bot, configJS, Constants: { Colors } }, msg, commandData) => {
 	msg.reply({
 		embed: {
-			color: 0x43B581,
-			title: `Thanks for choosing ${bot.user.tag}! 😊`,
+			color: Colors.SUCCESS,
+			title: `Thank you for choosing ${bot.user.username}! 😊`,
 			description: `Click [here](${configJS.oauthLink.format({ id: bot.user.id })}) to invite me to your server!`,
 		},
 	});

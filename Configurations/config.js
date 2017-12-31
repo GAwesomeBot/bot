@@ -43,7 +43,7 @@ const configs = {
    * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
 	 * Otherwise. !! DO NOT TOUCH !!
    */
-	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot&permissions=470019135",
+	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot&permissions=470281471",
 	/*
 	 * Level of output the console should display. List of levels:
 	 * error, warn, info, debug and verbose.

@@ -1,33 +1,7 @@
 const { get } = require("snekfetch");
 const ReactionMenu = require("../../Modules/MessageUtils/ReactionBasedMenu");
 
-module.exports = async (main, { serverDocument }, msg, commandData) => {
-	/**
-	 * @param {Discord.Message} msg The message object
-	 * Suffix is present in the msg object
-	 * @type {Object}
-	 * @param commandData Object containing the command name, usage and description.
-	 * Use `bot.getPMCommandMetadata(commandData.name)` for other things
-	 */
-	/**
-	 * @type {Object}
-	 * @param documents Object containing all documents you need.
-	 * Available documents:
-	 * * serverDocument
-	 * * channelDocument
-	 * * memberDocument
-	 * * userDocument
-	 */
-	/**
-	 * @type {Object}
-	 * @param main Object containing the most important things
-	 * Feel free to deconstruct it using { Value }
-	 * @property {Discord.Client} bot The bot object
-	 * @property {Object} configJS The config js object
-	 * @property {Object} Utils Util object
-	 * @property {Object} utils Util object
-	 * configJSON is in the global
-	 */
+module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		let split = msg.suffix.split(/\s+/);
 		let number = split.pop(), query = split.join(" ");
@@ -39,17 +13,74 @@ module.exports = async (main, { serverDocument }, msg, commandData) => {
 		else if (number > serverDocument.config.command_fetch_properties.max_count) number = serverDocument.config.command_fetch_properties.max_count;
 		else number = parseInt(number);
 
-		const API = `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(query)}`;
-		let { body, status } = await get(API).set("Accept", "application/vnd.api+json");
+		let { body, status } = await get(APIs.ANIME(query)).set("Accept", "application/vnd.api+json");
 		body = JSON.parse(body.toString());
 		if (status === 200 && body.data && body.data.length) {
-			let m = await msg.channel.send(`test`);
-			let menu = new ReactionMenu(m, msg, ["i", "like", "eggs"]);
+			const list = [];
+			const results = [];
+			const getDisplay = data => {
+				// Title + airing time
+				let airing = data.attributes.startDate;
+				if (data.attributes.endDate !== null) {
+					airing += ` — ${data.attributes.endDate}`;
+				}
+				const fields = [];
+				let totalResult = "";
+				if (!data.attributes.episodeCount) {
+					data.attributes.episodeCount = "N/A";
+				}
+				if (data.attributes.episodeLength) {
+					totalResult += `${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"},${data.attributes.episodeCount === 1 ? "" : " each"} lasting ${data.attributes.episodeLength} minutes.`;
+				} else {
+					totalResult += `${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"}.`;
+				}
+				data.attributes.averageRating && fields.push({
+					name: `Rating`,
+					value: `${data.attributes.averageRating}%`,
+					inline: true,
+				});
+				data.attributes.ageRating && fields.push({
+					name: `Age Rating`,
+					value: `**${data.attributes.ageRating}**`,
+					inline: true,
+				});
+				return {
+					embed: {
+						color: 0x00FF00,
+						author: {
+							iconURl: `${data.attributes.posterImage.tiny}`,
+						},
+						title: `${data.attributes.canonicalTitle} (${airing})`,
+						url: `https://kitsu.io/anime/${data.attributes.slug}`,
+						description: `${data.attributes.synopsis.split("").splice(0, 1500).join("")}${data.attributes.synopsis.length > 1500 ? `...\nRead more [here](https://kitsu.io/anime/${data.attributes.slug})` : ""}`,
+						footer: {
+							text: `${totalResult} | Click on the "Anime Name" to see the webpage!`,
+						},
+						fields,
+						image: {
+							url: `${data.attributes.posterImage.original}`,
+						},
+					},
+				};
+			};
+			for (let i = 0; i < number; i++) {
+				const entry = body.data[i];
+				if (entry) {
+					results.push(getDisplay(entry));
+					list.push(`[ ${i + 1} ] ${entry.attributes.canonicalTitle}`);
+				}
+			}
+			if (list.length === 1) {
+				msg.channel.send(results[0]);
+			} else {
+				let menu = new ReactionMenu(msg, list, results);
+				await menu.init();
+			}
 		} else {
 			winston.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.channel.send({
 				embed: {
-					color: 0xCC0F16,
+					color: Colors.LIGHT_RED,
 					description: `No animu found... (˃̥̥ω˂̥̥̥)`,
 					footer: {
 						text: `P-please try again ${msg.author.username}-chan..!`,
@@ -61,7 +92,7 @@ module.exports = async (main, { serverDocument }, msg, commandData) => {
 		winston.verbose(`Anime name not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.channel.send({
 			embed: {
-				color: 0xCC0F16,
+				color: Colors.LIGHT_RED,
 				image: {
 					url: `http://i66.tinypic.com/23vxcbc.jpg`,
 				},

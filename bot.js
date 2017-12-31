@@ -1,6 +1,4 @@
 /* eslint-disable max-len */
-require("./Internals/Fastboot")();
-
 const ascii = `
   _____                                               ____        _
  / ____|   /\\                                        |  _ \\      | |
@@ -10,7 +8,7 @@ const ascii = `
  \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 			`;
 
-const { Console, Sharder, Traffic, Boot, CLI } = require("./Modules/");
+const { Console, Sharder, Traffic, Boot, CLI, Updater } = require("./Modules/");
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
 
@@ -45,7 +43,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 		await winston.info(`Connected to the database successfully.`);
 
 		winston.silly("Confirming MongoDB config values.");
-		await Raw.db.db("admin").command({ getCmdLineOpts: 1 }).then(res => {
+		await Raw.db.admin().command({ getCmdLineOpts: 1 }).then(res => {
 			if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 				winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 				configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");
@@ -70,6 +68,12 @@ database.initialize(configJS.databaseURL).catch(err => {
 		if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
 			winston.warn("Your session secret value appears to be default. Please note that this value is public!");
 			configWarnings.push("Your config.js secret value has not been reconfigured. This value is public!");
+		}
+
+		winston.silly("Confirming config.json values.");
+		if (await Updater.check(configJSON) === 404) {
+			winston.warn(`GAB version ${configJSON.version} was not found on branch ${configJSON.branch}, you may need to reinstall GAB for the Updater to be enabled again.`);
+			configWarnings.push(`GAwesomeBot ${configJSON.version} is not a valid version on branch ${configJSON.branch}. The Updater has been disabled to avoid update conflicts.`);
 		}
 
 		winston.silly("Confirming environment setup.");
@@ -179,6 +183,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 					sharder.guilds.delete(guild);
 				}
 			}
+		});
+
+		sharder.IPC.on("validateGuild", async (guildid, callback) => {
+			if (sharder.guilds.has(guildid)) return callback(true);
+			else return callback(false);
 		});
 
 		// Shard has modified Console data
@@ -302,7 +311,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			const afterQueryNano = afterQuery[1] / 1000000;
 			data.master.ping = Math.round((afterQuerySeconds + afterQueryNano) * 100) / 100;
 			data.master.users = await db.users.count().exec();
-			data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
+			if (!msg.noShards) data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
 			callback(data);
 		});
 
@@ -325,6 +334,23 @@ database.initialize(configJS.databaseURL).catch(err => {
 			const shardid = sharder.guilds.get(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("modifyActivity", msg, shardid);
 		});
+
+		sharder.IPC.on("relay", async (msg, reply) => {
+			const findResults = await sharder.IPC.send("relay", { command: msg.command, params: msg.findParams, action: "find" }, "*");
+
+			if (findResults.every(result => result === false)) return reply("none");
+			if (findResults.filter(result => result !== false).length !== 1) return reply("multi");
+			reply(true);
+
+			if (!msg.execParams) msg.execParams = {};
+			const guildID = findResults.find(result => result !== false);
+			const shardID = sharder.guilds.get(guildID);
+			msg.execParams.guildid = guildID;
+
+			sharder.IPC.send("relay", { command: msg.command, params: msg.execParams, action: "run" }, shardID);
+		});
+
+		sharder.IPC.on("awaitMessage", async (msg, callback) => callback(await sharder.IPC.send("awaitMessage", msg, 0)));
 
 		// Shard requests all shards to be marked Unavailable
 		sharder.IPC.on("updating", (msg, callback) => sharder.IPC.send("updating", msg, "*").then(callback));

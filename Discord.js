@@ -1,11 +1,10 @@
 const process = require("process");
-require("./Internals/Fastboot")(`shard-${process.env.SHARD_ID}`);
 
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia } = require("./Modules/index");
+const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
@@ -20,6 +19,7 @@ const {
 		Error: GABError,
 	},
 	EventHandler,
+	WorkerManager,
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
@@ -33,11 +33,11 @@ const database = require("./Database/Driver.js");
 const WebServer = require("./Web/WebServer");
 
 const ProcessAsPromised = require("process-as-promised");
-const cJSON = require("circular-json");
 
 const privateCommandModules = {};
 const commandModules = {};
 const sharedModules = {};
+const privateCommandFiles = require("./Commands/Private");
 
 /* eslint-disable max-len */
 // Create a Discord.js Shard Client
@@ -63,6 +63,11 @@ class Client extends DJSClient {
 		this.shardID = process.env.SHARD_ID;
 
 		this.messageListeners = {};
+
+		this.workerManager = new WorkerManager(this);
+
+		// Bot IPC
+		this.IPC = new ProcessAsPromised();
 	}
 
 	/**
@@ -93,29 +98,31 @@ class Client extends DJSClient {
 	 * @param {Function} [filter] The filter to run on the message
 	 */
 	async awaitPMMessage (channel, user, timeout = 60000, filter = () => true) {
-		if (!this.messageListeners[channel.id]) this.messageListeners[channel.id] = {};
+		if (this.shardID === "0") {
+			if (!this.messageListeners[channel.id]) this.messageListeners[channel.id] = {};
 
-		const entry = {
-			filter,
-		};
-		entry.promise = new Promise((resolve, reject) => {
-			Object.assign(entry, {
-				resolve,
-				reject,
+			const entry = {
+				filter,
+			};
+			entry.promise = new Promise((resolve, reject) => {
+				Object.assign(entry, {
+					resolve,
+					reject,
+				});
 			});
-		});
 
-		this.messageListeners[channel.id][user.id] = entry;
+			this.messageListeners[channel.id][user.id] = entry;
 
-		this.setTimeout(() => {
-			if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
-				this.messageListeners[channel.id][user.id].reject(new GABError("AWAIT_EXPIRED"));
-				delete this.messageListeners[channel.id][user.id];
-				if (Object.keys(this.messageListeners[channel.id]).length === 0) delete this.messageListeners[channel.id];
-			}
-		}, timeout);
+			this.setTimeout(() => {
+				if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
+					this.deleteAwaitPMMessage(channel, user);
+				}
+			}, timeout);
 
-		return this.messageListeners[channel.id][user.id].promise;
+			return this.messageListeners[channel.id][user.id].promise;
+		} else {
+			return this.IPC.send("awaitMessage", { ch: channel.id, usr: user.id, timeout, filter });
+		}
 	}
 
 	deleteAwaitPMMessage (channel, user) {
@@ -151,9 +158,17 @@ class Client extends DJSClient {
 			};
 		} else if (cmdstr) {
 			let command = cmdstr.split(/\s+/)[0].toLowerCase();
-			let suffix = cmdstr.split(/\s+/)
+			let suffix = cmdstr.replace(/[\r\n\t]/g, match => {
+				const escapes = {
+					"\r": "{r}",
+					"\n": "{n}",
+					"\t": "{t}",
+				};
+				return escapes[match] || match;
+			}).split(/\s+/)
 				.splice(1)
 				.join(" ")
+				.format({ n: "\n", r: "\r", t: "\t" })
 				.trim();
 			commandObject = {
 				command: command,
@@ -319,11 +334,11 @@ class Client extends DJSClient {
 		command = this.getSharedCommandName(command);
 		if (!(configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id))) throw new GABError("UNAUTHORIZED_USER", user);
 		let commandData = this.getSharedCommandMetadata(command);
-		switch (commandData.configJSON) {
+		switch (commandData.perm) {
 			case "eval": {
 				let value = configJSON.perms.eval;
 				switch (value) {
-					case 0: return false;
+					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
 						// Maintainers
 						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
@@ -341,7 +356,7 @@ class Client extends DJSClient {
 			case "admin": {
 				let value = configJSON.perms.administration;
 				switch (value) {
-					case 0: return false;
+					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
 						// Maintainers
 						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
@@ -358,7 +373,7 @@ class Client extends DJSClient {
 			case "shutdown": {
 				let value = configJSON.perms.shutdown;
 				switch (value) {
-					case 0: return false;
+					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
 						// Maintainers
 						if (configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id)) return true;
@@ -371,6 +386,10 @@ class Client extends DJSClient {
 					}
 				}
 				break;
+			}
+			case "none":
+			case "any": {
+				return true;
 			}
 			default: {
 				throw new GABError("SHARED_INVALID_MODE", commandData.configJSON, command);
@@ -417,14 +436,14 @@ class Client extends DJSClient {
 	}
 
 	/**
-	 * Finds a server (by name, ID, server nick, etc.) for a user
-	 * @param {String} string The string to search servers with
-	 * @param {Discord.User|Discord.GuildMember} user The user to search the guild for
-	 * @param {Document} userDocument The database document for the user
-	 * @returns {Promise<?Discord.Guild>} The first guild found with the user
+	 * Relays a command job to a shard that has sufficient data.
+	 * @param {String} command The Relay command to execute
+	 * @param {Object} filter An object of arguments passed to the "find" function of the Relay command
+	 * @param {Object} params An object of arguments passed to the execution function of the Relay command
+	 * @returns {Promise<?Boolean>} True when the master replies with a success, false if find failed. If an error occurred, the destination shard is expected to handle according to command logic.
 	 */
-	serverSearch () {
-		return Promise.reject(new GABError("FEATURE_TODO"));
+	relayCommand (command, filter, params) {
+		return this.IPC.send("relay", { command: command, findParams: filter, execParams: params });
 	}
 
 	/**
@@ -487,6 +506,40 @@ class Client extends DJSClient {
 	}
 
 	/**
+	 * Checks if a member can take actions on another member
+	 * @param {Discord.Guild} guild The guild to check the permissions in
+	 * @param {Discord.GuildMember} member The message member
+	 * @param {Discord.GuildMember} [affectedUser] The affected member
+	 * @returns {Object} Object containing the results
+	 */
+	async canDoActionOnMember (guild, member, affectedUser = null, type = null) {
+		if (type) {
+			switch (type.toLowerCase()) {
+				case "ban": {
+					let obj = {
+						canClientBan: false,
+						memberAboveAffected: false,
+					};
+					if (affectedUser && affectedUser.bannable) obj.canClientBan = true;
+					if (member.highestRole && affectedUser && affectedUser.highestRole) {
+						if (member.highestRole.comparePositionTo(affectedUser.highestRole) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					if (affectedUser === null) {
+						obj.canClientBan = guild.me.permissions.has("BAN_MEMBERS");
+						obj.memberAboveAffected = true;
+					}
+					return obj;
+				}
+			}
+		} else {
+			throw new GABError("MISSING_ACTION_TYPE");
+		}
+	}
+
+	/**
 	 * Gets the game string from a user
 	 * @param {Discord.GuildMember|Discord.User} userOrMember The user or GuildMember to get the game from
 	 * @returns {Promise<?String>} A string containing the game, or an empty string otherwise
@@ -514,11 +567,14 @@ class Client extends DJSClient {
 	 */
 	async checkRank (server, serverDocument, member, memberDocument, override = false) {
 		if (member && member.id !== this.user.id && !member.user.bot && server) {
-			const currentRankScore = memberDocument.rank_score + override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice);
-			for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
-				if (currentRankScore <= serverDocument.config.ranks_list[i].max_score || i === serverDocument.config.ranks_list.length - 1) {
-					if (memberDocument.rank !== serverDocument.config.ranks_list[i]._id && !override) {
-						memberDocument.rank = serverDocument.config.ranks_list[i]._id;
+			const currentRankScore = memberDocument.rank_score + (override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice));
+			const ranks = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
+			let returnRank;
+			ranks.forEach((rank, i) => {
+				if (returnRank) return;
+				if (currentRankScore <= rank.max_score || i === serverDocument.config.ranks_list.length - 1) {
+					if (memberDocument.rank !== rank._id && !override) {
+						memberDocument.rank = rank._id;
 						if (serverDocument.config.ranks_list) {
 							if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.status_messages.member_rank_updated_message.isEnabled) {
 								// Send member_rank_updated_message if necessary
@@ -547,22 +603,23 @@ class Client extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								const userDocument = await Users.findOne({ _id: member.id }).catch(err => {
+								Users.findOne({ _id: member.id }).catch(err => {
 									winston.warn(`Failed to find user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
+								}).then(userDocument => {
+									if (userDocument) {
+										userDocument.points += 100;
+										userDocument.save().catch(usrErr => {
+											winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
+										});
+									}
 								});
-								if (userDocument) {
-									userDocument.points += 100;
-									await userDocument.save().catch(usrErr => {
-										winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
-									});
-								}
 							}
 							// Assign new rank role if necessary
-							if (serverDocument.config.ranks_list[i].role_id) {
-								const role = server.roles.get(serverDocument.config.ranks_list[i].role_id);
+							if (rank.role_id) {
+								const role = server.roles.get(rank.role_id);
 								if (role) {
 									try {
-										await member.addRole(role, `Added member to the role for leveling up in ranks.`);
+										member.addRole(role, `Added member to the role for leveling up in ranks.`).catch(err => err);
 									} catch (err) {
 										winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 											svrid: server.id,
@@ -574,9 +631,10 @@ class Client extends DJSClient {
 							}
 						}
 					}
-					return serverDocument.config.ranks_list[i]._id;
+					returnRank = rank._id;
 				}
-			}
+			});
+			return returnRank;
 		}
 	}
 
@@ -934,19 +992,20 @@ class Client extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
-				serverDocument.logs.push({
-					level: level,
-					content: content,
-					channelid: chid ? chid : undefined,
-					userid: usrid ? usrid : undefined,
-				});
-				if (serverDocument.logs.length > 200) {
-					serverDocument = await serverDocument.save();
-					serverDocument.logs.pull({ timestamp: serverDocument.logs[0].timestamp });
+				const logCount = (await Servers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]).exec())[0].logs;
+				Servers.update({ _id: serverDocument._id }, {
+					$push: {
+						logs: {
+							level: level,
+							content: content,
+							channelid: chid ? chid : undefined,
+							userid: usrid ? usrid : undefined,
+						},
+					},
+				}).exec();
+				if (logCount >= 200) {
+					await Servers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } }).exec();
 				}
-				serverDocument.save().catch(err => {
-					winston.error(`Failed to re-save server document for logging a message`, err.name, err);
-				});
 			}
 		} catch (err) {
 			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
@@ -1022,6 +1081,12 @@ class Client extends DJSClient {
 		this._intervals.clear();
 		return this.manager.destroy();
 	}
+
+	async init () {
+		await super.login(process.env.CLIENT_TOKEN);
+		await this.workerManager.startWorker();
+		return process.env.CLIENT_TOKEN;
+	}
 }
 
 StructureExtender();
@@ -1048,6 +1113,16 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	// Store server documents by ID
 	bot.cache = new ServerDocumentCache();
 	bot.traffic = new Traffic(bot.IPC, true);
+
+	winston.debug("Logging in to Discord Gateway.");
+	bot.init().then(() => {
+		winston.info("Successfully connected to Discord!");
+		bot.IPC.send("ready", { id: bot.shard.id });
+		process.setMaxListeners(0);
+	}).catch(err => {
+		winston.error("Failed to connect to Discord :/\n", { err: err });
+		process.exit(1);
+	});
 });
 
 process.on("unhandledRejection", reason => {
@@ -1056,19 +1131,6 @@ process.on("unhandledRejection", reason => {
 
 process.on("uncaughtException", err => {
 	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
-	process.exit(1);
-});
-
-// Bot IPC
-bot.IPC = new ProcessAsPromised();
-
-winston.debug("Logging in to Discord Gateway.");
-bot.login(process.env.CLIENT_TOKEN).then(() => {
-	winston.info("Successfully connected to Discord!");
-	bot.IPC.send("ready", { id: bot.shard.id });
-	process.setMaxListeners(0);
-}).catch(err => {
-	winston.error("Failed to connect to Discord :/\n", { err: err });
 	process.exit(1);
 });
 
@@ -1087,7 +1149,14 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 	} else {
 		let guild = bot.guilds.get(payload.guild);
 		let val = GG.generate(guild, payload.settings);
-		return callback({ guild: payload.guild, settings: payload.settings, result: cJSON.stringify(val) });
+		try {
+			return callback({ guild: payload.guild, settings: payload.settings, result: JSON.stringify(val) });
+		} catch (err) {
+			console.log(val);
+
+			console.log(err);
+			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err, guildData: val });
+		}
 	}
 });
 
@@ -1228,17 +1297,106 @@ bot.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = svr.serverDocument;
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
 			let channelDocument = serverDocument.channels.id(ch.id);
 			if (!channelDocument) {
 				serverDocument.channels.push({ _id: ch.id });
 				channelDocument = serverDocument.channels.id(ch.id);
 			}
 			if (msg.action === "end") await Trivia.end(bot, svr, serverDocument, ch, channelDocument);
-			serverDocument.save();
+			try {
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
+			} catch (err) {
+				winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
 			break;
 		}
+		case "poll": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = svr.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
+			let channelDocument = serverDocument.channels.id(ch.id);
+			if (!channelDocument) {
+				serverDocument.channels.push({ _id: ch.id });
+				channelDocument = serverDocument.channels.id(ch.id);
+			}
+			if (msg.action === "end") await Polls.end(serverDocument, ch, channelDocument);
+			try {
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
+			} catch (err) {
+				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
+			break;
+		}
+		case "giveaway": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = svr.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
+			if (msg.action === "end") await Giveaways.end(bot, svr, ch, serverDocument);
+			try {
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
+			} catch (err) {
+				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
+			break;
+		}
+		case "lottery": {
+			const svr = bot.guilds.get(msg.guild);
+			const ch = bot.channels.get(msg.channel);
+
+			if (!ch) return;
+
+			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			if (!serverDocument) return;
+			let channelDocument = serverDocument.channels.id(ch.id);
+			if (!channelDocument) {
+				serverDocument.channels.push({ _id: ch.id });
+				channelDocument = serverDocument.channels.id(ch.id);
+			}
+			if (msg.action === "end") await Lotteries.end(bot, svr, serverDocument, ch, channelDocument);
+			try {
+				await serverDocument.save();
+				bot.IPC.send("cacheUpdate", { guild: msg.guild });
+			} catch (err) {
+				winston.warn(`A ${err.name} occurred while attempting to end a Lottery.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			}
+		}
 	}
+});
+
+bot.IPC.on("relay", async (msg, callback) => {
+	const command = privateCommandFiles[msg.command];
+	const main = {
+		bot,
+		configJS,
+		Constants: require("./Internals/index").Constants,
+	};
+	const commandData = {
+		name: msg.command,
+		usage: bot.getPublicCommandMetadata(msg.command).usage,
+		description: bot.getPublicCommandMetadata(msg.command).description,
+	};
+	if (command) return callback(await command[msg.action](main, msg.params, commandData));
+});
+
+bot.IPC.on("awaitMessage", async (msg, callback) => {
+	const user = await bot.users.fetch(msg.usr, true);
+	let channel = await bot.channels.get(msg.ch);
+	if (!channel) channel = user.dmChannel;
+	if (!channel) channel = await user.createDM();
+	return callback((await bot.awaitPMMessage(channel, user, msg.timeout ? msg.timeout : undefined, msg.filter ? msg.filter : undefined)).content);
 });
 
 bot.IPC.on("updating", async (msg, callback) => {

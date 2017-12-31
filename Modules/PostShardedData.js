@@ -24,27 +24,4 @@ module.exports = async bot => {
 			winston.warn(`Failed to POST to bots.discord.pw`, { statusCode: res.status });
 		}
 	}
-
-	// Send server amount to Discordbots.org per shard
-	if (tokens.discordBotsOrg) {
-		let res;
-		try {
-			res = await snekfetch.post(`https://discordbots.org/api/bots/${bot.user.id}/stats`).set({
-				Accept: "application/json",
-				Authorization: tokens.discordBotsOrg,
-				"Content-Type": "application/json",
-			}).send({
-				server_count: bot.guilds.size,
-				shard_id: Number(process.env.SHARD_ID),
-				shard_total: Number(process.env.SHARD_COUNT),
-			});
-		} catch (err) {
-			winston.warn(`Failed to post to Discordbots.org...\n`, err);
-		}
-		if (res && res.status === 200) {
-			winston.info(`Succesfully POSTed to discordbots.org`);
-		} else {
-			winston.warn(`Failed to POST to discordbots.org`, { statusCode: res.status });
-		}
-	}
 };
