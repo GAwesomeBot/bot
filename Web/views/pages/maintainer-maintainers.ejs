@@ -6,32 +6,34 @@
 
 	<link rel="stylesheet" href="/static/css/auto-complete.css">
 	<script src="/static/js/auto-complete.min.js"></script>
+	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newMaintainer() {
-		var newMaintainerUser = $("#new-maintainer-user");
+		let newMaintainerUser = $("#new-maintainer-user");
 		if(newMaintainerUser.val()) {
 			newMaintainerUser.removeClass("is-danger");
 		} else {
 			newMaintainerUser.addClass("is-danger");
 		}
 
-		if(newMaintainerUser.val()) {
+		if(newMaintainerUser.val() && <%= serverData.isSudoMaintainer %>) {
 			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>?svrid=maintainer",
 				data: {
-					"new-user": newMaintainerUser.val()
+				  "new-user": newMaintainerUser.val(),
+				  "isSudo": $("#role-select").val() === "sudo",
 				},
 				success: function() {
-					$("#form").submit();
+					location.reload(true);
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete();">
+<body onload="setUserAutocomplete(); saveFormState();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -45,89 +47,235 @@
 					<h1 class="title">
 						Bot Maintainers
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									These users are just like you! They can access this maintainer console and fully control the bot. <i>Please</i> ask BitQuote before adding or removing bot maintainers.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								These users are just like you! <strong>Bot Maintainers</strong> are users which have <strong>extra powers</strong> over your bot to maintain it and offer support to guilds.
+								Here's a rundown of the permissions the three Maintainer roles have:
+								<ul>
+									<li>
+										<strong>Maintainers:</strong>
+										<br>
+										Can access the Maintainer Console
+										<br>
+										Have a "Maintainer" badge on their profile
+										<br>
+										Can run all commands on all guilds
+										<br>
+										Can run commands marked as Maintainer-Only
+									</li>
+									<li>
+										<strong>Sudo Maintainers:</strong>
+										<br>
+										Can do everything a Maintainer can
+										<br>
+										Have a "Sudo Maintainer" badge on their profile
+										<br>
+										Can add/remove (Sudo )Maintainers
+										<br>
+										Can access the Management section of the Maintainer Console
+										<br>
+										Can enter Sudo Mode and access all Server Consoles
+										<br>
+										Can run commands marked as Sudo-Maintainer-Only
+									</li>
+									<li>
+										<strong>Server Hosts:</strong>
+										<br>
+										Any Operating System user who has write access to GAB's root folder has the ability to gain all permissions. Any such user is considered "The Host".
+									</li>
+								</ul>
+								Additional Permissions can be configured down below.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
-							<div style="overflow-x: scroll;">
-								<% if(config.maintainers.length>0) { %>
-									<table class="table">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>ID</th>
-												<% if(showRemove) { %>
-													<th></th>
-												<% } %>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<config.maintainers.length; i++) { %>
-												<tr>
-													<td>
-														<img class="image is-24x24" src="<%= config.maintainers[i].avatar %>" alt="<%= config.maintainers[i].id %>">
-													</td>
-													<td>
-														<%= config.maintainers[i].name %>
-													</td>
-													<td>
-														<%= config.maintainers[i].id %>
-													</td>
-													<% if(showRemove) { %>
-														<td>
-															<button class="button is-small is-danger" name="maintainer-<%= i %>-removed" onclick="hide_update_modal = true;">
-																<span>Remove</span>
-																<span class="icon is-small">
-																	<i class="fa fa-times"></i>
-																</span>
-															</button>
-														</td>
+						</div>
+					</article>
+					<form id="form1" action="<%= currentPage %>?svrid=maintainer" method="post">
+						<div class="field" style="overflow-x: scroll;">
+							<% if(config.maintainers.length>0) { %>
+							<table class="table is-fullwidth">
+								<thead>
+								<tr>
+									<th></th>
+									<th>Username</th>
+									<th>ID</th>
+									<th></th>
+								</tr>
+								</thead>
+								<tbody>
+								<% config.maintainers.forEach(maintainer => { %>
+								<tr>
+									<td>
+										<img class="image is-24x24" src="<%= maintainer.avatar %>" alt="<%= maintainer.id %>">
+									</td>
+									<td>
+                                        <%= maintainer.name %>
+                                        <% if (maintainer.isSudoMaintainer) { %>
+											&nbsp;
+											<span class="tag">Sudo Maintainer</span>
+                                        <% } %>
+									</td>
+									<td>
+										<%= maintainer.id %>
+									</td>
+									<td>
+										<div class="field is-grouped">
+											<div class="control">
+												<button class="button is-small is-danger" name="maintainer-removed" value="<%= maintainer.id %>" onclick="hide_update_modal = true;"<% if(!serverData.isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
+													<span>Remove</span>
+													<span class="icon is-small">
+														<i class="fa fa-times"></i>
+													</span>
+												</button>
+											</div>
+											<div class="control">
+												<button class="button is-small <% if (maintainer.isSudoMaintainer) { %>is-warning<% } else { %>is-primary<% } %>" name="maintainer-sudo" value="<%= maintainer.id %>"
+														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers? Sudo Maintainers can access all bot data and configuration; be careful!<% } %>');"<% if(!serverData.isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
+													<% if (maintainer.isSudoMaintainer) { %>
+														<span>Revoke Sudo</span>
+													<% } else { %>
+														<span>Grant Sudo</span>
 													<% } %>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message">
-										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+													<span class="icon is-small">
+														<i class="fa fa-star"></i>
+													</span>
+												</button>
+											</div>
 										</div>
-										<div class="message-body">
-											There are no bot maintainers. How is this even possible?!
-										</div>
-									</article>
-									<br>
-								<% } %>
-							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
-										<input id="new-maintainer-user" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+									</td>
+								</tr>
+								<% }); %>
+								</tbody>
+							</table>
+							<% } else { %>
+							<article class="message" style="margin-bottom: 0px;">
+								<div class="message-header">
+									<p>
+										<span class="icon">
+											<i class="fa fa-meh-o"></i>
+										</span>
+										Nothing to see here
 									</p>
-									<p class="control">
+								</div>
+								<div class="message-body">
+									There are no bot maintainers. How is this even possible?!
+								</div>
+							</article>
+							<br>
+							<% } %>
+						</div>
+						<% if (serverData.isSudoMaintainer) { %>
+						<div class="field is-horizontal">
+							<div class="field-body">
+								<div class="field is-grouped">
+									<div class="control is-expanded">
+										<input id="new-maintainer-user" class="input user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode != 13;">
+									</div>
+									<div class="control">
+										<div class="select">
+											<select id="role-select">
+												<option value="standard">Standard Maintainer</option>
+												<option value="sudo">Sudo Maintainer</option>
+											</select>
+										</div>
+									</div>
+									<div class="control">
 										<a class="button is-primary" onclick="newMaintainer();">
 											<span class="icon">
 										        <i class="fa fa-plus"></i>
 										    </span>
 										    <span>Add</span>
 										</a>
-									</p>
+									</div>
 								</div>
 							</div>
-						</form>
-					</div>
+						</div>
+						<% } %>
+					</form>
+					<br>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<input name="additional-perms" value="true" style="display: none;">
+						<h4 class="subtitle is-4">
+							Additional Permissions
+						</h4>
+						<div class="content">
+							<dl>
+								<div class="field">
+									<dt>
+										Eval &nbsp;
+										<div class="select is-small">
+											<select name="perm-eval"<%= (config.perms.eval === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= config.perms.eval === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= config.perms.eval === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= config.perms.eval === 0 ? " selected" : ""%>>Only The Host</option>
+											</select>
+										</div>
+									</dt>
+									<dd>&bull; Can run the <code>eval</code> command</dd>
+									<dd>&bull; Can access the Eval section in the Maintainer Console</dd>
+									<dd>&bull; Can elevate their permissions to The Host</dd>
+								</div>
+								<div class="field">
+									<dt>
+										Sudo Mode &nbsp;
+										<div class="select is-small">
+											<select name="perm-sudoMode"<%= (config.perms.sudoMode === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= config.perms.sudoMode === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= config.perms.sudoMode === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= config.perms.sudoMode === 0 ? " selected" : ""%>>Only The Host</option>
+											</select>
+										</div>
+									</dt>
+									<dd>&bull; Can enter "Sudo Mode", and gain Level 3 Admin Perms in any guild</dd>
+								</div>
+								<div class="field">
+									<dt>
+										Management &nbsp;
+										<div class="select is-small">
+											<select name="perm-management"<%= (config.perms.management === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= config.perms.management === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= config.perms.management === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= config.perms.management === 0 ? " selected" : ""%>>Only The Host</option>
+											</select>
+										</div>
+									</dt>
+									<dd>&bull; Can enter the Management sections in the Maintainer Console</dd>
+								</div>
+								<div class="field">
+									<dt>
+										Administration &nbsp;
+										<div class="select is-small">
+											<select name="perm-administration"<%= (config.perms.administration === 0 && !serverData.isHost) || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= config.perms.administration === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= config.perms.administration === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= config.perms.administration === 0 ? " selected" : ""%>>Only The Host</option>
+											</select>
+										</div>
+									</dt>
+									<dd>&bull; Can enter the Global Option sections in the Maintainer Console</dd>
+									<dd>&bull; Can run any Maintainer Commands that modify the Bot User, such as <code>username</code></dd>
+									<dd>&bull; Can reload any command using the <code>reload</code> command</dd>
+								</div>
+								<div class="field">
+									<dt>
+										Shutdown &nbsp;
+										<div class="select is-small">
+											<select name="perm-shutdown"<%= (config.perms.shutdown === 0 && !serverData.isHost) || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= config.perms.shutdown === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= config.perms.shutdown === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= config.perms.shutdown === 0 ? " selected" : ""%>>Only The Host</option>
+											</select>
+										</div>
+									</dt>
+									<dd>&bull; Can run the <code>shutdown</code> and <code>restart</code> commands</dd>
+									<dd>&bull; Can manage all Shards and the Master</dd>
+								</div>
+							</dl>
+						</div>
+						<br>
+                        <% var formButtonsUnsaved = false; %>
+                        <% include ../partials/form-buttons %>
+                        <% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

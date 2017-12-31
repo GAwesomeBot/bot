@@ -1,66 +1,77 @@
-const convert = require("convert-units");
-const fx = require("money");
-
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	const args = suffix.split(" ");
-	if(args.length == 4 && args[2].toLowerCase() == "to") {
-		args.splice(2, 1);
-	}
-	if(args.length == 3 && args[0] && !isNaN(args[0]) && args[1] && args[2]) {
-		try {
-			msg.channel.createMessage({
+module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, documents, msg, commandData) => {
+	if (msg.suffix) {
+		const args = msg.suffix.split(/\s+/);
+		if (args.length === 4 && args[2].toLowerCase().trim() === "to") args.splice(2, 1);
+		if (args.length === 3 && !isNaN(args[0]) && args[1] && args[2]) {
+			let m = await msg.channel.send({
 				embed: {
-                    author: {
-                        name: bot.user.username,
-                        icon_url: bot.user.avatarURL,
-                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                    },
-                    color: 0x00FF00,
-					title: "Conversion Result:",
-					description: `${Math.round(convert(args[0]).from(args[1]).to(args[2]) * 1000) / 1000} ${args[2]}`
-				}
+					color: Colors.INFO,
+					title: `⌛ Converting...`,
+					description: `This shouldn't take long!`,
+				},
 			});
-		} catch(err) {
 			try {
-				msg.channel.createMessage({
-					embed: {
-                        author: {
-                            name: bot.user.username,
-                            icon_url: bot.user.avatarURL,
-                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                        },
-                        color: 0x00FF00,
-						title: "Conversion Result",
-						description: `${(Math.round(fx(parseFloat(args[0])).from(args[1].toUpperCase()).to(args[2].toUpperCase())) * 100) / 100} ${args[2].toUpperCase()}`
+				let res = await client.workerManager.getValueFromWorker(WorkerTypes.CONVERT, { data: { content: args[0], from: args[1], to: args[2] } });
+				if (res.result && res.type) {
+					switch (res.type) {
+						case "money": {
+							return m.edit({
+								embed: {
+									color: Colors.RESPONSE,
+									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(res.result * 100) / 100}**${args[2].toUpperCase()}**`,
+								},
+							});
+						}
+						case "unit": {
+							return m.edit({
+								embed: {
+									color: Colors.RESPONSE,
+									description: `${args[0]}**${args[1]}** is ${res.result}**${args[2]}**`,
+								},
+							});
+						}
 					}
-				});
-			} catch(err) {
-				winston.warn(`Unsupported conversion units '${args[1]}' and '${args[2]}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-				msg.channel.createMessage({
-					embed: {
-                        author: {
-                            name: bot.user.username,
-                            icon_url: bot.user.avatarURL,
-                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                        },
-                        color: 0xFF0000,
-						description: `I don't support that unit, please try something else ↩. You can use standard currency codes or any of [these](https://github.com/ben-ng/convert-units#supported-units)`
+				}
+			} catch (e) {
+				switch (e) {
+					case "FAILED_TO_CONVERT_CURRENCY_OR_UNITS": {
+						return m.edit({
+							embed: {
+								color: Colors.SOFT_ERR,
+								title: `I was unable to convert your currencies or units... 😔`,
+								description: `Please make sure you use the right currency codes or the right units!\nYou can use any standard currency codes or any of [these units](https://github.com/ben-ng/convert-units#supported-units)`,
+							},
+						});
 					}
-				});
+					case "FAILED_TO_CONVERT_UNITS": {
+						return m.edit({
+							embed: {
+								color: Colors.SOFT_ERR,
+								title: `I was unable to convert your units... 😔`,
+								description: `Please make sure you used the right units! 🔄\nYou can use any of [these units](https://github.com/ben-ng/convert-units#supported-units)`,
+							},
+						});
+					}
+					default: {
+						return m.edit({
+							embed: {
+								color: Colors.ERR,
+								title: `An unknown error occured.. This scares me!`,
+								description: `This is the error I received:\`\`\`js\n${e}\`\`\``,
+							},
+						});
+					}
+				}
 			}
 		}
 	} else {
-		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage({
+		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
+		msg.channel.send({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0xFF0000,
-				description: `Huh? Make sure to use the syntax \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}\``
-			}
+				color: Colors.INVALID,
+				title: `I need something to convert! 🤓`,
+				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
+			},
 		});
 	}
 };

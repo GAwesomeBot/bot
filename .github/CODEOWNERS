@@ -1,0 +1,21 @@
+# Code ownership file
+*    @GilbertGobbels
+
+/.github/    @KingDGrizzle
+/Configurations/    @GilbertGobbels @KingDGrizzle
+/Commands/    @KingDGrizzle
+/Database/    @GilbertGobbels
+/Events/    @KingDGrizzle
+/Internals/    @GilbertGobbels @KingDGrizzle
+/Modules/    @KingDGrizzle @GilbertGobbels
+/Web/    @GilbertGobbels
+
+/Modules/Utils/GetValue.js    @GilbertGobbels
+/Modules/Console.js    @GilbertGobbels
+/Modules/Sharder.js    @GilbertGobbels
+/Modules/IPC.js    @GilbertGobbels
+/Modules/Updater.js    @GilbertGobbels
+/bot.js    @GilbertGobbels
+/package.json    @KingDGrizzle
+/.eslintrc.js    @KingDGrizzle
+/LICENSE    @GilbertGobbels

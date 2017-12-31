@@ -1,0 +1,38 @@
+{
+	"new_member_message": [
+		"@user, welcome to our little corner of hell!",
+		"@user has joined the server.",
+		"@user, you're gonna have a jolly good time here!",
+		"@user is new here.", 
+		"@user is here, everybody!",
+		"@user sends his/her regards.",
+		"@user, welcome to the server!",
+		"@user is our next victim...",
+		"Hello @user!",
+		"Please welcome our newest member, @user"
+	],
+	"member_online_message": [
+		"@user is now online!",
+		"Welcome back @user!"
+	],
+	"member_offline_message": [
+		"@user is gone (for now)",
+		"@user has gone offline."
+	],
+	"member_removed_message": [
+		"@user has left us :slight_frown:",
+		"Goodbye @user",
+		"@user Come back!",
+		"@user is gone *cries*",
+		"@user has left the server",
+		"RIP @user",
+		"Uh-oh, @user went away",
+		"Please convince @user to come back!"
+	],
+	"member_banned_message": [
+		"@user has been banned"
+	],
+	"member_unbanned_message": [
+		"@user has been unbanned"
+	]
+}

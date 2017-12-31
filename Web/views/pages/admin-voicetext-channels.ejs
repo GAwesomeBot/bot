@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Voicetext Channels - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Voicetext Channels - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -20,18 +20,15 @@
 					<h1 class="title">
 						Voicetext Channels
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									AwesomeBot can automatically create <strong>text channels corresponding to voice channels</strong> and add members to them as they join voice chat. This is great for people who can't use their mic, or for sharing links and images while talking.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								GAwesomeBot can automatically create <strong>text channels corresponding to voice channels</strong> and add members to them as they join voice chat. This is great for people who can't use their mic, or for sharing links and images while talking.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field">
 							<label class="label">Enabled in these channel(s):</label>
 							<% for(var i=0; i<voiceChannelData.length; i++) { %>
 								<label class="checkbox">
@@ -40,12 +37,12 @@
 								</label>
 								<br>
 							<% } %>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

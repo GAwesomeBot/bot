@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Roles - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Roles - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -20,23 +20,20 @@
 					<h1 class="title">
 						Roles
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									There are a few super-useful commands in AwesomeBot to manage roles and their permissions on your server - they are listed below. You'll love being able to use these commands to manage roles even when you're not on your computer.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								There are a few super-useful commands in GAwesomeBot to manage roles and their permissions on your server - they are listed below. You'll love being able to use these commands to manage roles without having to use the annoying mobile client.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
-							<% var commandData = configData.commands.roleinfo;commandData.name = "roleinfo";commandData.description = commandDescriptions.roleinfo;commandData.category = commandCategories.roleinfo; %>
-							<% include ../partials/admin-command-item %>
-							<% var commandData = configData.commands.role;commandData.name = "role";commandData.description = commandDescriptions.role;commandData.category = commandCategories.role; %>
-							<% include ../partials/admin-command-item %>
-							<span class="role-options">
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<% var commandData = configData.commands.roleinfo;commandData.name = "roleinfo";commandData.description = commandDescriptions.roleinfo;commandData.category = commandCategories.roleinfo; %>
+						<% include ../partials/admin-command-item %>
+						<% var commandData = configData.commands.role;commandData.name = "role";commandData.description = commandDescriptions.role;commandData.category = commandCategories.role; %>
+						<% include ../partials/admin-command-item %>
+						<div class="role-options <%= commandData.isEnabled ? '' : 'is-hidden' %>">
+							<div class="field">
 								Allow users to join these roles with the <code>role</code> command:
 								<p class="control">
 									<% for(var i=0; i<roleData.length; i++) { %>
@@ -47,16 +44,16 @@
 										<br>
 									<% } %>
 								</p>
+							</div>
 								<br>
-							</span>
-							<% var commandData = configData.commands.perms;commandData.name = "perms";commandData.description = commandDescriptions.perms;commandData.category = commandCategories.perms; %>
-							<% include ../partials/admin-command-item %>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						</div>
+						<% var commandData = configData.commands.perms;commandData.name = "perms";commandData.description = commandDescriptions.perms;commandData.category = commandCategories.perms; %>
+						<% include ../partials/admin-command-item %>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

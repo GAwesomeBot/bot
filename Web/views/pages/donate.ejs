@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Donate to AwesomeBot</title>
+	<title>Donate to GAwesomeBot</title>
 	<% include ../partials/head %>
 
 	<script>
@@ -31,29 +31,58 @@
                         </h2>
 						<% if(charities.length>0) { %>
 	                        <h5 class="subtitle is-5">
-	                            The AwesomeBot team doesn't accept donations (<a href="/wiki/FAQs#donations">here's why</a>). Instead, we&#39;d prefer that you donate to one or more of the following charities:
+								<%-donate_subtitle%>
 	                        </h5>
 							<% for(var i=0; i<charities.length; i++) { %>
-		                        <a class="media" href="<%= charities[i].donate_url %>">
-		                            <div class="media-left">
-		                                <img class="image is-32x32" src="<%= charities[i].icon_url %>">
+		                        <a class="level is-mobile" href="<%= charities[i].donate_url %>">
+		                            <div class="level-left">
+										<div class="level-item">
+											<img class="image is-32x32" src="<%= charities[i].icon_url %>">
+										</div>
+										<div class="level-item">
+											<p class="title is-3">
+                                                <%= charities[i].name %>
+                                                <% if(charities[i].country) { %>
+												<span class="tag is-rounded is-light"><%= charities[i].country %></span>
+                                                <% } %>
+											</p>
+										</div>
 		                            </div>
-		                            <div class="media-content">
-		                                <p class="title is-3">
-											<%= charities[i].name %>
-											<% if(charities[i].country) { %>
-												<span class="tag is-light"><%= charities[i].country %></span>
-											<% } %>
-										</p>
-		                            </div>
-		                            <div class="media-right">
-		                                <span class="icon is-medium">
-		                                    <i class="fa fa-chevron-right"></i>
+		                            <div class="level-right">
+										<div class="level-item">
+		                                <span class="icon is-primary is-medium">
+		                                    <i class="fa fa-chevron-right fa-2x"></i>
 		                                </span>
+										</div>
 		                            </div>
 		                        </a>
 							<% } %>
 						<% } %>
+						<div style="display: none;" id="auttaja">
+							<h5 class="subtitle is-5">
+								Not every bot has a life as great as GAB's. Please help out these sad bots get a life of their own by adding them to your server today.
+							</h5>
+							<a class="level" href="https://auttaja.io">
+								<div class="level-left">
+									<div class="level-item">
+										<img class="image is-32x32" src="https://auttaja.io/static/logo.png">
+									</div>
+									<div class="level-item">
+										<p class="title is-3">
+											A sad bot, with abusive owners.
+											<span class="tag is-rounded is-light">US</span>
+										</p>
+									</div>
+								</div>
+								<div class="level-right">
+									<div class="level-item">
+										<span class="icon is-medium">
+											<i class="fa fa-chevron-right fa-2x"></i>
+										</span>
+									</div>
+								</div>
+							</a>
+						</div>
                     </div>
                 </div>
 			</div>
@@ -66,12 +95,26 @@
                         <i class="fa fa-frown-o"></i>
                     </span>
                 </a>
-                <br><br>
+				<div style="width: 100px; height: 24px;" id="auttaja-a">
+					<a style="visibility: hidden;" class="is-pulled-left button is-white is-small">Super sad bot list</a>
+				</div>
+                <br>
 			</div>
 		</div>
 	</section>
 
 	<% include ../partials/footer %>
 	<% include ../partials/scroll-top-button %>
+	<!-- Because joke bot wars are fun, *and jokes* -->
+	<script>
+			$('#auttaja-a').on('mouseenter', () => {
+				$('#auttaja-a a').css('visibility', 'visible');
+			}).on('mouseleave', () => {
+				$('#auttaja-a a').css('visibility', 'hidden');
+			})
+			$('#auttaja-a a').click(() => {
+				$('#auttaja').toggle();
+			})
+	</script>
 </body>
 </html>

@@ -1,182 +1,318 @@
-const default_tags = require("./../../Configuration/tags.json");
+const defaultTags = require("../../Configurations/tags.json");
+const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-    // settings
-	this.hasArgs = false;
-	this.isAdmin = false;
-	this.isCommand = false;
-	this.isLocked = false;
-	this.tag = "";
-	this.value = "";
+class TagCommand {
+	constructor ({ bot, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
+		// Command Data
+		this.suffix = msg.suffix;
+		this.channel = msg.channel;
+		this.msg = msg;
+		this.commandData = commandData;
+		this.bot = bot;
+		this.config = configJS;
 
-	this.clear = () => {
-        // requires admin
-		if(!this.isAdmin) {
-			winston.warn("Issued tag clear command without admin rights", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-			return;
-		}
+		// User/Server Data
+		this.serverDocument = serverDocument;
+		this.isAdmin = this.bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
 
-		msg.channel.createMessage("Are you sure you want to clear all tags?").then(() => {
-			bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-				if(this.confirmAction(message)) {
-					serverDocument.config.tags.list = [];
-					winston.info("Cleared all tags", {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-					msg.channel.createMessage("All tags cleared 🗑");
-				}
+		// New Tag Data
+		this.isCommand = false;
+		this.isLocked = false;
+		this.tag = "";
+		this.value = "";
+
+		// Constants
+		this.Colors = Colors;
+		this.Text = Text;
+		this.LogLevels = LoggingLevels;
+	}
+
+	// List all tags
+	async list () {
+		if (!this.checkPerms("list")) {
+			this.channel.send({
+				embed: {
+					color: this.Colors.MISSING_PERMS,
+					description: `Only admins can list all tags. ✋`,
+				},
 			});
-		});
-	};
-
-	this.confirmAction = message => {
-		return ~config.yes_strings.includes(message.content.trim().toLowerCase());
-	};
-
-	this.delete = () => {
-        // requires admin if locked
-		if(this.isLocked && !this.isAdmin) {
-			msg.channel.createMessage(`${msg.author.mention} Only an admin can delete \`${this.tag}\`. You're not an admin 😒`);
 			return;
 		}
-
-		const tag_data = this.get();
-		if(!tag_data) {
-			msg.channel.createMessage(`Tag \`${this.tag}\` does not exist 😞`);
-			return;
-		}
-
-		tag_data.remove(err => {
-			if(err) {
-				winston.error(`Failed to delete tag '${this.tag}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-			}
-		});
-		msg.channel.createMessage(`Tag \`${this.tag}\` deleted (✖╭╮✖)`);
-	};
-
-	this.execute = () => {
-		if(!this.tag) {
-			return;
-		}
-
-		switch(this.tag) {
-			case "clear":
-				this.clear();
-				break;
-			case "defaults":
-				this.loadDefaults();
-				break;
-			default:
-                // deleting with empty or "." (backwards-compatibility)
-				if(this.value == "" || this.value == ".") {
-					if(this.hasArgs) {
-						this.delete();
-						return;
-					}
-				}
-				if(this.value == "") {
-					this.show();
-				}
-				else {
-					this.save();
-				}
-		}
-	};
-	this.get = tag => {
-		tag = tag || this.tag;
-		return serverDocument.config.tags.list.id(tag);
-	};
-	this.loadDefaults = () => {
-		serverDocument.config.tags.list = default_tags;
-		msg.channel.createMessage("Loaded default tags 📥");
-	};
-	this.list = () => {
-		const tags = serverDocument.config.tags.list.map(tag => {
+		const info = this.serverDocument.config.tags.list.map(tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
-			return `**${tag._id}**: ${content}`;
+			const useSpacing = tag.isLocked && tag.isCommand;
+			return `» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «\n\t${content}`;
 		});
-		if(tags.length) {
-			msg.channel.createMessage(tags.join("\n"));
+		if (info.length) {
+			const chunks = info.chunk(10);
+			const description = [];
+			for (const chunk of chunks) {
+				description.push(chunk.join("\n\n"));
+			}
+			const menu = new PaginatedEmbed(this.msg, description, {
+				title: `${this.msg.guild}'s tags:`,
+				color: this.Colors.RESPONSE,
+				footer: `Page {current description} out of {total descriptions}`,
+			});
+			await menu.init();
+		} else {
+			this.channel.send({
+				embed: {
+					color: this.Colors.SOFT_ERR,
+					description: "This server doesn't have any tags yet! 📑",
+				},
+			});
 		}
-		else {
-			msg.channel.createMessage("No tags 🙅‍♂️");
-		}
-	};
-	this.parse = () => {
-		const params = suffix.split("|");
-		if(params.length >= 1) {
+	}
+
+	// Parse command suffix
+	parse () {
+		const params = this.suffix.split("|");
+
+		if (params.length >= 1) {
 			this.tag = params[0].trim().toLowerCase();
 		}
-		if(params.length >= 2) {
+
+		if (params.length >= 2) {
 			this.value = params[1].trim();
 		}
-		if(params.length >= 3) {
-			const opts = params[2].trim().toLowerCase().split(/\s*,\s*/);
-			if(~opts.indexOf("command")) {
+
+		if (params.length >= 3) {
+			const tagOpts = params[2].trim().toLowerCase().split(/\s*,\s*/);
+			if (tagOpts.includes("command")) {
 				this.isCommand = true;
 			}
-			if(~opts.indexOf("lock")) {
+			if (tagOpts.includes("lock")) {
 				this.isLocked = true;
 			}
 		}
-		const admin_user = serverDocument.config.admins.id(msg.author.id);
-		this.isAdmin = admin_user && admin_user.level;
-		this.hasArgs = params.length > 1;
-		return true;
-	};
-	this.save = () => {
-		const tag_data = this.get();
-		if(!tag_data) {
-			serverDocument.config.tags.list.push({
-				_id: this.tag,
-				content: this.value,
-				isCommand: this.isCommand,
-				isLocked: this.isLocked
-			});
-			msg.channel.createMessage(`New ${this.isCommand ? "command " : ""}tag \`${this.tag}\` created 😃`);
-		}
-		else {
-            // locked and require admin?
-			if(tag_data.isLocked && !this.isAdmin) {
-				msg.channel.createMessage(`${msg.author.mention} Are you an admin? Last time I checked, you aren't 😒`);
-				return;
-			}
 
-			msg.channel.createMessage(`Tag \`${this.tag}\` already exists. Are you sure you want to overwrite it?`).then(() => {
-				bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-					if(this.confirmAction(message)) {
-						tag_data.content = this.value;
-						tag_data.isCommand = this.isCommand;
-						tag_data.isLocked = this.isLocked;
-						serverDocument.save(err => {
-							if(err) {
-								winston.error(`Failed to update tag \`${this.tag}\``, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id, tag_content: this.value });
-								msg.channel.createMessage(`Failed to update tag \`${this.tag}\``);
-							}
-							else {
-								winston.info(`Updated tag \`${this.tag}\``, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id, tag_content: this.value });
-								msg.channel.createMessage(`Tag \`${this.tag}\` updated ✏️`);
-							}
-						});
-					}
-				});
+		return params.length !== 1 || ["clear", "defaults"].includes(params[0]);
+	}
+
+	// Execute tag command
+	async execute () {
+		switch (this.tag) {
+			case "clear":
+				await this.clear();
+				break;
+			case "defaults":
+				await this.loadDefaults();
+				break;
+			default:
+				if (this.value === "" || this.value === ".") {
+					await this.deleteTag();
+					return;
+				}
+				await this.update();
+		}
+	}
+
+	// Show a tag
+	async show (tag) {
+		const data = this.get(tag);
+		if (data) {
+			this.channel.send({
+				embed: {
+					color: this.Colors.RESPONSE,
+					description: data.content,
+				},
+			});
+		} else {
+			this.channel.send({
+				embed: {
+					color: this.Colors.SOFT_ERR,
+					description: `Tag \`${this.suffix}\` does not exist.`,
+					footer: {
+						text: `Use "${this.msg.guild.commandPrefix}${this.commandData.name} ${this.suffix} | <content>" to create it.`,
+					},
+				},
 			});
 		}
-	};
-	this.show = tag => {
-		const tag_data = this.get(tag);
-		if(tag_data) {
-			msg.channel.createMessage(tag_data.content);
-		}
-		else {
-			msg.channel.createMessage(`Tag \`${suffix}\` does not exist. Use \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${suffix}|<content>\` to create it.`);
-		}
-	};
-	if(!suffix) {
-		this.list();
-		return;
 	}
-	if(this.parse()) {
-		this.execute();
-		return;
+
+	// Delete all tags
+	async clear () {
+		if (!this.checkPerms("clear")) {
+			return;
+		}
+
+		await this.channel.send({
+			embed: {
+				color: this.Colors.PROMPT,
+				description: "Are you sure you want to clear **all** tags?",
+				footer: {
+					text: "This will remove them forever! You have 1 minute to respond.",
+				},
+			},
+		});
+		const response = (await this.channel.awaitMessages(res => res.author.id === this.msg.author.id, { max: 1, time: 60000 })).first();
+		if (response) {
+			try {
+				await response.delete();
+			} catch (_) {
+				// /shrug
+			}
+		}
+		if (response && this.confirmAction(response)) {
+			this.serverDocument.config.tags.list = [];
+			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
+			this.msg.channel.send({
+				embed: {
+					color: this.Colors.SUCCESS,
+					description: "All tags have been cleared 🗑",
+				},
+			});
+		}
 	}
-	this.show();
+
+	// Delete given tag
+	deleteTag () {
+		const data = this.get();
+		if (!data) {
+			return this.channel.send({
+				embed: {
+					color: this.Colors.SOFT_ERR,
+					description: `Tag \`${this.tag}\` does not exist 😞`,
+				},
+			});
+		}
+
+		if (this.checkPerms(data.isCommand ? "deleteCommand" : "delete")) {
+			data.remove();
+			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
+			this.channel.send({
+				embed: {
+					color: this.Colors.SUCCESS,
+					description: `Deleted tag \`${this.tag}\` (✖╭╮✖)`,
+				},
+			});
+		} else {
+			this.channel.send({
+				embed: {
+					color: this.Colors.MISSING_PERMS,
+					description: `Only admins can delete \`${this.tag}\` ✋`,
+				},
+			});
+		}
+	}
+
+	// Save tag data
+	async update () {
+		const data = this.get();
+		if (!data) {
+			if (this.checkPerms(this.isCommand ? "createCommand" : "create")) {
+				this.serverDocument.config.tags.list.push({
+					_id: this.tag,
+					content: this.value,
+					isCommand: this.isCommand,
+					isLocked: this.isLocked,
+				});
+				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
+				this.channel.send({
+					embed: {
+						color: this.Colors.SUCCESS,
+						description: `New ${this.isCommand ? "command " : ""}tag \`${this.tag}\` created 😃`,
+					},
+				});
+			} else {
+				this.channel.send({
+					embed: {
+						color: this.Colors.MISSING_PERMS,
+						description: `Only admins can create new${this.isCommand ? " command " : " "}tags ✋`,
+					},
+				});
+			}
+		} else if (this.checkPerms("update")) {
+			await this.channel.send({
+				embed: {
+					color: this.Colors.PROMPT,
+					description: `Tag \`${this.tag}\` already exists. Do you want to overwrite it?`,
+					footer: {
+						text: "You have 1 minute to respond.",
+					},
+				},
+			});
+			const response = (await this.channel.awaitMessages(res => res.author.id === this.msg.author.id, { max: 1, time: 60000 })).first();
+			if (response) {
+				try {
+					await response.delete();
+				} catch (_) {
+					// /shrug
+				}
+			}
+			if (response && this.confirmAction(response)) {
+				data.content = this.value;
+				data.isCommand = this.isCommand;
+				data.isLocked = this.isLocked;
+				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
+				this.channel.send({
+					embed: {
+						color: this.Colors.SUCCESS,
+						description: `Tag \`${this.tag}\` updated! ✏`,
+					},
+				});
+			}
+		} else {
+			this.channel.send({
+				embed: {
+					color: this.Colors.MISSING_PERMS,
+					description: `Only admins can update this tag. ✋`,
+				},
+			});
+		}
+	}
+
+	// Get tag data
+	get (tag) {
+		tag = tag || this.tag;
+		return this.serverDocument.config.tags.list.id(tag);
+	}
+
+	// Confirm a prompt response
+	confirmAction (message) {
+		return this.config.yesStrings.includes(message.content.trim().toLowerCase());
+	}
+
+	// Check the required perms (@everyone or Admin-only) for a subcommand
+	checkPerms (subcmd) {
+		switch (subcmd) {
+			case "clear":
+				return this.isAdmin;
+			case "list":
+				return this.isAdmin || !this.serverDocument.config.tags.listIsAdminOnly;
+			case "delete":
+				return this.isAdmin || (!this.serverDocument.config.tags.removingIsAdminOnly && !this.get().isLocked);
+			case "deleteCommand":
+				return this.isAdmin || (!this.serverDocument.config.tags.removingCommandIsAdminOnly && !this.get().isLocked);
+			case "create":
+				return this.isAdmin || !this.serverDocument.config.tags.addingIsAdminOnly;
+			case "createCommand":
+				return this.isAdmin || !this.serverDocument.config.tags.addingCommandIsAdminOnly;
+			case "update":
+				return this.isAdmin || !this.get().isLocked;
+		}
+	}
+
+	// Load default tags
+	loadDefaults () {
+		this.serverDocument.config.tags.list = defaultTags;
+		this.channel.send({
+			embed: {
+				color: this.Colors.SUCCESS,
+				description: "Loaded default tags! 📥",
+			},
+		});
+	}
+}
+
+module.exports = async (main, documents, msg, commandData) => {
+	const tagCommand = new TagCommand(main, documents, msg, commandData);
+	if (!msg.suffix) {
+		await tagCommand.list();
+	} else if (tagCommand.parse()) {
+		await tagCommand.execute();
+	} else {
+		await tagCommand.show();
+	}
 };

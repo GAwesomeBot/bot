@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Trivia Sets - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Trivia Sets - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -34,9 +34,10 @@
 					success: function() {
 						saveFormState();
 						$("#form").submit();
+						location.reload();
 					}
-				});
-	        };
+				}).fail(data => location.href = "/error?err=json")
+            };
 	        reader.readAsText(newTriviaFile);
 		}
 	}
@@ -56,19 +57,15 @@
 					<h1 class="title">
 						Custom Trivia Sets
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								AwesomeBot's built-in trivia set is great, but you might want to add a <strong>custom question bank</strong> specific to your server. Trivia sets can be accessed from the <code>trivia</code> command and are uploaded as <strong>JSON</strong> files.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
-							<div style="overflow-x: scroll;">
+					<article class="message is-primary">
+						<div class="message-body">
+							GAwesomeBot's built-in trivia set is great, but you might want to add a <strong>custom question bank</strong> specific to your server. Trivia sets can be accessed from the <code>trivia</code> command and are uploaded as <strong>JSON</strong> files.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+							<div class="field" style="overflow-x: scroll;">
 								<% if(configData.trivia_sets.length>0) { %>
-									<table class="table">
+									<table class="table is-fullwidth">
 										<thead>
 											<tr>
 												<th>Name</th>
@@ -78,6 +75,7 @@
 										</thead>
 										<tbody>
 											<% for(var i=0; i<configData.trivia_sets.length; i++) { %>
+                                            <tr>
 												<td>
 													<%= configData.trivia_sets[i]._id %>
 												</td>
@@ -85,30 +83,34 @@
 													<%= configData.trivia_sets[i].items.length %>
 												</td>
 												<td>
-													<a class="button is-small" href="<%= currentPage %>?svrid=<%= serverData.id %>&i=<%= i %>" target="_blank">
+													<a class="button is-small" href="<%= currentPage %>?svrid=<%= serverData.id %>&i=<%= i %>" target="_blank" download="<%= configData.trivia_sets[i]._id %>.json">
 														<span>Download</span>
 														<span class="icon is-small">
 															<i class="fa fa-download"></i>
 														</span>
 													</a>
 													&nbsp;
-													<button class="button is-small is-danger" name="trivia_set-<%= i %>-removed" onclick="saveFormState();">
+                                                    <input type="checkbox" id="trivia_set-<%= i %>-removed" name="trivia_set-<%= i %>-removed" style="display: none;">
+                                                    <button class="button is-small is-danger" onclick="$('#trivia_set-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
 														</span>
 													</button>
 												</td>
+                                            </tr>
 											<% } %>
 										</tbody>
 									</table>
 								<% } else { %>
-									<article class="message">
+									<article class="message" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											<p>
+												<span class="icon">
+													<i class="fa fa-meh-o"></i>
+												</span>
+												Nothing to see here
+											</p>
 										</div>
 										<div class="message-body">
 											You haven't uploaded any custom trivia sets yet. Select a file below to get started.
@@ -117,30 +119,46 @@
 									<br>
 								<% } %>
 							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
+							<div class="field is-horizontal">
+								<div class="field-body">
+									<div class="field is-grouped">
+									<div class="control is-expanded">
 										<input id="new-trivia-name" class="input" type="text" minlength="1" maxlength="50" placeholder="Name">
-									</p>
-									<p class="control">
-										<input id="new-trivia-file" class="button" type="file" accept="application/static/json" style="padding: 6px;">
-									</p>
-									<p class="control">
+									</div>
+									<div class="control">
+										<div class="file has-name">
+											<label class="file-label">
+												<input id="new-trivia-file" class="file-input" type="file" accept=".json, application/static/json" onchange="$('#new-trivia-file-name').html(this.value.replace(/.*[\/\\]/, ''))">
+												<span class="file-cta">
+													<span class="file-icon">
+														<i class="fa fa-upload"></i>
+													</span>
+													<span class="file-label">
+														Choose a Trivia Set
+													</span>
+												</span>
+												<span id="new-trivia-file-name" class="file-name">
+													...
+												</span>
+											</label>
+										</div>
+									</div>
+									<div class="control">
 										<a class="button is-primary" onclick="newTrivia();">
 											<span class="icon">
 										        <i class="fa fa-upload"></i>
 										    </span>
 										    <span>Upload</span>
 										</a>
-									</p>
+									</div>
+									</div>
 								</div>
 							</div>
 							<br>
 							<% var formButtonsUnsaved = false; %>
 							<% include ../partials/form-buttons %>
 							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+					</form>
 				</div>
 			</div>
 		</div>

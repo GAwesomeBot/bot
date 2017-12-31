@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Tags - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Tags - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 	<script src="/static/js/form-change-listener.js"></script>
 	<script>
@@ -34,6 +34,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
@@ -54,41 +55,37 @@
 					<h1 class="title">
 						Tags
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								AwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
-							<h4 class="subtitle is-4">
-								General
-							</h4>
-							<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
-							<% include ../partials/admin-command-item %>
-							<span class="tag-options<% configData.commands.tag.isEnabled ? '' : ' is-hidden' %>">
-								<p class="control">
+					<article class="message is-primary">
+						<div class="message-body">
+							GAwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax. Locking a tag prevents the tag from being removed using the <code>tag</code> command, admins excluded.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<h4 class="subtitle is-4">
+							General
+						</h4>
+						<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
+						<% include ../partials/admin-command-item %>
+							<div class="field tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
+								<div class="field">
 									List all tags:
-									<span class="select is-small">
+									<div class="select is-small">
 										<select name="listIsAdminOnly">
 											<option value="false" <%= configData.tags.listIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.listIsAdminOnly ? "selected" : "" %>>Admin-only</option>
 										</select>
-									</span>
-								</p>
-								<p class="control">
+									</div>
+								</div>
+								<div class="field">
 									Add tags:
-									<span class="select is-small">
+									<div class="select is-small">
 										<select name="addingIsAdminOnly">
 											<option value="false" <%= configData.tags.addingIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.addingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
 										</select>
-									</span>
-								</p>
-								<p class="control">
+									</div>
+								</div>
+								<div class="field">
 									Add tag commands:
 									<span class="select is-small">
 										<select name="addingCommandIsAdminOnly">
@@ -96,8 +93,8 @@
 											<option value="true" <%= configData.tags.addingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
-								</p>
-								<p class="control">
+								</div>
+								<div class="field">
 									Remove tags:
 									<span class="select is-small">
 										<select name="removingIsAdminOnly">
@@ -105,8 +102,8 @@
 											<option value="true" <%= configData.tags.removingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
-								</p>
-								<p class="control">
+								</div>
+								<div class="field">
 									Remove tag commands:
 									<span class="select is-small">
 										<select name="removingCommandIsAdminOnly">
@@ -114,15 +111,15 @@
 											<option value="true" <%= configData.tags.removingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
-								</p>
-							</span>
+								</div>
+							</div>
 							<br>
 							<h4 class="subtitle is-4">
 								Tag List
 							</h4>
-							<div style="overflow-x: scroll;">
+							<div class="field" style="overflow-x: scroll;">
 								<% if(configData.tags.list.length>0) { %>
-									<table class="table">
+									<table class="table is-fullwidth">
 										<thead>
 											<tr>
 												<th>Name</th>
@@ -159,7 +156,8 @@
 														</p>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="tag-<%= configData.tags.list[i].index %>-removed" onclick="saveFormState();">
+														<input type="checkbox" id="tag-<%= configData.tags.list[i].index %>-removed" name="tag-<%= configData.tags.list[i].index %>-removed" style="display: none;">
+														<button class="button is-small is-danger" name="tag-<%= configData.tags.list[i].index %>-removed" onclick="$('#tag-<%= configData.tags.list[i].index %>-removed').attr('checked', true); saveFormState(); location.reload();">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>
@@ -171,12 +169,14 @@
 										</tbody>
 									</table>
 								<% } else { %>
-									<article class="message">
+									<article class="message" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											<p>
+												<span class="icon">
+													<i class="fa fa-meh-o"></i>
+												</span>
+												Nothing to see here
+											</p>
 										</div>
 										<div class="message-body">
 											You haven't added any tags yet. Save a snippet by filling out the form below.
@@ -185,38 +185,41 @@
 									<br>
 								<% } %>
 							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
-										<input id="new-tag-name" class="input" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
-									</p>
-									<p class="control">
-										<span class="select">
-											<select id="new-tag-type">
-												<option value="text">Text</option>
-												<option value="command">Command</option>
-											</select>
-										</span>
-									</p>
-									<p class="control">
-										<a class="button is-primary" onclick="newTag();">
-											<span class="icon">
-										        <i class="fa fa-plus"></i>
-										    </span>
-										    <span>Add</span>
-										</a>
-									</p>
+							<div class="field is-horizontal">
+								<div class="field-body">
+									<div class="field is-grouped">
+										<div class="control is-expanded">
+											<input id="new-tag-name" class="input" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+										</div>
+										<div class="control">
+											<span class="select">
+												<select id="new-tag-type">
+													<option value="text">Text</option>
+													<option value="command">Command</option>
+												</select>
+											</span>
+										</div>
+										<div class="control">
+											<a class="button is-primary" onclick="newTag();">
+												<span class="icon">
+										        	<i class="fa fa-plus"></i>
+										    	</span>
+										    	<span>Add</span>
+											</a>
+										</div>
+									</div>
 								</div>
 							</div>
-							<p class="control is-expanded">
-								<textarea id="new-tag-content" class="input" type="textarea" minlength="1" maxlength="1500" placeholder="Tag content (markdown)"></textarea>
-							</p>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						<div class="field">
+							<div class="control is-expanded">
+								<textarea id="new-tag-content" class="input" type="textarea" minlength="1" maxlength="1500" placeholder="Tag content" style="resize: vertical;"></textarea>
+							</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

@@ -1,0 +1,23 @@
+<% if (sudoMode) { %>
+<a class=" button is-fullwidth is-small is-warning" target="_blank" onclick="$('#sudo-modal').addClass('is-active')">
+				<span class="icon is-small">
+	                <i class="fa fa-exclamation"></i>
+	            </span>
+    <span>Sudo Mode</span>
+</a>
+<div class="modal" id="sudo-modal">
+    <div class="modal-background" onclick="$('#sudo-modal').removeClass('is-active')"></div>
+    <div class="modal-content">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="box has-text-centered">
+                    <p class="title is-4" style="color: #4a4a4a;">You are editing this Admin Console in Sudo Mode.</p>
+                    <br>
+                    <p class="subtitle is-5" style="color: #4a4a4a;">As a Sudo Maintainer, you can access the Admin Console for guilds in which you are not a Bot Admin. To choose which Maintainers can enter Sudo Mode, visit the Maintainer Console.<br>Do not use Sudo Mode to manage guilds that have not requested support. Respect every guild's desire for privacy when using your GAB.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close" onclick="$('#sudo-modal').removeClass('is-active')"></button>
+</div>
+<% } %>

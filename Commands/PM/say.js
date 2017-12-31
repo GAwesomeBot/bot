@@ -1,151 +1,54 @@
-module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandData) => {
-	if(suffix && suffix.indexOf("|")>-1) {
-		const svrname = suffix.substring(0, suffix.indexOf("|")).trim();
-		const chname = suffix.substring(suffix.indexOf("|") + 1).trim();
-		if(svrname && chname) {
-			const svr = bot.serverSearch(svrname, msg.author, userDocument);
-			if(svr) {
-				const member = svr.members.get(msg.author.id);
-				if(member) {
-					db.servers.findOne({_id: svr.id}, (err, serverDocument) => {
-						if(!err && serverDocument) {
-							if(bot.getUserBotAdmin(svr, serverDocument, member) > 0) {
-								const ch = bot.channelSearch(chname, svr);
-								if(ch) {
-									if(ch.type == 0) {
-										msg.channel.createMessage({
-											embed: {
-												author: {
-                                                    name: bot.user.username,
-                                                    icon_url: bot.user.avatarURL,
-                                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-												},
-												color: 0x9ECDF2,
-												description: `What do you want me to say in #${ch.name} on ${svr.name}?`
-											}
-										}).then(() => {
-											bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-												ch.createMessage(message.content).then(() => {
-													msg.channel.createMessage({
-														embed: {
-                                                            author: {
-                                                                name: bot.user.username,
-                                                                icon_url: bot.user.avatarURL,
-                                                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                                            },
-															color: 0x00FF00,
-															description: `Cool, check #${ch.name} 📢`
-														}
-													});
-												}).catch(() => {
-													msg.channel.createMessage({
-														embed: {
-                                                            author: {
-                                                                name: bot.user.username,
-                                                                icon_url: bot.user.avatarURL,
-                                                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                                            },
-															color: 0xFF0000,
-															description: "Oops, something went wrong. 🐽 Try resending..."
-														}
-													});
-												});
-											});
-										});
-									} else {
-										msg.channel.createMessage({
-											embed: {
-                                                author: {
-                                                    name: bot.user.username,
-                                                    icon_url: bot.user.avatarURL,
-                                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                                },
-												color: 0xFF0000,
-												title: "Warning",
-												description: "I can only say things in text channels 🎤"
-											}
-										});
-									}
-								} else {
-									msg.channel.createMessage({
-										embed: {
-                                            author: {
-                                                name: bot.user.username,
-                                                icon_url: bot.user.avatarURL,
-                                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                            },
-											color: 0xFF0000,
-											description: `There's no channel called ${chname} on ${svr.name} AFAIK ⚠`
-										}
-									});
-								}
-							} else {
-								msg.channel.createMessage({
-									embed: {
-                                        author: {
-                                            name: bot.user.username,
-                                            icon_url: bot.user.avatarURL,
-                                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                        },
-                                        color: 0xFF0000,
-										description: `🔐 You don't have permission to use this command on ${svr.name}`
-									}
-								});
-							}
-						} else {
-							msg.channel.createMessage({
-								embed: {
-                                    author: {
-                                        name: bot.user.username,
-                                        icon_url: bot.user.avatarURL,
-                                        url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                    },
-                                    color: 0xFF0000,
-									title: "Error",
-									description: "Uh idk something went wrong. Blame Mongo. *always blame mongo*"
-								}
-							});
-						}
-					});
-				} else {
-					msg.channel.createMessage({
+module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) => {
+	if (msg.suffix && msg.suffix.includes("|")) {
+		const params = msg.suffix.split("|");
+		const svrname = params[0].trim();
+		const chname = params[1].trim();
+		if (svrname && chname) {
+			const initMsg = await msg.channel.send({
+				embed: {
+					color: 0x3669FA,
+					author: {
+						name: bot.user.username,
+						icon_url: bot.user.avatarURL(),
+						url: "https://github.com/GilbertGobbels/GAwesomeBot",
+					},
+					description: "⌛ Fetching Data...",
+					footer: {
+						text: "Get excited!",
+					},
+				},
+			});
+			const relay = () => bot.relayCommand("say", { str: svrname, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname });
+			setTimeout(async () => {
+				const relayRes = await relay();
+				let errMsg = "An unknown Error occurred";
+				if (relayRes === "none") errMsg = "The requested server was not found. Double check for typo's!";
+				if (relayRes === "multi") errMsg = "Multiple servers were found. Set a unique server nick or use server ID instead of name.";
+				if (relayRes !== true) {
+					initMsg.edit({
 						embed: {
-                            author: {
-                                name: bot.user.username,
-                                icon_url: bot.user.avatarURL,
-                                url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                            },
-                            color: 0xFF0000,
-                            description: "You're not on that server lol 🈲"
-						}
+							author: {
+								name: bot.user.username,
+								icon_url: bot.user.avatarURL(),
+								url: "https://github.com/GilbertGobbels/GAwesomeBot",
+							},
+							description: "Something went wrong while fetching server data!",
+							color: Colors.ERROR,
+							footer: {
+								text: errMsg,
+							},
+						},
 					});
 				}
-			} else {
-				msg.channel.createMessage({
-					embed: {
-                        author: {
-                            name: bot.user.username,
-                            icon_url: bot.user.avatarURL,
-                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                        },
-                        color: 0xFF0000,
-						title: "Error",
-						description: "That server doesn't exist or I'm not on it❗ 😱"
-					}
-				});
-			}
+			}, 200);
 			return;
 		}
 	}
-	winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {usrid: msg.author.id});
-	msg.channel.createMessage({
-        author: {
-            name: bot.user.username,
-            icon_url: bot.user.avatarURL,
-            url: "https://github.com/GilbertGobbels/GAwesomeBot"
-        },
-        color: 0xFF0000,
-		title: "Warning! Incorrect usage!",
-		description: `🗯 \`${commandData.name} ${commandData.usage}\``
+	winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+	msg.channel.send({
+		embed: {
+			color: Colors.INVALID,
+			description: Text.INVALID_USAGE(commandData),
+		},
 	});
 };

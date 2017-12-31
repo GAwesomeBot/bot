@@ -1,58 +1,68 @@
-let multiplier = 1;
+const multipliers = {
+	small: 1,
+	standard: 2,
+	big: 5,
+	huge: 10,
+	massive: 100,
+};
+const { Colors, LoggingLevels } = require("../Internals/Constants.js");
+
 module.exports = {
-	multiplier,
-	start: (db, svr, serverDocument, usr, ch, channelDocument) => {
-		if(!channelDocument.lottery.isOngoing) {
+	multipliers,
+	start: (bot, svr, serverDocument, usr, ch, channelDocument, multiplier) => {
+		if (!channelDocument.lottery.isOngoing) {
 			channelDocument.lottery.isOngoing = true;
 			channelDocument.lottery.expiry_timestamp = Date.now() + 3600000;
 			channelDocument.lottery.creator_id = usr.id;
 			channelDocument.lottery.participant_ids = [];
-			serverDocument.save(() => {
-				multiplier += 0.5;
-				setTimeout(() => {
-					module.exports.end(db, svr, serverDocument, ch, channelDocument);
-				}, 3600000);
-			});
+			channelDocument.lottery.multiplier = multiplier ? multiplier : 2;
+			setTimeout(() => {
+				module.exports.end(bot, svr, serverDocument, ch, channelDocument);
+			}, 3600000);
 		}
 	},
-	end: (db, svr, serverDocument, ch, channelDocument) => {
-		if(channelDocument.lottery.isOngoing) {
+	end: async (bot, svr, serverDocument, ch, channelDocument) => {
+		if (channelDocument.lottery.isOngoing) {
 			channelDocument.lottery.isOngoing = false;
 			let winner;
-			while(!winner && channelDocument.lottery.participant_ids.length>1) {
+			while (!winner && channelDocument.lottery.participant_ids.length > 1) {
 				const i = Math.floor(Math.random() * channelDocument.lottery.participant_ids.length);
 				const member = svr.members.get(channelDocument.lottery.participant_ids[i]);
-				if(member) {
+				if (member) {
 					winner = member;
 				} else {
 					channelDocument.lottery.participant_ids.splice(i, 1);
 				}
 			}
-			serverDocument.save(() => {
-				if(winner) {
-					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * multiplier);
-					db.users.findOrCreate({_id: winner.id}, (err, userDocument) => {
-						if(!err && userDocument) {
-							userDocument.points += prize;
-						}
-						const participantCount = channelDocument.lottery.participant_ids.filter((elem, i, self) => {
-							return i == self.indexOf(elem);
-						}).length;
-						ch.createMessage({
-							embed: {
-                                author: {
-                                    name: bot.user.username,
-                                    icon_url: bot.user.avatarURL,
-                                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                                },
-                                color: 0x00FF00,
-								description: `Congratulations ${winner.mention}! 🎊 You won the lottery for **${prize}** AwesomePoints out of ${participantCount} participant${participantCount == 1 ? "" : "s"}. Enjoy the cash 💰`
-							}
-						});
+			try {
+				await serverDocument.save();
+				if (winner) {
+					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
+					const userDocument = (await Users.findOrCreate({ _id: winner.id })).doc;
+					userDocument.points += prize;
+					try {
+						await userDocument.save();
+					} catch (_) {
+						// Meh
+					}
+					const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
+					ch.send({
+						content: `${winner},`,
+						embed: {
+							color: Colors.INFO,
+							title: `Congratulations @__${bot.getName(svr, serverDocument, winner)}__! 🎊`,
+							description: `You won the lottery for **${prize}** GAwesomePoint${prize === 1 ? "" : "s"} out of ${participantTotal} participant${participantTotal === 1 ? "" : "s"}.`,
+							footer: {
+								text: "Enjoy the cash! 💰",
+							},
+						},
 					});
 				}
-			});
-			return winner;
+				return winner;
+			} catch (err) {
+				winston.debug(`An error occurred while attempting to end a lottery (*0*)\n`, err);
+				bot.logMessage(serverDocument, LoggingLevels.ERROR, `An error occurred while attempting to end the lottery.`, ch.id);
+			}
 		}
-	}
+	},
 };

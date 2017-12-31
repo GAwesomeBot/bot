@@ -1,75 +1,92 @@
+const PaginatedEmbed = require("./MessageUtils/PaginatedEmbed");
+const { Colors } = require("../Internals/Constants");
+
 module.exports = {
-	start: (bot, svr, serverDocument, usr, ch, channelDocument, title, options) => {
-		if(!channelDocument.poll.isOngoing) {
+	start: async (bot, svr, serverDocument, usr, ch, channelDocument, title, options) => {
+		if (!channelDocument.poll.isOngoing) {
 			channelDocument.poll.isOngoing = true;
 			channelDocument.poll.created_timestamp = Date.now();
 			channelDocument.poll.creator_id = usr.id;
 			channelDocument.poll.title = title;
 			channelDocument.poll.options = options;
 			channelDocument.poll.responses = [];
-			serverDocument.save(() => {
-				let embed_fields = [];
-				options.map((option, i) => {
-					embed_fields.push({
-						name: `${i})`,
-						value: `${option}`,
-						inline: true
-					});
-				});
-				ch.createMessage({
-                    embed: {
-                        author: {
-                            name: bot.user.username,
-                            icon_url: bot.user.avatarURL,
-                            url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                        },
-						description: `${usr.mention} has started a poll in this channel named **${title}** 🗳\nUse \`${bot.getCommandPrefix(svr, serverDocument)}poll <no. of option>\` here or PM me \`poll ${svr.name}|#${ch.name}\` to vote.\nThe following options are available:`,
-                        color: 0x00FF00,
-						fields: embed_fields
-					}
-				});
+
+			let map = options.map((option, i) => [
+				`» ${i + 1} «`,
+				`\t**${option}**`,
+			].join("\n"));
+			map = map.chunk(10);
+			const description = [];
+			for (const innerArray of map) {
+				description.push(innerArray.join("\n"));
+			}
+			const menu = new PaginatedEmbed({
+				channel: ch,
+				author: {
+					id: usr.id,
+				},
+			}, description, {
+				title: `🍻 A poll named "__${title}__" has started!`,
+				color: Colors.INFO,
+				description: `${usr} has started a poll in here! Run \`${svr.commandPrefix}poll\` to see all available choices!\nThe following options are available:\n\n{description}`,
+				footer: `Use "${svr.commandPrefix}poll <option no.>" here or PM me "poll ${svr}|#${ch.name}" to vote.`,
 			});
+			await menu.init();
 		}
 	},
-	getResults: pollDocument => {
+	getResults: async pollDocument => {
 		const votes = {};
 		let winner;
 		let winnerCount = 0;
+		let options = {};
 		pollDocument.options.forEach((option, i) => {
-			const count = pollDocument.responses.reduce((n, voteDocument) => {
-				return n + (voteDocument.vote == i);
-			}, 0);
-			if(count > winnerCount) {
-				winner = option;
-				winnerCount = count;
-			} else if(count == winnerCount) {
+			options[i] = {
+				id: i,
+				votes: 0,
+				option,
+			};
+		});
+		pollDocument.responses.forEach(voteDocument => {
+			if (options[voteDocument.vote]) options[voteDocument.vote].votes++;
+		});
+		Object.values(options).forEach(option => {
+			if (option.votes > winnerCount) {
+				winner = option.option;
+				winnerCount = option.votes;
+			} else if (option.votes === winnerCount) {
 				winner = null;
 			}
-			votes[option] = {
-				count,
-				percent: (Math.round(((count / pollDocument.responses.length) * 100) * 100) / 100) || 0
+			votes[option.option] = {
+				count: option.votes,
+				percent: (Math.round(((option.votes / pollDocument.responses.length) * 100) * 100) / 100) || 0,
 			};
 		});
 		return {
 			votes,
-			winner
+			winner,
 		};
 	},
-	end: (serverDocument, ch, channelDocument) => {
-		if(channelDocument.poll.isOngoing) {
+	end: async (serverDocument, ch, channelDocument) => {
+		if (channelDocument.poll.isOngoing) {
 			channelDocument.poll.isOngoing = false;
-			serverDocument.save(() => {
-				const results = module.exports.getResults(channelDocument.poll);
-				const info = channelDocument.poll.options.map(option => {
-					return `${option}: ${results.votes[option].count} vote${results.votes[option].count==1 ? "" : "s"} (${results.votes[option].percent}%)`;
-				});
-				ch.createMessage({
-					embed: {
-                        color: 0x00FF00,
-						description: `The poll **${channelDocument.poll.title}** has ended. 🔔 Here are the results:\n\t${info.join("\n\t")}\nThe winner is...**${results.winner || "tie!"}** out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length==1 ? "" : "s"} 🎉`
-					}
-				});
+			const results = await module.exports.getResults(channelDocument.poll);
+			const fields = channelDocument.poll.options.map(option => ({
+				name: option,
+				value: `${results.votes[option].count} vote${results.votes[option].count === 1 ? "" : "s"} (${results.votes[option].percent}%)`,
+				inline: true,
+			}));
+			ch.send({
+				embed: {
+					color: 0x3669FA,
+					title: `The poll "${channelDocument.poll.title}" has ended. 🔔`,
+					description: `Here are the results:`,
+					fields,
+					footer: {
+						text: `${results.winner ? `The winner is... "${results.winner}"! They won out of ${channelDocument.poll.responses.length} vote${channelDocument.poll.responses.length === 1 ? "" : "s"} 🎉
+						` : `The results ended in a tie! Nobody won today :(`}`,
+					},
+				},
 			});
 		}
-	}
+	},
 };

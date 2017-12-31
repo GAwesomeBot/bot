@@ -45,21 +45,17 @@
 					<h1 class="title">
 						Wiki Contributors
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									These users are who can contribute to the <a href="/wiki">AwesomeBot Wiki</a>. This includes <strong>creating, editing, and deleting</strong> pages.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								These users are who can contribute to the <a href="/wiki">GAwesomeBot Wiki</a>. This includes <strong>creating, editing, and deleting</strong> pages.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
-							<div style="overflow-x: scroll;">
-								<% if(config.wiki_contributors.length>0) { %>
-									<table class="table">
+						</div>
+					</article>
+					<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
+						<div class="field" style="overflow-x: scroll;">
+							<% if(config.wiki_contributors.length>0) { %>
+									<table class="table is-fullwidth">
 										<thead>
 											<tr>
 												<th></th>
@@ -78,7 +74,10 @@
 													</td>
 													<td>
 														<%= config.wiki_contributors[i].name %>
-														<% if(config.wiki_contributors[i].isMaintainer) { %>
+														<% if(config.wiki_contributors[i].isSudoMaintainer) { %>
+															&nbsp;
+															<span class="tag">Sudo Maintainer</span>
+														<% } else if (config.wiki_contributors[i].isMaintainer) { %>
 															&nbsp;
 															<span class="tag">Maintainer</span>
 														<% } %>
@@ -86,27 +85,27 @@
 													<td>
 														<%= config.wiki_contributors[i].id %>
 													</td>
-													<% if(showRemove && !config.wiki_contributors[i].isMaintainer) { %>
-														<td>
-															<button class="button is-small is-danger" name="contributor-<%= config.wiki_contributors[i].index %>-removed" onclick="hide_update_modal = true;">
-																<span>Remove</span>
-																<span class="icon is-small">
-																	<i class="fa fa-times"></i>
-																</span>
-															</button>
-														</td>
-													<% } %>
+													<td>
+														<button class="button is-small is-danger" name="contributor-removed" value="<%= config.wiki_contributors[i].id %>" onclick="hide_update_modal = true;"<% if(showRemove && config.wiki_contributors[i].isMaintainer) { %> disabled<% } %>>
+															<span>Remove</span>
+															<span class="icon is-small">
+																<i class="fa fa-times"></i>
+															</span>
+														</button>
+													</td>
 												</tr>
 											<% } %>
 										</tbody>
 									</table>
 								<% } else { %>
-									<article class="message">
+									<article class="message" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											<p>
+												<span class="icon">
+													<i class="fa fa-meh-o"></i>
+												</span>
+												Nothing to see here
+											</p>
 										</div>
 										<div class="message-body">
 											There are no wiki contributors. How is this even possible?!
@@ -115,23 +114,24 @@
 									<br>
 								<% } %>
 							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
-										<input id="new-contributor-user" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
-									</p>
-									<p class="control">
+						<div class="field is-horizontal">
+							<div class="field-body">
+								<div class="field is-grouped">
+									<div class="control is-expanded">
+										<input id="new-contributor-user" class="input user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode != 13;">
+									</div>
+									<div class="control">
 										<a class="button is-primary" onclick="newWikiContributors();">
 											<span class="icon">
 										        <i class="fa fa-plus"></i>
 										    </span>
 										    <span>Add</span>
 										</a>
-									</p>
+									</div>
 								</div>
 							</div>
-						</form>
-					</div>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>

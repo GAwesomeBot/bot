@@ -1,77 +1,104 @@
-const unirest = require("unirest");
+const { get } = require("snekfetch");
+const ReactionMenu = require("../../Modules/MessageUtils/ReactionBasedMenu");
 
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	if(suffix) {
-		let query = suffix.substring(0, suffix.lastIndexOf(" "));
-		let num = suffix.substring(suffix.lastIndexOf(" ") + 1);
-		if(!query || isNaN(num)) {
-			query = suffix;
-			num = serverDocument.config.command_fetch_properties.default_count;
+module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg, commandData) => {
+	if (msg.suffix) {
+		let split = msg.suffix.split(/\s+/);
+		let number = split.pop(), query = split.join(" ");
+		if (!query || isNaN(number)) {
+			query = msg.suffix;
+			number = serverDocument.config.command_fetch_properties.default_count;
 		}
-		if(num < 1 || num > serverDocument.config.command_fetch_properties.max_count) {
-			num = serverDocument.config.command_fetch_properties.default_count;
-		} else {
-			num = parseInt(num);
-		}
-		const api_url = `https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(query)}`;
-		unirest.get(api_url).header("Accept", "application/vnd.api+json").end(res => {
-			if(res.status==200 && res.body.data.length) {
-				const results = [];
-				const list = [];
-				const getDisplay = data => {
-					// Title + airing time
-					let airing = data.attributes.startDate;
-					if(data.attributes.endDate !== null) {
-						airing += ` — ${data.attributes.endDate}`;
-					}
-					const info = [];
-					info.push(`__**${data.attributes.canonicalTitle}**__ (${airing})`);
-					// Link
-					info.push(`https://kitsu.io/anime/${data.attributes.slug}`);
-					// Status line
-					if(data.attributes.averageRating) {
-						info.push(`**Rating:** ${data.attributes.averageRating}%`);
-					}
-					if(data.attributes.ageRating) {
-						info.push(`**Rated:** ${data.attributes.ageRating}`);
-					}
-					if(!data.attributes.episodeCount) {
-						data.attributes.episodeCount = "N/A";
-					}
-					if(data.attributes.episodeLength) {
-						info.push(`**Episodes:** ${data.attributes.episodeCount} @ ${data.attributes.episodeLength} mins`);
-					} else {
-						info.push(`**Episodes:** ${data.attributes.episodeCount}`);
-					}
-					info.push("");
-					info.push(data.attributes.synopsis);
-					return info.join("\n");
-				};
-				for(let i=0; i < num; i++) {
-					const entry = res.body.data[i];
-					if(entry) {
-						results.push(getDisplay(entry));
-						list.push(`${i}) ${entry.attributes.canonicalTitle}`);
-					}
+		if (number < 1) number = serverDocument.config.command_fetch_properties.default_count;
+		else if (number > serverDocument.config.command_fetch_properties.max_count) number = serverDocument.config.command_fetch_properties.max_count;
+		else number = parseInt(number);
+
+		let { body, status } = await get(APIs.ANIME(query)).set("Accept", "application/vnd.api+json");
+		body = JSON.parse(body.toString());
+		if (status === 200 && body.data && body.data.length) {
+			const list = [];
+			const results = [];
+			const getDisplay = data => {
+				// Title + airing time
+				let airing = data.attributes.startDate;
+				if (data.attributes.endDate !== null) {
+					airing += ` — ${data.attributes.endDate}`;
 				}
-				if(list.length == 1) {
-					msg.channel.createMessage(results[0]);
+				const fields = [];
+				let totalResult = "";
+				if (!data.attributes.episodeCount) {
+					data.attributes.episodeCount = "N/A";
+				}
+				if (data.attributes.episodeLength) {
+					totalResult += `${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"},${data.attributes.episodeCount === 1 ? "" : " each"} lasting ${data.attributes.episodeLength} minutes.`;
 				} else {
-					msg.channel.createMessage(`Select one of the following:\n\t${list.join("\n\t")}`);
-					bot.awaitMessage(msg.channel.id, msg.author.id, message => {
-						message.content = message.content.trim();
-						return message.content && !isNaN(message.content) && message.content>=0 && message.content<results.length;
-					}, message => {
-						msg.channel.createMessage(results[+message.content]);
-					});
+					totalResult += `${data.attributes.episodeCount} episode${data.attributes.episodeCount === 1 ? "" : "s"}.`;
 				}
-			} else {
-				winston.warn(`No anime found for '${query}'`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-				msg.channel.createMessage("No anime found (˃̥̥ω˂̥̥̥)");
+				data.attributes.averageRating && fields.push({
+					name: `Rating`,
+					value: `${data.attributes.averageRating}%`,
+					inline: true,
+				});
+				data.attributes.ageRating && fields.push({
+					name: `Age Rating`,
+					value: `**${data.attributes.ageRating}**`,
+					inline: true,
+				});
+				return {
+					embed: {
+						color: 0x00FF00,
+						author: {
+							iconURl: `${data.attributes.posterImage.tiny}`,
+						},
+						title: `${data.attributes.canonicalTitle} (${airing})`,
+						url: `https://kitsu.io/anime/${data.attributes.slug}`,
+						description: `${data.attributes.synopsis.split("").splice(0, 1500).join("")}${data.attributes.synopsis.length > 1500 ? `...\nRead more [here](https://kitsu.io/anime/${data.attributes.slug})` : ""}`,
+						footer: {
+							text: `${totalResult} | Click on the "Anime Name" to see the webpage!`,
+						},
+						fields,
+						image: {
+							url: `${data.attributes.posterImage.original}`,
+						},
+					},
+				};
+			};
+			for (let i = 0; i < number; i++) {
+				const entry = body.data[i];
+				if (entry) {
+					results.push(getDisplay(entry));
+					list.push(`[ ${i + 1} ] ${entry.attributes.canonicalTitle}`);
+				}
 			}
-		});
+			if (list.length === 1) {
+				msg.channel.send(results[0]);
+			} else {
+				let menu = new ReactionMenu(msg, list, results);
+				await menu.init();
+			}
+		} else {
+			winston.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+			msg.channel.send({
+				embed: {
+					color: Colors.LIGHT_RED,
+					description: `No animu found... (˃̥̥ω˂̥̥̥)`,
+					footer: {
+						text: `P-please try again ${msg.author.username}-chan..!`,
+					},
+				},
+			});
+		}
 	} else {
-		winston.warn(`Parameters not provided for '${commandData.name}' command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage(`${msg.author.mention} You gotta give me somethin' to search for!`);
+		winston.verbose(`Anime name not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		msg.channel.send({
+			embed: {
+				color: Colors.LIGHT_RED,
+				image: {
+					url: `http://i66.tinypic.com/23vxcbc.jpg`,
+				},
+				title: `Baka!`,
+				description: `You need to give me an anime to search for, ${msg.author.username}-chan`,
+			},
+		});
 	}
 };

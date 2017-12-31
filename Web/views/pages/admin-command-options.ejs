@@ -1,9 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Command Options - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Command Options - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
+	<script>
+		$("#ban_gif").on("blur", () => {
+			if ($("#ban_gif").val() === "Default") {
+				$("#default_ban_gif").hide();
+				$("#ban_gif_field").removeClass("has-addons");
+				return $("#ban_gif_preview").attr("src", "https://imgur.com/3QPLumg.gif");
+			}
+			$("#ban_gif_field").addClass("has-addons");
+			$("#default_ban_gif").show();
+			$("#ban_gif_preview").attr("src", $("#ban_gif").val());
+		});
+	</script>
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
 <body onload="saveFormState();">
@@ -20,32 +32,33 @@
 					<h1 class="title">
 						Global Command Options
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								These settings apply to <strong>all commands</strong>. They define how commands should display information, such as the number of results to show or whether to delete command messages after AwesomeBot has responded.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
-							<h4 class="subtitle is-4">
-								General
-							</h4>
+					<article class="message is-primary">
+						<div class="message-body">
+							These settings apply to <strong>all commands</strong>. They define how commands should display information, such as the number of results to show or whether to delete command messages after GAwesomeBot has responded.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<h4 class="subtitle is-4">
+							General
+						</h4>
+						<div class="field">
 							<label class="label">Command prefix</label>
 							<p class="control">
 								<input name="command_prefix" class="input" type="text" value="<%= configData.command_prefix %>" minlength="1" maxlength="10">
-								<span class="help">Plaintext prefix used to activate commands. Type <code>@mention</code> in the box above to use a Discord mention of AwesomeBot.</span>
+								<span class="help">Plaintext prefix used to activate commands. Type <code>@mention</code> in the box above to use a Discord mention of GAwesomeBot.</span>
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Command messages</label>
 							<p class="control">
 								<label class="checkbox">
 								<input name="delete_command_messages" type="checkbox" <%= configData.delete_command_messages ? "checked" : "" %>>
-									Delete command messages after AwesomeBot responds
+									Delete command messages after GAwesomeBot responds
 								</label>
-								<span class="help">Command messages are those that trigger AwesomeBot commands; example: <code><%= configData.command_prefix %>cat</code></span>
+								<span class="help">Command messages are those that trigger GAwesomeBot commands; example: <code><%= configData.command_prefix %>cat</code></span>
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Cooldown period</label>
 							<p class="control">
 								<span class="select">
@@ -64,32 +77,75 @@
 								</span>
 								<span class="help">During this time after the use of any command, users won't be able to use other commands in the channel. Does not apply to admins. Can be overridden per-channel by the <code><%= configData.command_prefix %>cool</code> command.</span>
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Chatterbot</label>
 							<p class="control">
 								<label class="checkbox">
-								<input name="chatterbot" type="checkbox" <%= configData.chatterbot ? "checked" : "" %>>
-									Allow members to converse with AwesomeBot
+								<input name="chatterbot-isEnabled" type="checkbox" <%= configData.chatterbot.isEnabled ? "checked" : "" %>
+									onclick="$('#chatterbot_enabled_channel_ids-options').toggleClass('is-hidden');">
+									Allow members to converse with GAwesomeBot
 								</label>
 								<span class="help">The <a href="http://www.program-o.com/">Program-O</a> chatbot will be used if the bot is mentioned and a command is not being used, e.g. <code><strong>@<%= botName %></strong> Hello! How are you?</code>.</span>
+								<span id="chatterbot_enabled_channel_ids-options"
+									class="<%= configData.chatterbot.isEnabled ? '' : 'is-hidden' %>">
+									<br>
+									<% for (var i = 0; i < channelData.length; i++) { %>
+										<label class="checkbox">
+										<input name="chatterbot_enabled_channel_ids-<%= channelData[i].id %>"
+											type="checkbox" <%= configData.chatterbot.disabled_channel_ids.indexOf(channelData[i].id) === -1 ? "checked" : "" %>>
+											#<%= channelData[i].name %>
+										</label>
+										<br>
+									<% } %>
+								</span>
 							</p>
-							<br>
-							<h4 class="subtitle is-4">
-								Content Fetching
-							</h4>
+						</div>
+						<br>
+						<h4 class="subtitle is-4">
+							Content Fetching
+						</h4>
+						<div class="field">
 							<label class="label">Default number of results to show</label>
 							<p class="control">
 								<input name="default_count" class="input" type="number" value="<%= configData.command_fetch_properties.default_count %>" min="1" max="10">
 							</p>
+						</div>
+						<div class="field">
 							<label class="label">Maximum number of items to fetch</label>
 							<p class="control">
 								<input name="max_count" class="input" type="number" value="<%= configData.command_fetch_properties.max_count %>" min="5" max="25">
 							</p>
+						</div>
+						<br>
+						<h4 class="subtitle is-4">
+							Customization
+						</h4>
+						<div class="columns">
+							<div class="column is-half">
+								<img id="ban_gif_preview" alt="Invalid Image URL" src="<%= configData.ban_gif %>">
+								<div class="field">
+									<label class="label">Ban Image</label>
+									<div id="ban_gif_field" class="field<% if (configData.ban_gif !== "https://imgur.com/3QPLumg.gif") { %> has-addons<% } %>">
+										<div class="control has-icons-left">
+											<input id="ban_gif" name="ban_gif" class="input" type="text" value="<%= configData.ban_gif === "https://imgur.com/3QPLumg.gif" ? "Default" : configData.ban_gif %>">
+											<span class="icon is-small is-left">
+												<i class="fa fa-globe"></i>
+											</span>
+											<span class="help">A custom image displayed after using the <code>ban</code> command to ban a user.</span>
+										</div>
+										<div id="default_ban_gif" class="control"<% if (configData.ban_gif === "https://imgur.com/3QPLumg.gif") { %> style="display: none;"<% } %>>
+												<a class="button" onclick="$('#ban_gif').val('Default'); $('#ban_gif_preview').attr('src', 'https://imgur.com/3QPLumg.gif'); $('#default_ban_gif').hide(); $('#ban_gif_field').removeClass('has-addons');">Default</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 							<br>
 							<% var formButtonsUnsaved = false; %>
 							<% include ../partials/form-buttons %>
 							<% include ../partials/form-buttons-bar %>
 						</form>
-					</div>
 				</div>
 			</div>
 		</div>

@@ -1,47 +1,56 @@
-const itunes = require("searchitunes");
+const iTunes = require("../../Modules/Utils/SearchiTunes");
+const ArgParser = require("../../Modules/MessageUtils/Parser");
 
-const getAppList = suffix => {
-	const apps = suffix.split(",");
-	let i = 0;
-	while(i<apps.length) {
-		if(!apps[i] || apps.indexOf(apps[i]) != i) {
-			apps.splice(i, 1);
-		} else {
-			apps[i] = apps[i].trim();
-			i++;
-		}
-	}
-	return apps;
-};
-
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix) => {
-	const apps = getAppList(suffix);
-	if(apps.length > 0) {
-		const results = [];
-		const fetchApp = (i, callback) => {
-			if(i >= apps.length) {
-				callback();
-			} else {
-				itunes({
-					entity: "software",
-					country: "US",
-					term: apps[i],
-					limit: 1
-				}, (err, data) => {
-					if(err) {
-						winston.warn(`Apple app '${apps[i]}' not found to link`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-						results.push(`❌ No results found for \`${apps[i]}\``);
-					} else {
-						results.push(`**${data.results[0].trackCensoredName}** by ${data.results[0].artistName}, ${data.results[0].formattedPrice} and rated ${data.results[0].averageUserRating} stars: <${data.results[0].trackViewUrl}>`);
-					}
-					fetchApp(++i, callback);
+module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
+	if (msg.suffix) {
+		let apps = ArgParser.parseQuoteArgs(msg.suffix, ",");
+		let results = [];
+		for (const app of apps) {
+			let res;
+			try {
+				res = (await iTunes({ entity: "software", country: "US", term: app, limit: 1 }))[0];
+			} catch (err) {
+				winston.verbose(`Couldn't find any Apple app called "${app}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+				results.push({
+					embed: {
+						color: 0xFF0000,
+						description: `There were no results for the app called \`${app}\`. ❌`,
+						footer: {
+							text: `You should try searching for the app again, making sure you spelt it right.`,
+						},
+					},
 				});
 			}
-		};
-		fetchApp(0, () => {
-			bot.sendArray(msg.channel, results);
-		});
+			if (res) {
+				results.push({
+					embed: {
+						color: 0x00FF00,
+						author: {
+							name: `By ${res.artistName}`,
+							url: res.sellerUrl ? res.sellerUrl : "",
+						},
+						thumbnail: {
+							url: res.artworkUrl100 ? res.artworkUrl100 : "",
+						},
+						title: `__${res.trackCensoredName}__`,
+						description: `A quick summary: \`\`\`\n${res.description.split("\n")[0]}\`\`\``,
+						url: `${res.trackViewUrl}`,
+						footer: {
+							text: `Rated ${res.averageUserRating} ⭐ | ${res.formattedPrice.toLowerCase() === "free" ? "This app is free" : `The price of the app is ${res.formattedPrice}`}`,
+						},
+					},
+				});
+			}
+		}
+		for (const msgObj of results) {
+			msg.channel.send(msgObj);
+		}
 	} else {
-		msg.channel.createMessage("http://www.apple.com/itunes/charts/free-apps/");
+		msg.channel.send({
+			embed: {
+				color: Colors.LIGHT_RED,
+				description: `[What app would you like to find today...?](https://www.apple.com/itunes/charts/free-apps/) 🤔`,
+			},
+		});
 	}
 };

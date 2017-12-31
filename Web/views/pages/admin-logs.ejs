@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Logs - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Logs - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 </head>
 <body>
@@ -17,20 +17,17 @@
 					<h1 class="title">
 						Bot Logs
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									AwesomeBot records <strong>everything</strong> that it does on your server. This page allows you to view the <strong>past 500 log entries</strong> in the past two days, in descending order.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								GAwesomeBot records <strong>everything</strong> that it does on your server. This page allows you to view the <strong>past 200 log entries</strong>, in descending order.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="search-form" action="<%= currentPage %>" method="get">
-							<input name="svrid" type="hidden" value="<%= serverData.id %>">
-							<p class="control has-addons has-addons-centered">
+						</div>
+					</article>
+					<form id="search-form" action="<%= currentPage %>" method="get">
+						<input name="svrid" type="hidden" value="<%= serverData.id %>">
+						<div class="field has-addons has-addons-centered">
+							<div class="control">
 								<span class="select">
 									<select name="chid" onchange="$('#search-form').submit();">
 										<option value="">All Channels</option>
@@ -39,40 +36,44 @@
 										<% } %>
 									</select>
 								</span>
-								<input name="q" class="input is-expanded" type="text" placeholder="I'm looking for..." value="<%= searchQuery %>">
+							</div>
+							<div class="control is-expanded">
+								<input name="q" class="input" type="text" placeholder="I'm looking for..." value="<%= searchQuery %>">
+							</div>
+							<div class="control">
 								<button type="submit" class="button">
 									<span class="icon is-small">
 										<i class="fa fa-search"></i>
 									</span>
 									<span>Search</span>
 								</button>
-							</p>
-						</form>
-						<br>
-						<% for(var i=0; i<logData.length; i++) { %>
-							<article class="media">
-								<figure class="media-left">
-									<span class="icon" style="color: <%= logData[i].levelColor %>;">
-										<i class="fa fa-<%= logData[i].level %>"></i>
-									</span>
-								</figure>
-								<div class="media-content">
-									<div class="content">
-										<p>
-											<strong>
-												<%- logData[i].ch ? ("<span title=" + logData[i].chid  + ">#" + logData[i].ch + "</span>") : "" %><%- (logData[i].ch && logData[i].usr) ? ", " : "" %><%- logData[i].usr ? ("<span title=" + logData[i].usrid + ">@" + logData[i].usr + "</span>") : "" %><% (!logData[i].ch && !logData[i].usr) ? "General" : "" %>
-											</strong>
-											<small>
-												<%= logData[i].timestamp %>
-											</small>
-											<br>
-											<%= logData[i].message %>
-										</p>
-									</div>
+							</div>
+						</div>
+					</form>
+					<br>
+					<% for(var i=0; i<logData.length; i++) { %>
+						<article class="media">
+							<figure class="media-left">
+								<span class="icon is-large" style="color: <%= logData[i].levelColor %>;">
+									<i class="fa fa-<%= logData[i].level %> fa-2x"></i>
+								</span>
+							</figure>
+							<div class="media-content">
+								<div class="content">
+									<p>
+										<strong>
+											<%- logData[i].ch ? ("<span title=" + logData[i].chid  + ">#" + logData[i].ch + "</span>") : "" %><%- (logData[i].ch && logData[i].usr) ? ", " : "" %><%- logData[i].usr ? ("<span title=" + logData[i].usrid + ">@" + logData[i].usr + "</span>") : "" %><% (!logData[i].ch && !logData[i].usr) ? "General" : "" %>
+										</strong>
+										<small>
+											<%= logData[i].moment %>
+										</small>
+										<br>
+										<%= logData[i].content %>
+									</p>
 								</div>
-							</article>
-						<% } %>
-					</div>
+							</div>
+						</article>
+					<% } %>
 				</div>
 			</div>
 		</div>

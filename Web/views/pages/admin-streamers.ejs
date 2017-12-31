@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Streamers - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Streamers - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 	<script src="/static/js/form-change-listener.js"></script>
 	<script>
@@ -26,6 +26,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
+					location.reload();
 				}
 			});
 		}
@@ -46,21 +47,17 @@
 					<h1 class="title">
 						Streamers
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								Discord is a gamer-focused platform, so a lot of Discord servers have corresponding stream accounts on <strong>Twitch</strong> and <strong>YouTube Gaming</strong>. AwesomeBot supports checking for when streams go live (add them below) and has a corresponding <code>streamers</code> command to display information about the status of a stream.
-							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
-							<% var commandData = configData.commands.streamers;commandData.name = "streamers";commandData.description = commandDescriptions.streamers;commandData.category = commandCategories.streamers; %>
-							<% include ../partials/admin-command-item %>
-							<div style="overflow-x: scroll;">
+					<article class="message is-primary">
+						<div class="message-body">
+							Discord is a gamer-focused platform, so a lot of Discord servers have corresponding stream accounts on <strong>Twitch</strong> and <strong>YouTube Gaming</strong>. GAwesomeBot supports checking for when streams go live (add them below) and has a corresponding <code>streamers</code> command to display information about the status of a stream.
+						</div>
+					</article>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<% var commandData = configData.commands.streamers;commandData.name = "streamers";commandData.description = commandDescriptions.streamers;commandData.category = commandCategories.streamers; %>
+						<% include ../partials/admin-command-item %>
+							<div class="field" style="overflow-x: scroll;">
 								<% if(configData.streamers_data.length>0) { %>
-									<table class="table">
+									<table class="table is-fullwidth">
 										<thead>
 											<tr>
 												<th></th>
@@ -97,7 +94,8 @@
 														<%= configData.streamers_data[i].live_state ? "Live!" : "Offline" %>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="streamer-<%= i %>-removed" onclick="saveFormState();">
+														<input type="checkbox" id="streamer-<%= i %>-removed" name="streamer-<%= i %>-removed" style="display: none;">
+														<button class="button is-small is-danger" name="streamer-<%= i %>-removed" onclick="$('#streamer-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>
@@ -109,13 +107,14 @@
 										</tbody>
 									</table>
 								<% } else { %>
-									<br>
-									<article class="message">
+									<article class="message" style="margin-bottom: 0px;">
 										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
+											<p>
+												<span class="icon">
+													<i class="fa fa-meh-o fa-lg"></i>
+												</span>
+												Nothing to see here
+											</p>
 										</div>
 										<div class="message-body">
 											You haven't added any streamers yet. Enter a username and platform below to add one.
@@ -124,36 +123,37 @@
 									<br>
 								<% } %>
 							</div>
-							<div class="control is-horizontal">
-								<div class="control is-grouped">
-									<p class="control is-expanded">
-										<input id="new-streamer-name" class="input" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
-										<span class="help">For YouTube Gaming streams, use <a href="http://johnnythetank.github.io/youtube-channel-name-converter">this website</a> to get the corresponding channel ID for a channel name or username.</span>
-									</p>
-									<p class="control">
-										<span class="select">
-											<select id="new-streamer-type">
-												<option value="twitch">Twitch</option>
-												<option value="ytg">YouTube Gaming</option>
-											</select>
-										</span>
-									</p>
-									<p class="control">
-										<a class="button is-primary" onclick="newStreamer();">
-											<span class="icon">
-										        <i class="fa fa-plus"></i>
-										    </span>
-										    <span>Add</span>
-										</a>
-									</p>
+							<div class="field is-horizontal">
+								<div class="field-body">
+									<div class="field is-grouped">
+										<div class="control is-expanded">
+											<input id="new-streamer-name" class="input" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+											<span class="help">For YouTube Gaming streams, use <a href="http://johnnythetank.github.io/youtube-channel-name-converter">this website</a> to get the corresponding channel ID for a channel name or username.</span>
+										</div>
+										<div class="control">
+											<span class="select">
+												<select id="new-streamer-type">
+													<option value="twitch">Twitch</option>
+													<option value="ytg">YouTube Gaming</option>
+												</select>
+											</span>
+										</div>
+										<div class="control">
+											<a class="button is-primary" onclick="newStreamer();">
+												<span class="icon">
+										        	<i class="fa fa-plus"></i>
+										    	</span>
+										    	<span>Add</span>
+											</a>
+										</div>
+									</div>
 								</div>
 							</div>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
 				</div>
 			</div>
 		</div>

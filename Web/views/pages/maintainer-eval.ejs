@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evaluate - <%= serverData.name %> Maintainer Console</title>
+    <% include ../partials/head %>
+    <script>
+        const evalLog = `
+            <article class="media">
+                <figure class="media-left">
+				    <span class="icon is-large" style="color: $COLOR$;">
+						<i class="fa fa-$TYPE$ fa-2x"></i>
+					</span>
+                </figure>
+                <div class="media-content">
+                    <div class="content">
+                        <strong>
+                            Code:
+                        </strong>
+                        <small>
+                            <code>$CODE$</code>
+                        </small>
+                        <br>
+                        <strong>
+                            Result:
+                        </strong>
+                        <br>
+                        $RESULT$
+                    </div>
+                </div>
+            </article>
+        `;
+        function evalCode() {
+        	let codeArea = $("#codeArea");
+        	let targetSelect = $("#targetSelect");
+        	let execButton = $("#execButton");
+        	execButton.addClass("is-loading");
+        	let code = codeArea.val();
+        	let target = targetSelect.val();
+
+        	if (target !== "select") {
+        		$(".select").removeClass("is-danger");
+            } else {
+        		$(".select").addClass("is-danger");
+        		execButton.removeClass("is-loading");
+        		return;
+            }
+
+        	if (code) {
+        		codeArea.removeClass("is-danger");
+        		$.post("/dashboard/management/eval?svrid=maintainer", { code, target })
+                  .done(data => {
+                  	data = JSON.parse(data);
+                  	let log = evalLog.replace("$CODE$", code)
+                      .replace("$RESULT$", `<pre>${data.result}</pre>`)
+                      .replace("$COLOR$", data.err ? "#ff473b" : "#37dc22")
+                      .replace("$TYPE$", data.err ? "times" : "check");
+                  	$("#evalResults").prepend(log);
+                  	execButton.removeClass("is-loading");
+                  })
+                  .always(() => {
+                  	execButton.removeClass("is-loading");
+                  });
+            } else {
+        		codeArea.addClass("is-danger");
+        		execButton.removeClass("is-loading");
+            }
+        }
+    </script>
+</head>
+<body>
+<% include ../partials/dashboard-header %>
+
+<section class="section is-white">
+    <div class="container">
+        <div class="columns">
+            <div id="menu" class="column is-one-quarter">
+                <% include ../partials/maintainer-menu %>
+            </div>
+            <div class="column">
+                <h1 class="title">
+                    Evaluate
+                </h1>
+                <article class="message is-primary">
+                    <div class="message-body">
+                        <div class="content">
+                            On this page you can <strong>evaluate</strong> any JavaScript code as if it was run using the <code>eval</code> command.
+                        </div>
+                    </div>
+                </article>
+                <form id="form" onsubmit="return false;">
+                     <div class="field">
+                         <div class="control">
+                             <textarea id="codeArea" class="textarea" rows="5" style="resize: none;" placeholder="Javascript Code to Execute"></textarea>
+                         </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-body">
+                            <div class="field is-grouped">
+                                <div class="control is-expanded">
+                                    <a id="execButton" class="button is-primary is-fullwidth" onclick="evalCode(); return false;">
+                                        <span class="icon">
+                                            <i class="fa fa-bolt"></i>
+                                        </span>
+                                        <span>Execute</span>
+                                    </a>
+                                </div>
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="targetSelect">
+                                            <option value="select">Select Shard...</option>
+                                            <option value="master">Master</option>
+                                            <% for (let i = 0; i < config.shardTotal; i++) { %>
+                                            <option value="<%= i %>"><%= `Shard ${i}` %></option>
+                                            <% } %>
+                                            <option value="all">All Shards</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <br>
+                <div class="box">
+                    <h5 class="subtitle is-5">
+                        Session History
+                    </h5>
+                    <div id="evalResults">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<% include ../partials/footer %>
+<% include ../partials/scroll-top-button %>
+</body>
+</html>

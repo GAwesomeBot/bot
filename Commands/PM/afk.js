@@ -1,62 +1,52 @@
-module.exports = (bot, db, config, winston, userDocument, msg, suffix, commandData) => {
-	if(suffix) {
-		if(suffix==".") {
-			userDocument.afk_message = null;
-			msg.channel.createMessage({
+module.exports = async ({ Constants: { Colors } }, msg, commandData) => {
+	if (msg.suffix) {
+		if (msg.suffix === ".") {
+			msg.author.userDocument.afk_message = null;
+			msg.channel.send({
 				embed: {
-					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL,
-						url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					color: Colors.GREEN,
+					title: `Welcome back! 🎊`,
+					description: `I removed your global AFK message.`,
+					footer: {
+						text: `You can set a new one by running "${commandData.name} <message>"`,
 					},
-					color: 0x9ECDF2,
-					description: "Welcome back! 🎊\nI removed your AFK message"
-				}
+				},
 			});
 		} else {
-			userDocument.afk_message = suffix;
-			msg.channel.createMessage({
+			msg.author.userDocument.afk_message = msg.suffix;
+			msg.channel.send({
 				embed: {
-					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL,
-						url: "https://github.com/GilbertGobbels/GAwesomeBot"
+					color: Colors.GREEN,
+					description: `Alright, I'll show that when someone mentions you on a server. 👌`,
+					footer: {
+						text: `Use "${commandData.name} ." to remove it`,
 					},
-					color: 0x9ECDF2,
-					description: `Alright, I'll show that when someone mentions you on a server. 👌\nUse \`${commandData.name} .\` to remove it`
-				}
+				},
 			});
 		}
-		userDocument.save(err => {
-			if(err) {
-				winston.error("Failed to save user data for AFK message", {usrid: msg.author.id}, err);
-			}
+		await msg.author.userDocument.save().catch(err => {
+			winston.verbose(`Failed to save user document for AFK message >.>\n`, err);
+		});
+	} else if (msg.author.userDocument.afk_message) {
+		msg.channel.send({
+			embed: {
+				color: Colors.BLUE,
+				title: `Your current global AFK message is:`,
+				description: `${msg.author.userDocument.afk_message}`,
+				footer: {
+					text: `Use "${commandData.name} <message>" to change it or "${commandData.name} ." to remove it.`,
+				},
+			},
 		});
 	} else {
-		if(userDocument.afk_message) {
-			msg.channel.createMessage({
-				embed: {
-					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL,
-						url: "https://github.com/GilbertGobbels/GAwesomeBot"
-					},
-					color: 0x9ECDF2,
-					description: `You have the AFK message \`${userDocument.afk_message}\` set right now 💭`
-				}
-			});
-		} else {
-			msg.channel.createMessage({
-				embed: {
-					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL,
-						url: "https://github.com/GilbertGobbels/GAwesomeBot"
-					},
-					color: 0x00FF00,
-					description: "You don't have an AFK message set right now ⌨️"
-				}
-			});
-		}
+		msg.channel.send({
+			embed: {
+				color: Colors.LIGHT_RED,
+				description: `You don't have a global AFK message set right now! ⌨️`,
+				footer: {
+					text: `You can set one by running "${commandData.name} <message>"`,
+				},
+			},
+		});
 	}
 };

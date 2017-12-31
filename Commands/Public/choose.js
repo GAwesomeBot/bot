@@ -1,30 +1,25 @@
-module.exports = (bot, db, config, winston, userDocument, serverDocument, channelDocument, memberDocument, msg, suffix, commandData) => {
-	const choices = suffix.split("|");
-	if(suffix && choices.length >= 2) {
-		msg.channel.createMessage({
+const ArgParser = require("../../Modules/MessageUtils/Parser");
+
+module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
+	if (msg.suffix) {
+		const choices = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
+		msg.channel.send({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0x00FF00,
-				title: "I choose:",
-				description: choices.random()
-			}
+				color: Colors.RESPONSE,
+				title: `I choose:`,
+				description: `\`\`\`css\n${choices.random.trim()}\`\`\``,
+				footer: {
+					text: `I chose this out of ${choices.length} option${choices.length === 1 ? "" : "s"}!`,
+				},
+			},
 		});
 	} else {
-		winston.warn(`Invalid parameters '${suffix}' provided for ${commandData.name} command`, {svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id});
-		msg.channel.createMessage({
+		winston.verbose(`No options given for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		msg.channel.send({
 			embed: {
-                author: {
-                    name: bot.user.username,
-                    icon_url: bot.user.avatarURL,
-                    url: "https://github.com/GilbertGobbels/GAwesomeBot"
-                },
-                color: 0xFF0000,
-				description: `🤔 I didn't quite get that. Make sure to use the syntax \`${bot.getCommandPrefix(msg.channel.guild, serverDocument)}${commandData.name} ${commandData.usage}\``
-			}
+				color: Colors.INVALID,
+				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
+			},
 		});
 	}
 };

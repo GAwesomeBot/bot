@@ -1,3 +1,9 @@
-Configuration/config.json
-Configuration/auth.json
-Extensions/
+Configurations/config.json
+Configurations/config.js
+Configurations/auth.js
+node_modules/
+bot-out.log
+.idea/
+package-cache*.json
+
+Temp/*.json

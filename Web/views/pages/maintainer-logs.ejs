@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logs - <%= serverData.name %> Maintainer Console</title>
+    <% include ../partials/head %>
+    <script src="/static/js/terminal.js"></script>
+</head>
+<body>
+<% include ../partials/dashboard-header %>
+<% include ../partials/dashboard-socket-updates %>
+<script>
+    $(document).on("ready", () => {
+    	let logs = [<%- logs %>][0];
+	    const consoleLogs = new Terminal();
+	    consoleLogs.setHeight("300px");
+	    consoleLogs.blinkingCursor(false);
+	    $("#console").append(consoleLogs.html);
+	    $(".Terminal").css("overflow-y", "scroll");
+	    logs.forEach(log => {
+          let line = `[${log.timestamp}] [${log.level}] ${log.message}`;
+          consoleLogs.print(line);
+        });
+        socket.on("logs", data => {
+          let line = `[${data.timestamp}] [${data.level}] ${data.message}`;
+          consoleLogs.print(line);
+          $(".Terminal").animate({ scrollTop: $('.Terminal').prop("scrollHeight")}, 500);
+        });
+    });
+</script>
+
+<section class="section is-white">
+    <div class="container">
+        <div class="columns">
+            <div id="menu" class="column is-one-quarter">
+                <% include ../partials/maintainer-menu %>
+            </div>
+            <div class="column">
+                <h1 class="title">
+                    Logs
+                </h1>
+                <article class="message is-primary">
+                    <div class="message-body">
+                        <div class="content">
+                            These logs are streamed directly from GAB's console, detailing all events that your bot encounters. Verbosity is based on the <code>consoleLevel</code> value in config.js.
+                        </div>
+                    </div>
+                </article>
+                <div id="console">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<% include ../partials/footer %>
+<% include ../partials/scroll-top-button %>
+</body>
+</html>

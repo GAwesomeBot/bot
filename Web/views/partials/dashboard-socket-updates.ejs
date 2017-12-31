@@ -1,17 +1,20 @@
 <script src="/static/js/socket.io-1.4.5.js"></script>
 <script>
-var socket = io("<%= currentPage %>");
+var socket = io("<%= currentPage %>", { transports: ["websocket"] });
 var hide_update_modal = false;
 socket.on("update", function(data) {
 	if(!hide_update_modal && "<%= serverData.isMaintainer ? 'maintainer' : serverData.id %>"==data) {
 		$("html").addClass("is-clipped");
 	    $("#update-modal").addClass("is-active");
+	    hide_update_modal = false;
     }
 });
-function closeUpdateModal() {
-	$("html").removeClass("is-clipped");
-    $("#update-modal").removeClass("is-active");
-}
+$(document).on("ready", () => {
+	$("#close-update-modal").click(() => {
+		$("html").removeClass("is-clipped");
+		$("#update-modal").removeClass("is-active");
+	});
+});
 </script>
 
 <div id="update-modal" class="modal">
@@ -32,7 +35,7 @@ function closeUpdateModal() {
 								</a>
 							</div>
 							<div class="level-item">
-								<a class="button modal-button is-warning" onclick="closeUpdateModal();">
+								<a id="close-update-modal" class="button modal-button is-warning">
 									<span class="icon">
 										<i class="fa fa-arrow-right"></i>
 									</span>

@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><%= serverData.name %> Public Data - AwesomeBot Admin Console</title>
+	<title><%= serverData.name %> Public Data - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
+	<% if (configData.canUnban) { %>
+	<script>
+		function unbanGuild(svrid) {
+			$("#unbanGuild").addClass("is-loading");
+			$.post("/dashboard/servers/server-list?svrid=maintainer", { unbanFromActivity: svrid }).done(() => {
+				$(`#unbanGuild`).removeClass("is-loading").html("<span class='icon'><i class='fa fa-check'></i></span> &nbsp; Unbanned");
+			});
+		}
+	</script>
+	<% } %>
 
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
@@ -20,32 +30,34 @@
 					<h1 class="title">
 						Public Data
 					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									AwesomeBot provides server listing capability, allowing people to discover new servers they might be interested in. You can allow your server to be shown on the <a href="/activity/servers">activity page</a> and create a detailed listing for everyone to see.
-								</div>
+					<article class="message is-primary">
+						<div class="message-body">
+							<div class="content">
+								GAwesomeBot provides server listing capability, allowing people to discover new servers they might be interested in. You can allow your server to be shown on the <a href="/activity/servers">activity page</a> and create a detailed listing for everyone to see.
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						</div>
+					</article>
+					<% if (!configData.isBanned) { %>
+					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="field">
 							<p class="control">
 								<label class="checkbox">
 								<input name="isShown" type="checkbox" onclick="$('#public_data-options').toggleClass('is-hidden');" <%= configData.public_data.isShown ? "checked" : "" %>>
 									Show <%= serverData.name %> on the <a href="/activity/servers">server listings page</a>
 								</label>
 							</p>
-							<span id="public_data-options" class="<%= configData.public_data.isShown ? '' : 'is-hidden' %>">
+						</div>
+						<div id="public_data-options" class="<%= configData.public_data.isShown ? '' : 'is-hidden' %>">
+							<div class="field">
 								<p class="control">
 									<label class="checkbox">
 									<input name="server_listing-isEnabled" type="checkbox" onclick="$('#server_listing-options').toggleClass('is-hidden');" <%= configData.public_data.server_listing.isEnabled ? "checked" : "" %>>
 										Allow anyone to join <%= serverData.name %> from the server listings page
 									</label>
 								</p>
-								<span id="server_listing-options" class="<%= configData.public_data.server_listing.isEnabled ? '' : 'is-hidden' %>">
+							</div>
+							<div id="server_listing-options" class="<%= configData.public_data.server_listing.isEnabled ? '' : 'is-hidden' %>">
+								<div class="field">
 									<p class="control">
 										<a id="form-reset" class="button is-info" href="/activity/servers?q=<%= serverData.name %>" target="_blank">
 											<span class="icon">
@@ -54,6 +66,8 @@
 										    <span>View Listing</span>
 										</a>
 									</p>
+								</div>
+								<div class="field">
 									<label class="label">Category</label>
 									<p class="control">
 										<span class="select">
@@ -67,18 +81,55 @@
 											</select>
 										</span>
 									</p>
+								</div>
+								<div class="field">
 									<label class="label">Description</label>
 									<p class="control">
 										<textarea name="server_listing-description" class="textarea" placeholder="Description of server, in markdown"><%= configData.public_data.server_listing.description %></textarea>
 									</p>
+								</div>
+							</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
+					</form>
+					<% } else { %>
+					<article class="message is-danger is-bold">
+						<div class="message-header">
+							<span>
+								<span class="icon">
+  									<i class="fa fa-ban"></i>
 								</span>
+								&nbsp;Uh-oh! You've been banned.
 							</span>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-							<% include ../partials/form-buttons-bar %>
-						</form>
-					</div>
+						</div>
+						<div class="message-body">
+							<div class="content">
+								A Maintainer has permanently removed your entry from the activity page, and restricted your ability to display public data. For more information on how activity bans work, visit <a href="/wiki/Configuration#public-data">this wiki article</a>. If you believe this is an error, please contact a Maintainer.
+							</div>
+						</div>
+					</article>
+					<% if (configData.canUnban) { %>
+					<article class="message is-warning">
+						<div class="message-body">
+							<div class="content">
+								As a maintainer, you can unban this guild to restore their ability to display public data.<br><strong>This will be effective immediately, without notifying the server Admins.</strong>
+							</div>
+							<div class="has-text-centered">
+							<a id="unbanGuild" class="button is-warning" onclick="unbanGuild('<%= serverData.id %>')">
+								<span class="icon">
+									<i class="fa fa-shield"></i>
+								</span>
+								&nbsp;
+								Unban
+							</a>		
+							</div>
+						</div>
+					</article>
+					<% } %>
+					<% } %>
 				</div>
 			</div>
 		</div>
