@@ -112,7 +112,6 @@ database.initialize(configJS.databaseURL).catch(err => {
 
 		winston.verbose("Creating a STDIN CLI instance.");
 		const cli = new CLI(sharder, db, traffic);
-		cli.setup();
 
 		// Sharder events
 		sharder.ready = 0;
@@ -121,6 +120,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			sharder.ready++;
 			if (sharder.ready === sharder.count) {
 				winston.info("All shards connected.");
+
 			}
 		});
 
@@ -137,7 +137,8 @@ database.initialize(configJS.databaseURL).catch(err => {
 					winston.warn("Shutting down travis build with code 0");
 					sharder.cluster.disconnect();
 					process.exit(0);
-				}
+				}		
+				cli.setup();
 			}
 		};
 
