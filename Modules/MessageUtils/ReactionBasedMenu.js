@@ -9,7 +9,7 @@ class ReactionBasedMenu extends EventEmitter {
 
 		this.emojis = PageEmojis;
 
-		this.numberEmojis = NumberEmojis ;
+		this.numberEmojis = NumberEmojis;
 		this.emojiArray = [...Object.values(this.emojis), ...Object.values(this.numberEmojis)];
 		/** Array of possible options */
 		this.options = options;
