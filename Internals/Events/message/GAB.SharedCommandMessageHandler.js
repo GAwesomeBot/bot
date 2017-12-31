@@ -3,9 +3,9 @@ const { Constants } = require("../../index");
 
 class MaintainerMessageCreate extends BaseEvent {
 	requirements (msg) {
-		if (this.configJSON.userBlocklist.includes(msg.author.id)) return false;
-		if (this.configJSON.sudoMaintainers.includes(msg.author.id) ||
-			this.configJSON.maintainers.includes(msg.author.id)) {
+		if (configJSON.userBlocklist.includes(msg.author.id)) return false;
+		if (configJSON.sudoMaintainers.includes(msg.author.id) ||
+			configJSON.maintainers.includes(msg.author.id)) {
 			return true;
 		}
 		return false;
