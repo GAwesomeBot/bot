@@ -18,7 +18,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 							return m.edit({
 								embed: {
 									color: Colors.RESPONSE,
-									description: `${args[0]}**${args[1].toUpperCase()}** is ${res.result}**${args[2].toUpperCase()}**`,
+									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(res.result * 100) / 100}**${args[2].toUpperCase()}**`,
 								},
 							});
 						}
