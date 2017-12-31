@@ -68,7 +68,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
 		msg.channel.send({
 			embed: {
-				color: Colors.SOFT_ERR,
+				color: Colors.INVALID,
 				title: `I need something to convert! 🤓`,
 				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
 			},

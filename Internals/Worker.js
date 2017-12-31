@@ -95,7 +95,7 @@ if (openExchangeRatesKey) {
 		f = null;
 	}
 	if (f) {
-		const res = fs.readFileSync("./Temp/currency.json");
+		const res = JSON.parse(fs.readFileSync("./Temp/currency.json", "utf8"));
 		money.rates = res.rates;
 		money.base = res.base;
 		moneyTimer = setInterval(async () => {
