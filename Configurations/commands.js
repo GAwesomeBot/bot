@@ -994,6 +994,11 @@ const commands = {
 			usage: "[shard] <code>",
 			isMultiline: true,
 		},
+		
+		addmaintainer: {
+			description: "Adds (sudo) maintainers.",
+			usage: "[sudo] <ids...>",
+		},
 	},
 };
 
