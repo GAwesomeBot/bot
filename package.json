@@ -10,10 +10,10 @@
     "url": "https://github.com/GilbertGobbels/GAwesomeBot.git"
   },
   "scripts": {
-    "first-time": "npm install -g --production windows-build-tools && npm install --production",
+    "windows-install": "npm install -g --production windows-build-tools && npm install --production",
     "test": "npm run lint",
     "lint": "eslint .",
-    "preinstall": "echo If you encounter any errors on Windows, please run \"npm run first-time\"! && echo If you are still having issues, submit the error log on GitHub! && echo This only applies to Windows machines, don't try that command on Linux or Mac as it won't work!"
+    "preinstall": "node ./Internals/NPMScripts/WarnPreInstallWindows.js"
   },
   "dependencies": {
     "async-dl-github-repo": "^2.0.0",
