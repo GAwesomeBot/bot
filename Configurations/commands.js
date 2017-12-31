@@ -223,16 +223,6 @@ const commands = {
 			},
 			category: `Fun 🎪`,
 		},
-		doge: {
-			usage: ``,
-			description: `Random picture of a doge, kindly provided by tinytaco#7999`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Fun 🎪`,
-		},
 		dogfact: {
 			usage: `[<number>]`,
 			description: `Random fact(s) about dogs!`,
