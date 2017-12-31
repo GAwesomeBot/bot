@@ -126,7 +126,7 @@ exports.EmptySpace = `​`;
 exports.Perms = {
 	eval: "⚙ Evaluation (Can execute `eval`)",
 	sudoMode: "🛡 Sudo Mode (Can act as a Server Admin)",
-	management: "🔧 Management (Can access manage GAwesomeBot)",
+	management: "🔧 Management (Can access management)",
 	administration: "🗂 Administration (Can manage the Bot User)",
 	shutdown: "🌟 Shutdown (Can manage GAB Processes)",
 };
