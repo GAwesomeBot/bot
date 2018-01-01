@@ -499,6 +499,12 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
+dblposter@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/dblposter/-/dblposter-1.0.2.tgz#afabe1398b507d21369e83af39ffd30d1f833c45"
+  dependencies:
+    snekfetch "^3.6.1"
+
 debug@2.6.9, debug@^2.2.0, debug@~2.6.4, debug@~2.6.6, debug@~2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -553,9 +559,9 @@ destroy@~1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
 
-discord.js@hydrabolt/discord.js:
+"discord.js@github:hydrabolt/discord.js":
   version "12.0.0-dev"
-  resolved "https://codeload.github.com/hydrabolt/discord.js/tar.gz/4063a3a16b581f643d5601ffcd735d9140c7c940"
+  resolved "https://codeload.github.com/hydrabolt/discord.js/tar.gz/229eb2be2da11563c3c9978664e050044de720df"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.0.2"

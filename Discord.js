@@ -3,6 +3,7 @@ const process = require("process");
 const commands = require("./Configurations/commands.js");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
+const dbl = require("dblposter");
 
 const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
 const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
@@ -1083,6 +1084,10 @@ class Client extends DJSClient {
 	}
 
 	async init () {
+		if (auth.tokens.discordBotsOrg) {
+			const poster = new dbl(auth.tokens.discordBotsOrg);
+			poster.bind(this);
+		}
 		await super.login(process.env.CLIENT_TOKEN);
 		await this.workerManager.startWorker();
 		return process.env.CLIENT_TOKEN;
