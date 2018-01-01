@@ -25,7 +25,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) 
 		userDocument.reminders.forEach(reminderDocument => {
 			fields.push({
 				name: `__${reminderDocument.name}__`,
-				value: `${moment(reminderDocument.expiry_timestamp).toNow()}`,
+				value: `${moment(reminderDocument.expiry_timestamp).fromNow()}`,
 				inline: true,
 			});
 		});

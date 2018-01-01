@@ -22,7 +22,7 @@ const commands = {
 			usage: `["setup" or <field>] [|] ["." or <value>],`,
 		},
 		remindme: {
-			usage: `<time from now> | <reminder>`,
+			usage: `[to] <reminder> <| or "in"> <time from now>`,
 		},
 		say: {
 			usage: `<server> | <channel>`,
