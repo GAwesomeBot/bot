@@ -174,7 +174,7 @@ const commands = {
 			category: "Utility 🔦",
 		},
 		cool: {
-			usage: `[<"." or cooldown length][|<cooldown duration>]`,
+			usage: `[<"clear"> or cooldown length]`,
 			description: `Sets a command cooldown for the channel`,
 			defaults: {
 				isEnabled: true,
@@ -184,7 +184,7 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		count: {
-			usage: `<name> [|] ["." or "+1" or +-1]`,
+			usage: `<name> [| "." or "+1" or "-1"]`,
 			description: `Keep tallies of various things`,
 			defaults: {
 				isEnabled: true,

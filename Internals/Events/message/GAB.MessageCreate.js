@@ -479,7 +479,7 @@ class MessageCreate extends BaseEvent {
 				}
 			}
 		}
-		// Console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
+		console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 	}
 
 	/**
@@ -544,8 +544,10 @@ class MessageCreate extends BaseEvent {
 			channelDocument.isCommandCooldownOngoing = true;
 			// End cooldown after interval (favor channel config over server)
 			this.bot.setTimeout(async () => {
-				channelDocument.isCommandCooldownOngoing = false;
-				await serverDocument.save().catch(err => {
+				const newServerDocument = await this.client.cache.get(serverDocument._id);
+				const newChannelDocument = newServerDocument.channels.id(channelDocument._id);
+				newChannelDocument.isCommandCooldownOngoing = false;
+				await newServerDocument.save().catch(err => {
 					winston.debug(`Failed to save server data for command cooldown...`, { svrid: serverDocument._id }, err);
 					this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to save server data for command cooldown!`);
 				});
