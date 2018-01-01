@@ -4,7 +4,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 			const prompt = await msg.channel.send({
 				embed: {
 					color: Colors.PROMPT,
-					description: `I can't find a count called \`${name}\`. Would you like to create it? ✏`,
+					description: `I can't find a count called \`${name}\`.\nWould you like to create it? ✏`,
 					footer: {
 						text: "You have 1 minute to respond.",
 					},
@@ -32,12 +32,12 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 			}
 		};
 		if (msg.suffix.includes("|")) {
-			const params = msg.suffix.split("|");
-			if (params.length === 2 && params[0].trim() && (!params[1].trim() || [".", "+1", "++", "-1", "--", "-", "+"].includes(params[1].trim()))) {
+			const params = msg.suffix.split("|").trimAll();
+			if (params.length === 2 && params[0] && (!params[1] || [".", "+1", "++", "-1", "--", "-", "+"].includes(params[1]))) {
 				const countDocument = serverDocument.config.count_data.id(params[0].toLowerCase().trim());
 				if (countDocument) {
 					let action;
-					switch (params[1].trim()) {
+					switch (params[1]) {
 						case "":
 						case ".":
 							countDocument.remove();
@@ -79,10 +79,10 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 						},
 					});
 				} else {
-					createCount(params[0].toLowerCase().trim());
+					createCount(params[0].toLowerCase());
 				}
 			} else {
-				winston.warn(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.channel.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+				winston.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				msg.channel.send({
 					embed: {
 						color: Colors.INVALID,
