@@ -59,6 +59,7 @@ module.exports = class GitHubGist {
 		return {
 			id: res.body.id,
 			url: res.body.html_url,
+			rawURL: res.body.files[file].raw_url,
 		};
 	}
 

@@ -1,5 +1,6 @@
 const defaultTags = require("../../Configurations/tags.json");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
+const Gist = require("../../Modules/Utils/GitHubGist");
 
 class TagCommand {
 	constructor ({ bot, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
@@ -38,12 +39,24 @@ class TagCommand {
 			});
 			return;
 		}
-		const info = this.serverDocument.config.tags.list.map(tag => {
+		const info = this.serverDocument.config.tags.list.map(async tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			const useSpacing = tag.isLocked && tag.isCommand;
-			return `» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «\n\t${content}`;
+			let URL = null;
+			if (content.length > 300) {
+				const gistUploader = new Gist(this.bot);
+				const res = await gistUploader.upload({ text: `${content}`, title: `Tag Content for Tag "${tag._id}"` });
+				if (res && res.url) {
+					URL = res.rawURL;
+				}
+			}
+			return [
+				`» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «`,
+				`\t${URL ? `The tags content was too large. Please go [here](${URL}) to see it` : `${content}`}`,
+			].join("\n");
 		});
 		if (info.length) {
+			for (let i = 0; i < info.length; i++) info[i] = await info[i];
 			const chunks = info.chunk(10);
 			const description = [];
 			for (const chunk of chunks) {
