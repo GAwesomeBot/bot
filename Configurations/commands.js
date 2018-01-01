@@ -194,7 +194,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		countdown: {
-			usage: `[<event>] [|] [<time from now>]`,
+			usage: `[<event>] [| <time from now>]`,
 			description: `Set a countdown for an event`,
 			defaults: {
 				isEnabled: true,
@@ -204,8 +204,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		disable: {
-			usage: `[<command> <command>...]`,
-			description: `Turns off a command or commands in the channel`,
+			usage: `[...<command> ]`,
+			description: `Turns off a command or multiple commands in the channel`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
