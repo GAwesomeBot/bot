@@ -2,8 +2,8 @@ const writeFile = require("write-file-atomic");
 const configJSON = require("../../Configurations/config.json");
 
 module.exports = async ({ cli }, cmdData, args) => {
-    args = args.trim();
-    const ids = args.split(" ");
+	args = args.trim();
+	const ids = args.split(" ");
 	let isSudo = false;
 	if (ids[0].toLowerCase() === "sudo") {
 		isSudo = true;
