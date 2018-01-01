@@ -65,7 +65,7 @@ class CLI {
 					}
 					delete this.commandArgs;
 				} else {
-					this.commandArgs += trimmedData;
+					this.commandArgs += strData;
 				}
 			}
 			delete this.currentlyRunningCommand;
