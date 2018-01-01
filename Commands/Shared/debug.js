@@ -102,13 +102,13 @@ module.exports = async ({ bot, Constants: { Colors, Perms } }, msg, commandData)
 				fields.push({
 					name: "Operating System Information",
 					value: `🖥 Hosted on **${platform}**, using a ${os.cpus().length}-core processor with ${os.arch()} architecture
-								\n💾 System has a total of **${Math.ceil(os.totalmem() / 1000000)}MB** RAM, of which **${Math.ceil((os.totalmem() - os.freemem()) / 1000000)}MB** is reserved
+								\n💾 System has a total of **${Math.ceil(os.totalmem() / 1000000)}MB** RAM, of which **${Math.ceil((os.totalmem() - os.freemem()) / 1000000)}MB** is in use
 								\n👤 GAwesomeBot is operated by OS User **${os.userInfo().username}**`,
 				});
 			}
 			if (args.includes("--perms")) {
 				const isMaintainer = configJSON.maintainers.includes(msg.author.id);
-				const isSudoMaintainer = configJSON.maintainers.includes(msg.author.id);
+				const isSudoMaintainer = configJSON.sudoMaintainers.includes(msg.author.id);
 				const isHost = process.env.GAB_HOST === msg.author.id;
 				if (isHost) {
 					fields.push({

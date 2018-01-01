@@ -22,7 +22,7 @@ const commands = {
 			usage: `["setup" or <field>] [|] ["." or <value>],`,
 		},
 		remindme: {
-			usage: `<time from now> | <reminder>`,
+			usage: `[to] <reminder> <| or "in"> <time from now>`,
 		},
 		say: {
 			usage: `<server> | <channel>`,
@@ -174,7 +174,7 @@ const commands = {
 			category: "Utility 🔦",
 		},
 		cool: {
-			usage: `[<"." or cooldown length][|<cooldown duration>]`,
+			usage: `[<"clear"> or cooldown length]`,
 			description: `Sets a command cooldown for the channel`,
 			defaults: {
 				isEnabled: true,
@@ -184,7 +184,7 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		count: {
-			usage: `<name> [|] ["." or "+1" or +-1]`,
+			usage: `<name> [| "." or "+1" or "-1"]`,
 			description: `Keep tallies of various things`,
 			defaults: {
 				isEnabled: true,
@@ -194,7 +194,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		countdown: {
-			usage: `[<event>] [|] [<time from now>]`,
+			usage: `[<event>] [| <time from now>]`,
 			description: `Set a countdown for an event`,
 			defaults: {
 				isEnabled: true,
@@ -204,8 +204,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		disable: {
-			usage: `[<command> <command>...]`,
-			description: `Turns off a command or commands in the channel`,
+			usage: `[...<command> ]`,
+			description: `Turns off a command or multiple commands in the channel`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -216,16 +216,6 @@ const commands = {
 		dog: {
 			usage: ``,
 			description: `Random picture of a dog!`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Fun 🎪`,
-		},
-		doge: {
-			usage: ``,
-			description: `Random picture of a doge, kindly provided by tinytaco#7999`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,

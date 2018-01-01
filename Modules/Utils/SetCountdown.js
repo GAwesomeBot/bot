@@ -17,10 +17,12 @@ module.exports = async (bot, serverDocument, countdownDocument) => {
 						description: `3...2...1... **${countdownDocument._id}**`,
 					},
 				});
-				countdownDocument.remove();
 				winston.info(`Countdown "${countdownDocument._id}" expired`, { svrid: svr.id, chid: ch.id });
 				try {
-					await serverDocument.save();
+					let newServerDoc = await bot.cache.get(serverDocument._id);
+					let newCountdownDoc = newServerDoc.config.countdown_data.id(countdownDocument._id);
+					if (newCountdownDoc) newCountdownDoc.remove();
+					await newServerDoc.save();
 				} catch (err) {
 					winston.info("Failed to save server data for countdown expiry", { svrid: svr.id }, err);
 				}

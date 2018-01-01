@@ -100,7 +100,7 @@ const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => c
 const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
 	name: role.name,
 	id: role.id,
-	color: role.color,
+	color: role.hexColor.substring(1),
 	position: role.position,
 })).sort((a, b) => b.position - a.position);
 
@@ -768,7 +768,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 							resolve: ["id", "ownerID", "name", "icon"],
 							members: ["id", "roles", "user", "nickname"],
 							channels: ["id", "type", "name", "position", "rawPosition"],
-							roles: ["name", "id", "position", "color"],
+							roles: ["name", "id", "position", "hexColor"],
 							convert: { id_only: true },
 						});
 					if (svr && usr) {
