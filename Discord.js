@@ -1498,12 +1498,7 @@ bot.on("channelUpdate", async (oldCh, newCh) => {
  * Internal debug event
  */
 bot.on("debug", async info => {
-	winston.silly(`Received DEBUG event from Discord.js!`, { info: info });
-	try {
-		await bot.events.onEvent("debug", info);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a DEBUG event! x.x\n`, err);
-	}
+	winston.silly(`Received DEBUG event from Discord.js!`, { info });
 });
 
 /**
