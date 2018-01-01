@@ -50,7 +50,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 				msg.channel.send({
 					embed: {
 						color: Colors.RESPONSE,
-						description: `\`${countdownDocument._id}\` expires ${moment(countdownDocument.expiry_timestamp).fromNow()} ⌛️`,
+						description: `\`${countdownDocument._id}\` expires **${moment(countdownDocument.expiry_timestamp).fromNow()}** ⌛️`,
 					},
 				});
 			} else {
