@@ -1,3 +1,5 @@
+const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
+
 module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		const createCount = async name => {
@@ -108,21 +110,24 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 		}
 	} else {
 		const info = serverDocument.config.count_data.map(countDocument => countDocument._id).sort();
-		const fields = info.map(count => {
-			const countDocument = serverDocument.config.count_data.id(count);
-			return {
-				name: countDocument._id,
-				value: countDocument.value,
-			};
-		});
-		if (fields.length > 0) {
-			msg.channel.send({
-				embed: {
-					color: Colors.INFO,
-					title: `${info.length} count${info.length === 1 ? "" : "s"} on "${msg.guild.name}" 📋`,
-					fields,
-				},
+		if (info.length) {
+			const chunks = info.map(count => {
+				const countDocument = serverDocument.config.count_data.id(count);
+				return [
+					`» **${countDocument._id}** «`,
+					`\tCurrently at **${countDocument.value}** 📊`,
+				].join("\n");
+			}).chunk(10);
+			const description = [];
+			for (const chunk of chunks) {
+				description.push(chunk.join("\n\n"));
+			}
+			const menu = new PaginatedEmbed(msg, description, {
+				title: `There ${info.length === 1 ? "is" : "are"} ${info.length} count${info.length === 1 ? "" : "s"} on "${msg.guild}" 📋`,
+				color: Colors.INFO,
+				footer: `Page {current description} out of {total descriptions}`,
 			});
+			await menu.init();
 		} else {
 			msg.channel.send({
 				embed: {
