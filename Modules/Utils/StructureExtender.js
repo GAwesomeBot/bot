@@ -24,6 +24,10 @@ module.exports = () => {
 			get commandPrefix () {
 				return this.client.getCommandPrefix(this, this.serverDocument);
 			}
+
+			channel (ch) {
+				return this.channels.resolve(ch) || null;
+			}
 		}
 		return GABGuild;
 	});

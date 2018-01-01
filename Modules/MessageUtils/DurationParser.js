@@ -14,7 +14,7 @@ module.exports = async string => {
 		event = string.indexOf("to ") === 0 ? string.substring(3, string.toLowerCase.lastIndexOf(" in ")) : string.substring(0, string.toLowerCase().lastIndexOf(" in "));
 	}
 	const actualTime = parseDuration(time);
-	if (time > 0 && event) {
+	if (actualTime > 0 && event) {
 		return {
 			time: actualTime,
 			event,
@@ -22,7 +22,7 @@ module.exports = async string => {
 	} else {
 		return {
 			time: null,
-			event: null,
+			event,
 			error: "ERR",
 		};
 	}
