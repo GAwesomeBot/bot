@@ -34,8 +34,9 @@ class CLI {
 	 * */
 	listener (data) {
 		let strData = data.toString();
+		let trimmedData = strData.trim();
 		if (!this.currentlyRunningCommand) {
-			let [command, ...args] = strData.split(" ");
+			let [command, ...args] = trimmedData.split(" ");
 			command = command.trim();
 			const cmdData = this.getFullCommand(command);
 			if (!cmdData) return;
@@ -54,7 +55,6 @@ class CLI {
 			}
 		} else {
 			if (this.currentlyRunningCommand.data.isMultiline) {
-				let trimmedData = strData.trim();
 				if (trimmedData.endsWith(`\u0007`)) {
 					trimmedData = trimmedData.replace(/\u0007/, "");
 					this.commandArgs += trimmedData;
