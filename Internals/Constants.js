@@ -117,6 +117,7 @@ exports.NumberEmojis = {
 exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: () => `https://catfact.ninja/facts`,
+	DOGFACT: () => `https://dog-api.kinduff.com/api/facts`,
 };
 
 // You may think there is nothing here

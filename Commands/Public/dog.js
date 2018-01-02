@@ -4,19 +4,19 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 	let m = await msg.channel.send({
 		embed: {
 			color: Colors.INFO,
-			title: `We're getting you a cute cat picture 😺`,
+			title: `We're getting you a cute dog picture 🐶`,
 			description: `Please stand by...`,
 		},
 	});
 	try {
-		let cat = await RandomAnimals.cat();
-		if (cat) {
+		let dog = await RandomAnimals.dog();
+		if (dog) {
 			m.edit({
 				embed: {
 					color: Colors.LIGHT_GREEN,
-					title: `Here's your adorale cat picture! Meow! 🐱`,
+					title: `Here's your adorale dog picture! Woof! 🐶`,
 					image: {
-						url: cat,
+						url: dog,
 					},
 				},
 			});
@@ -25,8 +25,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 		return m.edit({
 			embed: {
 				color: Colors.SOFT_ERR,
-				title: `Meow... 😿`,
-				description: `I failed to fetch a cat picture...`,
+				description: `I failed to fetch a dog picture...`,
 				footer: {
 					text: `Pwease try again...`,
 				},
