@@ -1438,6 +1438,15 @@ bot.IPC.on("restart", async (msg, callback) => {
 	}
 });
 
+bot.IPC.on("updateConfigJSON", async (_, callback) => {
+	try {
+		global.configJSON = reload("./Configurations/config.json");
+		return callback({ error: false });
+	} catch (err) {
+		return callback({ error: true });
+	}
+});
+
 /**
  * CHANNEL_CREATE
  */

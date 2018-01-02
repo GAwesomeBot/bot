@@ -29,6 +29,14 @@ module.exports = async ({ cli }, cmdData, args) => {
 		writeFile(`${__dirname}/../../Configurations/config.json`, JSON.stringify(configJSON, null, 4), err => {
 			if (err) winston.warn(`Failed to promote user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
 			else winston.info(`Promoted user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer`);
+			cli.sharder.broadcast("updateConfigJSON").then(arr => {
+				arr.map(({ error }, index) => ({
+					message: `${error ? `Couldn't update` : `Updated`} the config.json file on shard ${index}`,
+					error,
+				})).forEach(({ error, message }) => {
+					winston[error ? "error" : "info"](message);
+				});
+			});
 		});
 	});
 };

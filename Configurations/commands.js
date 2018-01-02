@@ -989,6 +989,12 @@ const commands = {
 			description: "Adds (sudo) maintainers.",
 			usage: "[sudo] <ids...>",
 		},
+
+		bigmessage: {
+			description: "Sends a BigMessage.",
+			usage: "<message>",
+			isMultiline: true,
+		},
 	},
 };
 
