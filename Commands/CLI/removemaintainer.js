@@ -23,13 +23,13 @@ module.exports = async ({ cli }, cmdData, args) => {
 		}
 	}
 	ids.forEach(user => {
-		if (isMaintainer(user, isSudo)) return;
-		if (isSudo === true && !isMaintainer(user, isSudo)) configJSON.sudoMaintainers.push(user);
-		if (!isMaintainer(user, false)) configJSON.maintainers.push(user);
+		if (!isMaintainer(user, isSudo)) return;
+		if (isSudo === true && isMaintainer(user, isSudo)) configJSON.sudoMaintainers.splice(configJSON.sudoMaintainers.indexOf(user), 1);
+		if (!isMaintainer(user, false)) configJSON.maintainers.splice(configJSON.maintainers.indexOf(user), 1);
 		writeFile(`${__dirname}/../../Configurations/config.json`, configJSON, {
 			spaces: 4,
 		}).then(() => {
-			winston.info(`Promoted user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer`);
+			winston.info(`Demoted user with ID ${user} from ${isSudo ? "Sudo" : ""} Maintainer`);
 			cli.sharder.broadcast("updateConfigJSON").then(arr => {
 				arr.map(({ error }, index) => ({
 					message: `${error ? `Couldn't update` : `Updated`} the config.json file on shard ${index}`,
@@ -39,7 +39,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 				});
 			});
 		}).catch(err => {
-			winston.warn(`Failed to promote user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
+			winston.warn(`Failed to demote user with ID ${user} from ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
 		});
 	});
 };

@@ -990,6 +990,11 @@ const commands = {
 			usage: "[sudo] <ids...>",
 		},
 
+		removemaintainer: {
+			description: "Removes (sudo) maintainers.",
+			usage: "[sudo] <ids...>",
+		},
+
 		bigmessage: {
 			description: "Sends a BigMessage.",
 			usage: "<message>",
