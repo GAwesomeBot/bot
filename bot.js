@@ -137,7 +137,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 					winston.warn("Shutting down travis build with code 0");
 					sharder.cluster.disconnect();
 					process.exit(0);
-				}		
+				}
 				cli.setup();
 			}
 		};
