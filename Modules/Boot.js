@@ -23,7 +23,7 @@ const token = (configJS, configJSON, auth) => {
 };
 
 const sudo = (configJS, configJSON, auth, user) => {
-	const writeFile = require("write-file-atomic");
+	const { writeJSONAtomic } = require("fs-nextra");
 	if (!process.argv[process.argv.indexOf("--sudo") + 1] || process.argv[process.argv.indexOf("--sudo") + 1].startsWith("-")) {
 		winston.warn(`Argument --sudo requires a parameter.`);
 		return;
@@ -31,10 +31,9 @@ const sudo = (configJS, configJSON, auth, user) => {
 	if (configJSON.sudoMaintainers.includes(user ? user : process.argv[process.argv.indexOf("--sudo") + 1])) return;
 	configJSON.sudoMaintainers.push(user ? user : process.argv[process.argv.indexOf("--sudo") + 1]);
 	configJSON.maintainers.push(user ? user : process.argv[process.argv.indexOf("--sudo") + 1]);
-	writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 4), err => {
-		if (err) winston.warn(`Failed to promote user with ID ${user ? user : process.argv[process.argv.indexOf("--sudo") + 1]} to Sudo Maintainer *_* `, err);
-		else winston.info(`Promoted user with ID ${user ? user : process.argv[process.argv.indexOf("--sudo") + 1]} to Sudo Maintainer`);
-	});
+	writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
+		.then(() => winston.info(`Promoted user with ID ${user ? user : process.argv[process.argv.indexOf("--sudo") + 1]} to Sudo Maintainer`))
+		.catch(err => winston.warn(`Failed to promote user with ID ${user ? user : process.argv[process.argv.indexOf("--sudo") + 1]} to Sudo Maintainer *_* `, err));
 };
 
 const host = (configJS, configJSON, auth, user) => {

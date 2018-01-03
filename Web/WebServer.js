@@ -1775,17 +1775,18 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 
 	// Save config.json after maintainer console form data is received
 	const saveMaintainerConsoleOptions = (consolemember, req, res, override, silent) => {
-		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 2), err => {
-			if (err) {
+		fsn.writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
+			.then(() => {
+				dashboardUpdate(req.path, "maintainer");
+				if (override && !silent) {
+					res.sendStatus(200);
+				} else if (!silent) res.redirect(req.originalUrl);
+			})
+			.catch(err => {
 				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: consolemember.id }, err);
 				renderError(res, "An internal error occurred!");
 				return;
-			}
-			dashboardUpdate(req.path, "maintainer");
-			if (override && !silent) {
-				res.sendStatus(200);
-			} else if (!silent) res.redirect(req.originalUrl);
-		});
+			});
 	};
 
 	// Login to admin console
