@@ -217,7 +217,7 @@
     {
         "category": "Biochemistry",
         "question": "This protein makes the blood red in color.",
-        "answer": "Haemoglobin"
+        "answer": "Hemoglobin"
     },
     {
         "category": "Biology",
@@ -266,8 +266,8 @@
     },
     {
         "category": "Calendar",
-        "question": "How many days where there in 1976?",
-        "answer": "three hundred and sixty six"
+        "question": "How many days where there in 1976? (In numbers)",
+        "answer": "366"
     },
     {
         "category": "Cartoon Trivia",
@@ -447,7 +447,7 @@
     {
         "category": "Cartoon Trivia",
         "question": "What comic strip character is Beetle Bailey's sister?",
-        "answer": "Lois (of Hi and Lois)"
+        "answer": "Lois"
     },
     {
         "category": "Cartoon Trivia",
@@ -512,7 +512,7 @@
     {
         "category": "Cartoon Trivia",
         "question": "What was Daffy Duck's favorite insult?",
-        "answer": "You're dispicable!"
+        "answer": "You're despicable!"
     },
     {
         "category": "Cartoon Trivia",
@@ -14302,7 +14302,7 @@
     {
         "category": "Animal Kingdom",
         "question": "Name one male fish that gives birth?",
-        "answer": "sea horse or pipe fish"
+        "answer": "sea horse|pipe fish"
     },
     {
         "category": "Animal Kingdom",
