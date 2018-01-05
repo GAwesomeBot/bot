@@ -1,93 +1,21 @@
 <script>
-function searchServers(query) {
-	window.location.href = "/activity/servers?q=" + encodeURIComponent(query) + "&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>";
-}
-
-document.getElementById("search-button").href = "javascript:searchServers(document.getElementById('search-input').value);";
-document.getElementById("search-input").setAttribute("list", "servers");
-document.getElementById("search-input").onkeydown = function() {
-	if (event.keyCode === 13) {
-		searchServers(this.value);
-	}
+GAwesomeUtil.searchServers = (query) => {
+	Turbolinks.visit("/activity/servers?q=" + encodeURIComponent(query) + "&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>");
 };
-mediaStyle(mq);
-$.getJSON("/serverlist", function(data) {
-	searchInputAutocomplete = new autoComplete({
-	    selector: "#search-input",
-	    minChars: 2,
-	    source: function(q, res) {
-	    	q = q.toLowerCase();
-	       	res(data.filter(function(a) {
-	       		return a.toLowerCase().indexOf(q)>-1;
-	       	}));
-	    }
-	});
-});
 
-function showSelections() {
+GAwesomeUtil.showActivitySelections = () => {
 	document.getElementById("category-select").value = "<%= data.selectedCategory %>";
 	document.getElementById("public-select").value = "<%= data.isPublicOnly %>";
 	document.getElementById("sort-select").value = "<%= data.sortOrder %>";
 	document.getElementById("count-select").value = "<%= data.itemsPerPage %>";
-}
-
-function switchLayout(type) {
-	if(!type) {
-		type = localStorage.getItem("servers-layout");
-		if(!type) {
-			localStorage.setItem("servers-layout", "grid");
-			type = localStorage.getItem("servers-layout");
-		}
-	} else {
-		localStorage.setItem("servers-layout", type);
-	}
-	switch(type) {
-		case "grid":
-			$("#grid-layout-button").addClass("is-primary");
-			$("#list-layout").addClass("is-hidden");
-			$("#grid-layout").removeClass("is-hidden");
-			$("#list-layout-button").removeClass("is-primary");
-			break;
-		case "list":
-			$("#list-layout-button").addClass("is-primary");
-			$("#list-layout").removeClass("is-hidden");
-			$("#grid-layout-button").removeClass("is-primary");
-			$("#grid-layout").addClass("is-hidden");
-			break;
-	}
-}
-<% if (isMaintainer) { %>
-const guildData = {};
-function banGuild(svrid) {
-	if (confirm("Are you sure you want to remove this guild from the activity page? It will no longer be visible on this page.")) {
-		$.post("/dashboard/servers/server-list?svrid=maintainer", { removeFromActivity: svrid }).done(() => {
-			guildData[svrid] = $(`#cardContent-${svrid}`).html();
-			$(`#cardContent-${svrid}`).html(`
-				<a class="has-text-centered is-4" href="javascript:unbanGuild('${svrid}')">
-    			<span class="icon">
-        		<i class="fa fa-refresh"></i>
-    			</span>
-    			Undo ban
-				</a>
-			`);
-			$(`#cardContent-${svrid}`).addClass("has-text-centered");
-		});
-	}
-}
-function unbanGuild(svrid) {
-	$.post("/dashboard/servers/server-list?svrid=maintainer", { unbanFromActivity: svrid }).done(() => {
-		$(`#cardContent-${svrid}`).removeClass("has-text-centered");
-		$(`#cardContent-${svrid}`).html(guildData[svrid]);
-	});
-}
-<% } %>
+};
 </script>
 
 <nav class="level">
 	<div class="level-left">
 		<div class="level-item">
 			<span class="select">
-				<select id="category-select" onchange="window.location.href = '/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=' + this.value + '&publiconly=<%= data.isPublicOnly %>';">
+				<select id="category-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=' + this.value + '&publiconly=<%= data.isPublicOnly %>');">
 					<option value="All">All Categories</option>
 					<option>Gaming</option>
 					<option>Tech</option>
@@ -100,7 +28,7 @@ function unbanGuild(svrid) {
 		</div>
 		<div class="level-item">
 			<span class="select">
-				<select id="public-select" onchange="window.location.href = '/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=' + this.value;">
+				<select id="public-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=' + this.value);">
 					<option value="false">Show All Servers</option>
 					<option value="true">Public Listings Only</option>
 				</select>
@@ -110,7 +38,7 @@ function unbanGuild(svrid) {
 	<div class="level-right">
 		<div class="level-item">
 			<span class="select">
-				<select id="sort-select" onchange="window.location.href = '/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=' + this.value + '&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>';">
+				<select id="sort-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=' + this.value + '&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>');">
 					<option value="messages-asc">Messages Today (ascending)</option>
 					<option value="messages-des">Messages Today (descending)</option>
 					<option value="members-asc">Members (ascending)</option>
@@ -121,7 +49,7 @@ function unbanGuild(svrid) {
 		<div class="level-item">
 			<div class="field has-addons">
 				<div class="control">
-				<a id="grid-layout-button" class="button" onclick="switchLayout('grid');">
+				<a id="grid-layout-button" class="button" onclick="GAwesomeUtil.switchActivityLayout('grid');">
 					<span class="icon is-small">
 						<i class="fa fa-th"></i>
 					</span>
@@ -129,7 +57,7 @@ function unbanGuild(svrid) {
 				</a>
 				</div>
 				<div class="control">
-				<a id="list-layout-button" class="button" onclick="switchLayout('list');">
+				<a id="list-layout-button" class="button" onclick="GAwesomeUtil.switchActivityLayout('list');">
 					<span class="icon is-small">
 						<i class="fa fa-th-list"></i>
 					</span>
@@ -140,7 +68,7 @@ function unbanGuild(svrid) {
 		</div>
 		<div class="level-item">
 			<span class="select">
-				<select id="count-select" onchange="window.location.href = '/activity/servers?q=<%= activeSearchQuery %>&count=' + this.value + '&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>';">
+				<select id="count-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=' + this.value + '&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>');">
 					<option value="0">All Items</option>
 					<option value="8">8 items/page</option>
 					<option value="16">16 items/page</option>
@@ -174,7 +102,7 @@ function unbanGuild(svrid) {
 									</div>
 									<% if (isMaintainer) { %>
 									<div class="column is-one-fifth">
-										<button class="delete is-pulled-right" onclick="banGuild('<%= data.serverData[i].id %>');" title='Remove "<%= data.serverData[i].name %>" from the activity page'></button>
+										<button class="delete is-pulled-right" onclick="GAwesomeUtil.activityBanGuild('<%= data.serverData[i].id %>');" title='Remove "<%= data.serverData[i].name %>" from the activity page'></button>
 									</div>
 									<% } %>
 								</div>

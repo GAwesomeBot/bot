@@ -66,7 +66,7 @@
                     <span>Donate</span>
                 </a>
                 <script>
-                    if(localStorage.getItem("donate")=="hide") {
+                    if(localStorage.getItem("donate") === "hide") {
                         $("#nav-donate").toggle();
                     }
                 </script>
@@ -101,12 +101,5 @@
                 <% } %>
                 </div>
             </div>
-            <script>
-                var currentPage = window.location.pathname.split("/")[1];
-                var currentNavItem = $("#nav-" + currentPage);
-                if(currentNavItem) {
-                    currentNavItem.addClass("is-tab");
-                }
-            </script>
         </div>
     </nav>

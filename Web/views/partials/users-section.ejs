@@ -11,29 +11,9 @@
 }
 </style>
 <script>
-function searchUsers(query) {
-	window.location.href = "/activity/users?q=" + encodeURIComponent(query);
-}
-
-document.getElementById("search-button").href = "javascript:searchUsers(document.getElementById('search-input').value);";
-document.getElementById("search-input").onkeydown = function() {
-	if(event.keyCode==13) {
-		searchUsers(this.value);
-	}
+GAwesomeUtil.searchUsers = (query) => {
+	Turbolinks.visit("/activity/users?q=" + encodeURIComponent(query));
 };
-mediaStyle(mq);
-$.getJSON("/userlist", function(data) {
-	searchInputAutocomplete = new autoComplete({
-		selector: "#search-input",
-		minChars: 2,
-		source: function(q, res) {
-			q = q.toLowerCase();
-			res(data.filter(function(a) {
-				return a.toLowerCase().indexOf(q)>-1;
-			}));
-		}
-	});
-});
 </script>
 
 <% if((activeSearchQuery && data.userProfile) || !activeSearchQuery) { %>

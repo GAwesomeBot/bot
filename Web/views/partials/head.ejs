@@ -16,6 +16,10 @@
 <link rel="shortcut icon" type="image/png" href="/static/img/icon.png">
 <meta name="theme-color" content="#009688">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turbolinks/5.0.3/turbolinks.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css">
+
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
 <link href="/static/fonts/icon-discord.css" rel="stylesheet">
@@ -24,6 +28,8 @@
 
 <script src="/static/js/jquery-2.2.0.min.js"></script>
 <script async src="/static/js/bulma.js"></script>
+
+<script src="/static/js/102e5e3075-app.js"></script>
 
 <script>
 function setUserAutocomplete(svrid) {
@@ -80,4 +86,11 @@ window.addEventListener("keydown", function(e) {
 		});
 	}
 }, true);
+$(document).on('turbolinks:click', function() {
+	NProgress.start();
+});
+$(document).on('turbolinks:render', function() {
+	NProgress.done();
+	NProgress.remove();
+});
 </script>
