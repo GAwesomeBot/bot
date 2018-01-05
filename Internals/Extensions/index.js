@@ -86,23 +86,21 @@ const parseScopes = extensionDocument => {
 	return parsed;
 };
 
-module.exports.run = async (bot, serverDocument, extensionDocument, params) => {
+exports.run = async (bot, serverDocument, extensionDocument, params) => {
 	let extensionCode;
 	try {
-		extensionCode = getExtensionCode(extensionDocument);
+		extensionCode = await getExtensionCode(extensionDocument);
 	} catch (err) {
-		winston.warn(`Failed to load the extension code for ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: params.guild.id, extid: extensionDocument._id }, err);
+		return winston.warn(`Failed to load the extension code for ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: params.guild.id, extid: extensionDocument._id }, err);
 	}
-	if (extensionCode) {
-		try {
-			const scopes = parseScopes(extensionDocument);
-			const vm = new VM({
-				timeout: extensionDocument.timeout,
-				sandbox: new Sandbox(bot, serverDocument, extensionDocument, params, scopes),
-			});
-			vm.run(extensionCode);
-		} catch (err) {
-			winston.debug(`Failed to run ${extensionDocument.type} extension "${extensionDocument.name}": ${err.stack}`, { svrid: params.guild.id, extid: extensionDocument._id });
-		}
+	try {
+		const scopes = parseScopes(extensionDocument);
+		const vm = new VM({
+			timeout: extensionDocument.timeout,
+			sandbox: new Sandbox(bot, serverDocument, extensionDocument, params, scopes),
+		});
+		vm.run(extensionCode);
+	} catch (err) {
+		winston.debug(`Failed to run ${extensionDocument.type} extension "${extensionDocument.name}": ${err.stack}`, { svrid: params.guild.id, extid: extensionDocument._id });
 	}
 };
