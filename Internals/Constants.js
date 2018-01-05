@@ -143,8 +143,6 @@ exports.AllowedEvents = [
 	"emojiUpdate",
 	"guildBanAdd",
 	"guildBanRemove",
-	"guildCreate",
-	"guildDelete",
 	"guildMemberAdd",
 	"guildMemberRemove",
 	"guildMemberSpeaking",
