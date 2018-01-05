@@ -3,6 +3,8 @@
 <head>
 	<title><%= pageTitle %></title>
 	<% include ../partials/head %>
+
+    <script src="/static/js/form-change-listener.js"></script>
 </head>
 <body>
 	<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
@@ -11,20 +13,20 @@
 		</div>
 		<div class="hero-body">
 			<div class="container has-text-centered">
-				<h3 class="subtitle is-3">
-					"<%= headerTitle %>":
-                </h3>
 				<h1 class="title is-1">
 					<span class="icon is-large">
                         <i class="fa fa-rss"></i>
                     </span>
-                    GAwesomeBot blog.
+                    GAwesomeBot blog
 				</h1>
+                <h3 class="subtitle is-3">
+                    Dolphin Musings
+                </h3>
                 <% if(isMaintainer) { %>
                 <a class="button is-white is-outlined" href="/blog/compose">
-                            <span class="icon is-small">
-                                <i class="fa fa-plus"></i>
-                            </span>
+                    <span class="icon is-small">
+                        <i class="fa fa-plus"></i>
+                    </span>
                     <span>New</span>
                 </a>
                 <% } %>
