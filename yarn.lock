@@ -426,8 +426,8 @@ concat-stream@^1.6.0:
     typedarray "^0.0.6"
 
 connect-mongo@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/connect-mongo/-/connect-mongo-2.0.0.tgz#3e4d036a6869385b0191a3737d3051a86abc2fb8"
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/connect-mongo/-/connect-mongo-2.0.1.tgz#514d649cff1d5d5546c087193245bb54ff5b703b"
   dependencies:
     mongodb "^2.0.36"
 
@@ -500,8 +500,8 @@ dashdash@^1.12.0:
     assert-plus "^1.0.0"
 
 dblposter@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/dblposter/-/dblposter-1.0.2.tgz#afabe1398b507d21369e83af39ffd30d1f833c45"
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/dblposter/-/dblposter-1.0.3.tgz#838dd5c4d70e8a4e0657b96e414fff5412452b79"
   dependencies:
     snekfetch "^3.6.1"
 
@@ -561,7 +561,7 @@ destroy@~1.0.4:
 
 "discord.js@github:hydrabolt/discord.js":
   version "12.0.0-dev"
-  resolved "https://codeload.github.com/hydrabolt/discord.js/tar.gz/229eb2be2da11563c3c9978664e050044de720df"
+  resolved "https://codeload.github.com/hydrabolt/discord.js/tar.gz/2318812f7f2229e0934a28967b406c4ef7f58073"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.0.2"
@@ -1523,12 +1523,27 @@ mongodb-core@2.1.17:
     bson "~1.0.4"
     require_optional "~1.0.0"
 
-mongodb@2.2.33, mongodb@^2.0.36:
+mongodb-core@2.1.18:
+  version "2.1.18"
+  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-2.1.18.tgz#4c46139bdf3a1f032ded91db49f38eec01659050"
+  dependencies:
+    bson "~1.0.4"
+    require_optional "~1.0.0"
+
+mongodb@2.2.33:
   version "2.2.33"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-2.2.33.tgz#b537c471d34a6651b48f36fdbf29750340e08b50"
   dependencies:
     es6-promise "3.2.1"
     mongodb-core "2.1.17"
+    readable-stream "2.2.7"
+
+mongodb@^2.0.36:
+  version "2.2.34"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-2.2.34.tgz#a34f59bbeb61754aec432de72c3fe21526a44c1a"
+  dependencies:
+    es6-promise "3.2.1"
+    mongodb-core "2.1.18"
     readable-stream "2.2.7"
 
 mongoose-findorcreate@*:
@@ -1695,14 +1710,20 @@ p-finally@^1.0.0:
   resolved "https://registry.yarnpkg.com/p-finally/-/p-finally-1.0.0.tgz#3fbcfb15b899a44123b34b6dcc18b724336a2cae"
 
 p-limit@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-1.1.0.tgz#b07ff2d9a5d88bec806035895a2bab66a27988bc"
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-1.2.0.tgz#0e92b6bedcb59f022c13d0f1949dc82d15909f1c"
+  dependencies:
+    p-try "^1.0.0"
 
 p-locate@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/p-locate/-/p-locate-2.0.0.tgz#20a0103b222a70c8fd39cc2e580680f3dde5ec43"
   dependencies:
     p-limit "^1.1.0"
+
+p-try@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/p-try/-/p-try-1.0.0.tgz#cbc79cdbaf8fd4228e13f621f2b1a237c1b207b3"
 
 pako@^1.0.0:
   version "1.0.6"
