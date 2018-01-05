@@ -290,3 +290,79 @@ const GAwesomeListeners = {};
 
 GAwesomeListeners.activityMQL = window.matchMedia("screen and (max-width: 768px)");
 GAwesomeListeners.activityMQL.addListener(GAwesomeUtil.activityViewPortUpdate);
+
+function setUserAutocomplete(svrid) {
+	$.getJSON("/userlist" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
+		new autoComplete({
+			selector: ".user-autocomplete",
+			minChars: 2,
+			source: function(query, res) {
+				query = query.toLowerCase();
+				res(data.filter(function(a) {
+					return a.toLowerCase().indexOf(query)>-1;
+				}));
+			}
+		});
+	});
+}
+
+$(window).scroll(function() {
+	if($("#form-buttons") && $("#form-buttons").is(":visible")) {
+		$("#scroll-top-button-container").css("padding-bottom", "75px");
+	} else {
+		$("#scroll-top-button-container").css("padding-bottom", "25px");
+	}
+	if($(this).scrollTop()>200 && $(this).scrollTop()<$(document).height()-1200) {
+		$("#scroll-top-button-container").fadeIn(86);
+	} else {
+		$("#scroll-top-button-container").fadeOut(86);
+	}
+});
+
+$(document).on('turbolinks:click', function() {
+	NProgress.start();
+});
+$(document).on('turbolinks:render', function() {
+	NProgress.done();
+	NProgress.remove();
+});
+
+/* Down here are only easter eggs, pinky promise. You'll ruin all the fun if you don't find them for yourself! Turn back while you still can. */
+
+let keys = [];
+const konami = "38,38,40,40,37,39,37,39,66,65";
+const dolphin = "68,69,76,73,71,72,84,69,68,32,68,79,76,80,72,73,78";
+const unknown = "38c972419c82c3059933ecefee492ad2";
+window.addEventListener("keydown", function(e) {
+	if (e.keyCode !== 16) {
+		keys.push(e.keyCode);
+	}
+	if(keys.toString().includes(konami)) {
+		keys = [];
+		document.body.innerHTML = document.body.innerHTML.replace(/GAwesomeBot/g,"TacoBot");
+		document.body.innerHTML = document.body.innerHTML.split("/static/img/icon.png").join("/static/img/tinytaco.png");
+		document.getElementById("header").style.backgroundImage = "url('/static/img/header-bg-taco.jpg')";
+	}
+	if(keys.toString().includes(dolphin)) {
+		keys = [];
+		$('*').contents().filter(function() {
+			return this.nodeType === Node.TEXT_NODE && this.nodeValue.trim() !== '';
+		}).each(function() {
+			let info = "";
+			for(let i = 0; i < this.nodeValue.length; i++) {
+				info += "🐬";
+			}
+			this.nodeValue = info;
+		});
+	}
+	if (md5(keys.toString()) === unknown) {
+		keys = [];
+		document.body.innerHTML = document.body.innerHTML.split("/GilbertGobbels/GAwesomeBot").join("/BitQuote/AwesomeBot");
+		document.body.innerHTML = document.body.innerHTML.replace(/GAwesomeBot/g, "AwesomeBot Neo");
+		document.body.innerHTML = document.body.innerHTML.split("/static/img/icon.png").join("/static/img/NEO.png");
+		$("#footerText").html('<strong>AwesomeBot NEO</strong> by BitQuote & <a href="https://github.com/BitQuote">BitQuote</a>. Made with <a href="https://github.com/BitQuote">BitQuote</a> and <a href="https://github.com/BitQuote">BitQuote</a>. Site made with <a href="https://github.com/BitQuote">BitQuote</a> and <a href="https://github.com/BitQuote">BitQuote</a>. Artwork by <a href="https://github.com/BitQuote">BitQuote</a> and <a href="https://github.com/BitQuote">BitQuote</a>. All rights reserved by BitQuote.');
+		$(".developer-card-name").html("BitQuote").attr("ondblclick", "");
+		$(".developer-card-icon").attr("src", "/static/img/bitquote.png");
+		$(".developer-card-role").html("(Evil) Creator, Bot Killer");
+	}
+}, true);
