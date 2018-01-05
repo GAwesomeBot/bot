@@ -2051,6 +2051,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					}
 				});
 				for (const command in serverDocument.toObject().config.commands) {
+					if (!serverDocument.config.commands[command]) continue;
 					serverDocument.config.commands[command].admin_level = req.body["preset-admin_level"] || 0;
 					serverDocument.config.commands[command].disabled_channel_ids = disabled_channel_ids;
 				}

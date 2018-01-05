@@ -52,7 +52,7 @@ const {
 	Collection,
 } = require("discord.js");
 winston.silly("Creating Discord.js client.");
-class Client extends DJSClient {
+class GABClient extends DJSClient {
 	constructor (options) {
 		super(options);
 		// Value set once READY triggers
@@ -866,7 +866,7 @@ class Client extends DJSClient {
 
 	/**
 	 * Check if a user is muted on a server, with or without overwrites
-	 * @param {Discord.GuildChannel} channel The channel to check this on
+	 * @param {Discord.TextChannel} channel The channel to check this on
 	 * @param {Discord.GuildMember} member The member to check this on
 	 * @returns {Boolean} A boolean depending if the member is muted.
 	 */
@@ -904,7 +904,7 @@ class Client extends DJSClient {
 
 	/**
  	 * Mutes a member of a server in a channel
- 	 * @param {Discord.GuildChannel} channel The channel to mute in
+ 	 * @param {Discord.TextChannel} channel The channel to mute in
 	 * @param {Discord.GuildMember} member The member to mute
 	 * @param {String} [reason] Optional reason for the mute
 	 */
@@ -1096,7 +1096,7 @@ class Client extends DJSClient {
 
 StructureExtender();
 
-const bot = new Client({
+const bot = new GABClient({
 	shardId: Number(process.env.SHARD_ID),
 	shardCount: Number(process.env.SHARD_COUNT),
 	fetchAllMembers: true,

@@ -388,7 +388,8 @@ class MessageCreate extends BaseEvent {
 						} else {
 							// Check if it's a command or keyword extension trigger
 							let extensionApplied = false;
-							for (let i = 0; i < serverDocument.extensions.length; i++) {
+							const extensionLength = serverDocument.extensions.length;
+							for (let i = 0; i < extensionLength; i++) {
 								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && serverDocument.extensions[i].enabled_channel_ids.includes(msg.channel.id)) {
 									// Command extensions
 									if (serverDocument.extensions[i].type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {

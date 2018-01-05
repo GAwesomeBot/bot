@@ -119,38 +119,38 @@ if (openExchangeRatesKey) {
 		canConvertMoney = true;
 	} else {
 		request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`)
-		.then(async res => {
-			if (res && res.body && res.body.rates && res.body.base) {
-				money.rates = res.body.rates;
-				money.base = res.body.base;
-				await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
-				moneyTimer = setInterval(async () => {
-					try {
-						let newRes = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
-						if (newRes.body && newRes.body.rates && newRes.body.base) {
-							money.rates = res.body.rates;
-							money.base = res.body.base;
-							await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
-						} else {
+			.then(async res => {
+				if (res && res.body && res.body.rates && res.body.base) {
+					money.rates = res.body.rates;
+					money.base = res.body.base;
+					await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
+					moneyTimer = setInterval(async () => {
+						try {
+							let newRes = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
+							if (newRes.body && newRes.body.rates && newRes.body.base) {
+								money.rates = res.body.rates;
+								money.base = res.body.base;
+								await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
+							} else {
+								clearInterval(moneyTimer);
+								moneyTimer = null;
+								canConvertMoney = false;
+							}
+						} catch (_) {
 							clearInterval(moneyTimer);
 							moneyTimer = null;
 							canConvertMoney = false;
 						}
-					} catch (_) {
-						clearInterval(moneyTimer);
-						moneyTimer = null;
-						canConvertMoney = false;
-					}
-				}, 3600000);
-				canConvertMoney = true;
-			} else {
-				throw new Error();
-			}
-		})
-		.catch(() => {
-			moneyTimer = null;
-			canConvertMoney = false;
-		});
+					}, 3600000);
+					canConvertMoney = true;
+				} else {
+					throw new Error();
+				}
+			})
+			.catch(() => {
+				moneyTimer = null;
+				canConvertMoney = false;
+			});
 	}
 }
 
