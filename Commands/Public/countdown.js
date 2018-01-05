@@ -70,13 +70,11 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 			.filter(countdownDoc => msg.guild.channels.has(countdownDoc.channel_id))
 			.sort((a, b) => a.expiry_timestamp - b.expiry_timestamp);
 		if (countdowns.length) {
-			let arr = countdowns.map(countdown => {
-				return [
-					`» **${countdown._id}** «`,
-					`\tIn #${msg.guild.channel(countdown.channel_id).name} (${msg.guild.channel(countdown.channel_id)})`,
-					`\tExpires **${moment(countdown.expiry_timestamp).fromNow()}**`,
-				].join("\n");
-			});
+			let arr = countdowns.map(countdown => [
+				`» **${countdown._id}** «`,
+				`\tIn #${msg.guild.channel(countdown.channel_id).name} (${msg.guild.channel(countdown.channel_id)})`,
+				`\tExpires **${moment(countdown.expiry_timestamp).fromNow()}**`,
+			].join("\n"));
 			const chunks = arr.chunk(10);
 			let description = [];
 			for (const chunk of chunks) description.push(chunk.join("\n\n"));
