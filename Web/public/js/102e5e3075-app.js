@@ -80,8 +80,15 @@ GAwesomeUtil.activityViewportUpdate = mq => {
 	}
 };
 
+GawesomePaths["landing"] = () => {
+	$(".section-shortcut-link").click(function() {
+		$("html, body").animate({
+			scrollTop: $("#" + this.href.substring(this.href.lastIndexOf("#")+1)).offset().top
+		}, 172);
+	});
+};
+
 GAwesomePaths["activity"] = () => {
-	console.log("hi")
 	GAwesomeUtil.activityViewportUpdate(GAwesomeListeners.activityMQL);
 
 	if (window.location.pathname === "/activity/users") {
@@ -131,7 +138,8 @@ GAwesomePaths["activity"] = () => {
 
 document.addEventListener("turbolinks:load", () => {
 	GAwesomeUtil.updateHeader();
-	const func = GAwesomePaths[window.location.pathname.split("/")[1]]
+	let func = GAwesomePaths[window.location.pathname.split("/")[1]]
+	if (window.location.pathname.split("/")[1] === "") func = GAwesomePaths["landing"];
 	if (func) func();
 });
 

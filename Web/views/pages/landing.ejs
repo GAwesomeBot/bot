@@ -33,15 +33,6 @@
 		}
 	}
 	</style>
-	<script>
-	$(document).ready(function() {
-		$(".section-shortcut-link").click(function() {
-			$("html, body").animate({
-				scrollTop: $("#" + this.href.substring(this.href.lastIndexOf("#")+1)).offset().top
-			}, 172);
-		});
-	});
-	</script>
 </head>
 <body>
 	<section id="header" class="hero is-primary is-fullheight is-bold" style="background: url('/header-image');background-size: cover;">
