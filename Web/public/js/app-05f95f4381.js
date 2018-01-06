@@ -198,6 +198,11 @@ GAwesomeUtil.dashboard.connect = () => {
 				$("#update-modal").addClass("is-active");
 			}
 		});
+		GAwesomeData.dashboard.socket.on("logs", data => {
+			let line = `[${data.timestamp}] [${data.level}] ${data.message}`;
+			GAwesomeData.dashboard.terminal.print(line);
+			$(".Terminal").animate({ scrollTop: $('.Terminal').prop("scrollHeight")}, 500);
+		});
 	});
 };
 
