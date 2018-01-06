@@ -39,12 +39,12 @@ class TagCommand {
 			});
 			return;
 		}
+		const gistUploader = new Gist(this.bot);
 		const info = this.serverDocument.config.tags.list.map(async tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			const useSpacing = tag.isLocked && tag.isCommand;
 			let URL = null;
 			if (content.length > 300) {
-				const gistUploader = new Gist(this.bot);
 				const res = await gistUploader.upload({ text: `${content}`, title: `Tag Content for Tag "${tag._id}"` });
 				if (res && res.url) {
 					URL = res.rawURL;
@@ -80,18 +80,19 @@ class TagCommand {
 
 	// Parse command suffix
 	parse () {
-		const params = this.suffix.split("|");
+		const params = this.suffix.trim().split("|").trimAll();
+		if (params[0].trim() === "") params.splice(0, 1);
 
 		if (params.length >= 1) {
-			this.tag = params[0].trim().toLowerCase();
+			this.tag = params[0].toLowerCase();
 		}
 
 		if (params.length >= 2) {
-			this.value = params[1].trim();
+			this.value = params[1];
 		}
 
 		if (params.length >= 3) {
-			const tagOpts = params[2].trim().toLowerCase().split(/\s*,\s*/);
+			const tagOpts = params[2].toLowerCase().split(/\s+/);
 			if (tagOpts.includes("command")) {
 				this.isCommand = true;
 			}
