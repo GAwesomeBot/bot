@@ -4,33 +4,10 @@
 	<title><%= serverData.name %> Name Display - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
-		const username = "<%= exampleUsername%>";
-		const nickname = "<%= exampleNickname %>";
-		const discriminator = "<%= exampleDiscriminator %>";
-		$(document).on("ready", () => {
-			const example = $("#currentExample");
-			const useNickname = $("#name_display-use_nick");
-			const useDiscriminator = $("#name_display-show_discriminator");
-			useNickname.click(() => {
-				if (useNickname.is(":checked") && nickname !== "") {
-					example.text(nickname);
-				} else {
-					example.text(username);
-				}
-				if (useDiscriminator.is(":checked")) {
-					example.text(`${example.text().trim()}#${discriminator}`);
-				}
-			});
-			useDiscriminator.click(() => {
-			  	if (useDiscriminator.is(":checked")) {
-					example.text(example.text() + `#${discriminator}`);
-			  	} else {
-					example.text(example.text().trim().slice(0, -5));
-			  	}
-			});
-		});
+		GAwesomeData.username = "<%= exampleUsername%>";
+		GAwesomeData.nickname = "<%= exampleNickname %>";
+		GAwesomeData.discriminator = "<%= exampleDiscriminator %>";
 	</script>
 </head>
 <body onload="saveFormState();">

@@ -337,6 +337,27 @@ GAwesomePaths["dashboard"] = () => {
 				$("#default_ban_gif").show();
 				$("#ban_gif_preview").attr("src", $("#ban_gif").val());
 			});
+		} else if (sectionPage === "name-display") {
+			const example = $("#currentExample");
+			const useNickname = $("#name_display-use_nick");
+			const useDiscriminator = $("#name_display-show_discriminator");
+			useNickname.click(() => {
+				if (useNickname.is(":checked") && GAwesomeData.nickname !== "") {
+					example.text(GAwesomeData.nickname);
+				} else {
+					example.text(GAwesomeData.username);
+				}
+				if (useDiscriminator.is(":checked")) {
+					example.text(`${example.text().trim()}#${GAwesomeData.discriminator}`);
+				}
+			});
+			useDiscriminator.click(() => {
+				if (useDiscriminator.is(":checked")) {
+					example.text(example.text() + `#${GAwesomeData.discriminator}`);
+				} else {
+					example.text(example.text().trim().slice(0, -5));
+				}
+			});
 		}
 	});
 };
