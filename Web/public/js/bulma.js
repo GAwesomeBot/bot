@@ -1,4 +1,4 @@
-jQuery(document).ready(bulma);
+document.addEventListener("turbolinks:load", bulma);
 
 function bulma() {
     var $toggle = $("#nav-toggle");

@@ -7,7 +7,7 @@ function addToServer(extid, svrid) {
 			"new-<%= mode %>": extid
 		},
 		success: function(data) {
-			window.location.href = "/dashboard/other/extensions?svrid=" + svrid;
+		  Turbolinks.visit("/dashboard/other/extensions?svrid=" + svrid);
 		}
 	});
 }
@@ -29,7 +29,7 @@ function doAction(extid, action) {
 		url: "/extensions?extid=" + extid,
 		data: data,
 		success: function(data) {
-			window.location.reload();
+		  Turbolinks.visit('');
 		}
 	});
 };

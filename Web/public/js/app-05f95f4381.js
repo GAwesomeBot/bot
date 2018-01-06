@@ -320,6 +320,20 @@ GAwesomePaths["dashboard"] = () => {
 			$("#update-modal").removeClass("is-active");
 		});
 		GAwesomeUtil.dashboard.connect();
+		const consoleSection = window.location.pathname.split("/")[2];
+		const sectionPage = window.location.pathname.split("/")[3];
+		if (sectionPage === "command-options") {
+			$("#ban_gif").on("blur", () => {
+				if ($("#ban_gif").val() === "Default") {
+					$("#default_ban_gif").hide();
+					$("#ban_gif_field").removeClass("has-addons");
+					return $("#ban_gif_preview").attr("src", "https://imgur.com/3QPLumg.gif");
+				}
+				$("#ban_gif_field").addClass("has-addons");
+				$("#default_ban_gif").show();
+				$("#ban_gif_preview").attr("src", $("#ban_gif").val());
+			});
+		}
 	});
 };
 

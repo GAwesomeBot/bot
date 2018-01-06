@@ -22,7 +22,7 @@
                 $("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting...");
         		$.post("/dashboard/management/shards?svrid=maintainer", { restart: "master" }).done(() => {
         			$("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting... Be right back!");
-        			const redirect = () => window.location.reload(true);
+        			const redirect = () => Turbolinks.visit("");
         			setTimeout(redirect, 5000);
         		});
         	}
