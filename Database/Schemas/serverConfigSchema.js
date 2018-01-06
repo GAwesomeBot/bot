@@ -526,7 +526,7 @@ module.exports = {
 			content: {
 				type: String,
 				required: true,
-				maxlength: 1500,
+				maxlength: 2048,
 			},
 			isCommand: {
 				type: Boolean,
