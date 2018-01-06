@@ -344,6 +344,7 @@ GAwesomePaths["dashboard"] = () => {
 document.addEventListener("turbolinks:load", () => {
 	GAwesomeUtil.updateHeader();
 	bulma();
+	$("html").removeClass("is-clipped");
 	hide_update_modal = false;
 	initial_form_state = $("#form").serialize();
 	if (GAwesomeData.dashboard.socket) {
