@@ -1265,11 +1265,11 @@ bot.IPC.on("updateBotUser", async msg => {
 	if (payload.avatar) bot.user.setAvatar(payload.avatar);
 	if (payload.username && payload.username !== bot.user.username) bot.user.setUsername(payload.username);
 	let activity = {};
-	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "gawesomebot.com";
-	else activity.name = payload.game;
+	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "https://gawesomebot.com | Shard {shard}".format({ shard: bot.shardID });
+	else activity.name = payload.game.format({ shard: bot.shardID, totalShards: bot.shard.count });
 	activity.type = "PLAYING";
 	bot.user.setPresence({
-		status: payload.status,
+		status: payload.status || "online",
 		activity: activity,
 	});
 });
