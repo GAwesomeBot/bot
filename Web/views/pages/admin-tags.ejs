@@ -23,6 +23,7 @@
 		}
 
 		if(newTagName.val() && newTagContent.val()) {
+			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
@@ -32,8 +33,7 @@
 					"new-content": newTagContent.val()
 				},
 				success: function() {
-					saveFormState();
-					$("#form").submit();
+					hide_update_modal = true;
 				  	Turbolinks.visit('');
 				}
 			});
