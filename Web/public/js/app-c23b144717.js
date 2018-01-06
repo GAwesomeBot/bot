@@ -1,11 +1,22 @@
 /* GAwesomeBot by Gilbert - Available under the GPL V2 License - Some rights reserved - https://github.com/GilbertGobbels/GAwesomeBot */
+
 const GAwesomeData = {};
 const GAwesomeUtil = {};
 const GAwesomePaths = {};
 
+function saveFormState() {
+	try {
+		$("#builder-code-box").val(cm.getDoc().getValue());
+	} catch (err) {}
+	initial_form_state = $('#form').serialize();
+	$("#form-submit span:nth-child(2)").html("Save")
+}
+
 GAwesomeData.activity = { guildData: {} };
 GAwesomeData.blog = { editor: {} };
 GAwesomeData.wiki = { bookmarks: JSON.parse(localStorage.getItem("wiki-bookmarks")) || [], editor: {} };
+GAwesomeData.dashboard = {};
+GAwesomeUtil.dashboard = {};
 
 GAwesomeUtil.updateHeader = () => {
 	const currentNavItem = $("#nav-" + window.location.pathname.split("/")[1]);
@@ -167,6 +178,30 @@ GAwesomeUtil.populateWikiBookmarks = () => {
 	}
 };
 
+GAwesomeUtil.dashboardWrapper = func => {
+	if (window.location.pathname.split("/")[1] !== "dashboard") {
+		return "This function can only be executed within the dashboard.";
+	} else {
+		return func();
+	}
+};
+
+GAwesomeUtil.dashboard.connect = () => {
+	return GAwesomeUtil.dashboardWrapper(() => {
+		if (GAwesomeData.dashboard.socket) {
+			GAwesomeData.dashboard.socket.close();
+		}
+		GAwesomeData.dashboard.socket = io(window.location.pathname, { transports: ["websocket"] });
+		GAwesomeData.dashboard.socket.on("update", function(data) {
+			if (!hide_update_modal && GAwesomeData.dashboard.svrid === data && localStorage.getItem("dashboardUpdates") !== "none") {
+				$("html").addClass("is-clipped");
+				$("#update-modal").addClass("is-active");
+				hide_update_modal = false;
+			}
+		});
+	});
+};
+
 GAwesomePaths["landing"] = () => {
 	$(".section-shortcut-link").click(function() {
 		$("html, body").animate({
@@ -277,12 +312,28 @@ GAwesomePaths["wiki"] = () => {
 	});
 };
 
+GAwesomePaths["dashboard"] = () => {
+	return GAwesomeUtil.dashboardWrapper(() => {
+		$(".close-update-modal").unbind();
+		$(".close-update-modal").click(() => {
+			$("html").removeClass("is-clipped");
+			$("#update-modal").removeClass("is-active");
+		});
+		GAwesomeUtil.dashboard.connect();
+	});
+};
+
 document.addEventListener("turbolinks:load", () => {
 	GAwesomeUtil.updateHeader();
 	hide_update_modal = false;
 	initial_form_state = $("#form").serialize();
-	let func = GAwesomePaths[window.location.pathname.split("/")[1]]
-	if (window.location.pathname.split("/")[1] === "") func = GAwesomePaths["landing"];
+	if (GAwesomeData.dashboard.socket) {
+		GAwesomeData.dashboard.socket.close();
+		delete GAwesomeData.dashboard.socket;
+	}
+	GAwesomeData.section = window.location.pathname.split("/")[1]
+	let func = GAwesomePaths[GAwesomeData.section]
+	if (GAwesomeData.section === "") func = GAwesomePaths["landing"];
 	if (func) func();
 });
 
