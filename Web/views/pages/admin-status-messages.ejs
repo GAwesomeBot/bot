@@ -27,7 +27,7 @@
 						success: function () {
 							saveFormState()
 							$('#form').submit()
-							location.reload()
+                            Turbolinks.visit('');
 						}
 					})
 				}
@@ -47,7 +47,7 @@
 							messageNode.remove()
 							saveFormState()
 							$('#form').submit()
-							location.reload()
+                            Turbolinks.visit('');
 						}
 					})
 				}

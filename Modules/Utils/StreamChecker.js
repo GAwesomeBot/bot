@@ -1,4 +1,4 @@
-const { StreamerUtils: isStreaming } = require("./");
+const isStreaming = require("./StreamerUtils");
 
 // Checks if a user is streaming on Twitch, YouTube Gaming, and posts message in server channel if necessary
 /* eslint-disable require-await*/

@@ -196,7 +196,6 @@ GAwesomeUtil.dashboard.connect = () => {
 			if (!hide_update_modal && GAwesomeData.dashboard.svrid === data && localStorage.getItem("dashboardUpdates") !== "none") {
 				$("html").addClass("is-clipped");
 				$("#update-modal").addClass("is-active");
-				hide_update_modal = false;
 			}
 		});
 	});
@@ -339,6 +338,7 @@ GAwesomePaths["dashboard"] = () => {
 
 document.addEventListener("turbolinks:load", () => {
 	GAwesomeUtil.updateHeader();
+	bulma();
 	hide_update_modal = false;
 	initial_form_state = $("#form").serialize();
 	if (GAwesomeData.dashboard.socket) {

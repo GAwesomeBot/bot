@@ -16,7 +16,8 @@
 		var newStreamerType = $("#new-streamer-type");
 
 		if(newStreamerName.val()) {
-			$.ajax({
+		  hide_update_modal = true;
+		  $.ajax({
 				type: "POST",
 				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
 				data: {
@@ -24,9 +25,10 @@
 					"new-type": newStreamerType.val()
 				},
 				success: function() {
-					saveFormState();
-					$("#form").submit();
-					location.reload();
+				  saveFormState();
+				  $("#form").submit();
+				  hide_update_modal = true;
+				  Turbolinks.visit('');
 				}
 			});
 		}
@@ -82,7 +84,7 @@
 													</td>
 													<td>
 														<span class="select is-small">
-															<select name="streamer-<%= i %>-channel_id">
+															<select name="streamer-<%= configData.streamers_data[i]._id %>-channel_id">
 																<option value="">None</option>
 																<% for(var j=0; j<channelData.length; j++) { %>
 																	<option value="<%= channelData[j].id %>" <%= configData.streamers_data[i].channel_id==channelData[j].id ? "selected" : "" %>>#<%= channelData[j].name %></option>
@@ -94,8 +96,8 @@
 														<%= configData.streamers_data[i].live_state ? "Live!" : "Offline" %>
 													</td>
 													<td>
-														<input type="checkbox" id="streamer-<%= i %>-removed" name="streamer-<%= i %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="streamer-<%= i %>-removed" onclick="$('#streamer-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+														<input type="checkbox" id="streamer-<%= configData.streamers_data[i]._id %>-removed" name="streamer-<%= configData.streamers_data[i]._id %>-removed" style="display: none;">
+														<button class="button is-small is-danger" name="streamer-<%= i %>-removed" onclick="$('#streamer-<%= configData.streamers_data[i]._id %>-removed').attr('checked', true); submitForm(); $(this).parent().parent().remove(); saveFormState(); return false;">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>

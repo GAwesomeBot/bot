@@ -24,7 +24,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
-					location.reload();
+					Turbolinks.visit("");
 				}
 			});
 		}
@@ -62,7 +62,7 @@
 								<% for(var i=0; i<configData.tag_reaction.messages.length; i++) { %>
 									<li>
                                         <input type="checkbox" id="tag_reaction-<%= i %>-removed" name="tag_reaction-<%= i %>-removed" style="display: none;">
-                                        <button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="$('#tag_reaction-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+                                        <button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="$('#tag_reaction-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 											<span class="icon is-small" style="margin-left: -2px;">
 												<i class="fa fa-times"></i>
 											</span>

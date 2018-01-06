@@ -1,5 +1,3 @@
-document.addEventListener("turbolinks:load", bulma);
-
 function bulma() {
     var $toggle = $("#nav-toggle");
     var $menu = $("#nav-menu");

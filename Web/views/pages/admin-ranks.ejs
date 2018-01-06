@@ -33,7 +33,7 @@
 				success: function() {
 					saveFormState();
 					$("#form").submit();
-					location.reload();
+				    Turbolinks.visit('');
 				}
 			});
 		}
@@ -100,7 +100,7 @@
 									</td>
 									<td>
 										<input type="checkbox" id="rank-<%= i %>-removed" name="rank-<%= i %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="rank-<%= i %>-removed" onclick="$('#rank-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+										<button class="button is-small is-danger" name="rank-<%= i %>-removed" onclick="$('#rank-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>
@@ -112,7 +112,7 @@
 								</tbody>
 							</table>
 							<input type="checkbox" id="ranks_list-reset" name="ranks_list-reset" style="display: none;">
-							<button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); saveFormState(); location.reload();">
+							<button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 								<span>Reset Everyone's Rank</span>
 								<span class="icon is-small">
 									<i class="fa fa-times"></i>

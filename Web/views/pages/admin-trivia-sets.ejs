@@ -34,7 +34,7 @@
 					success: function() {
 						saveFormState();
 						$("#form").submit();
-						location.reload();
+					  Turbolinks.visit('');
 					}
 				}).fail(data => location.href = "/error?err=json")
             };
@@ -91,7 +91,7 @@
 													</a>
 													&nbsp;
                                                     <input type="checkbox" id="trivia_set-<%= i %>-removed" name="trivia_set-<%= i %>-removed" style="display: none;">
-                                                    <button class="button is-small is-danger" onclick="$('#trivia_set-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+                                                    <button class="button is-small is-danger" onclick="$('#trivia_set-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>

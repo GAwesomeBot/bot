@@ -35,7 +35,7 @@
 				},
 				success: function() {
 					saveFormState();
-					location.reload();
+				  Turbolinks.visit('');
 				}
 			});
 		}
@@ -134,7 +134,7 @@
 											</div>
 											<div class="control">
 											<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
-											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); location.reload();">
+											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 												<span>Remove All</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>
