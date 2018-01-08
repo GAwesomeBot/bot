@@ -83,7 +83,15 @@ module.exports = new mongoose.Schema({
 		],
 	},
 	code_id: String,
-	versions: [String],
+	versions: [
+		new mongoose.Schema({
+			_id: {
+				type: String,
+				required: true,
+			},
+			code_id: String,
+		}),
+	],
 	event: {
 		type: String,
 		enum: AllowedEvents,

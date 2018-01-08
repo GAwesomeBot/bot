@@ -78,7 +78,7 @@ GAwesomeUtil.activityUnbanGuild = svrid => {
 };
 
 GAwesomeUtil.activityViewportUpdate = mq => {
-	if (window.location.pathname.split("/")[1] !== "activity") return;
+	if (window.location.pathname.split("/")[1] !== "activity" && window.location.pathname.split("/")[1] !== "extensions") return;
 	if (mq.matches) {
 		$(".header-search-box").removeClass("is-large");
 		document.getElementById("frame").style.paddingLeft = "15px";
@@ -104,9 +104,25 @@ GAwesomeUtil.uploadContent = (uploads, type) => {
 	}
 };
 
+GAwesomeUtil.uploadCode = uploads => {
+	if(uploads) {
+		const reader = new FileReader();
+		reader.onload = function(event) {
+			GAwesomeData.builder.getDoc().setValue(event.target.result);
+		};
+		reader.readAsText(uploads[0]);
+		document.getElementById("builder-code-upload").value = null;
+	}
+};
+
 GAwesomeUtil.downloadContent = () => {
 	const blob = new Blob([document.getElementById("composer-content").value], {type: "text/markdown;charset=utf-8"});
 	saveAs(blob, (document.getElementById("composer-title").value || "Untitled") + ".md");
+};
+
+GAwesomeUtil.downloadCode = () => {
+	const blob = new Blob([GAwesomeData.builder.getValue()], {type: "text/markdown;charset=utf-8"});
+	saveAs(blob, (document.getElementById("builder-title").value || "Untitled") + ".gabext");
 };
 
 GAwesomeUtil.searchWiki = query => {
@@ -175,6 +191,152 @@ GAwesomeUtil.populateWikiBookmarks = () => {
 	} else {
 		$("#bookmarks-menu").addClass("is-hidden");
 		$("#menu-spacer").addClass("is-hidden");
+	}
+};
+
+GAwesomeUtil.publishExtension = extid => {
+	if (confirm("Are you sure you want to publish this extension? Everyone will be able to view and use this extension!")) {
+		NProgress.start();
+		$(`#publish-${extid}`).remove();
+		$.ajax({
+			type: "POST",
+			url: `/extensions/${extid}/publish`,
+			data: {}
+		})
+			.always(() => {
+				NProgress.done();
+				NProgress.remove();
+			});
+	}
+};
+
+GAwesomeUtil.deleteExtension = extid => {
+	if (confirm("Are you sure you want to remove this extension? This action is irreversible!")) {
+		NProgress.start();
+		$(`#delete-${extid}`).parent().parent().remove();
+		$.ajax({
+			type: "POST",
+			url: `/extensions/${extid}/delete`,
+			data: {},
+		})
+			.always(() => {
+				NProgress.done();
+				NProgress.remove();
+			});
+	}
+};
+
+GAwesomeUtil.saveExtension = (isGallery, URL) => {
+	NProgress.start();
+	hide_update_modal = true;
+	const extensionData = $("#form").serializeArray();
+	extensionData.find(a => a.name === "code").value = GAwesomeData.builder.getValue();
+	$.ajax({
+		method: "POST",
+		url: URL,
+		data: extensionData
+	})
+		.always(function(data) {
+			const form = $("#form-submit");
+			NProgress.done();
+			NProgress.remove();
+			saveFormState();
+			if (data !== "OK" && data.status !== 200 && data.status !== 302) {
+				form.find("span:nth-child(1)").html("<i class='fa fa-exclamation'></i>");
+				form.find("span:nth-child(2)").html("Error");
+			}
+			else if (isGallery) Turbolinks.visit("/extensions/my");
+			else Turbolinks.visit("");
+		});
+};
+
+GAwesomeUtil.voteExtension = extid => {
+	const voteButton = $(`#vote-${extid}`);
+	const vote = voteButton.html().trim();
+	voteButton.html(vote === "-1" ? "+1" : "-1");
+	$.post(`/extensions/${extid}/upvote`);
+	const pointCounter = $(`#points-${extid}`)
+	pointCounter.html(vote === "-1" ? Number(pointCounter.html()) - 1 : Number(pointCounter.html()) + 1);
+};
+
+GAwesomeUtil.unpublishExtension = extid => {
+	if (!confirm("Are you sure you want to unpublish this extension? It will no longer be usable or visible by guilds, points are preserved.")) return;
+	NProgress.start();
+	const card = $(`#card-${extid}`);
+	$.post(`/extensions/${extid}/unpublish`);
+	card.remove();
+	NProgress.done();
+	NProgress.remove();
+};
+
+GAwesomeUtil.rejectExtension = extid => {
+	let reason = prompt("Reason to reject:");
+	if (!reason) reason = "No reason given.";
+	NProgress.start();
+	$.ajax({
+		method: "POST",
+		url: `/extensions/${extid}/reject`,
+		data: { reason }
+	})
+		.done(() => {
+			$(`#card-${extid}`).remove();
+			NProgress.done();
+			NProgress.remove();
+		});
+};
+
+GAwesomeUtil.removeExtension = extid => {
+	let reason = prompt("Reason to remove:");
+	if (!reason) reason = "No reason given.";
+	NProgress.start();
+	$.ajax({
+		method: "POST",
+		url: `/extensions/${extid}/remove`,
+		data: { reason }
+	})
+		.done(() => {
+			$(`#card-${extid}`).remove();
+			NProgress.done();
+			NProgress.remove();
+		});
+};
+
+GAwesomeUtil.acceptExtension = extid => {
+	NProgress.start();
+	$.post(`/extensions/${extid}/accept`).done(() => {
+		NProgress.done();
+		NProgress.remove();
+		Turbolinks.visit('/extensions/gallery');
+	});
+};
+
+GAwesomeUtil.featureExtension = extid => {
+	const featureButton = $(`#feature-${extid}`);
+	const featured = featureButton.html().trim() !== "Feature";
+	featureButton.html(featured ? "Feature" : "Unfeature");
+	$.post(`/extensions/${extid}/feature`);
+	const featuredTag = $(`#featured-${extid}`)
+	featuredTag.html(featured ? "" : "<span class=\"tag is-primary\">Featured</span>&nbsp;");
+};
+
+GAwesomeUtil.installExtension = extid => {
+	alert("In Progress");
+};
+
+GAwesomePaths["extensions"] = () => {
+	if (window.location.pathname === "/extensions/builder") {
+		setTimeout(function() {
+			saveFormState();
+		}, 0);
+		GAwesomeData.builder = CodeMirror.fromTextArea(document.getElementById("builder-code-box"), {
+			mode: "javascript",
+			lineWrapping: true,
+			lineNumbers: true,
+			fixedGutter: true,
+			styleActiveLine: true,
+			theme: "monokai"
+		});
+		GAwesomeData.builder.refresh();
 	}
 };
 
@@ -418,6 +580,10 @@ $(document).on('turbolinks:render', function() {
 	NProgress.done();
 	NProgress.remove();
 });
+
+String.prototype.replaceAll = function(target, replacement) {
+	return this.replace(new RegExp(target, "g"), replacement);
+};
 
 /* Down here are only easter eggs, pinky promise. You'll ruin all the fun if you don't find them for yourself! Turn back while you still can. */
 
