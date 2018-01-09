@@ -16,7 +16,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 		return;
 	}
 	function isMaintainer (user, sudo) {
-		if (sudo === true) {
+		if (sudo) {
 			return configJSON.sudoMaintainers.includes(user);
 		} else {
 			return configJSON.maintainers.includes(user);
@@ -24,7 +24,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 	}
 	ids.forEach(user => {
 		if (!isMaintainer(user, isSudo)) return;
-		if (isSudo === true && isMaintainer(user, isSudo)) configJSON.sudoMaintainers.splice(configJSON.sudoMaintainers.indexOf(user), 1);
+		if (isSudo && isMaintainer(user, isSudo)) configJSON.sudoMaintainers.splice(configJSON.sudoMaintainers.indexOf(user), 1);
 		if (!isMaintainer(user, false)) configJSON.maintainers.splice(configJSON.maintainers.indexOf(user), 1);
 		writeFile(`${__dirname}/../../Configurations/config.json`, configJSON, {
 			spaces: 4,
