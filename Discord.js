@@ -21,6 +21,7 @@ const {
 	},
 	EventHandler,
 	WorkerManager,
+	ShardUtil,
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
@@ -69,6 +70,8 @@ class GABClient extends DJSClient {
 
 		// Bot IPC
 		this.IPC = new ProcessAsPromised();
+
+		this.shard = new ShardUtil(this);
 	}
 
 	/**
@@ -1125,7 +1128,8 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 		bot.IPC.send("ready", { id: bot.shard.id });
 		process.setMaxListeners(0);
 	}).catch(err => {
-		winston.error("Failed to connect to Discord :/\n", { err: err });
+		winston.error("Failed to connect to Discord :/");
+		console.log(err);
 		process.exit(1);
 	});
 });
