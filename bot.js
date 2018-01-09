@@ -120,7 +120,6 @@ database.initialize(configJS.databaseURL).catch(err => {
 			sharder.ready++;
 			if (sharder.ready === sharder.count) {
 				winston.info("All shards connected.");
-
 			}
 		});
 
