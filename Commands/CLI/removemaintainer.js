@@ -27,7 +27,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 		if (isSudo && isMaintainer(user, isSudo)) configJSON.sudoMaintainers.splice(configJSON.sudoMaintainers.indexOf(user), 1);
 		if (!isMaintainer(user, false)) configJSON.maintainers.splice(configJSON.maintainers.indexOf(user), 1);
 		writeFile(`${__dirname}/../../Configurations/config.json`, configJSON, {
-			spaces: 4,
+			spaces: 2,
 		}).then(() => {
 			winston.info(`Demoted user with ID ${user} from ${isSudo ? "Sudo" : ""} Maintainer`);
 			cli.sharder.broadcast("updateConfigJSON").then(arr => {

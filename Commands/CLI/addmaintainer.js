@@ -27,7 +27,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 		if (isSudo && !isMaintainer(user, isSudo)) configJSON.sudoMaintainers.push(user);
 		if (!isMaintainer(user, false)) configJSON.maintainers.push(user);
 		writeFile(`${__dirname}/../../Configurations/config.json`, configJSON, {
-			spaces: 4,
+			spaces: 2,
 		}).then(() => {
 			winston.info(`Promoted user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer`);
 			cli.sharder.broadcast("updateConfigJSON").then(arr => {
