@@ -1,5 +1,5 @@
 module.exports = async ({ cli }, cmdData, args) => {
-	if (!args) return winston.error("Missing arguments for seval");
+	if (!args) return winston.warn("Missing arguments for seval");
 	let [shard, ...code] = args.split(" ");
 	if (isNaN(parseInt(shard))) {
 		code.unshift(shard);
@@ -10,7 +10,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 	let s;
 	if (code.length === 0) return winston.error("Missing code.");
 	if (!cli.sharder.shards.get(shard)) {
-		winston.error("Invalid shard; sending to shard 0");
+		winston.warn("Invalid shard; sending to shard 0");
 		s = cli.sharder.shards.get(0);
 		shard = 0;
 	} else {

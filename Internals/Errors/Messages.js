@@ -24,10 +24,10 @@ const Messages = {
 
 	// CLI errors
 	CLI_PARAM_INVALID: (paramName, receivedType, allowedTypes) => {
-		function mapTo (string) {
+		const mapTo = string => {
 			if (typeof string !== "string") string = string.constructor.name;
 			return string;
-		}
+		};
 
 		if (Array.isArray(allowedTypes)) {
 			allowedTypes = allowedTypes.map(mapTo).join("|");

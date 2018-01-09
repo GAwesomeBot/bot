@@ -24,6 +24,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 		}
 	}
 
+	// This is literally un-asyncable, thus using a sync promise
 	const updateCfg = new Promise(rs => ids.forEach((user, i) => {
 		if (isMaintainer(user, isSudo)) return;
 		if (isSudo && !isMaintainer(user, isSudo)) configJSON.sudoMaintainers.push(user);
@@ -31,9 +32,11 @@ module.exports = async ({ cli }, cmdData, args) => {
 		if (i === (ids.length - 1)) return rs();
 	}));
 
-	updateCfg.then(() => UpdateConfig(cli, configJSON)).then(() => {
+	await updateCfg;
+	try {
+		await UpdateConfig(cli, configJSON);
 		winston.info(`Demoted users from ${isSudo ? "Sudo" : ""} Maintainer`);
-	}).catch(err => {
+	} catch (err) {
 		winston.warn(`Failed to demote users from ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
-	});
+	}
 };

@@ -30,9 +30,11 @@ module.exports = async ({ cli }, cmdData, args) => {
 		if (i === (ids.length - 1)) return rs();
 	}));
 
-	updateCfg.then(() => UpdateConfig(cli, configJSON)).then(() => {
+	await updateCfg;
+	try {
+		await UpdateConfig(cli, configJSON);
 		winston.info(`Promoted users to ${isSudo ? "Sudo" : ""} Maintainer`);
-	}).catch(err => {
+	} catch (err) {
 		winston.warn(`Failed to promote users to ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
-	});
+	}
 };

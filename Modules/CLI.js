@@ -4,6 +4,7 @@ const {
 		Error: GABError,
 	},
 } = require("../Internals/index");
+
 class CLI {
 	constructor (sharder, db, traffic) {
 		this.sharder = sharder;
