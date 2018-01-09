@@ -3,9 +3,6 @@
 <head>
 	<title>Server List - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function sendMessage() {
 		var serverMessage = $("#server-message");
@@ -44,7 +41,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" action="/dashboard/servers/server-list" method="get">
+					<form id="form" action="/dashboard/servers/server-list" method="get" onsubmit="saveFormState();">
 						<input type="hidden" name="svrid" value="maintainer" />
 						<div class="field has-addons">
 							<div class="control is-expanded">

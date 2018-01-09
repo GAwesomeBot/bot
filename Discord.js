@@ -21,6 +21,7 @@ const {
 	},
 	EventHandler,
 	WorkerManager,
+	ShardUtil,
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
@@ -52,7 +53,7 @@ const {
 	Collection,
 } = require("discord.js");
 winston.silly("Creating Discord.js client.");
-class Client extends DJSClient {
+class GABClient extends DJSClient {
 	constructor (options) {
 		super(options);
 		// Value set once READY triggers
@@ -69,6 +70,8 @@ class Client extends DJSClient {
 
 		// Bot IPC
 		this.IPC = new ProcessAsPromised();
+
+		this.shard = new ShardUtil(this);
 	}
 
 	/**
@@ -866,7 +869,7 @@ class Client extends DJSClient {
 
 	/**
 	 * Check if a user is muted on a server, with or without overwrites
-	 * @param {Discord.GuildChannel} channel The channel to check this on
+	 * @param {Discord.TextChannel} channel The channel to check this on
 	 * @param {Discord.GuildMember} member The member to check this on
 	 * @returns {Boolean} A boolean depending if the member is muted.
 	 */
@@ -904,7 +907,7 @@ class Client extends DJSClient {
 
 	/**
  	 * Mutes a member of a server in a channel
- 	 * @param {Discord.GuildChannel} channel The channel to mute in
+ 	 * @param {Discord.TextChannel} channel The channel to mute in
 	 * @param {Discord.GuildMember} member The member to mute
 	 * @param {String} [reason] Optional reason for the mute
 	 */
@@ -1096,7 +1099,7 @@ class Client extends DJSClient {
 
 StructureExtender();
 
-const bot = new Client({
+const bot = new GABClient({
 	shardId: Number(process.env.SHARD_ID),
 	shardCount: Number(process.env.SHARD_COUNT),
 	fetchAllMembers: true,
@@ -1125,7 +1128,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 		bot.IPC.send("ready", { id: bot.shard.id });
 		process.setMaxListeners(0);
 	}).catch(err => {
-		winston.error("Failed to connect to Discord :/\n", { err: err });
+		winston.error(`Failed to connect to Discord :/\n${err}`);
 		process.exit(1);
 	});
 });
@@ -1265,11 +1268,11 @@ bot.IPC.on("updateBotUser", async msg => {
 	if (payload.avatar) bot.user.setAvatar(payload.avatar);
 	if (payload.username && payload.username !== bot.user.username) bot.user.setUsername(payload.username);
 	let activity = {};
-	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "gawesomebot.com";
-	else activity.name = payload.game;
+	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "https://gawesomebot.com | Shard {shard}".format({ shard: bot.shardID });
+	else activity.name = payload.game.format({ shard: bot.shardID, totalShards: bot.shard.count });
 	activity.type = "PLAYING";
 	bot.user.setPresence({
-		status: payload.status,
+		status: payload.status || "online",
 		activity: activity,
 	});
 });

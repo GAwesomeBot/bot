@@ -1,4 +1,4 @@
-const { RSS: getRSS } = require("./");
+const getRSS = require("./RSS");
 const moment = require("moment");
 
 /**

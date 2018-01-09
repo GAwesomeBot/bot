@@ -1,31 +1,3 @@
-<link rel="stylesheet" href="/static/css/simplemde.min.css">
-
-<script src="/static/js/form-change-listener.js"></script>
-<script src="/static/js/simplemde.min.js"></script>
-<script src="/static/js/showdown.min.js"></script>
-<script async src="/static/js/FileSaver.min.js"></script>
-<script>
-	function uploadContent(uploads) {
-		if(uploads) {
-			var reader = new FileReader();
-			reader.onload = function(event) {
-				editor.value(event.target.result);
-			};
-			reader.readAsText(uploads[0]);
-			document.getElementById("composer-content-upload").value = null;
-		}
-	}
-
-	function downloadContent() {
-		var blob = new Blob([document.getElementById("composer-content").value], {type: "text/markdown;charset=utf-8"});
-		saveAs(blob, (document.getElementById("composer-title").value || "Untitled") + ".md")
-	}
-
-setTimeout(function() {
-    saveFormState();
-}, 0);
-</script>
-
 <h3 class="subtitle is-3">
     <%- data.title ? ("Edit <strong>" + data.title + "</strong>") : "Write a new post" %>
 </h3>
@@ -58,32 +30,13 @@ setTimeout(function() {
         <div class="control">
         <textarea name="content" id="composer-content" class="textarea" placeholder="Post content, in markdown" required><%= data.content %></textarea>
         <script>
-        var converter = new showdown.Converter({
-        	tables: true,
-        	simplifiedAutoLink: true,
-        	strikethrough: true,
-        	tasklists: true,
-        	smoothLivePreview: true,
-        	smartIndentationFix: true
-        });
-        var editor = new SimpleMDE({
-            element: document.getElementById("composer-content"),
-            forceSync: true,
-            spellChecker: false,
-            promptURLs: true,
-            previewRender: function(text) {
-                $(".editor-preview").addClass("content");
-                $(".editor-preview-side").addClass("content");
-                return converter.makeHtml(text);
-            }
-        });
         </script>
         </div>
         <span class="help" style="float: right;margin-right: 15px; margin-top: 10px;">Editor by <strong>SimpleMDE</strong></span>
     </div>
 
     <div class="field">
-        <a class="button is-small" onclick="downloadContent();">
+        <a class="button is-small" onclick="GAwesomeUtil.downloadContent();">
 				<span class="icon is-small">
 					<i class="fa fa-download"></i>
 				</span>
@@ -94,7 +47,7 @@ setTimeout(function() {
 					<i class="fa fa-upload"></i>
 				</span>
             <span>Upload</span>
-            <input id="composer-content-upload" type="file" onchange="uploadContent(this.files);" style="display: none;">
+            <input id="composer-content-upload" type="file" onchange="GAwesomeUtil.uploadContent(this.files, 'blog');" style="display: none;">
         </label>
     </div>
 

@@ -21,8 +21,8 @@
             $.ajax({
         		type: "POST",
         		url: "/blog/<%= blogPost.id %>/react?value=" + value,
-        		success: function(data) {
-        			window.location.reload();
+        		success: function() {
+        			Turbolinks.visit("");
         		}
         	});
         }
@@ -96,13 +96,13 @@
             </div>
             <script>
             function deletePost(id) {
-                var prompt = confirm("Are you sure you want to delete this post?");
-                if(prompt) {
+                const prompt = confirm("Are you sure you want to delete this post?");
+                if (prompt) {
                     $.ajax({
                 		type: "POST",
                 		url: "/blog/" + id + "/delete",
-                		success: function(data) {
-                			window.location.href = "/blog";
+                		success: function() {
+                			Turbolinks.visit("/blog");
                 		}
                 	});
                 }

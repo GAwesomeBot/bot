@@ -3,25 +3,11 @@
 <head>
 	<title><%= serverData.name %> Command Options - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script>
-		$("#ban_gif").on("blur", () => {
-			if ($("#ban_gif").val() === "Default") {
-				$("#default_ban_gif").hide();
-				$("#ban_gif_field").removeClass("has-addons");
-				return $("#ban_gif_preview").attr("src", "https://imgur.com/3QPLumg.gif");
-			}
-			$("#ban_gif_field").addClass("has-addons");
-			$("#default_ban_gif").show();
-			$("#ban_gif_preview").attr("src", $("#ban_gif").val());
-		});
-	</script>
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
 <body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
-
 	<section class="section is-white">
 		<div class="container">
 			<div class="columns">

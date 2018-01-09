@@ -30,7 +30,7 @@
 				},
 				success: function() {
 					saveFormState();
-					location.reload();
+				  Turbolinks.visit('');
 				}
 			});
 		}
@@ -90,7 +90,7 @@
 											<span>Channels</span>
 										</a>
 										<input type="checkbox" id="muted-<%= muted[i].id %>-removed" name="muted-<%= muted[i].id %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState(); location.reload();">
+										<button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>

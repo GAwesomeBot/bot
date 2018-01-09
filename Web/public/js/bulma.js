@@ -1,5 +1,3 @@
-jQuery(document).ready(bulma);
-
 function bulma() {
     var $toggle = $("#nav-toggle");
     var $menu = $("#nav-menu");

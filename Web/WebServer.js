@@ -48,7 +48,7 @@ const Updater = require("./../Modules/Updater.js");
 const Utils = require("./../Modules/Utils");
 const getGuild = require("./../Modules").GetGuild;
 
-const { LoggingLevels } = require("../Internals/Constants");
+const { LoggingLevels, AllowedEvents, Colors } = require("../Internals/Constants");
 
 const app = express();
 app.use(compression());
@@ -397,7 +397,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		}
 	});
 	const getExtensionData = async galleryDocument => {
-		const owner = await bot.users.fetch(galleryDocument.owner_id, false) || {};
+		const owner = await bot.users.fetch(galleryDocument.owner_id, true) || {};
 		let typeIcon, typeDescription;
 		switch (galleryDocument.type) {
 			case "command":
@@ -417,6 +417,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					typeDescription = `Interval: ${galleryDocument.interval}`;
 				}
 				break;
+			case "event":
+				typeIcon = "code";
+				typeDescription = `Event: ${galleryDocument.event}`;
+				break;
 		}
 		return {
 			_id: galleryDocument._id,
@@ -430,7 +434,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				name: owner.username || "invalid-user",
 				id: owner.id || "invalid-user",
 				discriminator: owner.discriminator || "0000",
-				avatar: owner.avatarURL || "/static/img/discord-icon.png",
+				avatar: owner.avatarURL() || "/static/img/discord-icon.png",
 			},
 			status: galleryDocument.state,
 			points: galleryDocument.points,
@@ -829,144 +833,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	app.get("/extensions", (req, res) => {
 		res.redirect("/extensions/gallery");
 	});
-	app.post("/extensions", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (req.query.extid && req.body.action) {
-				if (["accept", "feature", "reject", "remove"].indexOf(req.body.action) > -1 && configJSON.maintainers.indexOf(req.user.id) === -1) {
-					res.sendStatus(403);
-					return;
-				}
-
-				const getGalleryDocument = callback => {
-					db.gallery.findOne({ _id: req.query.extid }, (err, galleryDocument) => {
-						if (!err && galleryDocument) {
-							callback(galleryDocument);
-						} else {
-							res.sendStatus(500);
-						}
-					});
-				};
-				const getUserDocument = callback => {
-					db.users.findOrCreate({ _id: req.user.id }, (err, userDocument) => {
-						if (!err && userDocument) {
-							callback(userDocument);
-						} else {
-							res.sendStatus(500);
-						}
-					});
-				};
-				const messageOwner = (usrid, message) => {
-					const usr = bot.users.get(usrid);
-					if (usr) {
-						usr.getDMChannel().then(ch => {
-							ch.createMessage(message);
-						}).catch();
-					}
-				};
-
-				switch (req.body.action) {
-					case "upvote":
-						getGalleryDocument(galleryDocument => {
-							getUserDocument(userDocument => {
-								const vote = userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id) === -1 ? 1 : -1;
-								if (vote === 1) {
-									userDocument.upvoted_gallery_extensions.push(galleryDocument._id);
-								} else {
-									userDocument.upvoted_gallery_extensions.splice(userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id), 1);
-								}
-								galleryDocument.points += vote;
-								galleryDocument.save(() => {
-									userDocument.save(() => {
-										db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
-											if (!err && ownerUserDocument) {
-												ownerUserDocument.points += vote * 10;
-												ownerUserDocument.save(() => {});
-											}
-											res.sendStatus(200);
-										});
-									});
-								});
-							});
-						});
-						break;
-					case "accept":
-						getGalleryDocument(galleryDocument => {
-							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉 ${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id}`);
-							galleryDocument.state = "gallery";
-							galleryDocument.save(err => {
-								res.sendStatus(err ? 500 : 200);
-								db.servers.find({
-									extensions: {
-										$elemMatch: {
-											_id: galleryDocument._id,
-										},
-									},
-								}, (err, serverDocuments) => {
-									if (!err && serverDocuments) {
-										serverDocuments.forEach(serverDocument => {
-											serverDocument.extensions.id(galleryDocument._id).updates_available++;
-											serverDocument.save(err => {
-												if (err) {
-													winston.error("Failed to save server data for extension update", { svrid: serverDocument._id }, err);
-												}
-											});
-										});
-									}
-								});
-							});
-						});
-						break;
-					case "feature":
-						getGalleryDocument(galleryDocument => {
-							if (!galleryDocument.featured) {
-								messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been featured on the GAwesomeBot extension gallery! 🌟 ${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id}`);
-							}
-							galleryDocument.featured = galleryDocument.featured !== true;
-							galleryDocument.save(err => {
-								res.sendStatus(err ? 500 : 200);
-							});
-						});
-						break;
-					case "reject":
-					case "remove":
-						getGalleryDocument(galleryDocument => {
-							messageOwner(galleryDocument.owner_id, `Your extension ${galleryDocument.name} has been ${req.body.action}${req.body.action === "reject" ? "e" : ""}d from the GAwesomeBot extension gallery for the following reason:\`\`\`${req.body.reason}\`\`\``);
-							db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
-								if (!err && ownerUserDocument) {
-									ownerUserDocument.points -= galleryDocument.points * 10;
-									ownerUserDocument.save(() => {});
-								}
-								galleryDocument.state = "saved";
-								galleryDocument.save(err => {
-									res.sendStatus(err ? 500 : 200);
-								});
-							});
-						});
-						break;
-				}
-			} else {
-				res.sendStatus(400);
-			}
-		} else {
-			res.sendStatus(403);
-		}
-	});
-	app.get("/extension.abext", (req, res) => {
-		if (req.query.extid) {
-			try {
-				res.set({
-					"Content-Disposition": `${"attachment; filename='" + "gallery-"}${req.query.extid}.abext` + "'",
-					"Content-Type": "text/javascript",
-				});
-				res.sendFile(path.resolve(`${__dirname}/../Extensions/gallery-${req.query.extid}.abext`));
-			} catch (err) {
-				res.sendStatus(500);
-			}
-		} else {
-			res.sendStatus(400);
-		}
-	});
-	app.get("/extensions/(|gallery|queue)", (req, res) => {
+	app.get("/extensions/(|gallery|queue)", async (req, res) => {
 		let count;
 		if (!req.query.count) {
 			count = 18;
@@ -1000,9 +867,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					};
 				}
 
-				db.gallery.find(matchCriteria).sort("-featured -points -last_updated").skip(count * (page - 1)).limit(count).exec((err, galleryDocuments) => {
+				db.gallery.find(matchCriteria).sort("-featured -points -last_updated").skip(count * (page - 1)).limit(count).exec(async (err, galleryDocuments) => {
 					const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-					const extensionData = galleryDocuments.map(getExtensionData);
+					const extensionData = await Promise.all(galleryDocuments.map(getExtensionData));
 
 					res.render("pages/extensions.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -1024,14 +891,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 
 		if (req.isAuthenticated()) {
 			const serverData = [];
-			const usr = bot.users.get(req.user.id);
-			const addServerData = (i, callback) => {
+			const usr = await bot.users.fetch(req.user.id, true);
+			const addServerData = async (i, callback) => {
 				if (req.user.guilds && i < req.user.guilds.length) {
-					const svr = bot.guilds.get(req.user.guilds[i].id);
+					const svr = await getGuild.get(bot, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
 					if (svr && usr) {
 						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
-								const member = svr.members.get(usr.id);
+								const member = svr.members[usr.id];
 								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3) {
 									serverData.push({
 										name: req.user.guilds[i].name,
@@ -1096,18 +963,6 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				owner_id: req.user.id,
 			}, (err, galleryDocuments) => {
 				if (!err && galleryDocuments) {
-					for (let i = 0; i < galleryDocuments.length; i++) {
-						if (req.body[`extension-${i}-removed`] !== null) {
-							db.gallery.findByIdAndRemove(galleryDocuments[i]._id).exec();
-							try {
-								fs.unlinkSync(`${__dirname}/../Extensions/gallery-${galleryDocuments[i]._id}.abext`);
-								break;
-							} catch (err) {
-								break;
-							}
-						}
-					}
-					updateDashboard(req.path, req.user.id);
 					res.redirect(req.originalUrl);
 				} else {
 					renderError(res, "Something went wrong while we tried to fetch your extensions.");
@@ -1117,6 +972,11 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			res.redirect("/login");
 		}
 	});
+
+	const generateCodeID = code => require("crypto")
+		.createHash("md5")
+		.update(code, "utf8")
+		.digest("hex");
 
 	// Extension builder
 	app.get("/extensions/builder", (req, res) => {
@@ -1132,6 +992,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					activeSearchQuery: req.query.q,
 					mode: "builder",
 					extensionData,
+					events: AllowedEvents,
 				});
 			};
 
@@ -1142,7 +1003,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				}, (err, galleryDocument) => {
 					if (!err && galleryDocument) {
 						try {
-							galleryDocument.code = fs.readFileSync(`${__dirname}/../Extensions/gallery-${galleryDocument._id}.abext`);
+							galleryDocument.code = fs.readFileSync(`${__dirname}/../Extensions/${galleryDocument.code_id}.gabext`);
 						} catch (err) {
 							galleryDocument.code = "";
 						}
@@ -1161,7 +1022,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/extensions/builder").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval)) && data.code;
+	const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
 	const writeExtensionData = (extensionDocument, data) => {
 		extensionDocument.name = data.name;
 		extensionDocument.type = data.type;
@@ -1171,47 +1032,64 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		extensionDocument.interval = data.type === "timer" ? data.interval : null;
 		extensionDocument.usage_help = data.type === "command" ? data.usage_help : null;
 		extensionDocument.extended_help = data.type === "command" ? data.extended_help : null;
+		extensionDocument.event = data.type === "event" ? data.event : undefined;
 		extensionDocument.last_updated = Date.now();
+		extensionDocument.timeout = data.timeout;
+		extensionDocument.code_id = generateCodeID(data.code);
+		extensionDocument.scopes = [];
+		Object.keys(data).forEach(val => {
+			if (val.startsWith("scope_")) {
+				extensionDocument.scopes.push(val.split("scope_")[1]);
+			}
+		});
 
 		return extensionDocument;
 	};
 	app.post("/extensions/builder", (req, res) => {
 		if (req.isAuthenticated()) {
 			if (validateExtensionData(req.body)) {
-				const sendResponse = () => {
+				const sendResponse = isErr => {
 					dashboardUpdate(req.path, req.user.id);
-					if (req.query.external === "true") {
-						res.sendStatus(200);
-					} else {
-						res.redirect(req.originalUrl);
-					}
+					if (isErr) return res.sendStatus(500);
+					res.sendStatus(200);
 				};
-				const saveExtensionCode = (err, extid) => {
+				const saveExtensionCode = (err, codeID) => {
 					if (err) {
-						winston.error(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
-						sendResponse();
+						winston.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
+						sendResponse(true);
 					} else {
-						writeFile(`${__dirname}/../Extensions/gallery-${extid}.abext`, req.body.code, () => {
+						writeFile(`${__dirname}/../Extensions/${codeID}.gabext`, req.body.code, () => {
 							sendResponse();
 						});
 					}
 				};
 				const saveExtensionData = (galleryDocument, isUpdate) => {
 					galleryDocument.level = "gallery";
-					galleryDocument.state = "queue";
+					galleryDocument.state = "saved";
 					galleryDocument.description = req.body.description;
+					const oldName = galleryDocument.name;
+					const oldID = galleryDocument.code_id;
 					writeExtensionData(galleryDocument, req.body);
 
 					if (!isUpdate) {
 						galleryDocument.owner_id = req.user.id;
 						dashboardUpdate("/extensions/my", req.user.id);
+					} else {
+						galleryDocument.versions.push({
+							_id: oldName,
+							code_id: oldID,
+						});
+						if (oldName === req.body.name) galleryDocument.name = `${galleryDocument.name} (2)`;
 					}
-					galleryDocument.save(err => {
-						if (!err && !req.query.extid) {
-							req.originalUrl += `extid=${galleryDocument._id}`;
-						}
-						saveExtensionCode(err, galleryDocument._id);
+					if (galleryDocument.validateSync()) {
+						winston.warn("Failed to validate extension data", galleryDocument.validateSync());
+						return sendResponse(true);
+					}
+					galleryDocument.save().catch(err => {
+						winston.warn("Failed to save extension metadata: " + err);
+						sendResponse(true);
 					});
+					saveExtensionCode(false, generateCodeID(req.body.code));
 				};
 
 				if (req.query.extid) {
@@ -1229,10 +1107,194 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					saveExtensionData(new db.gallery(), false);
 				}
 			} else {
-				renderError(res, "Failed to verify extension data!");
+				renderError(res, "Failed to verify extension data!", undefined, 400);
 			}
 		} else {
 			res.redirect("/login");
+		}
+	});
+
+	// Download extension code
+	app.get("/extensions/:extid", async (req, res) => {
+		let extensionDocument;
+		try {
+			extensionDocument = await db.gallery.findOne({ _id: req.params.extid }).exec();
+		} catch (err) {
+			return res.sendStatus(500);
+		}
+		if (extensionDocument || extensionDocument.state === "saved") {
+			try {
+				res.set({
+					"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext` + "'",
+					"Content-Type": "text/javascript",
+				});
+				res.sendFile(path.resolve(`${__dirname}/../Extensions/${extensionDocument.code_id}.gabext`));
+			} catch (err) {
+				res.sendStatus(500);
+			}
+		} else {
+			res.sendStatus(404);
+		}
+	});
+
+	// Modify extensions
+	app.post("/extensions/:extid/:action", async (req, res) => {
+		if (req.isAuthenticated()) {
+			if (req.params.extid && req.params.action) {
+				if (["accept", "feature", "reject", "remove"].includes(req.params.action) && !configJSON.maintainers.includes(req.user.id)) {
+					res.sendStatus(403);
+					return;
+				}
+
+				const getGalleryDocument = async () => {
+					let doc;
+					try {
+						doc = await db.gallery.findOne({_id: req.params.extid}).exec();
+					} catch (err) {
+						res.sendStatus(500);
+						return false;
+					}
+					return doc;
+				};
+				const getUserDocument = async () => {
+					const findDocument = await db.users.findOrCreate({ _id: req.user.id });
+					if (findDocument.doc) {
+						return findDocument.doc;
+					} else {
+						res.sendStatus(500);
+						return false;
+					}
+				};
+				const messageOwner = async (usrid, message) => {
+					try {
+						const usr = await bot.users.fetch(usrid, true);
+						if (usr) {
+							const ch = await usr.createDM();
+							ch.send(message);
+						}
+					} catch (err) {}
+				};
+
+				const galleryDocument = await getGalleryDocument();
+				if (!galleryDocument) return;
+				switch (req.params.action) {
+					case "upvote":
+						const userDocument = await getUserDocument();
+						const vote = userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id) === -1 ? 1 : -1;
+						if (vote === 1) {
+							userDocument.upvoted_gallery_extensions.push(galleryDocument._id);
+						} else {
+							userDocument.upvoted_gallery_extensions.splice(userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id), 1);
+						}
+						galleryDocument.points += vote;
+						await galleryDocument.save();
+						await userDocument.save();
+						db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
+							if (!err && ownerUserDocument) {
+								ownerUserDocument.points += vote * 10;
+								ownerUserDocument.save(() => {});
+							}
+							res.sendStatus(200);
+						});
+						break;
+					case "accept":
+						messageOwner(galleryDocument.owner_id, {
+							embed: {
+								color: Colors.GREEN,
+								title: `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉`,
+								description: `View your creation [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id})!`,
+							},
+						});
+						galleryDocument.state = "gallery";
+						galleryDocument.save(err => {
+							res.sendStatus(err ? 500 : 200);
+							db.servers.find({
+								extensions: {
+									$elemMatch: {
+										_id: galleryDocument._id,
+									},
+								},
+							}, (err, serverDocuments) => {
+								if (!err && serverDocuments) {
+									serverDocuments.forEach(serverDocument => {
+										serverDocument.extensions.id(galleryDocument._id).updates_available++;
+										serverDocument.save(err => {
+											if (err) {
+												winston.error("Failed to save server data for extension update", { svrid: serverDocument._id }, err);
+											}
+										});
+									});
+								}
+							});
+						});
+						break;
+					case "feature":
+						if (!galleryDocument.featured) {
+							messageOwner(galleryDocument.owner_id, {
+								embed: {
+									color: Colors.GREEN,
+									title: `Your extension ${galleryDocument.name} has been featured on the GAwesomeBot extension gallery! 🌟`,
+									description: `View your achievement [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id})`,
+								},
+							});
+						}
+						galleryDocument.featured = galleryDocument.featured !== true;
+						galleryDocument.save(err => {
+							res.sendStatus(err ? 500 : 200);
+						});
+						break;
+					case "reject":
+					case "remove":
+						messageOwner(galleryDocument.owner_id, {
+							embed: {
+								color: Colors.LIGHT_RED,
+								title: `Your extension ${galleryDocument.name} has been ${req.params.action}${req.params.action === "reject" ? "e" : ""}d from the GAwesomeBot extension gallery`,
+								description: `${req.body.reason.replace(/\\n/g, "\n")}`,
+							},
+						});
+						db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
+							if (!err && ownerUserDocument) {
+								ownerUserDocument.points -= galleryDocument.points * 10;
+								ownerUserDocument.save(() => {});
+							}
+							galleryDocument.state = "saved";
+							galleryDocument.featured = false;
+							galleryDocument.save(err => {
+								res.sendStatus(err ? 500 : 200);
+							});
+						});
+						break;
+					case "publish":
+						if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
+						galleryDocument.state = "queue";
+						await galleryDocument.save();
+						res.sendStatus(200);
+						break;
+					case "delete":
+						if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
+						await db.gallery.findByIdAndRemove(galleryDocument._id).exec();
+						dashboardUpdate(req.path, req.user.id);
+						try {
+							fs.unlinkSync(`${__dirname}/../Extensions/${galleryDocument.code_id}.gabext`);
+						} catch (err) {}
+						res.sendStatus(200);
+						break;
+					case "unpublish":
+						if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(403);
+						galleryDocument.state = "saved";
+						galleryDocument.featured = false;
+						await galleryDocument.save();
+						res.sendStatus(200);
+						break;
+					default:
+						res.sendStatus(400);
+						break;
+				}
+			} else {
+				res.sendStatus(400);
+			}
+		} else {
+			res.sendStatus(403);
 		}
 	});
 
@@ -1775,17 +1837,18 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 
 	// Save config.json after maintainer console form data is received
 	const saveMaintainerConsoleOptions = (consolemember, req, res, override, silent) => {
-		writeFile(`${__dirname}/../Configurations/config.json`, JSON.stringify(configJSON, null, 2), err => {
-			if (err) {
+		fsn.writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
+			.then(() => {
+				dashboardUpdate(req.path, "maintainer");
+				if (override && !silent) {
+					res.sendStatus(200);
+				} else if (!silent) res.redirect(req.originalUrl);
+			})
+			.catch(err => {
 				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: consolemember.id }, err);
 				renderError(res, "An internal error occurred!");
 				return;
-			}
-			dashboardUpdate(req.path, "maintainer");
-			if (override && !silent) {
-				res.sendStatus(200);
-			} else if (!silent) res.redirect(req.originalUrl);
-		});
+			});
 	};
 
 	// Login to admin console
@@ -2050,6 +2113,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					}
 				});
 				for (const command in serverDocument.toObject().config.commands) {
+					if (!serverDocument.config.commands[command]) continue;
 					serverDocument.config.commands[command].admin_level = req.body["preset-admin_level"] || 0;
 					serverDocument.config.commands[command].disabled_channel_ids = disabled_channel_ids;
 				}
@@ -2107,14 +2171,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			} else {
 				parseCommandOptions(svr, serverDocument, "rss", req.body);
 				for (let i = 0; i < serverDocument.config.rss_feeds.length; i++) {
-					if (req.body[`rss-${i}-removed`]) {
+					if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-removed`]) {
 						serverDocument.config.rss_feeds[i] = null;
 					} else {
-						serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${i}-streaming-isEnabled`] === "on";
+						serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
 						serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
 						Object.values(svr.channels).forEach(ch => {
 							if (ch.type === "text") {
-								if (req.body[`rss-${i}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
+								if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
 									serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
 								}
 							}
@@ -2172,10 +2236,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			} else {
 				parseCommandOptions(svr, serverDocument, "streamers", req.body);
 				for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
-					if (req.body[`streamer-${i}-removed`]) {
+					if (req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-removed`]) {
 						serverDocument.config.streamers_data[i] = null;
 					} else {
-						serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${i}-channel_id`];
+						serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
 					}
 				}
 				serverDocument.config.streamers_data.spliceNullElements();

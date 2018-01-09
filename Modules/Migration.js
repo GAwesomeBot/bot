@@ -27,7 +27,7 @@ module.exports = () => {
 	const AddBanGif = async () => {
 		let serverDocuments = await Servers.find({ "config.ban_gif": { $exists: false } });
 		for (const serverDocument of serverDocuments) {
-			serverDocument.config.ban_gif = "https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif";
+			serverDocument.config.ban_gif = "https://i.imgur.com/3QPLumg.gif";
 			await serverDocument.save().catch(err => {
 				winston.warn(`Failed to save migration for server ${serverDocument._id}'s chatterbot configuration:`, err);
 			}).then(() => {

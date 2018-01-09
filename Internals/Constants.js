@@ -117,6 +117,7 @@ exports.NumberEmojis = {
 exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: () => `https://catfact.ninja/facts`,
+	DOGFACT: () => `https://dog-api.kinduff.com/api/facts`,
 };
 
 // You may think there is nothing here
@@ -130,3 +131,31 @@ exports.Perms = {
 	administration: "🗂 Administration (Can manage the Bot User)",
 	shutdown: "🌟 Shutdown (Can manage GAB Processes)",
 };
+
+// Events that can be used to create event extensions. D.js events that are not in this list will be disabled on the worker process
+exports.AllowedEvents = [
+	"channelCreate",
+	"channelDelete",
+	"channelUpdate",
+	"channelPinsUpdate",
+	"emojiCreate",
+	"emojiDelete",
+	"emojiUpdate",
+	"guildBanAdd",
+	"guildBanRemove",
+	"guildMemberAdd",
+	"guildMemberRemove",
+	"guildMemberSpeaking",
+	"guildMemberUpdate",
+	"guildUpdate",
+	"messageDelete",
+	"messageDeleteBulk",
+	"messageReactionAdd",
+	"messageReactionRemove",
+	"messageReactionRemoveAll",
+	"messageUpdate",
+	"roleCreate",
+	"roleDelete",
+	"roleUpdate",
+	"voiceStateUpdate",
+];

@@ -22,7 +22,7 @@
                 $("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting...");
         		$.post("/dashboard/management/shards?svrid=maintainer", { restart: "master" }).done(() => {
         			$("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting... Be right back!");
-        			const redirect = () => window.location.reload(true);
+        			const redirect = () => Turbolinks.visit("");
         			setTimeout(redirect, 5000);
         		});
         	}
@@ -68,16 +68,6 @@
             });
         }
     </script>
-    <style>
-        .card-footer-item-danger:hover {
-            color: #ff3860;
-        }
-        .card-footer-item.is-loading {
-            position: relative;
-            pointer-events: none;
-            opacity: 0.5;
-        }
-    </style>
 </head>
 <body>
 <% include ../partials/dashboard-header %>

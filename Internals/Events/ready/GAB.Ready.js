@@ -100,19 +100,20 @@ class Ready extends BaseEvent {
 	async setBotActivity () {
 		winston.debug("Setting bots playing activity.");
 		let activity = {
-			name: this.configJSON.activity.name.format({ shard: this.bot.shardID, totalshards: this.bot.shard.count }),
-			url: this.configJSON.activity.twitchURL,
-			type: this.configJSON.activity.twitchURL ? "WATCHING" : "PLAYING",
+			name: configJSON.activity.name.format({ shard: this.bot.shardID, totalShards: this.bot.shard.count }),
+			url: configJSON.activity.twitchURL || null,
+			type: configJSON.activity.twitchURL !== "" ? "WATCHING" : "PLAYING",
 		};
-		if (this.configJSON.activity.name === "default") {
+		if (configJSON.activity.name === "default") {
 			activity = {
 				name: "https://gawesomebot.com | Shard {shard}".format({ shard: this.bot.shardID }),
 				type: "PLAYING",
+				url: null,
 			};
 		}
-		this.bot.user.setPresence({
+		await this.bot.user.setPresence({
 			activity,
-			status: this.configJSON.status,
+			status: configJSON.status,
 		});
 		await this.startMessageCount();
 	}

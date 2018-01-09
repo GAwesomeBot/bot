@@ -35,8 +35,7 @@
 					<% } %>
 				},
 				success: function() {
-					location.reload();
-				}
+									Turbolinks.visit('');				}
 			});
 		}
 	}
@@ -98,7 +97,7 @@
 													</td>
 													<td>
 														<input type="checkbox" id="translated_messages-<%= i %>-removed" name="translated_messages-<%= i %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="translated_messages-<%= i %>-removed" onclick="$('#translated_messages-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+														<button class="button is-small is-danger" name="translated_messages-<%= i %>-removed" onclick="$('#translated_messages-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>

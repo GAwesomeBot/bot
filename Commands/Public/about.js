@@ -2,7 +2,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors } }, documents, msg
 	const description = [
 		`Hello! I'm **${bot.user.username}**, running **GAwesomeBot ${configJSON.version} on branch ${configJSON.branch}**, the best Discord Bot! 🐬`,
 		`Created by Gilbert and [the GAwesomeDevs](${configJS.hostingURL}#team)! ❤`,
-		`Built using [Node.JS](https://nodejs.org/en/) and [Discord.js](https://discord.js.org/#/)`,
+		`Built using [Node.js](https://nodejs.org/en/) and [Discord.js](https://discord.js.org/#/)`,
 	].join("\n");
 	const fields = [];
 	configJS.hostingURL && fields.push({

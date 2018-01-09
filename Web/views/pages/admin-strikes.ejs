@@ -35,7 +35,7 @@
 				},
 				success: function() {
 					saveFormState();
-					location.reload();
+				  Turbolinks.visit('');
 				}
 			});
 		}
@@ -54,7 +54,7 @@
 				data: send,
 				success: function() {
 					const docs = document.getElementsByClassName('strikes-' + parts[1]);
-					if(docs.length <= 1) window.location.reload();
+					if(docs.length <= 1) Turbolinks.visit("");
 					const remove = document.getElementById("removestrike-" + parts[1] + "-" + parts[2]).parentNode.parentNode;
 					document.getElementById("removestrike-" + parts[1] + "-" + parts[2]).parentNode.parentNode.parentNode.removeChild(remove);
 					for (i = 0; i < docs.length; i++) {
@@ -134,7 +134,7 @@
 											</div>
 											<div class="control">
 											<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
-											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); location.reload();">
+											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); Turbolinks.visit('');">
 												<span>Remove All</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>

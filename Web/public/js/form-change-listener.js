@@ -1,12 +1,3 @@
-var initial_form_state;
-function saveFormState() {
-	try{
-		$("#builder-code-box").val(cm.getDoc().getValue());
-	} catch(err) {}
-	initial_form_state = $('#form').serialize();
-	$("#form-submit span:nth-child(2)").html("Save")
-}
-
 function submitForm() {
 	$("#form-submit").addClass("is-loading");
 	hide_update_modal = true;
@@ -27,23 +18,35 @@ function submitForm() {
 }
 
 $(window).bind("beforeunload", function(e) {
-	var form_state = $("#form").serialize();
-	if(initial_form_state!=form_state) {
-		var message = "You have unsaved changes on this page. Do you want to leave this page and discard your changes or stay on this page?";
+	const form_state = $("#form").serialize();
+	if (initial_form_state !== form_state) {
+		const message = "You have unsaved changes on this page. Do you want to leave this page and discard your changes or stay on this page?";
 		e.returnValue = message;
 		return message;
 	}
 });
 
+document.addEventListener("turbolinks:before-visit", function(e) {
+	const form_state = $("#form").serialize();
+	if (initial_form_state !== form_state) {
+		const message = "You have unsaved changes on this page. Are you sure you want to leave this page and discard your changes?";
+		if (!confirm(message)) {
+			e.preventDefault();
+			NProgress.done();
+			NProgress.remove();
+		}
+	}
+});
+
 $(window).scroll(function() {
 	if($(window).scrollTop() + $(window).height() > $(document).height() - 150) {
-		if($("#form-buttons").css("display")!="none") {
+		if ($("#form-buttons").css("display" ) !== "none") {
 			$("#form-buttons").fadeOut(86);
 		}
 	}
 });
 setInterval(function() {
-	var form_state = $("#form").serialize();
+	const form_state = $("#form").serialize();
 	if (initial_form_state !== form_state) hide_update_modal = false;
 	if($(window).scrollTop() + $(window).height() <= $(document).height() - 150) {
 		if(initial_form_state!=form_state && $("#form-buttons").css("display")=="none") {

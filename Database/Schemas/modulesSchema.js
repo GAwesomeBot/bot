@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { AllowedEvents } = require("../../Internals/Constants");
 
 /*
  * Schema for commands, keywords, and timers (third-party and gallery)
@@ -24,6 +25,7 @@ module.exports = new mongoose.Schema({
 			"command",
 			"keyword",
 			"timer",
+			"event",
 		],
 		required: true,
 	},
@@ -80,4 +82,26 @@ module.exports = new mongoose.Schema({
 			"saved",
 		],
 	},
+	code_id: String,
+	versions: [
+		new mongoose.Schema({
+			_id: {
+				type: String,
+				required: true,
+			},
+			code_id: String,
+		}),
+	],
+	event: {
+		type: String,
+		enum: AllowedEvents,
+	},
+	scopes: [String],
+	timeout: {
+		type: Number,
+		default: 5000,
+		min: 100,
+		max: 10000,
+	},
+	fields: Object,
 }, { usePushEach: true });

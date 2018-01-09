@@ -1,7 +1,7 @@
-<form id="form" action="/extensions/my" method="post">
+<form id="form" onsubmit="return false;">
 	<div style="overflow-x: scroll;">
 		<% if(extensions.length>0) { %>
-			<table class="table">
+			<table class="table is-fullwidth">
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -44,6 +44,13 @@
 									</span>
 									<span>View</span>
 								</a>
+								<% } else { %>
+								<button id="publish-<%= extensions[i]._id %>" class="button is-small" onclick="GAwesomeUtil.publishExtension('<%= extensions[i]._id %>'); return false;">
+									<span class="icon is-small">
+										<i class="fa fa-share-alt"></i>
+									</span>
+									<span>Publish</span>
+								</button>
 								<% } %>
 								<a class="button is-small is-primary" href="/extensions/builder?extid=<%= extensions[i]._id %>">
 									<span class="icon is-small">
@@ -51,10 +58,10 @@
 									</span>
 									<span>Edit</span>
 								</a>
-								<button class="button is-small is-danger" name="extension-<%= i %>-removed">
-									<span>Remove</span>
+								<button id="delete-<%= extensions[i]._id %>" class="button is-small is-danger" onclick="GAwesomeUtil.deleteExtension('<%= extensions[i]._id %>'); return false;">
+									<span>Delete</span>
 									<span class="icon is-small">
-										<i class="fa fa-times"></i>
+										<i class="fa fa-trash"></i>
 									</span>
 								</button>
 							</td>
@@ -65,10 +72,12 @@
 		<% } else { %>
 			<article class="message">
 				<div class="message-header">
-					<span class="icon">
-						<i class="fa fa-meh-o"></i>
-					</span>
-					<span>Nothing to see here</span>
+					<p>
+						<span class="icon">
+							<i class="fa fa-meh-o"></i>
+						</span>
+						Nothing to see here
+					</p>
 				</div>
 				<div class="message-body">
 					You haven't published any extensions yet. Head over to the <a href="/extensions/builder">extension builder</a> to get started building one!
@@ -77,12 +86,15 @@
 			<br>
 		<% } %>
 	</div>
-	<p class="control">
-		<a class="button" href="/extensions/builder">
-			<span class="icon">
-		        <i class="fa fa-code"></i>
-		    </span>
-		    <span>Build an extension</span>
-		</a>
-	</p>
+	<br>
+	<div class="field">
+		<p class="control">
+			<a class="button" href="/extensions/builder">
+				<span class="icon">
+					<i class="fa fa-code"></i>
+		    	</span>
+		    	<span>Build an extension</span>
+			</a>
+		</p>
+	</div>
 </form>

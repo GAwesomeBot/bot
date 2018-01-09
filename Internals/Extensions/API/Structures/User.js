@@ -1,14 +1,15 @@
-const TextBasedChannel = require("./Channels/TextBasedChannel");
-const DMChannel = require("./DMChannel");
-const Message = require("./Message");
-let raw;
+const API = require("../index");
+const {
+	Constants: { Colors },
+} = require("../../../index");
+let raw, extensionDocument;
 
 /**
  * Represents an extension user
- * @implements {TextBasedChannel}
  */
 class User {
-	constructor (rawUser) {
+	constructor (rawUser, rawExtensionDocument) {
+		extensionDocument = rawExtensionDocument;
 		/**
 		 * The user avatar
 		 * @type {?String}
@@ -33,7 +34,7 @@ class User {
 		 * The users last message with the bot, if any
 		 * @type {?Message}
 		 */
-		if (rawUser.lastMessage) this.lastMessage = new Message(rawUser.lastMessage);
+		if (rawUser.lastMessage) this.lastMessage = new API.Message(rawUser.lastMessage);
 		/**
 		 * The users last message ID with the bot, if any
 		 * @type {?Discord.Snowflake}
@@ -142,36 +143,24 @@ class User {
 	}
 
 	/**
-   * The DM between the bot user and this user
-   * @type {?DMChannel}
-   * @readonly
-   */
-	get dmChannel () {
-		let rawDM = raw.dmChannel;
-		if (rawDM) return new DMChannel(rawDM);
-		return null;
-	}
-
-	/**
-	 * Creates a DM Channel between the user and the bot
-	 * @returns {Promise<?DMChannel>} The new channel, or the existing one, if present
+	 * Send a message to this user
+	 * @param {String} message The message to send to the user
+	 * @async
+	 * @returns {Promise<Boolean>}
 	 */
-	async createDM () {
-		let rawChannel;
-		try {
-			rawChannel = await raw.createDM();
-		} catch (err) {
-			throw err;
-		}
-		if (rawChannel) return new DMChannel(rawChannel);
-		return null;
+	async send (message) {
+		if (typeof message !== "string") return false;
+		await raw.send({
+			embed: {
+				color: Colors.INFO,
+				author: {
+					name: extensionDocument.name,
+				},
+				description: message,
+			},
+		});
+		return true;
 	}
-
-	// These are here only for documentation purposes - they are implemented by TextBasedChannel
-	/* eslint-disable no-empty-function */
-	send () {}
 }
-
-TextBasedChannel.applyToClass(User);
 
 module.exports = User;

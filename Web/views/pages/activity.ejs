@@ -4,28 +4,6 @@
 	<title><%= data.pageTitle %> - GAwesomeBot Activity</title>
 	<% include ../partials/head %>
 
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script async src="/static/js/auto-complete.min.js"></script>
-	<script>
-	var mq = window.matchMedia("screen and (max-width: 768px)");
-	mq.addListener(mediaStyle);
-
-	var searchInputAutocomplete;
-	function mediaStyle(mq) {
-		if(mq.matches) {
-			$(".header-search-box").removeClass("is-large");
-			document.getElementById("frame").style.paddingLeft = "15px";
-			document.getElementById("frame").style.paddingRight = "15px";
-			if(document.getElementById("search-select").value=="servers") {
-				switchLayout("list");
-			}
-		} else {
-			$(".header-search-box").addClass("is-large");
-			document.getElementById("frame").style.paddingLeft = "0px";
-			document.getElementById("frame").style.paddingRight = "0px";
-		}
-	}
-	</script>
 </head>
 <body>
 	<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
@@ -41,7 +19,7 @@
 					<div class="column is-8 is-offset-2">
 						<div class="field has-addons has-addons-centered">
 							<div class="control is-expanded">
-								<input id="search-input" class="input header-search-box" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
+								<input id="search-input" class="input header-search-box is-large" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
 							</div>
 							<div class="control">
 								<a id="search-button" class="button is-primary is-large header-search-box">
@@ -100,12 +78,8 @@
 
 	<section id="frame" class="section">
 		<div class="container">
-			<% if(mode=="servers") { %>
+			<% if(mode === "servers") { %>
 				<% include ../partials/servers-section %>
-				<script>
-				switchLayout();
-				showSelections();
-				</script>
 			<% } else { %>
 				<% include ../partials/users-section %>
 			<% } %>
