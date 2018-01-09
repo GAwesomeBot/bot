@@ -1,4 +1,5 @@
 const { writeJSONAtomic: writeFile } = require("fs-nextra");
+const { CLI: { UpdateConfig }} = require("../../Modules/Utils");
 const configJSON = require("../../Configurations/config.json");
 
 module.exports = async ({ cli }, cmdData, args) => {
@@ -22,24 +23,16 @@ module.exports = async ({ cli }, cmdData, args) => {
 			return configJSON.maintainers.includes(user);
 		}
 	}
-	ids.forEach(user => {
+	const updateCfg = new Promise(rs => ids.forEach((user, i) => {
 		if (isMaintainer(user, isSudo)) return;
 		if (isSudo && !isMaintainer(user, isSudo)) configJSON.sudoMaintainers.push(user);
 		if (!isMaintainer(user, false)) configJSON.maintainers.push(user);
-		writeFile(`${__dirname}/../../Configurations/config.json`, configJSON, {
-			spaces: 2,
-		}).then(() => {
-			winston.info(`Promoted user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer`);
-			cli.sharder.broadcast("updateConfigJSON").then(arr => {
-				arr.map(({ error }, index) => ({
-					message: `${error ? `Couldn't update` : `Updated`} the config.json file on shard ${index}`,
-					error,
-				})).forEach(({ error, message }) => {
-					winston[error ? "error" : "info"](message);
-				});
-			});
-		}).catch(err => {
-			winston.warn(`Failed to promote user with ID ${user} to ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
-		});
+		if (i == (ids.length - 1)) return rs();
+	}));
+
+	updateCfg.then(() => UpdateConfig(cli, configJSON)).then(() => {
+		winston.info(`Promoted users to ${isSudo ? "Sudo" : ""} Maintainer`);
+	}).catch(err => {
+		winston.warn(`Failed to promote users to ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
 	});
 };
