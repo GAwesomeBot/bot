@@ -1,5 +1,5 @@
 const { writeJSONAtomic: writeFile } = require("fs-nextra");
-const { CLI: { UpdateConfig }} = require("../../Modules/Utils");
+const { CLI: { UpdateConfig } } = require("../../Modules/Utils");
 const configJSON = require("../../Configurations/config.json");
 
 module.exports = async ({ cli }, cmdData, args) => {
@@ -27,7 +27,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 		if (isMaintainer(user, isSudo)) return;
 		if (isSudo && !isMaintainer(user, isSudo)) configJSON.sudoMaintainers.push(user);
 		if (!isMaintainer(user, false)) configJSON.maintainers.push(user);
-		if (i == (ids.length - 1)) return rs();
+		if (i === (ids.length - 1)) return rs();
 	}));
 
 	updateCfg.then(() => UpdateConfig(cli, configJSON)).then(() => {

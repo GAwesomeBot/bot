@@ -1,3 +1,3 @@
 module.exports = {
-    UpdateConfig: require("./UpdateConfig"),
+	UpdateConfig: require("./UpdateConfig"),
 };
