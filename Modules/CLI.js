@@ -23,7 +23,8 @@ class CLI {
 	}
 
 	/**
-	* Disposes (destroys) all the CLI things.*/
+	* Disposes (destroys) all the CLI things.
+	*/
 	dispose () {
 		this.stdin.removeListener("data", this.listener.bind(this));
 	}
@@ -31,7 +32,7 @@ class CLI {
 	/**
 	* Listens to the incoming events from stdin
 	* @param {Buffer} data The incoming data from the stdin
-	 * */
+	*/
 	listener (data) {
 		let strData = data.toString();
 		let trimmedData = strData.trim();
@@ -68,14 +69,15 @@ class CLI {
 					this.commandArgs += strData;
 				}
 			}
-			delete this.currentlyRunningCommand;
+			this.currentlyRunningCommand = null;
 		}
 	}
 
 	/**
 	 * Gets an object with both class and the command
 	 * @param {String} commandName The command name
-	 * @returns {Object} The command object*/
+	 * @returns {Object} The command object
+	 */
 	getFullCommand (commandName) {
 		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
 		if (!this.getCommandData(commandName)) return null;
@@ -87,7 +89,8 @@ class CLI {
 	/**
 	 * Gets a command object
 	 * @param {String} commandName The command name
-	 * @returns {Object} The command object*/
+	 * @returns {Object} The command object
+	 */
 	getCommandData (commandName) {
 		if (typeof commandName !== "string") throw new GABError("CLI_PARAM_INVALID", "commandName", commandName.constructor.name, "String");
 		return cli[commandName] || null;
