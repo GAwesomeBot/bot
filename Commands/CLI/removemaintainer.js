@@ -1,4 +1,5 @@
 const { writeJSONAtomic: writeFile } = require("fs-nextra");
+const { CLI: { UpdateConfig }} = require("../../Modules/Utils");
 const configJSON = require("../../Configurations/config.json");
 
 module.exports = async ({ cli }, cmdData, args) => {
