@@ -1649,14 +1649,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						if (err || !wikiDocument) {
 							renderError(res, "An error occurred while saving wiki documents!");
 						} else {
-							wikiDocument._id = req.body.title;
 							wikiDocument.updates.push({
 								_id: req.user.id,
 								diff: diff.prettyHtml(diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0)),
 							});
 							wikiDocument.content = req.body.content;
 
-							wikiDocument.save(() => {
+							wikiDocument.save(async () => {
 								res.redirect(`/wiki/${wikiDocument._id}`);
 							});
 						}

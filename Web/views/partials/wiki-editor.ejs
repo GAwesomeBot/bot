@@ -2,8 +2,8 @@
 	<div class="field">
     	<label class="label">Title</label>
 		<p class="control">
-			<input id="composer-title" name="title" class="input" type="text" value="<%= data.title %>" minlength="3" maxlength="100" required>
-			<span class="help">Name of the page. Make it short and avoid special characters.</span>
+			<input id="composer-title" name="title" class="input" type="text" value="<%= data.title %>" minlength="3" maxlength="100" required<%- data.title ? ` disabled` : ""%>>
+			<span class="help"><%- data.title ? "Wiki Articles can't be renamed. Download this Article's content, and upload it to a new Article if you wish to switch names." : "Name of the page. Make it short and avoid special characters."%></span>
 		</p>
 	</div>
 	<div class="field">
