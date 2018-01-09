@@ -592,6 +592,6 @@ module.exports = {
 	voicetext_channels: [String],
 	ban_gif: {
 		type: String,
-		default: "https://s20.postimg.org/tgzeq0nb1/b1nzyblobban.gif",
+		default: "https://i.imgur.com/3QPLumg.gif",
 	},
 };
