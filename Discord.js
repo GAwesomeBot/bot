@@ -1128,8 +1128,7 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 		bot.IPC.send("ready", { id: bot.shard.id });
 		process.setMaxListeners(0);
 	}).catch(err => {
-		winston.error("Failed to connect to Discord :/");
-		console.log(err);
+		winston.error(`Failed to connect to Discord :/\n${err}`);
 		process.exit(1);
 	});
 });
