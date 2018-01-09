@@ -54,7 +54,6 @@
     "socket.io": "^2.0.4",
     "string": "*",
     "text-diff": "*",
-    "uglify-js": "^3.3.5",
     "urban": "*",
     "vm2": "^3.5.2",
     "wikijs": "^4.5.0",
@@ -67,6 +66,7 @@
     "zlib-sync": "^0.1.4"
   },
   "devDependencies": {
-    "eslint": "^4.15.0"
+    "eslint": "^4.15.0",
+    "uglify-js": "^3.3.5"
   }
 }
