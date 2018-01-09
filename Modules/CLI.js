@@ -15,25 +15,25 @@ class CLI {
 	}
 
 	/**
-	* Sets up all the stuff we need
-	* @returns {CLI}
-	*/
+	 * Sets up all the stuff we need
+	 * @returns {CLI}
+	 */
 	setup () {
 		this.stdin.on("data", this.listener.bind(this));
 		return this;
 	}
 
 	/**
-	* Disposes (destroys) all the CLI things.
-	*/
+	 * Disposes (destroys) all the CLI things.
+	 */
 	dispose () {
 		this.stdin.removeListener("data", this.listener.bind(this));
 	}
 
 	/**
-	* Listens to the incoming events from stdin
-	* @param {Buffer} data The incoming data from the stdin
-	*/
+	 * Listens to the incoming events from stdin
+	 * @param {Buffer} data The incoming data from the stdin
+	 */
 	listener (data) {
 		let strData = data.toString();
 		let trimmedData = strData.trim();
