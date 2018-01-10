@@ -15,8 +15,38 @@ function saveFormState() {
 GAwesomeData.activity = { guildData: {} };
 GAwesomeData.blog = { editor: {} };
 GAwesomeData.wiki = { bookmarks: JSON.parse(localStorage.getItem("wiki-bookmarks")) || [], editor: {} };
+GAwesomeData.extensions = {};
 GAwesomeData.dashboard = {};
 GAwesomeUtil.dashboard = {};
+
+GAwesomeData.config = {
+	debug: localStorage.getItem("gab:debug") || false,
+};
+
+GAwesomeData.extensions.html = {
+	start: {
+		"#installer-title": "Installing $EXTNAME",
+		"#installer-subtitle": "Extension Information",
+	},
+};
+
+GAwesomeUtil.reload = () => window.location.reload(true);
+GAwesomeUtil.refresh = () => Turbolinks.visit("");
+
+GAwesomeUtil.log = (msg, level, force) => {
+	if (!GAwesomeData.config.debug && !force) return;
+	if (!msg || typeof msg !== "string" || (level && !["log", "warn", "error"].includes(level))) return console.warn("[GAwesomeBot] [WARN] Invalid Arguments for log()");
+	console[level || "log"](`[GAwesomeBot] [${level === "log" || !level ? "DEBUG" : level.toUpperCase()}] ${msg}`);
+};
+GAwesomeUtil.error = msg => GAwesomeUtil.log(msg, "error", true);
+GAwesomeUtil.warn = msg => GAwesomeUtil.log(msg, "warn", true);
+
+GAwesomeUtil.debugDump = () => {
+	GAwesomeUtil.log("[DUMP:INFO] Pass this information to a GAB Support Member and they will assist you further!", "log", true);
+	GAwesomeUtil.log(`[DUMP:APPDATA] ${JSON.stringify(GAwesomeData)}`, "log", true);
+	GAwesomeUtil.log(`[DUMP:SESSIONDATA] ${JSON.stringify(localStorage)}`, "log", true);
+	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({tl: !!Turbolinks, io: !!io, form: !!submitForm, bulma: !!bulma, np: !!NProgress, fs: !!saveAs, md: !!md5})}`, "log", true);
+};
 
 GAwesomeUtil.updateHeader = () => {
 	const currentNavItem = $("#nav-" + window.location.pathname.split("/")[1]);
@@ -320,7 +350,91 @@ GAwesomeUtil.featureExtension = extid => {
 };
 
 GAwesomeUtil.installExtension = extid => {
-	alert("In Progress");
+	GAwesomeUtil.log("Beginning Extension installing process");
+	const extension = GAwesomeData.extensions.extensions.find(a => a._id === extid);
+	if (!extension) {
+		return GAwesomeUtil.warn(`Failed to find Extension Data for ID ${extid}`);
+	}
+	const h = GAwesomeData.extensions.html;
+	GAwesomeUtil.log("Extension Installing Phase: START");
+	GAwesomeData.extensions.state = {
+		phase: 0,
+		id: extid,
+		extension: extension,
+		ongoing: true,
+		data: {},
+		phases: ["start"],
+	};
+	if (extension.type !== "event") GAwesomeData.extensions.state.phases.push("config");
+	if (extension.scopes.length) GAwesomeData.extensions.state.phases.push("scopes");
+	if (extension.fields && extension.fields.length) GAwesomeData.extensions.state.phases.push("fields");
+	GAwesomeData.extensions.state.phases.push("confirm");
+	Object.keys(h["start"]).forEach(id => $(id).html(h["start"][id].replace("$EXTNAME", extension.name)));
+	$("html").addClass("is-clipped");
+	$("#installer-modal").addClass("is-active");
+};
+
+GAwesomeUtil.cancelInstall = () => {
+	if (!confirm("Are you sure you want to cancel this installation?")) return;
+	if (GAwesomeData.extensions.state && GAwesomeData.extensions.state.ongoing) {
+		GAwesomeUtil.log("Stopping Extension install after User Input");
+		GAwesomeData.extensions.state.ongoing = false;
+		$("#installer-modal").removeClass("is-active");
+		$("html").removeClass("is-clipped");
+		$("#installer-content").html("");
+		$("#installer-control").css('visibility', 'hidden');
+		$("#installer-loading").css('visibility', 'hidden');
+		$("#installer-progress").attr("value", 0);
+	} else {
+		GAwesomeUtil.warn("Extension Install not ongoing!");
+	}
+};
+
+GAwesomeUtil.switchInstallTarget = () => {
+	if (!GAwesomeData.extensions.state || !GAwesomeData.extensions.state.ongoing) return GAwesomeUtil.warn("An Install is not ongoing");
+	const serverid = $("#installer-serverSelect").val();
+	const target = $("#installer-content");
+	target.hide();
+	if (serverid === "select") {
+		target.html("");
+		$("#installer-control").css('visibility', 'hidden');
+	} else {
+		const e = GAwesomeData.extensions.state.extension;
+		const svr = GAwesomeData.extensions.servers.find(a => a.id === serverid);
+		let info = `<br><h5 class="title is-5">${e.name}</h5><h5 class="subtitle is-5">By ${e.owner.name}${e.owner.discriminator}</h5><br><div class="box">`;
+		switch (e.type) {
+			case "command":
+				info += `<h6 class="title is-6">Extension Command Info</h6><p>${e.description}</p><p>Use <code>${svr.prefix}${e.typeDescription}</code> to trigger this extension.</p>`;
+				break;
+			case "keyword":
+				info += `<h6 class="title is-6">Keyword Command Info</h6><p>${e.description}</p><p>Any message that contains <code>${e.typeDescription}</code> will trigger this extension.</p>`;
+				break;
+			case "timer":
+				info += `<h6 class="title is-6">Timer Command Info</h6><p>${e.description}</p><p>Every <code>${e.typeDescription}</code> this extension will trigger.</p>`;
+				break;
+			case "event":
+				info += `<h6 class="title is-6">Event Command Info</h6><p>${e.description}</p><p>This extension will trigger on the <code>${e.typeDescription}</code> event.</p>`;
+				break;
+		}
+		target.html(`${info}</div>`);
+		$("#installer-control").css("visibility", "visible");
+	}
+	$("#installer-loading").css("visibility", "hidden");
+	target.show();
+};
+
+GAwesomeUtil.advanceInstall = () => {
+	$("#installer-content").hide();
+	$("#installer-loading").css("visibility", "visible");
+	const phases = GAwesomeData.extensions.state.phases;
+	const oldPhase = GAwesomeData.extensions.state.phase;
+	const newPhase = oldPhase + 1;
+	$("#installer-progress").attr("value", Math.ceil((newPhase / (phases.length - 1)) * 100))
+	GAwesomeData.extensions.state.phase = newPhase;
+	const h = GAwesomeData.extensions.html;
+	Object.keys(h[phases[newPhase]]).forEach(id => $(id).html(h[phases[newPhase]][id]()));
+	$("#installer-loading").css("visibility", "visible");
+	$("#installer-content").show();
 };
 
 GAwesomePaths["extensions"] = () => {

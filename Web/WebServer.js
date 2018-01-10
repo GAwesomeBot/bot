@@ -412,14 +412,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				typeIcon = "clock-o";
 				if (moment(galleryDocument.interval)) {
 					let interval = moment.duration(galleryDocument.interval);
-					typeDescription = `Interval: ${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
+					typeDescription = `${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
 				} else {
-					typeDescription = `Interval: ${galleryDocument.interval}`;
+					typeDescription = `${galleryDocument.interval}ms`;
 				}
 				break;
 			case "event":
 				typeIcon = "code";
-				typeDescription = `Event: ${galleryDocument.event}`;
+				typeDescription = `${galleryDocument.event}`;
 				break;
 		}
 		return {
@@ -440,6 +440,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			points: galleryDocument.points,
 			relativeLastUpdated: moment(galleryDocument.last_updated).fromNow(),
 			rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),
+			scopes: galleryDocument.scopes,
+			fields: galleryDocument.fields,
+			timeout: galleryDocument.timeout,
 		};
 	};
 	app.get("/api/extensions", async (req, res) => {
@@ -904,6 +907,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 										name: req.user.guilds[i].name,
 										id: req.user.guilds[i].id,
 										icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
+										prefix: serverDocument.config.command_prefix,
 									});
 								}
 							}
