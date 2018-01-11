@@ -2,11 +2,11 @@
 <aside class="menu">
 	<ul class="menu-list">
 		<li>
-			<% if(currentPage=="/dashboard/overview") { %>
+			<% if(currentPage === `/dashboard/${serverData.id}/overview`) { %>
 				<% include ../partials/admin-sudo.ejs %>
 				<a class="is-active" href="#">Overview</a>
 			<% } else { %>
-				<a href="/dashboard/overview?svrid=<%= serverData.id %>">Overview</a>
+				<a href="/dashboard/<%= serverData.id %>/overview">Overview</a>
 			<% } %>
 		</li>
 	</ul>
@@ -18,68 +18,68 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-			<% if(currentPage=="/dashboard/commands/command-options") { %>
+			<% if(currentPage === `/dashboard/${serverData.id}/commands/command-options`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Command Options</a>
 			<% } else { %>
-				<a href="/dashboard/commands/command-options?svrid=<%= serverData.id %>">Command Options</a>
+				<a href="/dashboard/<%= serverData.id %>/commands/command-options">Command Options</a>
 			<% } %>
-			<% if(["/dashboard/commands/command-list", "/dashboard/commands/rss-feeds", "/dashboard/commands/streamers", "/dashboard/commands/tags", "/dashboard/commands/auto-translation", "/dashboard/commands/trivia-sets"].indexOf(currentPage)>-1) { %>
+			<% if ([`/dashboard/${serverData.id}/commands/command-list`, `/dashboard/${serverData.id}/commands/rss-feeds`, `/dashboard/${serverData.id}/commands/streamers`, `/dashboard/${serverData.id}/commands/tags`, `/dashboard/${serverData.id}/commands/auto-translation`, `/dashboard/${serverData.id}/commands/trivia-sets`].includes(currentPage)) { %>
             <% include ../partials/admin-sudo.ejs %>
-			<a class="<%= currentPage=='/dashboard/commands/command-list' ? 'is-active' : '' %>" href="<%= currentPage=='/dashboard/commands/command-list' ? '#' : ('/dashboard/commands/command-list?svrid=' + serverData.id) %>">Command List</a>
+			<a class="<%= currentPage === `/dashboard/${serverData.id}/commands/command-list` ? 'is-active' : '' %>" href="<%= currentPage === `/dashboard/${serverData.id}/commands/command-list` ? '#' : (`/dashboard/${serverData.id}/commands/command-list`) %>">Command List</a>
 				<ul>
 					<li>
-						<% if(currentPage=="/dashboard/commands/rss-feeds") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/commands/rss-feeds`) { %>
 							<a class="is-active" href="#">RSS Feeds</a>
 						<% } else { %>
-							<a href="/dashboard/commands/rss-feeds?svrid=<%= serverData.id %>">RSS Feeds</a>
+							<a href="/dashboard/<%= serverData.id %>/commands/rss-feeds">RSS Feeds</a>
 						<% } %>
 					</li>
 					<li>
-						<% if(currentPage=="/dashboard/commands/streamers") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/commands/streamers`) { %>
 								<a class="is-active" href="#">Streamers</a>
 							<% } else { %>
-								<a href="/dashboard/commands/streamers?svrid=<%= serverData.id %>">Streamers</a>
+								<a href="/dashboard/<%= serverData.id %>/commands/streamers">Streamers</a>
 							<% } %>
 					</li>
 					<li>
-						<% if(currentPage=="/dashboard/commands/tags") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/commands/tags`) { %>
 								<a class="is-active" href="#">Tags</a>
 							<% } else { %>
-								<a href="/dashboard/commands/tags?svrid=<%= serverData.id %>">Tags</a>
+								<a href="/dashboard/<%= serverData.id %>/commands/tags">Tags</a>
 							<% } %>
 					</li>
 					<li>
-						<% if(currentPage=="/dashboard/commands/auto-translation") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/commands/auto-translation`) { %>
 								<a class="is-active" href="#">Auto Translation</a>
 							<% } else { %>
-								<a href="/dashboard/commands/auto-translation?svrid=<%= serverData.id %>">Auto Translation</a>
+								<a href="/dashboard/<%= serverData.id %>/commands/auto-translation">Auto Translation</a>
 							<% } %>
 					</li>
-					<% if(configData.commands.trivia && configData.commands.trivia.isEnabled) { %>
+					<% if (configData.commands.trivia && configData.commands.trivia.isEnabled) { %>
 						<li>
-							<% if(currentPage=="/dashboard/commands/trivia-sets") { %>
+							<% if (currentPage === `/dashboard/${serverData.id}/commands/trivia-sets`) { %>
 								<a class="is-active" href="#">Trivia Sets</a>
 							<% } else { %>
-								<a href="/dashboard/commands/trivia-sets?svrid=<%= serverData.id %>">Trivia Sets</a>
+								<a href="/dashboard/<%= serverData.id %>/commands/trivia-sets">Trivia Sets</a>
 							<% } %>
 						</li>
 					<% } %>
 				</ul>
 			<% } else { %>
-				<a href="/dashboard/commands/command-list?svrid=<%= serverData.id %>">Command List &#9662;</a>
+				<a href="/dashboard/<%= serverData.id %>/commands/command-list">Command List &#9662;</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/commands/api-keys") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/commands/api-keys`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">API Keys</a>
 			<% } else { %>
-				<a href="/dashboard/commands/api-keys?svrid=<%= serverData.id %>">API Keys</a>
+				<a href="/dashboard/<%= serverData.id %>/commands/api-keys">API Keys</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/commands/tag-reaction") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/commands/tag-reaction`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Tag Reaction</a>
 			<% } else { %>
-				<a href="/dashboard/commands/tag-reaction?svrid=<%= serverData.id %>">Tag Reaction</a>
+				<a href="/dashboard/<%= serverData.id %>/commands/tag-reaction">Tag Reaction</a>
 			<% } %>
 		</li>
 	</ul>
@@ -91,23 +91,23 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-			<% if(currentPage=="/dashboard/stats-points/stats-collection") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/stats-points/stats-collection`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Stats Collection</a>
 			<% } else { %>
-				<a href="/dashboard/stats-points/stats-collection?svrid=<%= serverData.id %>">Stats Collection</a>
+				<a href="/dashboard/<%= serverData.id %>/stats-points/stats-collection">Stats Collection</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/stats-points/ranks") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/stats-points/ranks`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Ranks</a>
 			<% } else { %>
-				<a href="/dashboard/stats-points/ranks?svrid=<%= serverData.id %>">Ranks</a>
+				<a href="/dashboard/<%= serverData.id %>/stats-points/ranks">Ranks</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/stats-points/gawesome-points") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/stats-points/gawesome-points`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">GAwesomePoints</a>
 			<% } else { %>
-				<a href="/dashboard/stats-points/gawesome-points?svrid=<%= serverData.id %>">GAwesomePoints</a>
+				<a href="/dashboard/<%= serverData.id %>/stats-points/gawesome-points">GAwesomePoints</a>
 			<% } %>
 		</li>
 	</ul>
@@ -119,80 +119,80 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-			<% if(currentPage=="/dashboard/administration/admins") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/administration/admins`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Admins</a>
 			<% } else { %>
-				<a href="/dashboard/administration/admins?svrid=<%= serverData.id %>">Admins</a>
+				<a href="/dashboard/<%= serverData.id %>/administration/admins">Admins</a>
 			<% } %>
-			<% if(["/dashboard/administration/moderation", "/dashboard/administration/blocked", "/dashboard/administration/muted", "/dashboard/administration/strikes", "/dashboard/administration/status-messages", "/dashboard/administration/filters"].indexOf(currentPage)>-1) { %>
+			<% if ([`/dashboard/${serverData.id}/administration/moderation`, `/dashboard/${serverData.id}/administration/blocked`, `/dashboard/${serverData.id}/administration/muted`, `/dashboard/${serverData.id}/administration/strikes`, `/dashboard/${serverData.id}/administration/status-messages`, `/dashboard/${serverData.id}/administration/filters`].includes(currentPage)) { %>
             <% include ../partials/admin-sudo.ejs %>
-			<a class="<%= currentPage=='/dashboard/administration/moderation' ? 'is-active' : '' %>" href="<%= currentPage=='/dashboard/administration/moderation' ? '#' : ('/dashboard/administration/moderation?svrid=' + serverData.id) %>">Moderation</a>
+			<a class="<%= currentPage === `/dashboard/${serverData.id}/administration/moderation` ? 'is-active' : '' %>" href="<%= currentPage === `/dashboard/${serverData.id}/administration/moderation` ? '#' : (`/dashboard/${serverData.id}/administration/moderation`) %>">Moderation</a>
 				<ul>
 					<li>
-						<% if(currentPage=="/dashboard/administration/blocked") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/administration/blocked`) { %>
 							<a class="is-active" href="#">Blocked</a>
 						<% } else { %>
-							<a href="/dashboard/administration/blocked?svrid=<%= serverData.id %>">Blocked</a>
+							<a href="/dashboard/<%= serverData.id %>/administration/blocked">Blocked</a>
 						<% } %>
 					</li>
 					<li>
-						<% if(currentPage=="/dashboard/administration/muted") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/administration/muted`) { %>
 							<a class="is-active" href="#">Muted</a>
 						<% } else { %>
-							<a href="/dashboard/administration/muted?svrid=<%= serverData.id %>">Muted</a>
+							<a href="/dashboard/<%= serverData.id %>/administration/muted">Muted</a>
 						<% } %>
 					</li>
 					<li>
-						<% if(currentPage=="/dashboard/administration/strikes") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/administration/strikes`) { %>
 							<a class="is-active" href="#">Strikes</a>
 						<% } else { %>
-							<a href="/dashboard/administration/strikes?svrid=<%= serverData.id %>">Strikes</a>
+							<a href="/dashboard/<%= serverData.id %>/administration/strikes">Strikes</a>
 						<% } %>
 					</li>
-					<% if(configData.moderation.isEnabled) { %>
+					<% if (configData.moderation.isEnabled) { %>
 						<li>
-							<% if(currentPage=="/dashboard/administration/status-messages") { %>
+							<% if (currentPage === `/dashboard/${serverData.id}/administration/status-messages`) { %>
 								<a class="is-active" href="#">Status Messages</a>
 							<% } else { %>
-								<a href="/dashboard/administration/status-messages?svrid=<%= serverData.id %>">Status Messages</a>
+								<a href="/dashboard/<%= serverData.id %>/administration/status-messages">Status Messages</a>
 							<% } %>
 						</li>
 						<li>
-							<% if(currentPage=="/dashboard/administration/filters") { %>
+							<% if (currentPage === `/dashboard/${serverData.id}/administration/filters`) { %>
 								<a class="is-active" href="#">Filters</a>
 							<% } else { %>
-								<a href="/dashboard/administration/filters?svrid=<%= serverData.id %>">Filters</a>
+								<a href="/dashboard/<%= serverData.id %>/administration/filters">Filters</a>
 							<% } %>
 						</li>
 					<% } %>
 				</ul>
 			<% } else { %>
-				<a href="/dashboard/administration/moderation?svrid=<%= serverData.id %>">Moderation &#9662;</a>
+				<a href="/dashboard/<%= serverData.id %>/administration/moderation">Moderation &#9662;</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/administration/message-of-the-day") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/administration/message-of-the-day`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Message of the Day</a>
 			<% } else { %>
-				<a href="/dashboard/administration/message-of-the-day?svrid=<%= serverData.id %>">Message of the Day</a>
+				<a href="/dashboard/<%= serverData.id %>/administration/message-of-the-day">Message of the Day</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/administration/voicetext-channels") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/administration/voicetext-channels`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Voicetext Channels</a>
 			<% } else { %>
-				<a href="/dashboard/administration/voicetext-channels?svrid=<%= serverData.id %>">Voicetext Channels</a>
+				<a href="/dashboard/<%= serverData.id %>/administration/voicetext-channels">Voicetext Channels</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/administration/roles") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/administration/roles`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Roles</a>
 			<% } else { %>
-				<a href="/dashboard/administration/roles?svrid=<%= serverData.id %>">Roles</a>
+				<a href="/dashboard/<%= serverData.id %>/administration/roles">Roles</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/administration/logs") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/administration/logs`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Logs</a>
 			<% } else { %>
-				<a href="/dashboard/administration/logs?svrid=<%= serverData.id %>">Logs</a>
+				<a href="/dashboard/<%= serverData.id %>/administration/logs">Logs</a>
 			<% } %>
 		</li>
 	</ul>
@@ -204,33 +204,33 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-			<% if(currentPage=="/dashboard/other/name-display") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/other/name-display`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Name Display</a>
 			<% } else { %>
-				<a href="/dashboard/other/name-display?svrid=<%= serverData.id %>">Name Display</a>
+				<a href="/dashboard/<%= serverData.id %>/other/name-display">Name Display</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/other/ongoing-activities") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/other/ongoing-activities`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Ongoing Activities</a>
 			<% } else { %>
-				<a href="/dashboard/other/ongoing-activities?svrid=<%= serverData.id %>">Ongoing Activities</a>
+				<a href="/dashboard/<%= serverData.id %>/other/ongoing-activities">Ongoing Activities</a>
 			<% } %>
-			<% if(currentPage=="/dashboard/other/public-data") { %>
+			<% if (currentPage === `/dashboard/${serverData.id}/other/public-data`) { %>
             <% include ../partials/admin-sudo.ejs %>
 			<a class="is-active" href="#">Public Data</a>
 			<% } else { %>
-				<a href="/dashboard/other/public-data?svrid=<%= serverData.id %>">Public Data</a>
+				<a href="/dashboard/<%= serverData.id %>/other/public-data">Public Data</a>
 			<% } %>
-			<% if(["/dashboard/other/extensions", "/dashboard/other/extension-builder"].indexOf(currentPage)>-1) { %>
+			<% if ([`/dashboard/${serverData.id}/other/extensions`, `/dashboard/${serverData.id}/other/extension-builder`].includes(currentPage)) { %>
             <% include ../partials/admin-sudo.ejs %>
-			<a class="<%= currentPage=='/dashboard/other/extensions' ? 'is-active' : '' %>" href="<%= currentPage=='/dashboard/other/extensions' ? '#' : ('/dashboard/other/extensions?svrid=' + serverData.id) %>">Extensions</a>
+			<a class="<%= currentPage === `/dashboard/${serverData.id}/other/extensions` ? 'is-active' : '' %>" href="<%= currentPage === `/dashboard/${serverData.id}/other/extensions` ? '#' : (`/dashboard/${serverData.id}/other/extensions`) %>">Extensions</a>
 				<ul>
 					<li>
-						<% if(currentPage=="/dashboard/other/extension-builder") { %>
+						<% if (currentPage === `/dashboard/${serverData.id}/other/extension-builder`) { %>
 							<a class="is-active" href="#">Extension Builder</a>
 						<% } else { %>
-							<a href="/dashboard/other/extension-builder?svrid=<%= serverData.id %>">Extension Builder</a>
+							<a href="/dashboard/<%= serverData.id %>/other/extension-builder">Extension Builder</a>
 						<% } %>
 					</li>
 					<li>
@@ -238,9 +238,9 @@
 					</li>
 				</ul>
 			<% } else { %>
-				<a href="/dashboard/other/extensions?svrid=<%= serverData.id %>">Extensions &#9662;</a>
+				<a href="/dashboard/<%= serverData.id %>/other/extensions">Extensions &#9662;</a>
 			<% } %>
-			<a href="/dashboard/other/export?svrid=<%= serverData.id %>" target="_blank">Export Config</a>
+			<a href="/dashboard/<%= serverData.id %>/other/export" target="_blank">Export Config</a>
 		</li>
 	</ul>
 </aside>
