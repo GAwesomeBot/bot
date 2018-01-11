@@ -171,7 +171,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				let TID = bot.traffic.TID;
 				res.cookie("trafficID", TID, { httpOnly: true });
 			}
-			if (req.method === "GET" && !req.path.startsWith("/static") && !["/header-image", "/userlist", "/serverlist"].includes(req.path)) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
+			if (req.method === "GET" && !req.path.startsWith("/static") && !req.path.startsWith("/api") && !["/header-image", "/userlist", "/serverlist"].includes(req.path)) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
 			next();
 		}
 	});
@@ -735,7 +735,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Deny authentication for console
-	const deny = res => res.status(403).redirect("/dashboard");
+	const deny = (res, isAPI) => isAPI ? res.sendStatus(403) : res.status(403).redirect("/dashboard");
 	// Check authentication for console
 	const checkPerms = (path, id, svrid) => {
 		let section = path;
@@ -757,7 +757,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				return true;
 		}
 	};
-	const checkAuth = async (req, res, next) => {
+	const checkAuth = async (req, res, next, api) => {
 		if (req.isAuthenticated()) {
 			const usr = await bot.users.fetch(req.user.id, true);
 			if (usr) {
@@ -769,7 +769,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 							winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
 							renderError(res, "An unknown error occurred.")
 						}
-					} else deny(res);
+					} else deny(res, api);
 				} else {
 					const svr = await getGuild.get(bot, req.params.svrid, {
 							resolve: ["id", "ownerID", "name", "icon"],
@@ -788,26 +788,45 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 										next(member, svr, serverDocument, adminLevel);
 									} catch (err) {
 										winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
+										if (api) return res.sendStatus(500);
 										renderError(res, "An unknown error occurred.")
 									}
 								} else {
+									if (api) return res.sendStatus(403);
 									res.redirect("/dashboard");
 								}
 							} else {
+								if (api) return res.sendStatus(500);
 								renderError(res, "Something went wrong while fetching your server data.");
 							}
 						});
 					} else {
+						if (api) return res.sendStatus(404);
 						renderError(res, "Wait a second, that server doesn't exist!<br>We failed to fetch your server from Discord.");
 					}
 				}
 			} else {
+				if (api) return res.sendStatus(500);
 				renderError(res, "Wait, do you exist?<br>We failed to fetch your user from Discord.");
 			}
 		} else {
+			if (api) return res.sendStatus(401);
 			res.redirect("/login");
 		}
 	};
+
+	app.get("/api/servers/:svrid/:value", (req, res) => {
+		checkAuth(req, res, (usr, svr) => {
+			switch (req.params.value) {
+				case "channels":
+					res.json(svr.channels);
+					break;
+				default:
+					res.sendStatus(400);
+					break;
+			}
+		}, true);
+	});
 
 	// User list provider for typeahead
 	app.get("/userlist", (req, res) => {

@@ -5,19 +5,19 @@
 </script>
 <div id="installer-modal" class="modal">
 	<div class="modal-background"></div>
-	<div class="modal-card" style="height: 70%;">
+	<div class="modal-card" style="height: 80%;">
 		<div class="modal-card-head">
 			<p id="installer-title" class="modal-card-title">Installing Extension</p>
 			<button class="delete" aria-label="close" onclick="GAwesomeUtil.cancelInstall();"></button>
 		</div>
-		<div id="installer-box" class="modal-card-body" style="height: 100%; overflow: hidden;">
-			<div style="height: 90%;">
+		<div id="installer-box" class="modal-card-body" style="height: 100%;">
+			<div style="height: 90%; overflow: overlay;">
 				<h4 id="installer-subtitle" class="subtitle has-text-centered is-4">Extension Information</h4>
 				<form id="installer-form" onsubmit="return false;">
                     <div id="installer-selector" class="field">
                         <div class="control has-text-centered">
                             <div class="select">
-                                <select id="installer-serverSelect" onchange="$('#installer-loading').css('visibility', 'visible'); GAwesomeUtil.switchInstallTarget();">
+                                <select id="installer-serverSelect" onchange="$('#installer-loading').show(); GAwesomeUtil.switchInstallTarget();">
                                     <option value="select">Select a server</option>
                                     <% serverData.forEach(server => { %>
                                         <option value="<%= server.id %>"><%- server.name %></option>
@@ -28,7 +28,7 @@
                     </div>
                     <div id="installer-content" class="has-text-centered">
                     </div>
-					<div id="installer-loading" class="spinner" style="visibility: hidden;">
+					<div id="installer-loading" class="installspinner" style="display: none;">
 						<div class="cube1"></div>
 						<div class="cube2"></div>
 					</div>
