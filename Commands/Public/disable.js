@@ -1,5 +1,4 @@
-const reload = require("require-reload")(require);
-const ManageCommands = reload("../../Modules/ManageCommands");
+const ManageCommands = require("../../Modules/ManageCommands");
 
 module.exports = async (main, documents, msg, commandData) => {
 	const disableCommand = new ManageCommands(main, documents, msg, commandData);
