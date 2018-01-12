@@ -192,7 +192,7 @@ class ReactionBasedMenu extends EventEmitter {
 
 	async removeUserReaction (reaction, user) {
 		try {
-			await reaction.remove(user);
+			await reaction.users.remove(user);
 		} catch (err) {
 			winston.verbose(`Failed to remove the reaction for user!`, { user, message: reaction.message.id });
 		}
