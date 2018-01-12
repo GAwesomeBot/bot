@@ -128,6 +128,7 @@ class Ready extends BaseEvent {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
 		const clearMessageCount = () => {
+			winston.debug("Good new 24 hours! Clearing message counters.");
 			Servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
 		this.bot.setInterval(clearMessageCount, 86400000);
