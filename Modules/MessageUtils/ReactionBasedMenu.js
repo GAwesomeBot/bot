@@ -140,7 +140,7 @@ class ReactionBasedMenu extends EventEmitter {
 	async _handleStop (_, reason) {
 		if (reason === "manual") {
 			try {
-				await this.msg.clearReactions();
+				await this.msg.reactions.removeAll();
 			} catch (err) {
 				winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
 				this.msg.reactions.forEach(r => r.remove());

@@ -65,7 +65,7 @@ class PaginatedEmbed {
 
 	async _handleStop () {
 		try {
-			await this.msg.clearReactions();
+			await this.msg.reactions.removeAll();
 		} catch (err) {
 			winston.verbose(`Failed to clear all reactions for paginated menu, will remove only the bots reaction!`, { err: err.name });
 			this.msg.reactions.forEach(r => r.remove());
@@ -95,7 +95,7 @@ class PaginatedEmbed {
 
 	async removeUserReaction (reaction, user) {
 		try {
-			await reaction.remove(user);
+			await reaction.users.remove(user);
 		} catch (err) {
 			winston.verbose(`Failed to remove the reaction for user!`, { user, message: reaction.message.id, err: err.name });
 		}
