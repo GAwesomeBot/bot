@@ -1,7 +1,7 @@
 const { Colors, PageEmojis } = require("../../Internals/Constants");
 
 class PaginatedEmbed {
-	constructor (msg, descriptions = [], embed = null) {
+	constructor (msg, descriptions = [], embed = null, images = [], fields = []) {
 		this.client = msg.client;
 		this.originalMsg = msg;
 
@@ -18,6 +18,8 @@ class PaginatedEmbed {
 			description: `{description}`,
 			footer: `Embed {current description} out of {total descriptions} embeds`,
 		}, embed);
+		this.images = images;
+		this.fields = fields;
 	}
 
 	async init (timeout = 300000) {
@@ -36,15 +38,19 @@ class PaginatedEmbed {
 				color: this.embedTemplate.color,
 				author: this.embedTemplate.author || {},
 				title: this.embedTemplate.title.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
-				description: this.embedTemplate.description.format({ description: this._currentDescription }),
+				description: this.embedTemplate.description.format({ description: this._currentPage }),
 				footer: {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
 				},
+				image: {
+					url: this.images[this._currentPage] || null,
+				},
+				fields: this.fields[this._currentPage] || [],
 			},
 		});
 	}
 
-	get _currentDescription () {
+	get _currentPage () {
 		return this.descriptions[this.currentDescription];
 	}
 
@@ -107,10 +113,14 @@ class PaginatedEmbed {
 				color: this.embedTemplate.color,
 				author: this.embedTemplate.author || {},
 				title: this.embedTemplate.title.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
-				description: this.embedTemplate.description.format({ description: this._currentDescription }),
+				description: this.embedTemplate.description.format({ description: this._currentPage }),
 				footer: {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
 				},
+				image: {
+					url: this.images[this._currentPage] || null,
+				},
+				fields: this.fields[this._currentPage] || [],
 			},
 		});
 	}
