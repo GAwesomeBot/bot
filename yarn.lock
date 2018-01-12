@@ -443,9 +443,9 @@ content-type@~1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.4.tgz#e138cc75e040c727b1966fe5e5f8c9aee256fe3b"
 
-convert-units@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/convert-units/-/convert-units-2.3.2.tgz#85995e960cf59c64e31ece4b96e522a648efb359"
+convert-units@^2.3.4:
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/convert-units/-/convert-units-2.3.4.tgz#a279f4b3cb9b5d5094beba61abc742dcb46a180d"
   dependencies:
     lodash.foreach "2.3.x"
     lodash.keys "2.3.x"
@@ -2256,10 +2256,6 @@ string-width@^2.0.0, string-width@^2.1.0, string-width@^2.1.1:
   dependencies:
     is-fullwidth-code-point "^2.0.0"
     strip-ansi "^4.0.0"
-
-string@*:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/string/-/string-3.3.3.tgz#5ea211cd92d228e184294990a6cc97b366a77cb0"
 
 string_decoder@~1.0.0, string_decoder@~1.0.3:
   version "1.0.3"
