@@ -143,7 +143,7 @@ class ReactionBasedMenu extends EventEmitter {
 				await this.msg.reactions.removeAll();
 			} catch (err) {
 				winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
-				this.msg.reactions.forEach(r => r.remove());
+				this.msg.reactions.forEach(r => r.users.remove());
 			}
 		} else {
 			this.msg.delete();
