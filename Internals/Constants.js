@@ -118,6 +118,7 @@ exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
+	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
 };
 
 // You may think there is nothing here
@@ -159,3 +160,18 @@ exports.AllowedEvents = [
 	"roleUpdate",
 	"voiceStateUpdate",
 ];
+
+// Embed object for NSFW commands
+exports.NSFWEmbed = {
+	embed: {
+		color: exports.Colors.SOFT_ERR,
+		title: `I'm sorry, but I can't let you do that! 🙄`,
+		description: `You'll have to run this command in a channel that is marked **NSFW**!`,
+		footer: {
+			text: `Ask an Admin to edit this channel and make it NSFW. Then you can use this command as much as you like`,
+		},
+	},
+};
+
+// String for no suffixes for NSFW commands
+exports.NSFWInvalid = () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`;

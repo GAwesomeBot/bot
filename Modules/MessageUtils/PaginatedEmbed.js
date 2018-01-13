@@ -43,9 +43,9 @@ class PaginatedEmbed {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
 				},
 				image: {
-					url: this.images[this._currentPage] || null,
+					url: this.images[this.currentDescription] || null,
 				},
-				fields: this.fields[this._currentPage] || [],
+				fields: this.fields[this.currentDescription] || [],
 			},
 		});
 	}
@@ -118,9 +118,9 @@ class PaginatedEmbed {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
 				},
 				image: {
-					url: this.images[this._currentPage] || null,
+					url: this.images[this.currentDescription] || null,
 				},
-				fields: this.fields[this._currentPage] || [],
+				fields: this.fields[this.currentDescription] || [],
 			},
 		});
 	}
