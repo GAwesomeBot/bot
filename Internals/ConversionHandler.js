@@ -23,7 +23,7 @@ class ConversionHandler {
 			money.base = res.base;
 			this.lastUpdated = res.date;
 			this.canConvertMoney = true;
-			if (openExchangeRatesKey) this.initTimer();
+			this.initTimer();
 		} else if (openExchangeRatesKey) {
 			try {
 				let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
@@ -47,17 +47,21 @@ class ConversionHandler {
 	initTimer () {
 		this.moneyTimer = this.client.setInterval(async () => {
 			try {
-				let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
-				if (res.body && res.body.rates && res.body.base) {
-					money.rates = res.body.rates;
-					money.base = res.body.base;
-					this.lastUpdated = Date.now();
-					await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base, date: `${this.lastUpdated}` });
+				if (openExchangeRatesKey) {
+					let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
+					if (res.body && res.body.rates && res.body.base) {
+						money.rates = res.body.rates;
+						money.base = res.body.base;
+						this.lastUpdated = Date.now();
+						await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base, date: `${this.lastUpdated}` });
+					} else {
+						clearInterval(this.moneyTimer);
+						this.moneyTimer = null;
+						this.canConvertMoney = false;
+						this.lastUpdated = null;
+					}
 				} else {
-					clearInterval(this.moneyTimer);
-					this.moneyTimer = null;
-					this.canConvertMoney = false;
-					this.lastUpdated = null;
+					throw new Error();
 				}
 			} catch (_) {
 				clearInterval(this.moneyTimer);
