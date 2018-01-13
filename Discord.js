@@ -1205,10 +1205,12 @@ bot.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
 	const serverDocument = await bot.cache.get(guild.id);
-	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.first();
-	let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
-	serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
-	serverDocument.save();
+	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
+	if (channel) {
+		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
+		serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
+		serverDocument.save();
+	}
 });
 
 bot.IPC.on("deletePublicInviteLink", async msg => {
@@ -1503,7 +1505,7 @@ bot.on("channelUpdate", async (oldCh, newCh) => {
  * Internal debug event
  */
 bot.on("debug", async info => {
-	winston.silly(`Received DEBUG event from Discord.js!`, { info });
+	if (bot.isReady) winston.silly(`Received DEBUG event from Discord.js!`, { info });
 });
 
 /**
@@ -1564,12 +1566,7 @@ bot.on("emojiUpdate", async (oldEmoji, newEmoji) => {
  * WebSocket Errors
  */
 bot.on("error", async error => {
-	winston.silly(`Received ERROR event from Discord.js!`, { error });
-	try {
-		await bot.events.onEvent("error", error);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a ERROR event! x.x\n`, err);
-	}
+	winston.warn(`Received ERROR event from Discord.js!`, { error });
 });
 
 /**
@@ -1988,10 +1985,5 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
  * WARN
  */
 bot.on("warn", async info => {
-	winston.silly(`Received WARN event from Discord.js!`, { info });
-	try {
-		await bot.events.onEvent("resumed", info);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a WARN event! x.x\n`, err);
-	}
+	winston.warn(`Received WARN event from Discord.js!`, { info });
 });
