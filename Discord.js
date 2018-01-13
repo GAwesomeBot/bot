@@ -22,6 +22,7 @@ const {
 	EventHandler,
 	WorkerManager,
 	ShardUtil,
+	ConversionHandler,
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
@@ -72,6 +73,8 @@ class GABClient extends DJSClient {
 		this.IPC = new ProcessAsPromised();
 
 		this.shard = new ShardUtil(this);
+
+		this.conversionHandler = new ConversionHandler(this);
 	}
 
 	/**

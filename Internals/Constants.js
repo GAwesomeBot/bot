@@ -78,7 +78,6 @@ exports.Text = {
 // Hardcoded names for the child process manager
 exports.WorkerTypes = {
 	MATH: "mathjs",
-	CONVERT: "convert",
 };
 
 exports.WorkerCommands = {
@@ -90,7 +89,6 @@ exports.WorkerCommands = {
 
 exports.WorkerEvents = {
 	RUN_MATH: "runMathCommand",
-	CONVERT_DATA: "convertData",
 };
 
 // Emojis used in menu-like things
