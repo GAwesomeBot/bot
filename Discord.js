@@ -216,6 +216,7 @@ class GABClient extends DJSClient {
 
 	reloadPublicCommand (command, returnError = false) {
 		try {
+			command = this.getPublicCommandName(command);
 			commandModules[command] = reload(`./Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
@@ -225,6 +226,7 @@ class GABClient extends DJSClient {
 
 	reloadSharedCommand (command, returnError = false) {
 		try {
+			command = this.getSharedCommandName(command);
 			sharedModules[command] = reload(`./Commands/Shared/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload shared command "${command}"`, err);

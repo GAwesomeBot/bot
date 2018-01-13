@@ -49,7 +49,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 			switch (type) {
 				case "pm": fail = bot.reloadPrivateCommand(cmd, true); break;
 				case "public": {
-					if (!commands.public.hasOwnProperty(cmd)) {
+					if (!(commands.shared.hasOwnProperty(cmd) || Object.values(commands.public).some(cmdData => cmdData.aliases && cmdData.aliases.includes(cmd.toLowerCase())))) {
 						winston.warn(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
 						return msg.channel.send({
 							embed: {
@@ -63,7 +63,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 					break;
 				}
 				case "shared": {
-					if (!commands.shared.hasOwnProperty(cmd)) {
+					if (!(commands.shared.hasOwnProperty(cmd) || Object.values(commands.shared).some(cmdData => cmdData.aliases && cmdData.aliases.includes(cmd.toLowerCase())))) {
 						winston.warn(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
 						return msg.channel.send({
 							embed: {
