@@ -8,7 +8,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, API
 			let m = await msg.channel.send({
 				embed: {
 					color: Colors.INFO,
-					description: `We're fetching the requested images... Please stand by...`,
+					description: `We're fetching the requested images...`,
 					footer: {
 						text: `This might take a while!`,
 					},
@@ -74,8 +74,8 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, API
 				msg.channel.send({
 					embed: {
 						color: Colors.SOFT_ERR,
-						title: `e621 failed me.. 😥`,
-						description: `Try again, maybe you can find what you wanted. ( ͡° ͜ʖ ͡° )`,
+						title: `Nothing was found 😥`,
+						description: `Try again, perhaps this time you find what you desire. ( ͡° ͜ʖ ͡° )`,
 					},
 				});
 			}
