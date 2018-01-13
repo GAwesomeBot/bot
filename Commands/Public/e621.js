@@ -71,7 +71,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, API
 				await menu.init();
 			} else {
 				winston.verbose(`No "${commandData.name}" results found for "${query}"`);
-				msg.channel.send({
+				m.edit({
 					embed: {
 						color: Colors.SOFT_ERR,
 						title: `Nothing was found 😥`,
