@@ -108,8 +108,8 @@ class StringJS {
 		return s.toLowerCase() === string.toLowerCase();
 	}
 
-	endsWith (...arguments) {
-		let suffixes = Array.prototype.slice.call(arguments, 0);
+	endsWith (...args) {
+		let suffixes = Array.prototype.slice.call(args, 0);
 		for (let i = 0; i < suffixes.length; i++) {
 			let l = this.s.length - suffixes[i].length;
 			if (l >= 0 && this.s.indexOf(suffixes[i], l) === l) return true;
@@ -189,16 +189,16 @@ class StringJS {
 		return new StringJS(s);
 	}
 
-	strip (...arguments) {
+	strip (...args) {
 		let string = this.s;
-		for (let i = 0, n = arguments.length; i < n; i++) {
-			string = string.split(arguments[i]).join("");
+		for (let i = 0, n = args.length; i < n; i++) {
+			string = string.split(args[i]).join("");
 		}
 		return new StringJS(string);
 	}
 
-	startsWith (...arguments) {
-		let prefixes = Array.prototype.slice.call(arguments, 0);
+	startsWith (...args) {
+		let prefixes = Array.prototype.slice.call(args, 0);
 		for (let i = 0; i < prefixes.length; ++i) {
 			if (this.s.lastIndexOf(prefixes[i], 0) === 0) return true;
 		}
