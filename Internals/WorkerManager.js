@@ -32,8 +32,10 @@ class WorkerManager {
 
 	async startWorker () {
 		this.worker = new processAsPromised(fork(`${__dirname}/Worker.js`, [], { env: { SHARD_ID: this.client.shardID } }));
-		this.worker.once("ready", d => {
+		this.worker.once("ready", async d => {
 			winston.info(`Worker for shard ${Number(d.shard)} is up and running!`);
+			const res = await this.safeSend("ensureUsers", { users: Array.from(this.client.users.keys()) });
+			Number(res.users) > 0 && winston.info(`Inserted ${res.users} new users in the database!`);
 		});
 		return this.worker;
 	}

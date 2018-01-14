@@ -50,6 +50,25 @@ p.on("runMathCommand", (data, callback) => {
 });
 //#endregion Math
 
+//#region Users
+p.on("ensureUsers", async (d, callback) => {
+	const { users } = d;
+	const ret = { users: 0 };
+	users.forEach(async user => {
+		try {
+			let find = await Users.findOne({ _id: user });
+			if (!find) {
+				await Users.create(new Users({ _id: user }));
+				ret.users++;
+			}
+		} catch (_) {
+			// 3 bad
+		}
+	});
+	callback(ret);
+});
+//#endregion Users
+
 (async () => {
 	await p.send("ready", { shard: process.env.SHARD_ID });
 })();

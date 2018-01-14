@@ -381,19 +381,22 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	};
 	app.get("/api/users", async (req, res) => {
 		if (!req.query.id) {
-			res.sendStatus(400);
+			res.status(400).json({ message: `Query param "id" is missing` });
 			return;
 		}
-		const usr = await bot.users.fetch(req.query.id, true);
-		if (usr) {
-			db.users.findOrCreate({ _id: usr.id }, async (err, userDocument) => {
-				if (err || !userDocument) {
-					userDocument = {};
-				}
-				res.json(await getUserData(usr, userDocument));
-			});
-		} else {
-			res.sendStatus(400);
+		try {
+			let user = bot.users.get(req.query.id);
+			if (!user) user = await bot.users.fetch(req.query.id, true);
+
+			if (user) {
+				let userDocument = await db.users.findOne({ _id: user.id });
+				if (!userDocument) userDocument = await db.users.create(new Users({ _id: user.id }));
+				res.json(await getUserData(user, userDocument));
+			} else {
+				res.status(400).json({ message: `Invalid user ID provided` });
+			}
+		} catch (_) {
+			res.status(400).json({ message: `Invalid user ID provided` });
 		}
 	});
 	const getExtensionData = async galleryDocument => {
@@ -1180,12 +1183,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					return doc;
 				};
 				const getUserDocument = async () => {
-					const findDocument = await db.users.findOrCreate({ _id: req.user.id });
-					if (findDocument.doc) {
-						return findDocument.doc;
+					let userDocument = await db.users.findOne({ _id: req.user.id });
+					if (userDocument) {
+						return userDocument;
 					} else {
-						res.sendStatus(500);
-						return false;
+						// TODO: Gilbert, decide if this needs to be an error 500 or not!
+						userDocument = await db.users.create(new Users({ _id: req.user.id }));
+						return userDocument;
 					}
 				};
 				const messageOwner = async (usrid, message) => {
@@ -1212,13 +1216,11 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						galleryDocument.points += vote;
 						await galleryDocument.save();
 						await userDocument.save();
-						db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
-							if (!err && ownerUserDocument) {
-								ownerUserDocument.points += vote * 10;
-								ownerUserDocument.save(() => {});
-							}
-							res.sendStatus(200);
-						});
+						let ownerUserDocument = await db.users.findOne({ _id: galleryDocument.owner_id });
+						if (!ownerUserDocument) ownerUserDocument = await db.users.create(new Users({ _id: gallery.owner_id }));
+						ownerUserDocument.points += vote * 10;
+						await ownerUserDocument.save();
+						res.sendStatus(200);
 						break;
 					case "accept":
 						messageOwner(galleryDocument.owner_id, {
@@ -1275,16 +1277,15 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 								description: `${req.body.reason.replace(/\\n/g, "\n")}`,
 							},
 						});
-						db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
-							if (!err && ownerUserDocument) {
-								ownerUserDocument.points -= galleryDocument.points * 10;
-								ownerUserDocument.save(() => {});
-							}
-							galleryDocument.state = "saved";
-							galleryDocument.featured = false;
-							galleryDocument.save(err => {
-								res.sendStatus(err ? 500 : 200);
-							});
+						const ownerUserDocument2 = await db.users.findOne({ _id: galleryDocument.owner_id });
+						if (ownerUserDocument2) {
+								ownerUserDocument2.points -= galleryDocument.points * 10;
+								await ownerUserDocument2.save();
+						}
+						galleryDocument.state = "saved";
+						galleryDocument.featured = false;
+						galleryDocument.save(err => {
+							res.sendStatus(err ? 500 : 200);
 						});
 						break;
 					case "publish":

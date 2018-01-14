@@ -76,7 +76,7 @@ class MessageCreate extends BaseEvent {
 			}
 			const commandFunction = this.bot.getPMCommand(msg.command);
 			if (commandFunction) {
-				const userDocument = (await Users.findOrCreate({ _id: msg.author.id })).doc;
+				const userDocument = await Users.findOne({ _id: msg.author.id });
 				msg.author.userDocument = userDocument;
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
 				try {
@@ -205,10 +205,7 @@ class MessageCreate extends BaseEvent {
 						}
 					}
 					// Get user data
-					const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-						winston.verbose("Failed to find or create user data for message filter violation", { usrid: msg.author.id }, err);
-					});
-					const userDocument = findDocument && findDocument.doc;
+					const userDocument = await Users.findOne({ _id: msg.author.id });
 					if (userDocument) {
 						// Handle this as a violation
 						let violatorRoleID = null;
@@ -241,10 +238,7 @@ class MessageCreate extends BaseEvent {
 						}
 
 						// Get user data
-						const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-							winston.debug(`Failed to find or create user data for message mention filter violation`, { usrid: msg.author.id }, err);
-						});
-						const userDocument = findDocument && findDocument.doc;
+						const userDocument = await Users.findOne({ _id: msg.author.id });
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;
@@ -308,10 +302,7 @@ class MessageCreate extends BaseEvent {
 							// Increment command usage count
 							this.incrementCommandUsage(serverDocument, cmd);
 							// Get User data
-							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-								winston.debug(`Failed to find or create user data for message`, { usrid: msg.author.id }, err);
-							});
-							const userDocument = findDocument && findDocument.doc;
+							const userDocument = await Users.findOne({ _id: msg.author.id });
 							if (userDocument) {
 								// NSFW filter for command suffix
 								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(cmd).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {

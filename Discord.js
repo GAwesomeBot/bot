@@ -1743,6 +1743,16 @@ bot.on("guildUpdate", async (oldGuild, newGuild) => {
  * MESSAGE_CREATE
  */
 bot.on("message", async msg => {
+	if (!msg.author.bot) {
+		try {
+			let find = await Users.findOne({ _id: msg.author.id });
+			if (!find) await Users.create(new Users({ _id: msg.author.id }));
+		} catch (err) {
+			if (!/duplicate key/.test(err.message)) {
+				winston.warn(`Failed to create user document for ${msg.author.username}`);
+			}
+		}
+	}
 	let proctime = process.hrtime();
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });

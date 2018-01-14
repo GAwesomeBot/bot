@@ -85,10 +85,7 @@ class SpamHandler extends BaseEvent {
 						// Deduct 25 GAwesomePoints if necessary
 						if (this.serverDocument.config.commands.points.isEnabled) {
 							// Get user data
-							const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-								winston.debug(`Failed to find user document for spam filter...`, err);
-							});
-							const userDocument = findDocument && findDocument.doc;
+							const userDocument = await Users.findOne({ _id: msg.author.id });
 							if (userDocument) {
 								userDocument.points -= 25;
 								await userDocument.save().catch(err => {
@@ -130,10 +127,7 @@ class SpamHandler extends BaseEvent {
 						}
 
 						// Get user data
-						const findDocument = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-							winston.debug(`Failed to get user document for second time spam filter...`, err);
-						});
-						const userDocument = findDocument && findDocument.doc;
+						const userDocument = await Users.findOne({ _id: msg.author.id });
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;

@@ -1,7 +1,7 @@
 const BaseEvent = require("../BaseEvent");
 
 /**
- * Yes, this is a thing
+ * Username updates per message
  */
 class UsernameHandler extends BaseEvent {
 	requirements (msg) {
@@ -9,7 +9,7 @@ class UsernameHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.userDocument = (await Users.findOrCreate({ _id: msg.author.id })).doc;
+		this.userDocument = await Users.findOne({ _id: msg.author.id });
 	}
 
 	async handle (msg) {

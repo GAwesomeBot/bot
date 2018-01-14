@@ -151,10 +151,10 @@ module.exports = class Trivia {
 					channelDocument.trivia.score++;
 					triviaResponderDocument.score++;
 					if (serverDocument.config.commands.points.isEnabled && svr.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(ch.id)) {
-						const findDocument = await global.Users.findOrCreate({ _id: usr.id }).catch(err => err);
-						if (findDocument.doc) {
-							findDocument.doc.points += 5;
-							findDocument.doc.save();
+						const findDocument = await Users.findOne({ _id: usr.id });
+						if (findDocument) {
+							findDocument.points += 5;
+							await findDocument.save();
 						}
 					}
 				}
