@@ -741,6 +741,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	const deny = (res, isAPI) => isAPI ? res.sendStatus(403) : res.status(403).redirect("/dashboard");
 	// Check authentication for console
 	const checkPerms = (path, id, svrid) => {
+		path = path.replace(`/${svrid}`, "");
 		let section = path;
 		if (path === `/dashboard/management/eval`) section = "eval";
 		else if (path.startsWith(`/dashboard/global-options`)) section = "administration";
@@ -764,6 +765,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		if (req.isAuthenticated()) {
 			const usr = await bot.users.fetch(req.user.id, true);
 			if (usr) {
+				if (!req.params.svrid && req.query.svrid) req.params.svrid = req.query.svrid;
 				if (!req.params.svrid) {
 					if (checkPerms(req.path, usr.id, "maintainer")) {
 						try {
