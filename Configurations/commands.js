@@ -255,7 +255,7 @@ const commands = {
 			aliases: ["jumbo"],
 		},
 		emotes: {
-			usage: ``,
+			usage: `[<custom emoji name> or <custom emoji ID>]`,
 			description: `Shows the current emojis on the server`,
 			defaults: {
 				isEnabled: true,
