@@ -36,15 +36,15 @@ module.exports = () => {
 		class GABMessage extends Message {
 			constructor (client, data, channel) {
 				super(client, data, channel);
-				if (channel.guild) {
-					client.checkCommandTag(data.content, channel.guild.serverDocument || this.client.cache.getSync(this.guild.id))
+				if (channel.guild && client.isReady) {
+					client.checkCommandTag(data.content, channel.guild.serverDocument)
 						.then(object => {
 							Object.defineProperty(this, "_commandObject", {
 								enumerable: false,
 								value: object,
 							});
 						});
-				} else {
+				} else if (client.isReady) {
 					let command = data.content.toLowerCase().trim();
 					let suffix = null;
 					if (command.includes(" ")) {
