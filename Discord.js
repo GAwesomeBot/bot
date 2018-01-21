@@ -151,6 +151,7 @@ class GABClient extends DJSClient {
 			command: null,
 			suffix: null,
 		};
+		if (!serverDocument) return commandObject;
 		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
 			cmdstr = message.substring(this.user.toString().length + 1);
 		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
