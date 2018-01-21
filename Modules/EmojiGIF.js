@@ -1,6 +1,5 @@
 const { get } = require("snekfetch");
 const { GifCodec } = require("gifwrap");
-const Jimp = require("jimp");
 const DJSUtil = require("discord.js/src/util/Util");
 
 const codec = new GifCodec();
