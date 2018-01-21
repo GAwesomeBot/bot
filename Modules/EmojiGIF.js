@@ -33,29 +33,48 @@ module.exports = async emojis => {
 		const frames = decodedGif.frames;
 
 		frames.forEach(frame => {
-			const jimp = new Jimp(1, 1);
-			jimp.bitmap = frame.bitmap;
-			jimp.resize(128, AUTO);
-			frame.bitmap = jimp.bitmap;
+			let scaleFactor;
+			switch (frame.bitmap.height) {
+				case 12: {
+					scaleFactor = 10;
+					break;
+				}
+				case 13:
+				case 14:
+				case 15:
+				case 16: {
+					scaleFactor = 8;
+					break;
+				}
+				case 32:
+				case 33:
+				case 34: {
+					scaleFactor = 4;
+					break;
+				}
+				case 64:
+				case 65: {
+					scaleFactor = 2;
+					break;
+				}
+				default: {
+					scaleFactor = 2;
+				}
+			}
+			frame.scale(scaleFactor);
 		});
 
-		GifUtil.quantizeDekker(frames);
-
-		const fileUUID = uuid();
-
-		await GifUtil.write(`./Temp/${fileUUID}.gif`, frames, decodedGif);
-		finishedGifs.push(fileUUID);
+		const buffer = await codec.encodeGif(frames, decodedGif);
+		finishedGifs.push(buffer.buffer);
+		// TODO: If we'll do more than 1 gif per frame, remove this
+		break;
 	}
 
 	/**
 	 * After resize, we want to take all gifs, and make a new frame with all the other frames combined into one
 	 * So you'd have one gif frame with `n` different gifs on it
-	 * That will suck, so for now you don't get anything.
-	 * The end idea is to give people a jumbo gif with all `n` animated emojis, which will be weird for emojis with less or more gif states
+	 * The end idea is to give people a jumbo gif with all `n` animated emojis, which will be weird for emojis with less or more gif frames
 	 * Maybe limit it to only one animated gif?
 	 */
-	return {
-		buffer: await require("fs-nextra").readFile(`./Temp/${finishedGifs[0]}.gif`),
-		delete: () => require("fs-nextra").remove(`./Temp/${finishedGifs[0]}.gif`),
-	};
+	return finishedGifs[0];
 };

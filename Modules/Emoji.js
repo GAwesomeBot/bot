@@ -21,9 +21,9 @@ module.exports = async params => {
 		if (emote) {
 			let discordEmote = DJSUtil.parseEmoji(emote);
 			let otherEmoji = /\d{17,19}/.test(emote);
-			if (!discordEmote.animated && discordEmote.id) {
+			if (discordEmote && !discordEmote.animated && discordEmote.id) {
 				return { type: `discordCustomEmoji`, url: `https://cdn.discordapp.com/emojis/${discordEmote.id}.png` };
-			} else if (discordEmote.animated) {
+			} else if (discordEmote && discordEmote.animated) {
 				return null;
 			} else if (otherEmoji) {
 				return { type: `discordCustomEmoji`, url: `https://cdn.discordapp.com/emojis/${emote}.png` };

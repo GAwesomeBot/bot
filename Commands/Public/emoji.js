@@ -1,7 +1,6 @@
 const { MessageAttachment } = require("discord.js");
 const Emoji = require("../../Modules/Emoji");
-const reload = require("require-reload")(require);
-const EmojiGIF = reload("../../Modules/EmojiGIF");
+const EmojiGIF = require("../../Modules/EmojiGIF");
 const DJSUtil = require("discord.js/src/util/Util");
 const { get } = require("snekfetch");
 
@@ -29,8 +28,8 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		let every = true;
 		for (const param of animated) {
 			const parsed = DJSUtil.parseEmoji(param);
-			if (parsed.animated && parsed.id) {
-				const res = await checkEmoji(param);
+			if (parsed && parsed.animated && parsed.id) {
+				const res = await checkEmoji(parsed.id);
 				if (!res) {
 					every = false;
 					break;
@@ -52,12 +51,11 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				if (b) {
 					await m.delete();
 					try {
-						await msg.channel.send({ files: [new MessageAttachment(b.buffer, "jumbo.gif")] });
+						await msg.channel.send({ files: [new MessageAttachment(b, "jumbo.gif")] });
 					} catch (_) {
 						console.log(_);
 						// TODO: Figure out a way to send the image, either via imgur or other means
 					}
-					b.delete();
 				} else {
 					m.edit({
 						embed: {
