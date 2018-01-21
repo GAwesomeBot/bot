@@ -37,7 +37,7 @@ module.exports = () => {
 			constructor (client, data, channel) {
 				super(client, data, channel);
 				if (channel.guild) {
-					client.checkCommandTag(data.content, channel.guild.serverDocument)
+					client.checkCommandTag(data.content, channel.guild.serverDocument || this.client.cache.getSync(this.guild.id))
 						.then(object => {
 							Object.defineProperty(this, "_commandObject", {
 								enumerable: false,
