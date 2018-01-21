@@ -11,7 +11,7 @@ module.exports = async emojis => {
 	const getEmoji = async emoji => {
 		let	emoji2 = DJSUtil.parseEmoji(emoji);
 		if (emoji2 && emoji2.animated) {
-			const { body } = await get(`https://cdn.discordapp.com/emojis/${emoji2}.gif`);
+			const { body } = await get(`https://cdn.discordapp.com/emojis/${emoji2.id}.gif`);
 			return body;
 		} else if (/^\d{17,19}$/.test(emoji)) {
 			const { body } = await get(`https://cdn.discordapp.com/emojis/${emoji}.gif`);
