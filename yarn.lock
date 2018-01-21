@@ -577,10 +577,10 @@ destroy@~1.0.4:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/a22b856494a8c599c9d1acea4edb8a210c1a12d1"
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/93e083da4fd8a936d534abb6d16e42f37837da4d"
   dependencies:
     pako "^1.0.0"
-    prism-media "^0.0.2"
+    prism-media "github:hydrabolt/prism-media#indev"
     snekfetch "^3.5.0"
     tweetnacl "^1.0.0"
     ws "^3.3.1"
@@ -1975,9 +1975,9 @@ prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
 
-prism-media@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/prism-media/-/prism-media-0.0.2.tgz#aa917b084576c4df6488e4ea8e7d6d44aed4b411"
+"prism-media@github:hydrabolt/prism-media#indev":
+  version "0.1.0"
+  resolved "https://codeload.github.com/hydrabolt/prism-media/tar.gz/64116266d88074ff3b4e6b6d6d5dcdb9e6598b65"
 
 process-as-promised@^1.0.1:
   version "1.0.1"
@@ -2540,9 +2540,9 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^3.3.7:
-  version "3.3.7"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.7.tgz#28463e7c7451f89061d2b235e30925bf5625e14d"
+uglify-js@^3.3.8:
+  version "3.3.8"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.8.tgz#51e9a5db73afb53ac98603d08224edcd0be45fd8"
   dependencies:
     commander "~2.13.0"
     source-map "~0.6.1"

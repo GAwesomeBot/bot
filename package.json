@@ -69,6 +69,6 @@
   },
   "devDependencies": {
     "eslint": "^4.16.0",
-    "uglify-js": "^3.3.7"
+    "uglify-js": "^3.3.8"
   }
 }
