@@ -55,7 +55,8 @@ module.exports = async emojis => {
 					break;
 				}
 				case 100:
-				case 112: {
+				case 112:
+				case 128: {
 					scaleFactor = 1;
 					break;
 				}
