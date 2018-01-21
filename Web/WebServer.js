@@ -744,6 +744,8 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		path = path.replace(`/${svrid}`, "");
 		let section = path;
 		if (path === `/dashboard/management/eval`) section = "eval";
+		else if (path.startsWith(`/dashboard/maintainer`)) return configJSON.maintainers.includes(id);
+		else if (path.startsWith(`/dashboard/servers`)) return configJSON.maintainers.includes(id);
 		else if (path.startsWith(`/dashboard/global-options`)) section = "administration";
 		else if (path.startsWith(`/dashboard/management`)) section = "management";
 		else if (path.startsWith(`/dashboard`) && svrid !== "maintainer") section = "sudoMode";
