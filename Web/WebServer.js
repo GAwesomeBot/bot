@@ -1929,7 +1929,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						db.servers.findOne({ _id: req.user.guilds[i].id }, (err, serverDocument) => {
 							if (!err && serverDocument) {
 								const member = svr.members[usr.id];
-								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3 || checkPerms(req.path, usr.id, "dashboard")) {
+								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3 || checkPerms(req.path, usr.id, "/dashboard")) {
 									data.isAdmin = true;
 								}
 							}
