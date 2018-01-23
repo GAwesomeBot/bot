@@ -17,14 +17,21 @@ class ConversionHandler {
 	}
 
 	async init () {
-		if (await fsn.stat("./Temp/currency.json")) {
+		let jsonExists = false;
+		try {
+			await fsn.stat(`./Temp/currency.json`);
+			jsonExists = true;
+		} catch (_) {
+			jsonExists = false;
+		}
+		if (jsonExists) {
 			const res = await fsn.readJSON("./Temp/currency.json", { encoding: "utf8" });
 			money.rates = res.rates;
 			money.base = res.base;
 			this.lastUpdated = res.date;
 			this.canConvertMoney = true;
 			this.initTimer();
-		} else if (openExchangeRatesKey) {
+		} else if (openExchangeRatesKey && this.client.shard.id === 0) {
 			try {
 				let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
 				if (res.body && res.body.rates && res.body.base) {
@@ -37,7 +44,20 @@ class ConversionHandler {
 				}
 				this.initTimer();
 			} catch (_) {
-				clearInterval(this.moneyTimer);
+				this.client.clearInterval(this.moneyTimer);
+				this.moneyTimer = null;
+				this.canConvertMoney = false;
+			}
+		} else {
+			try {
+				const res = await fsn.readJSON("./Temp/currency.json", { encoding: "utf8" });
+				money.rates = res.rates;
+				money.base = res.base;
+				this.lastUpdated = res.date;
+				this.canConvertMoney = true;
+				this.initTimer();
+			} catch (_) {
+				this.client.clearInterval(this.moneyTimer);
 				this.moneyTimer = null;
 				this.canConvertMoney = false;
 			}
@@ -47,7 +67,7 @@ class ConversionHandler {
 	initTimer () {
 		this.moneyTimer = this.client.setInterval(async () => {
 			try {
-				if (openExchangeRatesKey) {
+				if (openExchangeRatesKey && this.client.shard.id === 0) {
 					let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
 					if (res.body && res.body.rates && res.body.base) {
 						money.rates = res.body.rates;
@@ -55,16 +75,25 @@ class ConversionHandler {
 						this.lastUpdated = Date.now();
 						await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base, date: `${this.lastUpdated}` });
 					} else {
-						clearInterval(this.moneyTimer);
+						this.client.clearInterval(this.moneyTimer);
 						this.moneyTimer = null;
 						this.canConvertMoney = false;
 						this.lastUpdated = null;
+					}
+				} else if (this.client.shard.id !== 0) {
+					try {
+						const res = await fsn.readJSON("./Temp/currency.json", { encoding: "utf8" });
+						money.rates = res.rates;
+						money.base = res.base;
+						this.lastUpdated = res.date;
+					} catch (_) {
+						throw new Error();
 					}
 				} else {
 					throw new Error();
 				}
 			} catch (_) {
-				clearInterval(this.moneyTimer);
+				this.client.clearInterval(this.moneyTimer);
 				this.moneyTimer = null;
 				this.canConvertMoney = false;
 			}
