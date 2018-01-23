@@ -1,5 +1,5 @@
 /**
- * Script to migrate 4.0 GAB databases to 4.1
+ * Module that is used in the migration of GAB 4.0 databases to GAB 4.1
  */
 const Driver = require("../Database/Driver");
 const { databaseURL } = require("../Configurations/config");
@@ -7,7 +7,7 @@ const winston = new (require("./Console"))("MIGRATION");
 const { public } = require("../Configurations/commands");
 
 module.exports = () => {
-	winston.info(`Preparing to migrate "${databaseURL}" to GAB 4.1`);
+	winston.info(`Preparing to migrate "${databaseURL}" to GAB 4.1...`);
 
 	const MigrateChatterBot = async () => {
 		let serverDocuments = await Servers.find({ "config.chatterbot": { $in: [true, false] } });
@@ -18,9 +18,9 @@ module.exports = () => {
 				disabled_channel_ids: [],
 			};
 			await serverDocument.save().catch(err => {
-				winston.warn(`Failed to save migration for server ${serverDocument._id}'s chatterbot configuration:`, err);
+				winston.warn(`Failed to save migration for server "${serverDocument._id}"'s chatterbot configuration: `, err);
 			}).then(() => {
-				winston.debug(`Successfully migrated ${serverDocument._id} chatterbot configuration.`);
+				winston.debug(`Successfully migrated "${serverDocument._id}" chatterbot configuration.`);
 			});
 		}
 	};
@@ -30,52 +30,53 @@ module.exports = () => {
 		for (const serverDocument of serverDocuments) {
 			serverDocument.config.ban_gif = "https://i.imgur.com/3QPLumg.gif";
 			await serverDocument.save().catch(err => {
-				winston.warn(`Failed to save migration for server ${serverDocument._id}'s chatterbot configuration:`, err);
+				winston.warn(`Failed to save migration for server "${serverDocument._id}"'s ban gif configuration: `, err);
 			}).then(() => {
-				winston.debug(`Successfully migrated ${serverDocument._id} ban gif configuration.`);
+				winston.debug(`Successfully migrated "${serverDocument._id}" ban gif configuration.`);
 			});
 		}
 	};
-	/* eslint-disable no-unused-vars */
-	const MigrateCommands = async () => {
+
+	const MigrateDocumentsAndCommands = async () => {
 		let serverDocuments = await Servers.find({});
 		for (const serverDocument of serverDocuments) {
 			let allCommandsKey = Object.keys(public);
-			const serverDocCommandKeys = Object.keys(serverDocument.config.commands.toJSON());
+			let defaultCommandObject = (adminLevel, isEnabled) => ({ isEnabled, admin_level: adminLevel, disabled_channel_ids: [] });
 
-			for (const key of serverDocCommandKeys) {
-				if (!allCommandsKey.includes(key)) delete serverDocument.config.commands[key];
+			const objectServerDocument = await Servers.findOne({ _id: serverDocument._id }).lean();
+			delete objectServerDocument.__v;
+			if (!Array.isArray(objectServerDocument.logs)) objectServerDocument.logs = [];
+
+			const oldCommands = Array.from(
+				Object.keys(objectServerDocument.config.commands)
+					.filter(c => !allCommandsKey.includes(c))
+			);
+
+			if (oldCommands.length) for (const cmd of oldCommands) delete objectServerDocument.config.commands[cmd];
+
+			for (const cmd of allCommandsKey) {
+				if (objectServerDocument.config.commands[cmd]) continue;
+				const newCommand = defaultCommandObject(public[cmd].defaults.adminLevel, public[cmd].defaults.isEnabled);
+				objectServerDocument.config.commands[cmd] = newCommand;
 			}
 
-			if (serverDocument._id === "WHO CARES MUM") {
-				console.log(serverDocument.config.commands.emoji);
-			}
-
-			for (const cmd of allCommandsKey.filter(c => !serverDocCommandKeys.includes(c))) {
-				serverDocument._id === "WHO CARES MUM" && console.log(cmd);
-			}
-
-			// let defaultCommandObject = (adminLevel, isEnabled) => ({ isEnabled, admin_level: adminLevel, disabled_channel_ids: [] });
-			// for (const cmd of Object.keys(public)) {
-			// 	if (serverCommands[cmd]) {
-			// 		serverDocument._id === "237315945498935296" && console.log("m8", cmd, serverCommands[cmd]);
-			// 		continue;
-			// 	}
-			// 	const newCommand = defaultCommandObject(public[cmd].defaults.adminLevel, public[cmd].defaults.isEnabled);
-			// 	console.log(cmd, newCommand);
-			// }
+			await Servers.deleteOne({ _id: serverDocument._id });
+			const newDocument = new Servers(objectServerDocument);
+			await newDocument.save().catch(err => {
+				winston.warn(`Failed to save migration for server "${newDocument._id}"'s configuration: `, err);
+			}).then(() => {
+				winston.debug(`Successfully migrated "${newDocument._id}" configuration(s).`);
+			});
 		}
 	};
-	/* eslint-enable no-unused-vars */
-
-	winston.info(`Updating data...`);
 
 	Driver.initialize(databaseURL).catch(err => {
 		winston.error(`Failed to connect to the database!\n`, err);
 		process.exit(-1);
 	}).then(() => {
-		Promise.all([MigrateChatterBot(), AddBanGif()]).then(() => {
-			winston.info(`Successfully migrated ${databaseURL} to 4.1`);
+		winston.info(`Updating data...`);
+		Promise.all([MigrateChatterBot(), AddBanGif(), MigrateDocumentsAndCommands()]).then(() => {
+			winston.info(`Successfully migrated "${databaseURL}" to 4.1! You may now launch GAwesomeBot without the "--migrate" flag.`);
 			process.exit(0);
 		});
 	});
