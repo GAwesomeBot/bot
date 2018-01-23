@@ -577,10 +577,10 @@ destroy@~1.0.4:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/93e083da4fd8a936d534abb6d16e42f37837da4d"
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/5352e28700e51f1148463f350fe5694124a3c270"
   dependencies:
     pako "^1.0.0"
-    prism-media "github:hydrabolt/prism-media#indev"
+    prism-media "github:hydrabolt/prism-media"
     snekfetch "^3.5.0"
     tweetnacl "^1.0.0"
     ws "^3.3.1"
@@ -610,8 +610,8 @@ ejs@*:
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.7.tgz#cc872c168880ae3c7189762fd5ffc00896c9518a"
 
 encodeurl@~1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-1.0.1.tgz#79e3d58655346909fe6f0f45a5de68103b294d20"
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-1.0.2.tgz#ad3ff4c86ec2d029322f5a02c3a9a606c95b3f59"
 
 encoding@^0.1.11:
   version "0.1.12"
@@ -1251,8 +1251,8 @@ is-promise@^2.1.0:
   resolved "https://registry.yarnpkg.com/is-promise/-/is-promise-2.1.0.tgz#79a2a9ece7f096e80f36d2b2f3bc16c1ff4bf3fa"
 
 is-resolvable@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/is-resolvable/-/is-resolvable-1.0.1.tgz#acca1cd36dbe44b974b924321555a70ba03b1cf4"
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/is-resolvable/-/is-resolvable-1.1.0.tgz#fb18f87ce1feb925169c9a407c19318a3206ed88"
 
 is-stream@^1.0.1, is-stream@^1.1.0:
   version "1.1.0"
@@ -1975,9 +1975,9 @@ prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
 
-"prism-media@github:hydrabolt/prism-media#indev":
+"prism-media@github:hydrabolt/prism-media":
   version "0.1.0"
-  resolved "https://codeload.github.com/hydrabolt/prism-media/tar.gz/64116266d88074ff3b4e6b6d6d5dcdb9e6598b65"
+  resolved "https://codeload.github.com/hydrabolt/prism-media/tar.gz/f6737178d10665934669ab2ff3da23a5ecc23e8c"
 
 process-as-promised@^1.0.1:
   version "1.0.1"
