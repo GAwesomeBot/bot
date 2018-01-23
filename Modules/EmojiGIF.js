@@ -30,39 +30,24 @@ module.exports = async emojis => {
 		const frames = decodedGif.frames;
 
 		frames.forEach(frame => {
-			let scaleFactor;
-			switch (frame.bitmap.height) {
-				case 12: {
-					scaleFactor = 10;
-					break;
-				}
-				case 13:
-				case 14:
-				case 15:
-				case 16: {
-					scaleFactor = 8;
-					break;
-				}
-				case 32:
-				case 33:
-				case 34: {
-					scaleFactor = 4;
-					break;
-				}
-				case 64:
-				case 65: {
-					scaleFactor = 2;
-					break;
-				}
-				case 100:
-				case 112:
-				case 128: {
-					scaleFactor = 1;
-					break;
-				}
-				default: {
-					scaleFactor = 2;
-				}
+			let scaleFactor, height = frame.bitmap.height;
+			if (height >= 100) {
+				scaleFactor = 1;
+			} else if (height >= 60) {
+				scaleFactor = 2;
+			} else if (height >= 30) {
+				scaleFactor = 4;
+			} else if (height >= 20) {
+				scaleFactor = 6;
+			} else if (height >= 14) {
+				scaleFactor = 8;
+			} else if (height >= 10) {
+				scaleFactor = 10;
+			} else {
+				/**
+				 * If your gif is this small, please. Learn to gif.
+				 */
+				scaleFactor = 12;
 			}
 			frame.scale(scaleFactor);
 		});
