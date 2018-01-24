@@ -38,6 +38,7 @@
     "jimp": "*",
     "mathjs": "^3.20.1",
     "moment": "^2.20.1",
+    "moment-timezone": "^0.5.14",
     "money": "^0.2.0",
     "mongoose": "^4.13.9",
     "mongoose-findorcreate": "*",
