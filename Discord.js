@@ -25,6 +25,8 @@ const {
 	ConversionHandler,
 } = require("./Internals/index");
 
+StructureExtender();
+
 const configJS = require("./Configurations/config.js");
 global.configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
@@ -151,7 +153,7 @@ class GABClient extends DJSClient {
 			command: null,
 			suffix: null,
 		};
-		if (!serverDocument) return commandObject;
+		if (!serverDocument) return Promise.resolve(commandObject);
 		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
 			cmdstr = message.substring(this.user.toString().length + 1);
 		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
@@ -1105,8 +1107,6 @@ class GABClient extends DJSClient {
 		return process.env.CLIENT_TOKEN;
 	}
 }
-
-StructureExtender();
 
 const bot = new GABClient({
 	shardId: Number(process.env.SHARD_ID),
