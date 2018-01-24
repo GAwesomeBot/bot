@@ -26,7 +26,7 @@
 			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-role_id": newAdminRole.val(),
 					"new-level": newAdminLevel.val()
@@ -75,7 +75,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+					<form id="form" action="<%= currentPage %>" method="post">
 						<div class="field" style="overflow-x: scroll;">
 							<% if(configData.admins.length>0) { %>
 							<table class="table is-fullwidth">

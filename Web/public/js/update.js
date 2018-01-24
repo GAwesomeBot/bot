@@ -212,7 +212,7 @@ $(document).ready(function() {
 				state++;
 				break;
 			case 2:
-				const post = () => $.post("/dashboard/management/version?svrid=maintainer", () => {
+				const post = () => $.post("/dashboard/maintainer/management/version", () => {
 					const socket = io('/dashboard/management/version');
 
 					socket.on("update", data => {

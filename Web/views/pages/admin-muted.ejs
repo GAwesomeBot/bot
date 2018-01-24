@@ -23,7 +23,7 @@
 		if(newMutedMember.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-member": newMutedMember.val(),
 					"new-channel_id": newMutedChannel.val()

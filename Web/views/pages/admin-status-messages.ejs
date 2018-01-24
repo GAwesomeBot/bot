@@ -22,7 +22,7 @@
 					data[newMessageId] = newMessage.val()
 					$.ajax({
 						type: 'POST',
-						url: '<%= currentPage %>?svrid=<%= serverData.id %>',
+						url: '<%= currentPage %>',
 						data: data,
 						success: function () {
 							saveFormState()
@@ -41,7 +41,7 @@
 					toSend[data] = 'on'
 					$.ajax({
 						type: 'POST',
-						url: '<%= currentPage %>?svrid=<%= serverData.id %>',
+						url: '<%= currentPage %>',
 						data: toSend,
 						success: function () {
 							messageNode.remove()
