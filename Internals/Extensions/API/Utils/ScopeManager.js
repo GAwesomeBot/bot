@@ -41,10 +41,10 @@ module.exports = class ScopeManager {
 
 	/**
 	 * Checks if the extension has sufficient scopes and the bot has permission to execute a function.
-	 * @param {string} scope - The scope name that is checked
+	 * @param {String} scope - The scope name that is checked
+	 * @param {String} [category] - The optional category that the scope name may be a part of
 	 * @param {Discord.GuildChannel} [channel] - The channel to fetch the bot permissions from, null if none
-	 * @param {string} [category] - The optional category that the scope name may be a part of
-	 * @returns {boolean} True if the extension can successfully execute any functions that requires the given scope
+	 * @returns {Boolean} True if the extension can successfully execute any functions that requires the given scope
 	 */
 	check (scope, category, channel) {
 		let scopes = this.scopes;
