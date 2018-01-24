@@ -483,15 +483,11 @@ class MessageCreate extends BaseEvent {
 	async chatterPrompt (userOrUserID, prompt) {
 		let res;
 		try {
-			res = await snekfetch.get(`http://api.program-o.com/v2/chatbot/`).query({
-				bot_id: 6,
-				say: encodeURIComponent(prompt),
-				convo_id: userOrUserID.id ? userOrUserID.id : userOrUserID,
-				format: "json",
-			}).set({
-				Accept: "application/json",
-				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
-			});
+			res = await snekfetch.get(`http://api.program-o.com/v2/chatbot/?bot_id=6&say=${encodeURIComponent(prompt)}&convo_id=${userOrUserID.id ? userOrUserID.id : userOrUserID}&format=json`)
+				.set({
+					Accept: "application/json",
+					"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+				});
 		} catch (err) {
 			throw err;
 		}
