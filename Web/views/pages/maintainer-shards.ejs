@@ -6,57 +6,101 @@
     <script>
         let isPerformingAction = false;
         function shutdown() {
-        	if (!isPerformingAction && confirm("Are you sure you want to shut GAwesomeBot down? GAwesomeBot will not be able to respond to Discord events while off.")) {
-        		isPerformingAction = true;
-        		$("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { shutdown: "master" }).done(() => {
-                  $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down... Goodbye!");
-                  const redirect = () => window.location.replace("https://gawesomebot.com");
-                  setTimeout(redirect, 2000);
-                });
-            }
+          swal("Are you sure?", "GAwesomeBot will not be able to respond to Discord events while off.", {
+            dangerMode: true,
+            buttons: [true, {
+              text: "Shutdown",
+              closeModal: false,
+            }],
+          }).then(res => {
+            if (isPerformingAction || !res) return;
+            isPerformingAction = true;
+            $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down...");
+            $.post("/dashboard/management/shards?svrid=maintainer", { shutdown: "master" }).done(() => {
+              $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down... Goodbye!");
+              swal.stopLoading();
+              swal("Success!", "You will be redirected shortly.", "success");
+              const redirect = () => window.location.replace("https://gawesomebot.com");
+              setTimeout(redirect, 2000);
+            });
+          });
         }
         function restart() {
-        	if (!isPerformingAction && confirm("Are you sure you want to restart GAwesomeBot? This will restart all shards, but keep the master alive.")) {
+        	swal("Are you sure?", "This will restart all shards, but keep the master alive.", {
+        		dangerMode: true,
+                buttons: [true, {
+        			text: "Restart",
+                    closeModal: false,
+                }],
+            }).then(res => {
+        	    if (isPerformingAction || !res) return;
         	    isPerformingAction = true;
                 $("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting...");
         		$.post("/dashboard/management/shards?svrid=maintainer", { restart: "master" }).done(() => {
         			$("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting... Be right back!");
+        			swal.stopLoading();
+        			swal("Success!", "You will be redirected shortly.", "success");
         			const redirect = () => Turbolinks.visit("");
         			setTimeout(redirect, 5000);
         		});
-        	}
+            });
         }
         function freezeShard(id) {
-        	if (!isPerformingAction && confirm("Are you sure you want to freeze this shard? You will not be able to unfreeze this shard until it is restarted.")) {
+            swal("Are you sure?", "You will not be able to unfreeze this shard until it is restarted.", {
+                dangerMode: true,
+                buttons: [true, {
+                    text: "Freeze",
+                    closeModal: false,
+                }],
+            }).then(res => {
+        	    if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#freeze-${id}`).html("Freezing...");
                 $.post("/dashboard/management/shards?svrid=maintainer", { "freeze-shard": id }).done(() => {
                 	$(`#freeze-${id}`).parent().html(`<a id="restart-${id}" class="card-footer-item card-footer-item-danger" href="javascript:restartShard(${id})">Restart</a>`);
                 	$(`#shard-header-${id}`).append(" (Frozen)");
+                	swal.stopLoading();
+                	swal("Success!", "This shard has been frozen successfully.", "success");
                 	isPerformingAction = false;
                 });
-            }
+            });
         }
         function resetShard(id) {
-        	if (!isPerformingAction && confirm("Are you sure you want to reset this shard? This shard will reinitialize without restarting, which can cause conflicts and unexpected behavior.")) {
+            swal("Are you sure?", "This shard will reinitialize without restarting, which can cause conflicts and unexpected behavior.", {
+                dangerMode: true,
+                buttons: [true, {
+                    text: "Reset",
+                    closeModal: false,
+                }],
+            }).then(res => {
+                if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#reset-${id}`).html("Resetting...");
                 $.post("/dashboard/management/shards?svrid=maintainer", { "reset-shard": id }).done(() => {
                 	$(`#reset-${id}`).html("Reset");
+                	swal("Success!", "This shard is now being reinitialized.", "success");
                 	isPerformingAction = false;
                 });
-            }
+            });
         }
         function restartShard(id) {
-        	if (!isPerformingAction && confirm("Are you sure you want to restart this shard? This shard will not be able to respond to Discord events while restarting. Restarting a single shard can have unintended effects.")) {
+            swal("Are you sure?", "This shard will not be able to respond to Discord events while restarting. Restarting a single shard can have unintended effects.", {
+                dangerMode: true,
+                buttons: [true, {
+                    text: "Restart",
+                    closeModal: false,
+                }],
+            }).then(res => {
+                if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#restart-${id}`).html("Restarting...");
                 $.post("/dashboard/management/shards?svrid=maintainer", { "restart-shard": id }).done(() => {
                 	$(`#restart-${id}`).parent().html(`<div class="card-footer-item" style="cursor: default; user-select: none;">See you soon!</div>`);
+                	swal.stopLoading();
+                	swal("Success!", "This shard is now restarting.", "success");
                 	isPerformingAction = false;
                 });
-            }
+            });
         }
 
         function dismissWarning(warn, id) {

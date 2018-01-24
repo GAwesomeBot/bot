@@ -57,7 +57,7 @@
 							<% } else if(!serverData[i].isAdmin) { %>
 								<a class="media modal-button" data-target="#not-admin-modal">
 							<% } else { %>
-								<a class="media" href="/dashboard/overview?svrid=<%= serverData[i].id %>">
+								<a class="media" href="/dashboard/<%= serverData[i].id %>/<%= serverData[i].id === "maintainer" ? "maintainer" : "overview"%>">
 							<% } %>
 								<figure class="media-left">
 									<p class="image server-icon is-48x48">

@@ -128,6 +128,7 @@ class Ready extends BaseEvent {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
 		const clearMessageCount = () => {
+			winston.debug("Good new 24 hours! Clearing message counters.");
 			Servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
 		this.bot.setInterval(clearMessageCount, 86400000);
@@ -191,6 +192,9 @@ class Ready extends BaseEvent {
 	 */
 	async startMessageOfTheDay () {
 		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
 			"config.message_of_the_day.isEnabled": true,
 		}).exec().catch(err => {
 			winston.warn(`Failed to find server data for message of the day <.<\n`, err);
@@ -214,7 +218,11 @@ class Ready extends BaseEvent {
 	 * Totally not stalking 👀 - Vlad
 	 */
 	async checkStreamers () {
-		const serverDocuments = await Servers.find({}).exec().catch(err => {
+		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
+		}).exec().catch(err => {
 			winston.warn(`Failed to get server documents for streamers (-_-*)`, err);
 		});
 		winston.debug("Checking for streamers in servers.");
@@ -252,11 +260,15 @@ class Ready extends BaseEvent {
 	 * Start RSS streaming timers
 	 */
 	async startStreamingRSS () {
-		const serverDocuments = await Servers.find({}).exec().catch(err => {
+		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
+		}).exec().catch(err => {
 			winston.warn(`Failed to get servers from db (-_-*)`, err);
 		});
-		winston.debug("Starting streaming RSS timers for servers.");
 		if (serverDocuments) {
+			winston.debug("Starting streaming RSS timers for servers.");
 			const sendStreamingRSSToServer = async i => {
 				if (i < serverDocuments.length) {
 					const serverDocument = serverDocuments[i];
@@ -294,6 +306,9 @@ class Ready extends BaseEvent {
 	async setGiveaways () {
 		const promiseArray = [];
 		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
 			channels: {
 				$elemMatch: {
 					"giveaway.isOngoing": true,
@@ -302,8 +317,8 @@ class Ready extends BaseEvent {
 		}).exec().catch(err => {
 			winston.warn("Failed to get giveaways from db (-_-*)", err);
 		});
-		winston.debug("Setting existing giveaways for servers.");
 		if (serverDocuments) {
+			winston.debug("Setting existing giveaways for servers.");
 			serverDocuments.forEach(serverDocument => {
 				const svr = this.bot.guilds.get(serverDocument._id);
 				if (svr) {
@@ -327,11 +342,20 @@ class Ready extends BaseEvent {
 	 */
 	async setCountdowns () {
 		const promiseArray = [];
-		const serverDocuments = await Servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).exec().catch(err => {
+		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
+			"config.countdown_data": {
+				$not: {
+					$size: 0,
+				},
+			},
+		}).exec().catch(err => {
 			winston.warn("Failed to get countdowns from db (-_-*)", err);
 		});
-		winston.debug("Setting existing countdowns in servers.");
 		if (serverDocuments) {
+			winston.debug("Setting existing countdowns in servers.");
 			for (let i = 0; i < serverDocuments.length; i++) {
 				winston.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id });
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
@@ -346,8 +370,8 @@ class Ready extends BaseEvent {
 	 * Set existing reminders to send message when they expire
 	 */
 	async setReminders () {
-		const promiseArray = [];
 		if (this.bot.shardID !== "0") return;
+		const promiseArray = [];
 		const userDocuments = await Users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});

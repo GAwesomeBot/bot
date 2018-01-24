@@ -1,7 +1,7 @@
 const { Colors, PageEmojis } = require("../../Internals/Constants");
 
 class PaginatedEmbed {
-	constructor (msg, descriptions = [], embed = null) {
+	constructor (msg, descriptions = [], embed = null, images = [], fields = []) {
 		this.client = msg.client;
 		this.originalMsg = msg;
 
@@ -18,6 +18,8 @@ class PaginatedEmbed {
 			description: `{description}`,
 			footer: `Embed {current description} out of {total descriptions} embeds`,
 		}, embed);
+		this.images = images;
+		this.fields = fields;
 	}
 
 	async init (timeout = 300000) {
@@ -36,15 +38,19 @@ class PaginatedEmbed {
 				color: this.embedTemplate.color,
 				author: this.embedTemplate.author || {},
 				title: this.embedTemplate.title.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
-				description: this.embedTemplate.description.format({ description: this._currentDescription }),
+				description: this.embedTemplate.description.format({ description: this._currentPage }),
 				footer: {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
 				},
+				image: {
+					url: this.images[this.currentDescription] || null,
+				},
+				fields: this.fields[this.currentDescription] || [],
 			},
 		});
 	}
 
-	get _currentDescription () {
+	get _currentPage () {
 		return this.descriptions[this.currentDescription];
 	}
 
@@ -65,10 +71,10 @@ class PaginatedEmbed {
 
 	async _handleStop () {
 		try {
-			await this.msg.clearReactions();
+			await this.msg.reactions.removeAll();
 		} catch (err) {
 			winston.verbose(`Failed to clear all reactions for paginated menu, will remove only the bots reaction!`, { err: err.name });
-			this.msg.reactions.forEach(r => r.remove());
+			this.msg.reactions.forEach(r => r.users.remove());
 		}
 		// Null out the collector
 		this.collector = null;
@@ -95,7 +101,7 @@ class PaginatedEmbed {
 
 	async removeUserReaction (reaction, user) {
 		try {
-			await reaction.remove(user);
+			await reaction.users.remove(user);
 		} catch (err) {
 			winston.verbose(`Failed to remove the reaction for user!`, { user, message: reaction.message.id, err: err.name });
 		}
@@ -107,10 +113,14 @@ class PaginatedEmbed {
 				color: this.embedTemplate.color,
 				author: this.embedTemplate.author || {},
 				title: this.embedTemplate.title.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
-				description: this.embedTemplate.description.format({ description: this._currentDescription }),
+				description: this.embedTemplate.description.format({ description: this._currentPage }),
 				footer: {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
 				},
+				image: {
+					url: this.images[this.currentDescription] || null,
+				},
+				fields: this.fields[this.currentDescription] || [],
 			},
 		});
 	}

@@ -75,7 +75,7 @@ class GuildMemberAdd extends BaseEvent {
 					let x = 0;
 					for (const role of arrayOfRoles) {
 						try {
-							await member.addRole(role, `Added new member role(s) to this member for joining the guild.`);
+							await member.roles.add(role, `Added new member role(s) to this member for joining the guild.`);
 							x++;
 						} catch (err) {
 							winston.verbose(`Failed to add new role to member`, { svrid: member.guild.id, usrid: member.id, role: role.id }, err);

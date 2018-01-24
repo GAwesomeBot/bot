@@ -29,9 +29,9 @@ process.argv.forEach(arg => {
 	if (func) func(configJS, configJSON, auth);
 });
 
-winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
-
 if (process.argv.includes("--migrate") || process.argv.includes("-m")) return;
+
+winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
 database.initialize(configJS.databaseURL).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);

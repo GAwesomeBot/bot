@@ -18,6 +18,7 @@ module.exports = {
 	RandomAnimals: require("./RandomAnimals.js"),
 	Sharder: require("./Sharder.js"),
 	SharderIPC: require("./IPC.js"),
+	StringJS: require("./String"),
 	Traffic: require("./Traffic.js"),
 	Trivia: require("./Trivia.js"),
 	Updater: require("./Updater.js"),

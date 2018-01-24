@@ -16,9 +16,6 @@ class WorkerManager {
 			case WorkerTypes.MATH: {
 				return this._getMathJSResult(command, data);
 			}
-			case WorkerTypes.CONVERT: {
-				return this._getConversion(data);
-			}
 			default: {
 				throw new Error("CHILD_PROCESS_TYPE_INVALID", workerType);
 			}
@@ -33,16 +30,9 @@ class WorkerManager {
 		else return res.result;
 	}
 
-	async _getConversion (data) {
-		if (!data.to || !data.from || !data.content) throw new Error("CHILD_PROCESS_MISSING_PROPERTY", "The value to convert to or from");
-		const res = await this.safeSend(WorkerEvents.CONVERT_DATA, { to: data.to, from: data.from, content: data.content });
-		if (res.error) throw res.error;
-		else return res;
-	}
-
 	async startWorker () {
 		this.worker = new processAsPromised(fork(`${__dirname}/Worker.js`, [], { env: { SHARD_ID: this.client.shardID } }));
-		this.worker.once("ready", d => {
+		this.worker.once("ready", async d => {
 			winston.info(`Worker for shard ${Number(d.shard)} is up and running!`);
 		});
 		return this.worker;

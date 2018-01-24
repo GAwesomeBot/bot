@@ -26,10 +26,7 @@ class VoteHandler extends BaseEvent {
 			const member = await this.bot.memberSearch(msg.content.split(/\s+/)[0].trim(), msg.guild);
 			const voteString = msg.content.split(/\s+/).splice(1).join(" ");
 			if (member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
-				const findDocument = await Users.findOrCreate({ _id: member.id }).catch(err => {
-					winston.verbose(`Failed to get user document for votes..`, err);
-				});
-				const targetUserDocument = findDocument && findDocument.doc;
+				const targetUserDocument = await Users.findOne({ _id: member.id });
 				if (targetUserDocument) {
 					let voteAction = null;
 
@@ -61,10 +58,7 @@ class VoteHandler extends BaseEvent {
 
 						if (voteAction === "gilded") {
 							// Get author data
-							const findDocument2 = await Users.findOrCreate({ _id: msg.author.id }).catch(err => {
-								winston.debug(`Failed to get user document for gilding member...`, err);
-							});
-							const authorDocument = findDocument2 && findDocument2.doc;
+							const authorDocument = await Users.findOne({ _id: msg.author.id });
 							if (authorDocument) {
 								if (authorDocument.points > 10) {
 									authorDocument.points -= 10;
@@ -102,10 +96,7 @@ class VoteHandler extends BaseEvent {
 				const message = fetchedMessages && fetchedMessages.first();
 				if (message && ![this.bot.user.id, msg.author.id].includes(message.author.id) && !message.author.bot) {
 					// Get target user data
-					const findDocument = await Users.findOrCreate({ _id: message.author.id }).catch(err => {
-						winston.debug(`Failed to find user document for voting..`, err);
-					});
-					const targetUserDocument = findDocument && findDocument.doc;
+					const targetUserDocument = await Users.findOne({ _id: message.author.id });
 					if (targetUserDocument) {
 						winston.info(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 

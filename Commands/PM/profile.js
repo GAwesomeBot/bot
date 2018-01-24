@@ -130,13 +130,13 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 							},
 						},
 					});
-					if (msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
+					if (msg.author.userDocument.profile_fields && msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
 				}
 			}
 		}
 		if (message && message.content) {
 			if (message.content.trim() === ".") {
-				if (msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
+				if (msg.author.userDocument.profile_fields && msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
 				else changes.Bio = null;
 			} else if (message.content.toLowerCase().trim() === "none") {
 				changes.Bio = "delete";

@@ -244,17 +244,18 @@ const commands = {
 			category: `NSFW 👹`,
 		},
 		emoji: {
-			usage: `<custom emoji> or <Twetmoji>`,
-			description: `Provides a jumbo variant of the chosen emoji`,
+			usage: `...<custom emoji> or ...<Twetmoji> or ...<animated emoji>`,
+			description: `Provides a larger variant of the chosen emoji(s) (maximum of 6 emojis) or a larger varian of maximum 3 animated emojis`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
+			aliases: ["jumbo"],
 		},
 		emotes: {
-			usage: ``,
+			usage: `[<custom emoji name> or <custom emoji ID>]`,
 			description: `Shows the current emojis on the server`,
 			defaults: {
 				isEnabled: true,
@@ -398,16 +399,6 @@ const commands = {
 		joke: {
 			usage: ``,
 			description: `Tells a random joke!`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Fun 🎪`,
-		},
-		jumbo: {
-			usage: `<emoji> [<emoji>...]`,
-			description: `Makes emojis larger! (Maximum of 5 emojis)`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,

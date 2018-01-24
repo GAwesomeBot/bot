@@ -29,6 +29,13 @@ module.exports = bot => {
 			}
 			return copy;
 		},
+		toLowerCaseAll () {
+			const copy = [];
+			for (const elem of this) {
+				copy.push(typeof elem === "string" ? elem.toLowerCase() : elem);
+			}
+			return copy;
+		},
 	});
 
 	/**

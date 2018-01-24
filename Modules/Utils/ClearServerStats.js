@@ -30,13 +30,7 @@ module.exports = async (bot, server, serverDocument) => {
 	 * @param {Number} amount The amount of points to give the member
 	 */
 	const awardPoints = async (member, amount) => {
-		/**
-		 * Check https://www.npmjs.com/package/mongoose-findorcreate#promise-support
-		 */
-		const findOrCreate = await Users.findOrCreate({ _id: member.id }).catch(err => {
-			winston.warn(`Failed to find or create user data for "${member.user.tag}" to award activity points on server "${server}"`, { usrid: member.id }, err);
-		});
-		const userDocument = findOrCreate.doc;
+		const userDocument = await Users.findOne({ _id: member.id });
 		if (userDocument) {
 			userDocument.points += amount;
 			try {

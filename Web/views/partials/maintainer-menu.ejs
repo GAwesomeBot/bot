@@ -1,10 +1,10 @@
 <aside class="menu">
 	<ul class="menu-list">
 		<li>
-            <% if(currentPage=="/dashboard/maintainer") { %>
+            <% if (currentPage === "/dashboard/maintainer/maintainer") { %>
 			<a class="is-active" href="#">Overview</a>
             <% } else { %>
-			<a href="/dashboard/maintainer?svrid=maintainer">Overview</a>
+			<a href="/dashboard/maintainer/maintainer">Overview</a>
             <% } %>
 		</li>
 	</ul>
@@ -16,15 +16,15 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-            <% if(currentPage=="/dashboard/servers/server-list") { %>
+            <% if (currentPage === "/dashboard/maintainer/servers/server-list") { %>
 			<a class="is-active" href="#">Server List</a>
             <% } else { %>
-			<a href="/dashboard/servers/server-list?svrid=maintainer">Server List</a>
+			<a href="/dashboard/maintainer/servers/server-list">Server List</a>
             <% } %>
-            <% if(currentPage=="/dashboard/servers/big-message") { %>
+            <% if (currentPage === "/dashboard/maintainer/servers/big-message") { %>
 			<a class="is-active" href="#">BigMessage</a>
             <% } else { %>
-			<a href="/dashboard/servers/big-message?svrid=maintainer">BigMessage</a>
+			<a href="/dashboard/maintainer/servers/big-message">BigMessage</a>
             <% } %>
 		</li>
 	</ul>
@@ -37,25 +37,25 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-            <% if(currentPage=="/dashboard/global-options/blocklist") { %>
+            <% if (currentPage === "/dashboard/maintainer/global-options/blocklist") { %>
 			<a class="is-active" href="#">Blocklist</a>
             <% } else { %>
-			<a href="/dashboard/global-options/blocklist?svrid=maintainer">Blocklist</a>
+			<a href="/dashboard/maintainer/global-options/blocklist">Blocklist</a>
             <% } %>
-            <% if(currentPage=="/dashboard/global-options/bot-user") { %>
+            <% if (currentPage === "/dashboard/maintainer/global-options/bot-user") { %>
 			<a class="is-active" href="#">Bot User</a>
             <% } else { %>
-			<a href="/dashboard/global-options/bot-user?svrid=maintainer">Bot User</a>
+			<a href="/dashboard/maintainer/global-options/bot-user">Bot User</a>
             <% } %>
-            <% if(currentPage=="/dashboard/global-options/homepage") { %>
+            <% if (currentPage === "/dashboard/maintainer/global-options/homepage") { %>
 			<a class="is-active" href="#">Homepage</a>
             <% } else { %>
-			<a href="/dashboard/global-options/homepage?svrid=maintainer">Homepage</a>
+			<a href="/dashboard/maintainer/global-options/homepage">Homepage</a>
             <% } %>
-            <% if(currentPage=="/dashboard/global-options/wiki-contributors") { %>
+            <% if (currentPage === "/dashboard/maintainer/global-options/wiki-contributors") { %>
 			<a class="is-active" href="#">Wiki Contributors</a>
             <% } else { %>
-			<a href="/dashboard/global-options/wiki-contributors?svrid=maintainer">Wiki Contributors</a>
+			<a href="/dashboard/maintainer/global-options/wiki-contributors">Wiki Contributors</a>
             <% } %>
 		</li>
 	</ul>
@@ -68,30 +68,30 @@
 	</p>
 	<ul class="menu-list">
 		<li>
-            <% if(currentPage=="/dashboard/management/maintainers") { %>
+            <% if (currentPage === "/dashboard/maintainer/management/maintainers") { %>
 			<a class="is-active" href="#">Maintainers</a>
             <% } else { %>
-			<a href="/dashboard/management/maintainers?svrid=maintainer">Maintainers</a>
+			<a href="/dashboard/maintainer/management/maintainers">Maintainers</a>
             <% } %>
-            <% if(currentPage=="/dashboard/management/shards") { %>
+            <% if (currentPage === "/dashboard/maintainer/management/shards") { %>
 			<a class="is-active" href="#">Shards</a>
 			<% } else { %>
-			<a href="/dashboard/management/shards?svrid=maintainer">Shards</a>
+			<a href="/dashboard/maintainer/management/shards">Shards</a>
             <% } %>
-            <% if(currentPage=="/dashboard/management/version") { %>
+            <% if (currentPage === "/dashboard/maintainer/management/version") { %>
 			<a class="is-active" href="#">GAB Version</a>
             <% } else { %>
-			<a href="/dashboard/management/version?svrid=maintainer">GAB Version</a>
+			<a href="/dashboard/maintainer/management/version">GAB Version</a>
             <% } %>
-            <% if(currentPage=="/dashboard/management/eval") { %>
+            <% if (currentPage === "/dashboard/maintainer/management/eval") { %>
 			<a class="is-active" href="#">Evaluate</a>
             <% } else if (serverData.accessEval) { %>
-			<a href="/dashboard/management/eval?svrid=maintainer">Evaluate</a>
+			<a href="/dashboard/maintainer/management/eval">Evaluate</a>
             <% } %>
-            <% if(currentPage=="/dashboard/management/logs") { %>
+            <% if (currentPage === "/dashboard/maintainer/management/logs") { %>
 			<a class="is-active" href="#">Logs</a>
             <% } else { %>
-			<a href="/dashboard/management/logs?svrid=maintainer">Logs</a>
+			<a href="/dashboard/maintainer/management/logs">Logs</a>
             <% } %>
 		</li>
 	</ul>

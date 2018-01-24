@@ -171,7 +171,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				let TID = bot.traffic.TID;
 				res.cookie("trafficID", TID, { httpOnly: true });
 			}
-			if (req.method === "GET" && !req.path.startsWith("/static") && !["/header-image", "/userlist", "/serverlist"].includes(req.path)) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
+			if (req.method === "GET" && !req.path.startsWith("/static") && !req.path.startsWith("/api") && !["/header-image", "/userlist", "/serverlist"].includes(req.path)) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
 			next();
 		}
 	});
@@ -381,19 +381,22 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	};
 	app.get("/api/users", async (req, res) => {
 		if (!req.query.id) {
-			res.sendStatus(400);
+			res.status(400).json({ message: `Query param "id" is missing` });
 			return;
 		}
-		const usr = await bot.users.fetch(req.query.id, true);
-		if (usr) {
-			db.users.findOrCreate({ _id: usr.id }, async (err, userDocument) => {
-				if (err || !userDocument) {
-					userDocument = {};
-				}
-				res.json(await getUserData(usr, userDocument));
-			});
-		} else {
-			res.sendStatus(400);
+		try {
+			let user = bot.users.get(req.query.id);
+			if (!user) user = await bot.users.fetch(req.query.id, true);
+
+			if (user) {
+				let userDocument = await db.users.findOne({ _id: user.id });
+				if (!userDocument) userDocument = await db.users.create(new Users({ _id: user.id }));
+				res.json(await getUserData(user, userDocument));
+			} else {
+				res.status(400).json({ message: `Invalid user ID provided` });
+			}
+		} catch (_) {
+			res.status(400).json({ message: `Invalid user ID provided` });
 		}
 	});
 	const getExtensionData = async galleryDocument => {
@@ -412,14 +415,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				typeIcon = "clock-o";
 				if (moment(galleryDocument.interval)) {
 					let interval = moment.duration(galleryDocument.interval);
-					typeDescription = `Interval: ${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
+					typeDescription = `${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
 				} else {
-					typeDescription = `Interval: ${galleryDocument.interval}`;
+					typeDescription = `${galleryDocument.interval}ms`;
 				}
 				break;
 			case "event":
 				typeIcon = "code";
-				typeDescription = `Event: ${galleryDocument.event}`;
+				typeDescription = `${galleryDocument.event}`;
 				break;
 		}
 		return {
@@ -440,6 +443,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			points: galleryDocument.points,
 			relativeLastUpdated: moment(galleryDocument.last_updated).fromNow(),
 			rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),
+			scopes: galleryDocument.scopes,
+			fields: galleryDocument.fields,
+			timeout: galleryDocument.timeout,
 		};
 	};
 	app.get("/api/extensions", async (req, res) => {
@@ -732,9 +738,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Deny authentication for console
-	const deny = res => res.status(403).redirect("/dashboard");
+	const deny = (res, isAPI) => isAPI ? res.sendStatus(403) : res.status(403).redirect("/dashboard");
 	// Check authentication for console
 	const checkPerms = (path, id, svrid) => {
+		path = path.replace(`/${svrid}`, "");
 		let section = path;
 		if (path === `/dashboard/management/eval`) section = "eval";
 		else if (path.startsWith(`/dashboard/global-options`)) section = "administration";
@@ -754,11 +761,12 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				return true;
 		}
 	};
-	const checkAuth = async (req, res, next) => {
+	const checkAuth = async (req, res, next, api) => {
 		if (req.isAuthenticated()) {
 			const usr = await bot.users.fetch(req.user.id, true);
 			if (usr) {
-				if (req.query.svrid === "maintainer") {
+				if (!req.params.svrid && req.query.svrid) req.params.svrid = req.query.svrid;
+				if (!req.params.svrid) {
 					if (checkPerms(req.path, usr.id, "maintainer")) {
 						try {
 							next(usr);
@@ -766,9 +774,9 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 							winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
 							renderError(res, "An unknown error occurred.")
 						}
-					} else deny(res);
+					} else deny(res, api);
 				} else {
-					const svr = await getGuild.get(bot, req.query.svrid, {
+					const svr = await getGuild.get(bot, req.params.svrid, {
 							resolve: ["id", "ownerID", "name", "icon"],
 							members: ["id", "roles", "user", "nickname"],
 							channels: ["id", "type", "name", "position", "rawPosition"],
@@ -780,31 +788,50 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 							if (!err && serverDocument) {
 								const member = svr.members[usr.id];
 								const adminLevel = bot.getUserBotAdmin(svr, serverDocument, member);
-								if (adminLevel >= 3 || checkPerms(req.path, usr.id, req.query.svrid)) {
+								if (adminLevel >= 3 || checkPerms(req.path, usr.id, req.params.svrid)) {
 									try {
 										next(member, svr, serverDocument, adminLevel);
 									} catch (err) {
 										winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
+										if (api) return res.sendStatus(500);
 										renderError(res, "An unknown error occurred.")
 									}
 								} else {
+									if (api) return res.sendStatus(403);
 									res.redirect("/dashboard");
 								}
 							} else {
+								if (api) return res.sendStatus(500);
 								renderError(res, "Something went wrong while fetching your server data.");
 							}
 						});
 					} else {
+						if (api) return res.sendStatus(404);
 						renderError(res, "Wait a second, that server doesn't exist!<br>We failed to fetch your server from Discord.");
 					}
 				}
 			} else {
+				if (api) return res.sendStatus(500);
 				renderError(res, "Wait, do you exist?<br>We failed to fetch your user from Discord.");
 			}
 		} else {
+			if (api) return res.sendStatus(401);
 			res.redirect("/login");
 		}
 	};
+
+	app.get("/api/servers/:svrid/:value", (req, res) => {
+		checkAuth(req, res, (usr, svr) => {
+			switch (req.params.value) {
+				case "channels":
+					res.json(svr.channels);
+					break;
+				default:
+					res.sendStatus(400);
+					break;
+			}
+		}, true);
+	});
 
 	// User list provider for typeahead
 	app.get("/userlist", (req, res) => {
@@ -904,6 +931,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 										name: req.user.guilds[i].name,
 										id: req.user.guilds[i].id,
 										icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
+										prefix: serverDocument.config.command_prefix,
 									});
 								}
 							}
@@ -1157,12 +1185,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 					return doc;
 				};
 				const getUserDocument = async () => {
-					const findDocument = await db.users.findOrCreate({ _id: req.user.id });
-					if (findDocument.doc) {
-						return findDocument.doc;
+					let userDocument = await db.users.findOne({ _id: req.user.id });
+					if (userDocument) {
+						return userDocument;
 					} else {
-						res.sendStatus(500);
-						return false;
+						// TODO: Gilbert, decide if this needs to be an error 500 or not!
+						userDocument = await db.users.create(new Users({ _id: req.user.id }));
+						return userDocument;
 					}
 				};
 				const messageOwner = async (usrid, message) => {
@@ -1189,13 +1218,11 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						galleryDocument.points += vote;
 						await galleryDocument.save();
 						await userDocument.save();
-						db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
-							if (!err && ownerUserDocument) {
-								ownerUserDocument.points += vote * 10;
-								ownerUserDocument.save(() => {});
-							}
-							res.sendStatus(200);
-						});
+						let ownerUserDocument = await db.users.findOne({ _id: galleryDocument.owner_id });
+						if (!ownerUserDocument) ownerUserDocument = await db.users.create(new Users({ _id: gallery.owner_id }));
+						ownerUserDocument.points += vote * 10;
+						await ownerUserDocument.save();
+						res.sendStatus(200);
 						break;
 					case "accept":
 						messageOwner(galleryDocument.owner_id, {
@@ -1252,16 +1279,15 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 								description: `${req.body.reason.replace(/\\n/g, "\n")}`,
 							},
 						});
-						db.users.findOrCreate({ _id: galleryDocument.owner_id }, (err, ownerUserDocument) => {
-							if (!err && ownerUserDocument) {
-								ownerUserDocument.points -= galleryDocument.points * 10;
-								ownerUserDocument.save(() => {});
-							}
-							galleryDocument.state = "saved";
-							galleryDocument.featured = false;
-							galleryDocument.save(err => {
-								res.sendStatus(err ? 500 : 200);
-							});
+						const ownerUserDocument2 = await db.users.findOne({ _id: galleryDocument.owner_id });
+						if (ownerUserDocument2) {
+								ownerUserDocument2.points -= galleryDocument.points * 10;
+								await ownerUserDocument2.save();
+						}
+						galleryDocument.state = "saved";
+						galleryDocument.featured = false;
+						galleryDocument.save(err => {
+							res.sendStatus(err ? 500 : 200);
 						});
 						break;
 					case "publish":
@@ -1649,14 +1675,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 						if (err || !wikiDocument) {
 							renderError(res, "An error occurred while saving wiki documents!");
 						} else {
-							wikiDocument._id = req.body.title;
 							wikiDocument.updates.push({
 								_id: req.user.id,
 								diff: diff.prettyHtml(diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0)),
 							});
 							wikiDocument.content = req.body.content;
 
-							wikiDocument.save(() => {
+							wikiDocument.save(async () => {
 								res.redirect(`/wiki/${wikiDocument._id}`);
 							});
 						}
@@ -1870,6 +1895,13 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		}
 	});
 
+	// Admin console support for legacy URL's
+	app.use("/dashboard", (req, res, next) => {
+		if (req.query.svrid) {
+			res.redirect(307, `/dashboard/${req.query.svrid}${req.path}`);
+		} else next();
+	});
+
 	// Admin console dashboard
 	app.get("/dashboard", async (req, res) => {
 		if (!req.isAuthenticated()) {
@@ -1931,11 +1963,11 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console overview (home)
-	app.get("/dashboard/overview", (req, res) => {
+	app.get("/dashboard/:svrid/overview", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			// Redirect to maintainer console if necessary
 			if (!svr) {
-				res.redirect("/dashboard/maintainer?svrid=maintainer");
+				res.redirect("/dashboard/maintainer/maintainer");
 			} else {
 				let topCommand;
 				let topCommandUsage = 0;
@@ -1995,7 +2027,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console command options
-	app.get("/dashboard/commands/command-options", (req, res) => {
+	app.get("/dashboard/:svrid/commands/command-options", (req, res) => {
 		checkAuth(req, res, async (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-command-options.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2022,7 +2054,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/command-options").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/command-options", (req, res) => {
+	app.post("/dashboard/:svrid/commands/command-options", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body.command_prefix !== bot.getCommandPrefix(svr, serverDocument)) {
 				serverDocument.config.command_prefix = req.body.command_prefix;
@@ -2051,7 +2083,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console command list
-	app.get("/dashboard/commands/command-list", (req, res) => {
+	app.get("/dashboard/:svrid/commands/command-list", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const commandDescriptions = {};
 			const commandCategories = {};
@@ -2101,7 +2133,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			}
 		}
 	};
-	app.post("/dashboard/commands/command-list", (req, res) => {
+	app.post("/dashboard/:svrid/commands/command-list", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["preset-applied"]) {
 				const disabled_channel_ids = [];
@@ -2128,7 +2160,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console RSS feeds
-	app.get("/dashboard/commands/rss-feeds", (req, res) => {
+	app.get("/dashboard/:svrid/commands/rss-feeds", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-rss-feeds.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2161,7 +2193,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/rss-feeds").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/rss-feeds", (req, res) => {
+	app.post("/dashboard/:svrid/commands/rss-feeds", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"])) {
 				serverDocument.config.rss_feeds.push({
@@ -2193,7 +2225,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console streamers
-	app.get("/dashboard/commands/streamers", (req, res) => {
+	app.get("/dashboard/:svrid/commands/streamers", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-streamers.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2226,7 +2258,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/streamers").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/streamers", (req, res) => {
+	app.post("/dashboard/:svrid/commands/streamers", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-name"] && req.body["new-type"] && !serverDocument.config.streamers_data.id(req.body["new-name"])) {
 				serverDocument.config.streamers_data.push({
@@ -2250,7 +2282,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console tags
-	app.get("/dashboard/commands/tags", (req, res) => {
+	app.get("/dashboard/:svrid/commands/tags", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const data = {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2322,7 +2354,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/tags").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/tags", (req, res) => {
+	app.post("/dashboard/:svrid/commands/tags", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-name"] && req.body["new-type"] && req.body["new-content"] && !serverDocument.config.tags.list.id(req.body["new-name"])) {
 				serverDocument.config.tags.list.push({
@@ -2353,7 +2385,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console auto translation
-	app.get("/dashboard/commands/auto-translation", (req, res) => {
+	app.get("/dashboard/:svrid/commands/auto-translation", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const data = {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2385,7 +2417,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/auto-translation").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/auto-translation", (req, res) => {
+	app.post("/dashboard/:svrid/commands/auto-translation", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-member"] && req.body["new-source_language"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
@@ -2426,7 +2458,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console trivia sets
-	app.get("/dashboard/commands/trivia-sets", (req, res) => {
+	app.get("/dashboard/:svrid/commands/trivia-sets", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.query.i) {
 				const triviaSetDocument = serverDocument.config.trivia_sets[req.query.i];
@@ -2460,7 +2492,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/trivia-sets").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/trivia-sets", (req, res) => {
+	app.post("/dashboard/:svrid/commands/trivia-sets", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-name"] && req.body["new-items"] && !serverDocument.config.trivia_sets.id(req.body["new-name"])) {
 				try {
@@ -2486,7 +2518,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console API keys
-	app.get("/dashboard/commands/api-keys", (req, res) => {
+	app.get("/dashboard/:svrid/commands/api-keys", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-api-keys.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2506,7 +2538,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/api-keys").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/api-keys", (req, res) => {
+	app.post("/dashboard/:svrid/commands/api-keys", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.custom_api_keys.google_api_key = req.body.google_api_key;
 			serverDocument.config.custom_api_keys.google_cse_id = req.body.google_cse_id;
@@ -2516,7 +2548,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console tag reaction
-	app.get("/dashboard/commands/tag-reaction", (req, res) => {
+	app.get("/dashboard/:svrid/commands/tag-reaction", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-tag-reaction.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2536,7 +2568,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/commands/tag-reaction").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/commands/tag-reaction", (req, res) => {
+	app.post("/dashboard/:svrid/commands/tag-reaction", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-message"] && req.body["new-message"].length <= 2000) {
 				serverDocument.config.tag_reaction.messages.push(req.body["new-message"]);
@@ -2555,7 +2587,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console stats collection
-	app.get("/dashboard/stats-points/stats-collection", (req, res) => {
+	app.get("/dashboard/:svrid/stats-points/stats-collection", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-stats-collection.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2590,7 +2622,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/stats-points/stats-collection").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/stats-points/stats-collection", (req, res) => {
+	app.post("/dashboard/:svrid/stats-points/stats-collection", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			parseCommandOptions(svr, serverDocument, "stats", req.body);
 			parseCommandOptions(svr, serverDocument, "games", req.body);
@@ -2601,7 +2633,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console ranks
-	app.get("/dashboard/stats-points/ranks", (req, res) => {
+	app.get("/dashboard/:svrid/stats-points/ranks", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-ranks.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2626,7 +2658,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/stats-points/ranks").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/stats-points/ranks", (req, res) => {
+	app.post("/dashboard/:svrid/stats-points/ranks", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-name"] && req.body["new-max_score"] && !serverDocument.config.ranks_list.id(req.body["new-name"])) {
 				serverDocument.config.ranks_list.push({
@@ -2661,7 +2693,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console GAwesomePoints
-	app.get("/dashboard/stats-points/gawesome-points", (req, res) => {
+	app.get("/dashboard/:svrid/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-gawesome-points.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2693,7 +2725,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/stats-points/gawesome-points").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/stats-points/gawesome-points", (req, res) => {
+	app.post("/dashboard/:svrid/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			parseCommandOptions(svr, serverDocument, "points", req.body);
 			parseCommandOptions(svr, serverDocument, "lottery", req.body);
@@ -2703,7 +2735,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console admins
-	app.get("/dashboard/administration/admins", (req, res) => {
+	app.get("/dashboard/:svrid/administration/admins", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-admins.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2729,7 +2761,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/admins").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/admins", (req, res) => {
+	app.post("/dashboard/:svrid/administration/admins", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-role_id"] && req.body["new-level"] && !serverDocument.config.admins.id(req.body["new-role_id"])) {
 				let level = parseInt(req.body["new-level"]);
@@ -2752,7 +2784,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console moderation
-	app.get("/dashboard/administration/moderation", (req, res) => {
+	app.get("/dashboard/:svrid/administration/moderation", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-moderation.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2782,7 +2814,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/moderation").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/moderation", (req, res) => {
+	app.post("/dashboard/:svrid/administration/moderation", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.moderation.isEnabled = req.body.isEnabled === "on";
 			serverDocument.config.moderation.autokick_members.isEnabled = req.body["autokick_members-isEnabled"] === "on";
@@ -2803,7 +2835,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console blocked
-	app.get("/dashboard/administration/blocked", (req, res) => {
+	app.get("/dashboard/:svrid/administration/blocked", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-blocked.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2838,7 +2870,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/blocked").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/blocked", (req, res) => {
+	app.post("/dashboard/:svrid/administration/blocked", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-member"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
@@ -2858,7 +2890,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console muted
-	app.get("/dashboard/administration/muted", (req, res) => {
+	app.get("/dashboard/:svrid/administration/muted", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const mutedMembers = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.members.hasOwnProperty(memberDocument._id))
 				.map(memberDocument => {
@@ -2893,7 +2925,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/muted").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/muted", (req, res) => {
+	app.post("/dashboard/:svrid/administration/muted", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-member"] && req.body["new-channel_id"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
@@ -2944,7 +2976,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console strikes
-	app.get("/dashboard/administration/strikes", (req, res) => {
+	app.get("/dashboard/:svrid/administration/strikes", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-strikes.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -2993,7 +3025,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/strikes").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/strikes", (req, res) => {
+	app.post("/dashboard/:svrid/administration/strikes", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (req.body["new-member"] && req.body["new-reason"]) {
 				const member = findQueryUser(req.body["new-member"], svr.members);
@@ -3030,7 +3062,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console status messages
-	app.get("/dashboard/administration/status-messages", (req, res) => {
+	app.get("/dashboard/:svrid/administration/status-messages", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
 			for (let i = 0; i < statusMessagesData.member_streaming_message.enabled_user_ids.length; i++) {
@@ -3063,7 +3095,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/status-messages").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/status-messages", (req, res) => {
+	app.post("/dashboard/:svrid/administration/status-messages", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const args = Object.keys(req.body)[0].split("-");
 			if (Object.keys(req.body).length === 1 && args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
@@ -3123,7 +3155,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console filters
-	app.get("/dashboard/administration/filters", (req, res) => {
+	app.get("/dashboard/:svrid/administration/filters", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const filteredCommands = [];
 			for (const command in serverDocument.toObject().config.commands) {
@@ -3158,7 +3190,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/filters").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/filters", (req, res) => {
+	app.post("/dashboard/:svrid/administration/filters", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			for (const filter in serverDocument.toObject().config.moderation.filters) {
 				for (const key in serverDocument.toObject().config.moderation.filters[filter]) {
@@ -3193,7 +3225,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console message of the day
-	app.get("/dashboard/administration/message-of-the-day", (req, res) => {
+	app.get("/dashboard/:svrid/administration/message-of-the-day", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-message-of-the-day.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3215,7 +3247,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/message-of-the-day").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/message-of-the-day", (req, res) => {
+	app.post("/dashboard/:svrid/administration/message-of-the-day", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const alreadyEnabled = serverDocument.config.message_of_the_day.isEnabled;
 			serverDocument.config.message_of_the_day.isEnabled = req.body.isEnabled === "on";
@@ -3232,7 +3264,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console voicetext channels
-	app.get("/dashboard/administration/voicetext-channels", (req, res) => {
+	app.get("/dashboard/:svrid/administration/voicetext-channels", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-voicetext-channels.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3253,7 +3285,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/voicetext-channels").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/voicetext-channels", (req, res) => {
+	app.post("/dashboard/:svrid/administration/voicetext-channels", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.voicetext_channels = [];
 			Object.values(svr.channels).forEach(ch => {
@@ -3269,7 +3301,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console roles
-	app.get("/dashboard/administration/roles", (req, res) => {
+	app.get("/dashboard/:svrid/administration/roles", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-roles.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3306,7 +3338,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/roles").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/administration/roles", (req, res) => {
+	app.post("/dashboard/:svrid/administration/roles", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			parseCommandOptions(svr, serverDocument, "roleinfo", req.body);
 			parseCommandOptions(svr, serverDocument, "role", req.body);
@@ -3325,7 +3357,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console logs
-	app.get("/dashboard/administration/logs", async (req, res) => {
+	app.get("/dashboard/:svrid/administration/logs", async (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			try {
 				let serverLogs = serverDocument.logs.length > 200 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 200) : serverDocument.logs.toObject();
@@ -3383,7 +3415,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console name display
-	app.get("/dashboard/other/name-display", (req, res) => {
+	app.get("/dashboard/:svrid/other/name-display", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-name-display.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3407,7 +3439,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/name-display").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/other/name-display", (req, res) => {
+	app.post("/dashboard/:svrid/other/name-display", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.name_display.use_nick = req.body["name_display-use_nick"] === "on";
 			serverDocument.config.name_display.show_discriminator = req.body["name_display-show_discriminator"] === "on";
@@ -3417,7 +3449,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console ongoing activities
-	app.get("/dashboard/other/ongoing-activities", (req, res) => {
+	app.get("/dashboard/:svrid/other/ongoing-activities", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const ongoingTrivia = [];
 			const ongoingPolls = [];
@@ -3511,7 +3543,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/administration/ongoing-activities").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/other/ongoing-activities", (req, res) => {
+	app.post("/dashboard/:svrid/other/ongoing-activities", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument) => {
 			if (req.body["end-type"] && req.body["end-id"]) {
 				switch (req.body["end-type"]) {
@@ -3536,7 +3568,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console public data
-	app.get("/dashboard/other/public-data", (req, res) => {
+	app.get("/dashboard/:svrid/other/public-data", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-public-data.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3558,7 +3590,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/other/public-data").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/other/public-data", (req, res) => {
+	app.post("/dashboard/:svrid/other/public-data", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			serverDocument.config.public_data.isShown = req.body.isShown === "on";
 			let createInvite = false;
@@ -3582,7 +3614,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console extensions
-	app.get("/dashboard/other/extensions", (req, res) => {
+	app.get("/dashboard/:svrid/other/extensions", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const extensionData = serverDocument.toObject().extensions;
 			extensionData.forEach(extensionDocument => {
@@ -3606,7 +3638,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/other/extensions").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/other/extensions", (req, res) => {
+	app.post("/dashboard/:svrid/other/extensions", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (Object.keys(req.body).length === 1 && Object.keys(req.body)[0].indexOf("new-") === 0) {
 				const state = Object.keys(req.body)[0].split("-")[1];
@@ -3674,7 +3706,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console extension builder
-	app.get("/dashboard/other/extension-builder", (req, res) => {
+	app.get("/dashboard/:svrid/other/extension-builder", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			let extensionData = {};
 			if (req.query.extid) {
@@ -3707,7 +3739,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/other/extension-builder").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/other/extension-builder", (req, res) => {
+	app.post("/dashboard/:svrid/other/extension-builder", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			if (validateExtensionData(req.body)) {
 				let extensionDocument = serverDocument.extensions.id(req.query.extid);
@@ -3748,14 +3780,14 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Admin console export configs
-	app.get("/dashboard/other/export", (req, res) => {
+	app.get("/dashboard/:svrid/other/export", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.json(serverDocument.toObject().config);
 		});
 	});
 
 	// Admin console message history
-	app.get("/dashboard/messages", (req, res) => {
+	app.get("/dashboard/:svrid/messages", (req, res) => {
 		checkAuth(req, res, () => {
 			res.render("pages/admin-messages.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null
@@ -3764,7 +3796,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console overview
-	app.get("/dashboard/maintainer", (req, res) => {
+	app.get("/dashboard/maintainer/maintainer", (req, res) => {
 		checkAuth(req, res, () => {
 			db.servers.aggregate([{
 				$group: {
@@ -3812,7 +3844,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console server list
-	app.get("/dashboard/servers/server-list", (req, res) => {
+	app.get("/dashboard/maintainer/servers/server-list", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			const renderPage = data => {
 				res.render("pages/maintainer-server-list.ejs", {
@@ -3868,7 +3900,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			}
 		});
 	});
-	app.post("/dashboard/servers/server-list", (req, res) => {
+	app.post("/dashboard/maintainer/servers/server-list", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			if (req.body.removeFromActivity) {
 				configJSON.activityBlocklist.push(req.body.removeFromActivity);
@@ -3882,7 +3914,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console big message
-	app.get("/dashboard/servers/big-message", (req, res) => {
+	app.get("/dashboard/maintainer/servers/big-message", (req, res) => {
 		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-big-message.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3901,7 +3933,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			});
 		});
 	});
-	app.post("/dashboard/servers/big-message", (req, res) => {
+	app.post("/dashboard/maintainer/servers/big-message", (req, res) => {
 		checkAuth(req, res, () => {
 			if (req.body.message) {
 				bot.IPC.send("sendMessage", { guild: "*", message: req.body.message });
@@ -3913,7 +3945,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console blocklist
-	app.get("/dashboard/global-options/blocklist", (req, res) => {
+	app.get("/dashboard/maintainer/global-options/blocklist", (req, res) => {
 		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-blocklist.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3944,7 +3976,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/global-options/blocklist").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/global-options/blocklist", (req, res) => {
+	app.post("/dashboard/maintainer/global-options/blocklist", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			if (req.body["new-user"]) {
 				let usr = await db.users.findOne({ username: req.body["new-user"]}).exec();
@@ -3966,7 +3998,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console bot user options
-	app.get("/dashboard/global-options/bot-user", (req, res) => {
+	app.get("/dashboard/maintainer/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-bot-user.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -3993,7 +4025,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/global-options/bot-user").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/global-options/bot-user", (req, res) => {
+	app.post("/dashboard/maintainer/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, consolemember => {
 			bot.IPC.send("updateBotUser", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
 			configJSON.activity.name = req.body.game;
@@ -4006,7 +4038,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console homepage options
-	app.get("/dashboard/global-options/homepage", (req, res) => {
+	app.get("/dashboard/maintainer/global-options/homepage", (req, res) => {
 		checkAuth(req, res, () => {
 			res.render("pages/maintainer-homepage.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -4032,7 +4064,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/global-options/homepage").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/global-options/homepage", (req, res) => {
+	app.post("/dashboard/maintainer/global-options/homepage", (req, res) => {
 		checkAuth(req, res, consolemember => {
 			configJSON.homepageMessageHTML = req.body.homepageMessageHTML;
 			configJSON.headerImage = req.body.header_image;
@@ -4042,7 +4074,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console wiki contributors
-	app.get("/dashboard/global-options/wiki-contributors", (req, res) => {
+	app.get("/dashboard/maintainer/global-options/wiki-contributors", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-wiki-contributors.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -4089,7 +4121,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/global-options/wiki-contributors").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/global-options/wiki-contributors", (req, res) => {
+	app.post("/dashboard/maintainer/global-options/wiki-contributors", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			if (req.body["new-user"]) {
 				let usr = await db.users.findOne({ username: req.body["new-user"]}).exec();
@@ -4109,7 +4141,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console maintainers
-	app.get("/dashboard/management/maintainers", (req, res) => {
+	app.get("/dashboard/maintainer/management/maintainers", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-maintainers.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -4146,7 +4178,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	io.of("/dashboard/management/maintainers").on("connection", socket => {
 		socket.on("disconnect", () => {});
 	});
-	app.post("/dashboard/management/maintainers", (req, res) => {
+	app.post("/dashboard/maintainer/management/maintainers", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			if (req.body["new-user"]) {
 				let usr = await db.users.findOne({ username: req.body["new-user"]}).exec();
@@ -4194,7 +4226,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console bot version
-	app.get("/dashboard/management/version", (req, res) => {
+	app.get("/dashboard/maintainer/management/version", (req, res) => {
 		checkAuth(req, res, async () => {
 			let version = await Updater.check();
 			if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
@@ -4219,7 +4251,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			});
 		});
 	});
-	app.post("/dashboard/management/version", (req, res) => {
+	app.post("/dashboard/maintainer/management/version", (req, res) => {
 		checkAuth(req, res, () => {
 			io.of("/dashboard/management/version").on("connection", socket => {
 				socket.on("update", data => {
@@ -4239,7 +4271,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console evaluate code
-	app.get("/dashboard/management/eval", (req, res) => {
+	app.get("/dashboard/maintainer/management/eval", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-eval.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
@@ -4260,7 +4292,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			});
 		});
 	});
-	app.post("/dashboard/management/eval", (req, res) => {
+	app.post("/dashboard/maintainer/management/eval", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			if (req.body.code && req.body.target) {
 				bot.IPC.send("evaluate", { code: req.body.code, target: req.body.target }).then(result => {
@@ -4274,7 +4306,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console shard data
-	app.get("/dashboard/management/shards", (req, res) => {
+	app.get("/dashboard/maintainer/management/shards", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			let data = await bot.IPC.send("shardData", {});
 			res.render("pages/maintainer-shards.ejs", {
@@ -4299,7 +4331,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 			});
 		});
 	});
-	app.post("/dashboard/management/shards", (req, res) => {
+	app.post("/dashboard/maintainer/management/shards", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			if (!checkPerms("shutdown", consolemember.id)) return res.sendStatus(403);
 			if (req.body["dismiss"]) {
@@ -4325,7 +4357,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	});
 
 	// Maintainer console console logs
-	app.get("/dashboard/management/logs", (req, res) => {
+	app.get("/dashboard/maintainer/management/logs", (req, res) => {
 		checkAuth(req, res, () => {
 			winston.transports.file.query({ limit: 10 }, (err, results) => {
 				results.reverse();

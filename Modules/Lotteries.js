@@ -38,7 +38,7 @@ module.exports = {
 				await serverDocument.save();
 				if (winner) {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
-					const userDocument = (await Users.findOrCreate({ _id: winner.id })).doc;
+					const userDocument = await Users.findOne({ _id: winner.id });
 					userDocument.points += prize;
 					try {
 						await userDocument.save();

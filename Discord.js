@@ -22,6 +22,7 @@ const {
 	EventHandler,
 	WorkerManager,
 	ShardUtil,
+	ConversionHandler,
 } = require("./Internals/index");
 
 const configJS = require("./Configurations/config.js");
@@ -72,6 +73,8 @@ class GABClient extends DJSClient {
 		this.IPC = new ProcessAsPromised();
 
 		this.shard = new ShardUtil(this);
+
+		this.conversionHandler = new ConversionHandler(this);
 	}
 
 	/**
@@ -148,6 +151,7 @@ class GABClient extends DJSClient {
 			command: null,
 			suffix: null,
 		};
+		if (!serverDocument) return commandObject;
 		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
 			cmdstr = message.substring(this.user.toString().length + 1);
 		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
@@ -216,6 +220,7 @@ class GABClient extends DJSClient {
 
 	reloadPublicCommand (command, returnError = false) {
 		try {
+			command = this.getPublicCommandName(command);
 			commandModules[command] = reload(`./Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
@@ -225,6 +230,7 @@ class GABClient extends DJSClient {
 
 	reloadSharedCommand (command, returnError = false) {
 		try {
+			command = this.getSharedCommandName(command);
 			sharedModules[command] = reload(`./Commands/Shared/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload shared command "${command}"`, err);
@@ -623,7 +629,10 @@ class GABClient extends DJSClient {
 								const role = server.roles.get(rank.role_id);
 								if (role) {
 									try {
-										member.addRole(role, `Added member to the role for leveling up in ranks.`).catch(err => err);
+										member.roles.add(role, `Added member to the role for leveling up in ranks.`)
+											.catch(err => {
+												throw err;
+											});
 									} catch (err) {
 										winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 											svrid: server.id,
@@ -680,7 +689,7 @@ class GABClient extends DJSClient {
 			const role = server.roles.get(roleID);
 			if (role) {
 				try {
-					await member.addRole(role, `Added the role to the member due to a violation.`);
+					await member.roles.add(role, `Added the role to the member due to a violation.`);
 				} catch (err) {
 					winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
 				}
@@ -1203,10 +1212,12 @@ bot.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = bot.guilds.get(guildID);
 	const serverDocument = await bot.cache.get(guild.id);
-	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.first();
-	let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
-	serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
-	serverDocument.save();
+	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
+	if (channel) {
+		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
+		serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
+		serverDocument.save();
+	}
 });
 
 bot.IPC.on("deletePublicInviteLink", async msg => {
@@ -1510,7 +1521,7 @@ bot.on("channelUpdate", async (oldCh, newCh) => {
  * Internal debug event
  */
 bot.on("debug", async info => {
-	winston.silly(`Received DEBUG event from Discord.js!`, { info });
+	if (bot.isReady) winston.silly(`Received DEBUG event from Discord.js!`, { info });
 });
 
 /**
@@ -1571,12 +1582,7 @@ bot.on("emojiUpdate", async (oldEmoji, newEmoji) => {
  * WebSocket Errors
  */
 bot.on("error", async error => {
-	winston.silly(`Received ERROR event from Discord.js!`, { error });
-	try {
-		await bot.events.onEvent("error", error);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a ERROR event! x.x\n`, err);
-	}
+	winston.warn(`Received ERROR event from Discord.js!`, { error });
 });
 
 /**
@@ -1750,6 +1756,16 @@ bot.on("guildUpdate", async (oldGuild, newGuild) => {
  * MESSAGE_CREATE
  */
 bot.on("message", async msg => {
+	if (!msg.author.bot) {
+		try {
+			let find = await Users.findOne({ _id: msg.author.id });
+			if (!find) await Users.create(new Users({ _id: msg.author.id }));
+		} catch (err) {
+			if (!/duplicate key/.test(err.message)) {
+				winston.warn(`Failed to create user document for ${msg.author.username}`);
+			}
+		}
+	}
 	let proctime = process.hrtime();
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
@@ -1995,10 +2011,5 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
  * WARN
  */
 bot.on("warn", async info => {
-	winston.silly(`Received WARN event from Discord.js!`, { info });
-	try {
-		await bot.events.onEvent("resumed", info);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a WARN event! x.x\n`, err);
-	}
+	winston.warn(`Received WARN event from Discord.js!`, { info });
 });

@@ -1,6 +1,7 @@
 const API = require("../index");
 const Collection = require("discord.js").Collection;
 const ScopeManager = API.ScopeManager;
+// eslint-disable-next-line no-unused-vars
 let scopeManager, guild, serverDocument;
 
 /**

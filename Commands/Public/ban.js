@@ -105,7 +105,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				if (isGuildMember) {
 					member.ban({ days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
 				} else {
-					msg.guild.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+					msg.guild.members.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
 				}
 				dmBanned(member.id);
 				await CreateModLog(msg.guild, "Ban", member, msg.author, reason);

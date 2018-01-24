@@ -15,13 +15,129 @@ function saveFormState() {
 GAwesomeData.activity = { guildData: {} };
 GAwesomeData.blog = { editor: {} };
 GAwesomeData.wiki = { bookmarks: JSON.parse(localStorage.getItem("wiki-bookmarks")) || [], editor: {} };
+GAwesomeData.extensions = {};
 GAwesomeData.dashboard = {};
 GAwesomeUtil.dashboard = {};
+
+GAwesomeData.config = {
+	debug: localStorage.getItem("gab:debug") || false,
+};
+
+GAwesomeData.extensions.html = {
+	start: {
+		"#installer-title": "Installing $EXTNAME",
+		"#installer-subtitle": "Extension Information",
+	},
+	config: {
+		"#global": () => {
+			GAwesomeData.extensions.state.data.server = GAwesomeData.extensions.servers.find(svr => svr.id === $("#installer-serverSelect").val());
+			$("#installer-selector").hide();
+		},
+		"#installer-continue": () => `
+				Next &nbsp;
+				<span class="icon is-small">
+					<i class="fa fa-arrow-right"></i>
+				</span>
+			`,
+		"#installer-subtitle": () => "Extension Configuration",
+		"#installer-content": () => {
+			let info = `
+				<div class="box has-text-left">
+				<h4 class="subtitle is-4">
+					Options for <strong>${GAwesomeData.extensions.state.extension.name}</strong>
+				</h4>
+				`;
+			if (["keyword", "command"].includes(GAwesomeData.extensions.state.extension.type)) info += `
+				<div class="field">
+					<label class="label">Permissions</label>
+					<div class="control">
+						<span class="select">
+							<select name="installer-adminLevel">
+								<option value="0" selected>@everyone</option>
+								<option value="1">Admin level &ge;1</option>
+								<option value="2">Admin level &ge;2</option>
+								<option value="3">Admin level &ge;3</option>
+							</select>
+						</span>
+					</div>
+					<span class="help">The extension will only respond to members that have the selected bot admin level (or higher).</span>
+				</div>`;
+			info += `
+				<div class="field">
+					<label class="label">Channel(s)</label>
+				`;
+			$.get(`/api/servers/${GAwesomeData.extensions.state.data.server.id}/channels`, data => {
+				const channels = Object.values(data).filter(ch => ch.type === "text").sort((a, b) => a.rawPosition - b.rawPosition);
+				channels.forEach(ch => {
+					info += `
+						<label class="checkbox">
+						<input name="installer-disabled_channel_ids-${ch.id}" class="installer-disabled_channel_ids" type="checkbox">
+							#${ch.name}
+						</label>
+						<br>`;
+				});
+				info += `
+				</div>
+				<div class="field">
+					<div class="control has-addons">
+						<a class="button is-small" onclick="GAwesomeUtil.toggleChannels('installer-disabled_channel_ids', true);">
+							<span>Select All</span>
+						</a>
+						<a class="button is-small" onclick="GAwesomeUtil.toggleChannels('installer-disabled_channel_ids', false);">
+							<span>Deselect All</span>
+						</a>
+					</div>
+					<span class="help">The extension will run only in these channels.</span>
+				</div></div>`;
+				$("#installer-content").html(info);
+			});
+		},
+	},
+	confirm: {
+		"#global": () => {
+
+		},
+		"#installer-continue": () => "Install",
+		"#installer-subtitle": () => "Confirmation",
+	},
+};
+
+GAwesomeUtil.reload = () => window.location.reload(true);
+GAwesomeUtil.refresh = () => Turbolinks.visit("");
+
+GAwesomeUtil.log = (msg, level, force) => {
+	if (!GAwesomeData.config.debug && !force) return;
+	if (!msg || typeof msg !== "string" || (level && !["log", "warn", "error"].includes(level))) return console.warn("[GAwesomeBot] [WARN] Invalid Arguments for log()");
+	console[level || "log"](`[GAwesomeBot] [${level === "log" || !level ? "DEBUG" : level.toUpperCase()}] ${msg}`);
+};
+GAwesomeUtil.error = msg => GAwesomeUtil.log(msg, "error", true);
+GAwesomeUtil.warn = msg => GAwesomeUtil.log(msg, "warn", true);
+
+GAwesomeUtil.debugDump = () => {
+	GAwesomeUtil.log("[DUMP:INFO] Pass this information to a GAB Support Member and they will assist you further!", "log", true);
+	let socket;
+	if (GAwesomeData.dashboard.socket) {
+		socket = GAwesomeData.dashboard.socket;
+		GAwesomeData.dashboard.socket = {};
+	}
+	GAwesomeUtil.log(`[DUMP:APPDATA] ${JSON.stringify(GAwesomeData)}`, "log", true);
+	GAwesomeData.dashboard.socket = socket;
+	GAwesomeUtil.log(`[DUMP:SESSIONDATA] ${JSON.stringify(localStorage)}`, "log", true);
+	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({tl: !!Turbolinks, io: !!io, form: !!submitForm, bulma: !!bulma, np: !!NProgress, fs: !!saveAs, md: !!md5})}`, "log", true);
+};
 
 GAwesomeUtil.updateHeader = () => {
 	const currentNavItem = $("#nav-" + window.location.pathname.split("/")[1]);
 	if(currentNavItem) {
 		currentNavItem.addClass("is-tab");
+	}
+};
+
+GAwesomeUtil.toggleChannels = (classname, value) => {
+	const elements = document.getElementsByClassName(classname);
+	const len = elements.length;
+	for (let i = 0; i < len; i++) {
+		elements[i].checked = value;
 	}
 };
 
@@ -320,7 +436,105 @@ GAwesomeUtil.featureExtension = extid => {
 };
 
 GAwesomeUtil.installExtension = extid => {
-	alert("In Progress");
+	GAwesomeUtil.log("Beginning Extension installing process");
+	const extension = GAwesomeData.extensions.extensions.find(a => a._id === extid);
+	if (!extension) {
+		return GAwesomeUtil.warn(`Failed to find Extension Data for ID ${extid}`);
+	}
+	const h = GAwesomeData.extensions.html;
+	GAwesomeUtil.log("Extension Installing Phase: START");
+	GAwesomeData.extensions.state = {
+		phase: 0,
+		id: extid,
+		extension: extension,
+		ongoing: true,
+		data: {},
+		phases: ["start"],
+	};
+	if (extension.type !== "event") GAwesomeData.extensions.state.phases.push("config");
+	if (extension.scopes.length) GAwesomeData.extensions.state.phases.push("scopes");
+	if (extension.fields && extension.fields.length) GAwesomeData.extensions.state.phases.push("fields");
+	GAwesomeData.extensions.state.phases.push("confirm");
+	Object.keys(h["start"]).forEach(id => $(id).html(h["start"][id].replace("$EXTNAME", extension.name)));
+	$("html").addClass("is-clipped");
+	$("#installer-modal").addClass("is-active");
+};
+
+GAwesomeUtil.cancelInstall = () => {
+	if (GAwesomeData.extensions.state && GAwesomeData.extensions.state.ongoing) {
+		GAwesomeUtil.log("Stopping Extension install after User Input");
+		GAwesomeData.extensions.state.ongoing = false;
+		$("#installer-modal").removeClass("is-active");
+		$("html").removeClass("is-clipped");
+		$("#installer-content").html("");
+		$("#installer-control").css('visibility', 'hidden');
+		$("#installer-loading").hide();
+		$("#installer-progress").attr("value", 0);
+		$("#installer-selector").show();
+	} else {
+		GAwesomeUtil.warn("Extension Install not ongoing!");
+	}
+};
+
+GAwesomeUtil.switchInstallTarget = () => {
+	if (!GAwesomeData.extensions.state || !GAwesomeData.extensions.state.ongoing) return GAwesomeUtil.warn("An Install is not ongoing");
+	const serverid = $("#installer-serverSelect").val();
+	const target = $("#installer-content");
+	target.hide();
+	if (serverid === "select") {
+		target.html("");
+		$("#installer-control").css('visibility', 'hidden');
+	} else {
+		const e = GAwesomeData.extensions.state.extension;
+		const svr = GAwesomeData.extensions.servers.find(a => a.id === serverid);
+		let info = `
+								<br>
+								<h5 class="title is-5">${e.name}</h5>
+								<h5 class="subtitle is-5">$DATA</h5>
+								<span class="icon is-large">
+									<i class="fa fa-2x fa-arrow-down"></i>
+								</span>
+								<br>
+								<br>
+								<img src="${svr.icon}" alt="${svr.id}" height="128" width="128">
+								<h5 class="title is-5">${svr.name}</h5>
+								`;
+		switch (e.type) {
+			case "command":
+				info = info.replace("$DATA", `Use <code>${svr.prefix}${e.typeDescription}</code> to trigger this extension.`);
+				break;
+			case "keyword":
+				info = info.replace("$DATA", `Messages with <code>${e.typeDescription}</code> will trigger this extension.`);
+				break;
+			case "timer":
+				info = info.replace("$DATA", `Every <code>${e.typeDescription}</code> this extension will trigger.`);
+				break;
+			case "event":
+				info = info.replace("$DATA", `This extension will trigger on the <code>${e.typeDescription}</code> event.`);
+				break;
+		}
+		target.html(`${info}`);
+		$("#installer-control").css("visibility", "visible");
+	}
+	$("#installer-loading").hide();
+	target.show();
+};
+
+GAwesomeUtil.advanceInstall = () => {
+	if (GAwesomeData.extensions.state.inUse) return;
+	GAwesomeData.extensions.state.inUse = true;
+	$("#installer-content").hide();
+	$("#installer-loading").show();
+	const phases = GAwesomeData.extensions.state.phases;
+	const oldPhase = GAwesomeData.extensions.state.phase;
+	const newPhase = oldPhase + 1;
+	$("#installer-progress").attr("value", Math.ceil((newPhase / (phases.length - 1)) * 100))
+	GAwesomeData.extensions.state.phase = newPhase;
+	const h = GAwesomeData.extensions.html;
+	Object.keys(h[phases[newPhase]]).forEach(id => $(id).html(h[phases[newPhase]][id]()));
+	$("#installer-loading").hide();
+	$("#installer-content").show();
+	GAwesomeData.extensions.state.inUse = false;
 };
 
 GAwesomePaths["extensions"] = () => {
@@ -486,8 +700,8 @@ GAwesomePaths["dashboard"] = () => {
 			$("#update-modal").removeClass("is-active");
 		});
 		GAwesomeUtil.dashboard.connect();
-		const consoleSection = window.location.pathname.split("/")[2];
-		const sectionPage = window.location.pathname.split("/")[3];
+		const consoleSection = window.location.pathname.split("/")[3];
+		const sectionPage = window.location.pathname.split("/")[4];
 		if (sectionPage === "command-options") {
 			$("#ban_gif").on("blur", () => {
 				if ($("#ban_gif").val() === "Default") {

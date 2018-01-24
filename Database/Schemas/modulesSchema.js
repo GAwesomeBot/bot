@@ -103,5 +103,14 @@ module.exports = new mongoose.Schema({
 		min: 100,
 		max: 10000,
 	},
-	fields: Object,
+	fields: [
+		new mongoose.Schema({
+			_id: {
+				type: String,
+				required: true,
+			},
+			name: String,
+			value: String,
+		}),
+	],
 }, { usePushEach: true });

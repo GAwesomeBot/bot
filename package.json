@@ -22,10 +22,10 @@
     "circular-json": "^0.5.1",
     "compression": "^1.7.1",
     "connect-mongo": "^2.0.1",
-    "convert-units": "*",
+    "convert-units": "^2.3.4",
     "cookie-parser": "*",
     "dblposter": "^1.0.3",
-    "discord.js": "github:hydrabolt/discord.js",
+    "discord.js": "github:discordjs/discord.js",
     "ejs": "*",
     "erlpack": "github:discordapp/erlpack",
     "express": "^4.16.2",
@@ -34,8 +34,11 @@
     "fast-levenshtein": "*",
     "feed-read": "*",
     "fs-nextra": "^0.3.2",
-    "mathjs": "^3.19.0",
+    "gifwrap": "*",
+    "jimp": "*",
+    "mathjs": "^3.20.1",
     "moment": "^2.20.1",
+    "moment-timezone": "^0.5.14",
     "money": "^0.2.0",
     "mongoose": "^4.13.9",
     "mongoose-findorcreate": "*",
@@ -52,9 +55,9 @@
     "showdown": "^1.8.6",
     "snekfetch": "^3.6.1",
     "socket.io": "^2.0.4",
-    "string": "*",
     "text-diff": "*",
     "urban": "*",
+    "uuid": "^3.2.1",
     "vm2": "^3.5.2",
     "wikijs": "^4.5.0",
     "winston": "^2.4.0",
@@ -66,7 +69,7 @@
     "zlib-sync": "^0.1.4"
   },
   "devDependencies": {
-    "eslint": "^4.15.0",
-    "uglify-js": "^3.3.5"
+    "eslint": "^4.16.0",
+    "uglify-js": "^3.3.8"
   }
 }

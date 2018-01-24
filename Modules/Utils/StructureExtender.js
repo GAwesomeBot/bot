@@ -36,7 +36,7 @@ module.exports = () => {
 		class GABMessage extends Message {
 			constructor (client, data, channel) {
 				super(client, data, channel);
-				if (channel.guild) {
+				if (channel.guild && client.isReady) {
 					client.checkCommandTag(data.content, channel.guild.serverDocument)
 						.then(object => {
 							Object.defineProperty(this, "_commandObject", {
@@ -44,7 +44,7 @@ module.exports = () => {
 								value: object,
 							});
 						});
-				} else {
+				} else if (client.isReady) {
 					let command = data.content.toLowerCase().trim();
 					let suffix = null;
 					if (command.includes(" ")) {
