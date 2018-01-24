@@ -629,7 +629,10 @@ class GABClient extends DJSClient {
 								const role = server.roles.get(rank.role_id);
 								if (role) {
 									try {
-										member.addRole(role, `Added member to the role for leveling up in ranks.`).catch(err => err);
+										member.roles.add(role, `Added member to the role for leveling up in ranks.`)
+											.catch(err => {
+												throw err;
+											});
 									} catch (err) {
 										winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
 											svrid: server.id,
@@ -686,7 +689,7 @@ class GABClient extends DJSClient {
 			const role = server.roles.get(roleID);
 			if (role) {
 				try {
-					await member.addRole(role, `Added the role to the member due to a violation.`);
+					await member.roles.add(role, `Added the role to the member due to a violation.`);
 				} catch (err) {
 					winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
 				}
