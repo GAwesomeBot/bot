@@ -4,7 +4,7 @@
 - [ ] This PR changes internal functions, modules and/or utilities
   - [ ] This PR modifies the Extension API
 - [ ] This PR modifies commands
-  - [ ] This PR changes metadata for the command (such as usage), updated in `commands.js`
+  - [ ] This PR changes metadata for commands (such as usage), updated in `commands.js`
 - [ ] This PR modifies Web processing and/or content
   - [ ] This PR modifies static/ejs content
   - [ ] This PR modifies request processing (controllers & middleware)
