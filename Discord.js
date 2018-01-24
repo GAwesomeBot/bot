@@ -1452,7 +1452,7 @@ bot.IPC.on("restart", async (msg, callback) => {
 	}
 });
 
-bot.IPC.on("updateConfig", async (_, callback) => {
+bot.IPC.on("updateConfig", async (msg, callback) => {
 	try {
 		global.configJSON = reload("./Configurations/config.json");
 		return callback({ error: false });
