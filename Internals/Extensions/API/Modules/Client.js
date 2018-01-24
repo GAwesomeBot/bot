@@ -1,10 +1,5 @@
 const API = require("../index");
-const {
-	Errors: {
-		Error: GABError,
-	},
-	Constants: { Colors },
-} = require("../../../index");
+const { Constants: { Colors } } = require("../../../index");
 let bot, server, serverDocument, scopes, scopeManager, extensionDocument;
 const ScopeManager = API.ScopeManager;
 
@@ -17,7 +12,8 @@ module.exports = class Client {
 	 * @param {GABClient} rawBot The raw bot instance
 	 * @param {Discord.Guild} rawServer The raw guild this client should be instantiated for
 	 * @param {Document} rawServerDocument The server document for the guild
-	 * @param {object} rawScopes The scopes this extension has been granted by the guild
+	 * @param {Object} rawExtensionDocument The extension's DB document
+	 * @param {Object} rawScopes The scopes this extension has been granted by the guild
 	 */
 	constructor (rawBot, rawServer, rawServerDocument, rawExtensionDocument, rawScopes) {
 		// Private values
@@ -65,7 +61,7 @@ module.exports = class Client {
 	 * Using this method requires the `channels_read` scope.
 	 * @param {Discord.TextChannel} channel The channel to check
 	 * @param {Discord.GuildMember} member The member to check
-	 * @returns {boolean} A boolean indicating if the given member is muted in the given channel
+	 * @returns {Boolean} A boolean indicating if the given member is muted in the given channel
 	 */
 	isMuted (channel, member) {
 		scopeManager.check("read", "channels", channel);
@@ -77,7 +73,7 @@ module.exports = class Client {
 	 * Using this method requires the `channels_manage` scope.
 	 * @param {Discord.TextChannel} channel The channel to mute the given member in
 	 * @param {Discord.GuildMember} member The member to mute in the given channel
-	 * @param {string} [reason] An optional reason to be displayed in the audit logs
+	 * @param {String} [reason] An optional reason to be displayed in the audit logs
 	 * @returns {promise}
 	 */
 	muteMember (channel, member, reason) {
@@ -90,7 +86,7 @@ module.exports = class Client {
 	 * Using this method requires the `channels_manage` scope.
 	 * @param {Discord.TextChannel} channel The channel to unmute the given member in
 	 * @param {Discord.GuildMember} member The member to mute in the given channel
-	 * @param {string} [reason] An optional reason to be displayed in the audit logs
+	 * @param {String} [reason] An optional reason to be displayed in the audit logs
 	 * @returns {promise}
 	 */
 	unmuteMember (channel, member, reason) {
@@ -100,7 +96,7 @@ module.exports = class Client {
 
 	/**
 	 * Find a member in the extension's guild
-	 * @param {string} query The query to find the user with, an ID, a username, nickname, etc.
+	 * @param {String} query The query to find the user with, an ID, a username, nickname, etc.
 	 * @async
 	 * @returns {API.Member}
 	 */
@@ -111,8 +107,8 @@ module.exports = class Client {
 
 	/**
 	 * Handles a member's violation with the specified action
-	 * @param {string} channel The channel ID the violation occured
-	 * @param {string} member The member ID that did the violation
+	 * @param {String} channel The channel ID the violation occured
+	 * @param {String} member The member ID that did the violation
 	 * @param {String} userMessage A string that should be given to the user about the violation
 	 * @param {String} adminMessage A string that should be given to the admins about what the user violated
 	 * @param {String} strikeMessage The strike message that should appear in the mod logs and the audit logs
