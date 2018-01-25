@@ -5,7 +5,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 	if (msg.suffix) {
 		let [count, lastID, ...other] = msg.suffix.split(" ");
 		count = parseInt(count);
-		if (count > 100) count = 100;
+		if (count > 100 || isNaN(count) || !count || count <= 0) count = 100;
 		const archive = [];
 		let messages;
 		let success = true;
@@ -17,7 +17,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				embed: {
 					color: Colors.RED,
 					title: `Uh-oh.. I was unable to fetch the message(s)!`,
-					description: `The error message I got was \`\`\`${err.messages}\`\`\``,
+					description: `The error message I got was \`\`\`${err}\`\`\``,
 					footer: {
 						text: `Make sure I have "Read Message History" in this channel or that the last ID is valid!`,
 					},
