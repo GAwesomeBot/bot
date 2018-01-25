@@ -146,11 +146,11 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 		const animatedEmojis = msg.guild.emojis.filter(e => e.animated);
 		const fields = [];
 		staticEmojis.size && fields.push({
-			name: `There ${staticEmojis.size === 1 ? "is" : "are"} ${staticEmojis.size} static emoji${staticEmojis.size === 1 ? "s" : ""} in this server`,
+			name: `There ${staticEmojis.size === 1 ? "is" : "are"} ${staticEmojis.size} static emoji${staticEmojis.size === 1 ? "" : "s"} in this server`,
 			value: `${staticEmojis.map(e => `\`:${e.name}:\` » ${e}`).join("\n")}`,
 		});
 		animatedEmojis.size && fields.push({
-			name: `There ${animatedEmojis.size === 1 ? "is" : "are"} ${animatedEmojis.size} animated emoji${animatedEmojis.size === 1 ? "s" : ""} in this server`,
+			name: `There ${animatedEmojis.size === 1 ? "is" : "are"} ${animatedEmojis.size} animated emoji${animatedEmojis.size === 1 ? "" : "s"} in this server`,
 			value: `${animatedEmojis.map(e => `\`:${e.name}:\` » ${e}`).join("\n")}`,
 		});
 		msg.channel.send({
