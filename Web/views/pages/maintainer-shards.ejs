@@ -16,7 +16,7 @@
             if (isPerformingAction || !res) return;
             isPerformingAction = true;
             $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down...");
-            $.post("/dashboard/management/shards?svrid=maintainer", { shutdown: "master" }).done(() => {
+            $.post("/dashboard/maintainer/management/shards", { shutdown: "master" }).done(() => {
               $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down... Goodbye!");
               swal.stopLoading();
               swal("Success!", "You will be redirected shortly.", "success");
@@ -36,7 +36,7 @@
         	    if (isPerformingAction || !res) return;
         	    isPerformingAction = true;
                 $("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting...");
-        		$.post("/dashboard/management/shards?svrid=maintainer", { restart: "master" }).done(() => {
+        		$.post("/dashboard/maintainer/management/shards", { restart: "master" }).done(() => {
         			$("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting... Be right back!");
         			swal.stopLoading();
         			swal("Success!", "You will be redirected shortly.", "success");
@@ -56,7 +56,7 @@
         	    if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#freeze-${id}`).html("Freezing...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { "freeze-shard": id }).done(() => {
+                $.post("/dashboard/maintainer/management/shards", { "freeze-shard": id }).done(() => {
                 	$(`#freeze-${id}`).parent().html(`<a id="restart-${id}" class="card-footer-item card-footer-item-danger" href="javascript:restartShard(${id})">Restart</a>`);
                 	$(`#shard-header-${id}`).append(" (Frozen)");
                 	swal.stopLoading();
@@ -76,7 +76,7 @@
                 if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#reset-${id}`).html("Resetting...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { "reset-shard": id }).done(() => {
+                $.post("/dashboard/maintainer/management/shards", { "reset-shard": id }).done(() => {
                 	$(`#reset-${id}`).html("Reset");
                 	swal("Success!", "This shard is now being reinitialized.", "success");
                 	isPerformingAction = false;
@@ -94,7 +94,7 @@
                 if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#restart-${id}`).html("Restarting...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { "restart-shard": id }).done(() => {
+                $.post("/dashboard/maintainer/management/shards", { "restart-shard": id }).done(() => {
                 	$(`#restart-${id}`).parent().html(`<div class="card-footer-item" style="cursor: default; user-select: none;">See you soon!</div>`);
                 	swal.stopLoading();
                 	swal("Success!", "This shard is now restarting.", "success");
@@ -104,7 +104,7 @@
         }
 
         function dismissWarning(warn, id) {
-        	$.post("/dashboard/management/shards?svrid=maintainer", { dismiss: warn }).done(() => {
+        	$.post("/dashboard/maintainer/management/shards", { dismiss: warn }).done(() => {
         		$(`#warning-${id}`).remove();
         		let warnCounter = $("#warning-count");
         		warnCounter.text(Number(warnCounter.text()) - 1);

@@ -12,7 +12,7 @@
 	  	$(`#endSession-${type}-${id}`).html("Ending Game...");
 		$.ajax({
 			type: "POST",
-			url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+			url: "<%= currentPage %>",
 			data: {
 				"end-type": type,
 				"end-id": id

@@ -47,7 +47,7 @@
 
         	if (code) {
         		codeArea.removeClass("is-danger");
-        		$.post("/dashboard/management/eval?svrid=maintainer", { code, target })
+        		$.post("/dashboard/maintainer/management/eval", { code, target })
                   .done(data => {
                   	data = JSON.parse(data);
                   	let log = evalLog.replace("$CODE$", code)

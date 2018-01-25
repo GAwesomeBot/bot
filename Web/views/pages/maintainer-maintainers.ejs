@@ -20,7 +20,7 @@
 			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=maintainer",
+				url: "<%= currentPage %>",
 				data: {
 				  "new-user": newMaintainerUser.val(),
 				  "isSudo": $("#role-select").val() === "sudo",

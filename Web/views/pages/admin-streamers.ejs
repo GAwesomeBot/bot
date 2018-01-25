@@ -19,7 +19,7 @@
 		  hide_update_modal = true;
 		  $.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-name": newStreamerName.val(),
 					"new-type": newStreamerType.val()

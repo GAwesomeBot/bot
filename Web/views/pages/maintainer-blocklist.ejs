@@ -16,7 +16,7 @@
 			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=maintainer",
+				url: "<%= currentPage %>",
 				data: {
 					"new-user": newBlockUser.val()
 				},
@@ -49,7 +49,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
+					<form id="form" action="<%= currentPage %>=" method="post">
 						<div class="field" style="overflow-x: scroll;">
 							<% if(config.global_blocklist.length>0) { %>
 							<table class="table is-fullwidth">
