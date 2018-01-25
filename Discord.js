@@ -1046,14 +1046,15 @@ class GABClient extends DJSClient {
 	 * Sets a timeout that will be automatically cancelled if the client is destroyed
 	 * @param {Function} fn
 	 * @param {Number} delay time to wait before executing (in milliseconds)
+	 * @param {String} [key="generic"] The key representing this timer
 	 * @param {...*} args Arguments for the function
 	 * @returns {Timeout}
 	 */
-	setTimeout (fn, delay, ...args) {
+	setTimeout (fn, delay, key = "generic", ...args) {
 		const timeout = Timeouts.setTimeout(() => {
 			fn(...args);
 			this._timeouts.delete(timeout);
-		}, delay);
+		}, delay, key);
 		this._timeouts.add(timeout);
 		return timeout;
 	}
@@ -1071,11 +1072,12 @@ class GABClient extends DJSClient {
 	 * Sets an interval that will be automatically cancelled if the client is destroyed
 	 * @param {Function} fn Function to execute
 	 * @param {Number} delay Time to wait between executions (in milliseconds)
+	 * @param {String} [key="generic"] The key representing this interval
 	 * @param {...*} args Arguments for the function
 	 * @returns {Timeout}
 	 */
-	setInterval (fn, delay, ...args) {
-		const interval = Timeouts.setInterval(fn, delay, ...args);
+	setInterval (fn, delay, key = "generic", ...args) {
+		const interval = Timeouts.setInterval(fn, delay, key, ...args);
 		this._intervals.add(interval);
 		return interval;
 	}

@@ -1,5 +1,5 @@
 module.exports = class Base {
-	constructor (listener, after, ...args) {
+	constructor (listener, after, key, ...args) {
 		this.listener = listener;
 		this.after = after;
 		this.unreffed = false;
@@ -13,6 +13,11 @@ module.exports = class Base {
 		this.timeout = null;
 
 		this.startedAt = Date.now();
+
+		/**
+		 * Special identifier for this timeout
+		 */
+		this.specialIdentifier = key;
 	}
 
 	unref () {
