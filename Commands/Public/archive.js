@@ -69,11 +69,21 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				url: a.attachment,
 			})),
 		}));
-		const fileBuffer = Buffer.from(JSON.stringify(messages, null, 2));
+		const resultData = {
+			archiveTime: moment().tz("Europe/London").format(`DD[.]MM[.]YYYY [at] HH[:]mm[:]ss [UTC]Z`),
+			archiveTimeUnix: Date.now(),
+			serverName: msg.guild.name,
+			serverID: msg.guild.id,
+			channelName: msg.channel.name,
+			channelID: msg.channel.id,
+			archivedMessages: messages.length,
+			messages,
+		};
+		const fileBuffer = Buffer.from(JSON.stringify(resultData, null, 2));
 		try {
 			await msg.channel.send({
-				content: `Here you have the last ${count} messages! ✅`,
-				files: [new Attachment(fileBuffer, `archive-${msg.guild.name}-${msg.channel.name}-${count}-${Date.now()}.json`)],
+				content: `Here you have the last ${messages.length} messages! ✅`,
+				files: [new Attachment(fileBuffer, `archive-${msg.guild.name}-${msg.channel.name}-${Date.now()}.json`)],
 			});
 		} catch (err) {
 			msg.channel.send({
