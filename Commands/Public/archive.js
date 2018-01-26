@@ -1,16 +1,23 @@
 const { MessageAttachment: Attachment } = require("discord.js");
 const moment = require("moment-timezone");
 
-module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
 	if (msg.suffix) {
 		let [count, lastID, ...other] = msg.suffix.split(" ");
 		count = parseInt(count);
-		if (count > 100 || isNaN(count) || !count || count <= 0) count = 100;
-		const archive = [];
+		if (isNaN(count) || !count || count <= 0) {
+			return msg.channel.send({
+				embed: {
+					color: Colors.INVALID,
+					title: "What's that number? 🤔",
+					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
+				},
+			});
+		}
+		if (count > 100) count = 100;
 		let messages;
-		let success = true;
 		try {
-			messages = await msg.channel.messages.fetch({ limit: count || 50, before: lastID ? lastID : msg.channel.lastMessageID });
+			messages = await msg.channel.messages.fetch({ limit: count, before: lastID ? lastID : msg.channel.lastMessageID });
 			if (messages.size === 0) throw new Error(`Either there were no messages or I don't have the "Read Message History" permission in this channel`);
 		} catch (err) {
 			return msg.channel.send({
@@ -24,39 +31,49 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				},
 			});
 		}
-		messages.forEach(message => {
-			archive.push({
-				author: {
-					username: message.author.username,
-					discriminator: message.author.discriminator,
-					id: message.author.id,
-					bot: message.author.bot,
-					avatarURL: message.author.displayAvatarURL(),
-				},
-				createdAt: `${moment(message.createdAt).tz("Europe/London").format(`DD[.]MM[.]YYYY [at] HH[:]mm[:]ss [UTC]Z`)}`,
-				content: message.content,
-				cleanContent: message.cleanContent,
-				editedAt: `${message.editedAt ? moment(message.editedAt).tz("Europe/London").format(`DD[.]MM[.]YYYY [at] HH[:]mm[:]ss [UTC]Z`) : "Message wasn't edited"}`,
-				embeds: message.embeds.map(e => ({
-					author: e.author || {},
-					color: e.hexColor ? `0x${e.hexColor.replace("#", "").toUpperCase()}` : null,
-					description: e.description,
-					fields: e.fields || [],
-					footer: e.footer || {},
-					image: e.image ? e.image.url : null,
-					timestamp: `${e.timestamp}`,
-					title: e.title,
-					type: e.type,
-					url: e.url || null,
-				})),
-				id: message.id,
-			});
-		});
-		const fileBuffer = Buffer.from(JSON.stringify(archive, null, 2));
+		messages = messages.map(message => ({
+			author: {
+				username: message.author.username,
+				discriminator: message.author.discriminator,
+				id: message.author.id,
+				bot: message.author.bot,
+				avatarURL: message.author.displayAvatarURL(),
+			},
+			id: message.id,
+			createdAt: moment(message.createdAt).tz("Europe/London").format(`DD[.]MM[.]YYYY [at] HH[:]mm[:]ss [UTC]Z`),
+			content: message.content || "",
+			cleanContent: message.cleanContent || "",
+			editedAt: message.editedAt ? moment(message.editedAt).tz("Europe/London").format(`DD[.]MM[.]YYYY [at] HH[:]mm[:]ss [UTC]Z`) : null,
+			embeds: message.embeds.map(e => ({
+				author: e.author ? {
+					name: e.author.name || null,
+					url: e.author.url || null,
+					iconURL: e.author.iconURL || null,
+				} : {},
+				color: e.hexColor ? `0x${e.hexColor.replace("#", "").toUpperCase()}` : null,
+				url: e.url || null,
+				description: e.description || "",
+				fields: e.fields || [],
+				footer: e.footer ? {
+					text: e.footer.text || null,
+					iconURL: e.footer.iconURL || null,
+				} : {},
+				image: e.image ? e.image.url : null,
+				thumbnail: e.thumbnail ? e.thumbnail.url : null,
+				timestamp: e.timestamp || null,
+				title: e.title || null,
+				type: e.type || null,
+			})),
+			attachments: message.attachments.map(a => ({
+				name: a.name,
+				url: a.attachment,
+			})),
+		}));
+		const fileBuffer = Buffer.from(JSON.stringify(messages, null, 2));
 		try {
 			await msg.channel.send({
-				content: `Here you go! ✅`,
-				files: [new Attachment(fileBuffer, `archive-${msg.guild.name}-${msg.channel.name}-${Date.now()}.json`)],
+				content: `Here you have the last ${count} messages! ✅`,
+				files: [new Attachment(fileBuffer, `archive-${msg.guild.name}-${msg.channel.name}-${count}-${Date.now()}.json`)],
 			});
 		} catch (err) {
 			msg.channel.send({
