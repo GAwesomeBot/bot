@@ -44,7 +44,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				},
 			});
 		}
-		const banned = m => m.edit({
+		const banned = () => msg.send({
 			embed: {
 				image: {
 					url: serverDocument.config.ban_gif,
@@ -83,7 +83,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			}
 		};
 		if (member) {
-			let m = await msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INPUT,
 					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s input..`,
@@ -93,31 +93,42 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					},
 				},
 			});
-			const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 120000 })).first();
-			if (mm) {
-				try {
-					await mm.delete();
-				} catch (_) {
-					// Meh
+			const collector = msg.channel.createMessageCollector(
+				m => m.author.id === msg.author.id,
+				{ time: 120000 }
+			);
+			collector.on("collect", async message => {
+				console.log(message);
+				if (message.editedAt) {
+					collector.stop();
+					return null;
 				}
-			}
-			if (mm && configJS.yesStrings.includes(mm.content.toLowerCase().trim())) {
-				if (isGuildMember) {
-					member.ban({ days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
-				} else {
-					msg.guild.members.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+				if (message.content) {
+					collector.stop();
+					try {
+						await message.delete();
+					} catch (_) {
+						// Meh
+					}
+					if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
+						if (isGuildMember) {
+							member.ban({ days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+						} else {
+							msg.guild.members.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+						}
+						dmBanned(member.id);
+						await CreateModLog(msg.guild, "Ban", member, msg.author, reason);
+						return banned();
+					} else {
+						return msg.send({
+							embed: {
+								description: `Ban canceled! 😓`,
+								color: Colors.INFO,
+							},
+						});
+					}
 				}
-				dmBanned(member.id);
-				await CreateModLog(msg.guild, "Ban", member, msg.author, reason);
-				return banned(m);
-			} else {
-				return m.edit({
-					embed: {
-						description: `Ban canceled! 😓`,
-						color: Colors.INFO,
-					},
-				});
-			}
+			});
 		} else {
 			msg.send({
 				embed: {
@@ -130,29 +141,41 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			});
 		}
 	} else {
-		let m = await msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INVALID,
 				title: `Do you want me to ban you? 😮`,
 				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
 			},
 		});
-		const mm = (await msg.channel.awaitMessages(mmm => mmm.author.id === msg.author.id, { max: 1, time: 60000 })).first();
-		if (mm && configJS.yesStrings.includes(mm.content.toLowerCase().trim())) {
-			try {
-				await mm.delete();
-			} catch (_) {
-				// Meh
+		const collector = msg.channel.createMessageCollector(
+			m => m.author.id === msg.author.id,
+			{ time: 60000 }
+		);
+		collector.on("collect", async message => {
+			if (message.editedAt) {
+				collector.stop();
+				return null;
 			}
-			m.edit({
-				embed: {
-					color: Colors.SOFT_ERR,
-					description: `Ok! Bye-Bye!`,
-					footer: {
-						text: `Just kidding! I'd never ban you. ❤️`,
-					},
-				},
-			});
-		}
+			if (message.content) {
+				collector.stop();
+				try {
+					await message.delete();
+				} catch (_) {
+					// Meh
+				}
+				if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
+					msg.send({
+						embed: {
+							color: Colors.SOFT_ERR,
+							description: `Ok! Bye-Bye!`,
+							footer: {
+								text: `Just kidding! I'd never ban you. ❤️`,
+							},
+						},
+					});
+				}
+			}
+		});
 	}
 };
