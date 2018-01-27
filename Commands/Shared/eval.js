@@ -33,7 +33,7 @@ module.exports = async (main, msg, commandData) => {
 			if (typeof result !== "string") result = require("util").inspect(result, false, 1);
 			result = result.replace(regex, "-- GAB SNIP --");
 			if (result.length <= 1980) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: 0x00FF00,
 						description: `\`\`\`js\n${result}\`\`\``,
@@ -49,7 +49,7 @@ module.exports = async (main, msg, commandData) => {
 					text: result,
 					file: "eval_results.js",
 				});
-				res && res.url && msg.channel.send({
+				res && res.url && msg.send({
 					embed: {
 						color: 0x3669FA,
 						title: `The eval results were too large!`,
@@ -58,7 +58,7 @@ module.exports = async (main, msg, commandData) => {
 				});
 			}
 		} catch (err) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: 0xFF0000,
 					description: `\`\`\`js\n${err.stack}\`\`\``,
@@ -69,7 +69,7 @@ module.exports = async (main, msg, commandData) => {
 			});
 		}
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: 0xFF0000,
 				description: `What would you like to evaluate?`,

@@ -39,7 +39,7 @@ module.exports = async ({ bot, Constants: { Colors, Perms } }, msg, commandData)
 				name: "-h, --help",
 				value: "Display this help message, overrides any other arguments passed",
 			});
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `The debug command arguments`,
@@ -145,7 +145,7 @@ module.exports = async ({ bot, Constants: { Colors, Perms } }, msg, commandData)
 				});
 			}
 
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.RESPONSE,
 					title: `GAwesomeBot Debug Information`,
@@ -160,7 +160,7 @@ module.exports = async ({ bot, Constants: { Colors, Perms } }, msg, commandData)
 			});
 		}
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
 				title: `${bot.user.tag} running ${version !== 404 ? `GAwesomeBot version ${version.config.name}` : "an unknown GAwesomeBot version"}`,
