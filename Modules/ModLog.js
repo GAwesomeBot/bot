@@ -8,7 +8,7 @@ module.exports = class ModLog {
 	}
 
 	static getUserText (user) {
-		return `${user.tag} (${user}) <${user.id}>`;
+		return `${user.tag} <${user.id}>`;
 	}
 
 	static getEntryText (modlogID, type, affectedUserString = null, creatorString = null, reason = null) {
