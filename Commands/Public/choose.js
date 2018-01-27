@@ -3,7 +3,7 @@ const ArgParser = require("../../Modules/MessageUtils/Parser");
 module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
 	if (msg.suffix) {
 		const choices = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.RESPONSE,
 				title: `I choose:`,
@@ -15,7 +15,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		});
 	} else {
 		winston.verbose(`No options given for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INVALID,
 				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),

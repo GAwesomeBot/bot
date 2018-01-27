@@ -71,14 +71,14 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 				}
 			}
 			if (list.length === 1) {
-				msg.channel.send(results[0]);
+				msg.send(results[0]);
 			} else {
 				let menu = new ReactionMenu(msg, list, results);
 				await menu.init();
 			}
 		} else {
 			winston.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.LIGHT_RED,
 					description: `No animu found... (˃̥̥ω˂̥̥̥)`,
@@ -90,7 +90,7 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 		}
 	} else {
 		winston.verbose(`Anime name not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,
 				image: {

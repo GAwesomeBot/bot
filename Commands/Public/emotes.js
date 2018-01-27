@@ -9,14 +9,14 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 			parsedEmoji = { id: String(emoji), animated: "unknown" };
 		}
 		if (!parsedEmoji) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INVALID,
 					description: `Your input is not an emoji! 😒`,
 				},
 			});
 		} else if (parsedEmoji && !parsedEmoji.id) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INVALID,
 					description: `That's a unicode emoji!`,
@@ -104,7 +104,7 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 					});
 				}
 
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.RESPONSE,
 						fields,
@@ -118,7 +118,7 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 					},
 				});
 			} else {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						description: `I don't know too much about this emoji, but here is everything I can tell you!`,
@@ -153,7 +153,7 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 			name: `There ${animatedEmojis.size === 1 ? "is" : "are"} ${animatedEmojis.size} animated emoji${animatedEmojis.size === 1 ? "" : "s"} in this server`,
 			value: `${animatedEmojis.map(e => `\`:${e.name}:\` » ${e}`).join("\n")}`,
 		});
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
 				fields,
@@ -163,7 +163,7 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 			},
 		});
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
 				description: `There aren't any custom emojis in this server! 🌋`,

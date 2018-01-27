@@ -27,7 +27,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		}
 		const { canClientBan, memberAboveAffected } = await client.canDoActionOnMember(msg.guild, msg.member, (isGuildMember && member) || null, "ban");
 		if (!canClientBan) {
-			return msg.channel.send({
+			return msg.send({
 				embed: {
 					color: Colors.RED,
 					title: `I'm sorry, but I can't do that... 😔`,
@@ -36,7 +36,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			});
 		}
 		if (!memberAboveAffected) {
-			return msg.channel.send({
+			return msg.send({
 				embed: {
 					color: Colors.RED,
 					title: `I'm sorry, but I cannot let you do that! 😶`,
@@ -119,7 +119,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				});
 			}
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					description: `I couldn't find a matching member on this server...`,

@@ -8,7 +8,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 				if (res.result && res.type) {
 					switch (res.type) {
 						case "money": {
-							return msg.channel.send({
+							return msg.send({
 								embed: {
 									color: Colors.RESPONSE,
 									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(res.result * 100) / 100}**${args[2].toUpperCase()}**`,
@@ -16,7 +16,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 							});
 						}
 						case "unit": {
-							return msg.channel.send({
+							return msg.send({
 								embed: {
 									color: Colors.RESPONSE,
 									description: `${args[0]}**${args[1]}** is ${res.result}**${args[2]}**`,
@@ -28,7 +28,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 			} catch (e) {
 				switch (e) {
 					case "FAILED_TO_CONVERT_CURRENCY_OR_UNITS": {
-						return msg.channel.send({
+						return msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
 								title: `I was unable to convert your currencies or units... 😔`,
@@ -37,7 +37,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 						});
 					}
 					case "FAILED_TO_CONVERT_UNITS": {
-						return msg.channel.send({
+						return msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
 								title: `I was unable to convert your units... 😔`,
@@ -46,7 +46,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 						});
 					}
 					default: {
-						return msg.channel.send({
+						return msg.send({
 							embed: {
 								color: Colors.ERR,
 								title: `An unknown error occured.. This scares me!`,
@@ -59,7 +59,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 		}
 	} else {
 		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INVALID,
 				title: `I need something to convert! 🤓`,

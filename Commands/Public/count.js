@@ -43,7 +43,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 						case "":
 						case ".":
 							countDocument.remove();
-							msg.channel.send({
+							msg.send({
 								embed: {
 									color: Colors.SUCCESS,
 									title: `Poof! 💨 "${countDocument._id}" is gone!`,
@@ -65,7 +65,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 								countDocument.value--;
 								break;
 							} else {
-								msg.channel.send({
+								msg.send({
 									embed: {
 										color: Colors.SOFT_ERR,
 										description: "Sorry, but we're all about positivity here 🙃",
@@ -74,7 +74,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 								return;
 							}
 					}
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SUCCESS,
 							description: `\`${countDocument._id}\` is now at **${countDocument.value}** ${action}`,
@@ -85,7 +85,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 				}
 			} else {
 				winston.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.INVALID,
 						description: Text.INVALID_USAGE(commandData),
@@ -95,7 +95,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 		} else {
 			const countDocument = serverDocument.config.count_data.id(msg.suffix.toLowerCase().trim());
 			if (countDocument) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.INFO,
 						description: `\`${countDocument._id}\` is currently at **${countDocument.value}** 📊`,
@@ -129,7 +129,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { server
 			});
 			await menu.init();
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					description: `No one on this server is counting anything 📒`,

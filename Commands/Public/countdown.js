@@ -10,7 +10,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 			const { error, event, time } = res;
 			let countdownDocument = serverDocument.config.countdown_data.id(event.toLowerCase().trim());
 			if (countdownDocument) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.INFO,
 						title: `__${countdownDocument._id}__ already exists. ⏰`,
@@ -18,7 +18,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 					},
 				});
 			} else if (error) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						description: `You've provided an invalid time for the countdown! 😶`,
@@ -36,7 +36,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 				});
 				countdownDocument = serverDocument.config.countdown_data.id(event.toLowerCase().trim());
 				await setCountdown(client, serverDocument, countdownDocument);
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SUCCESS,
 						title: `Got it 👌`,
@@ -47,14 +47,14 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 		} else {
 			let countdownDocument = serverDocument.config.countdown_data.id(msg.suffix.trim().toLowerCase());
 			if (countdownDocument) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.RESPONSE,
 						description: `\`${countdownDocument._id}\` expires **${moment(countdownDocument.expiry_timestamp).fromNow()}** ⌛️`,
 					},
 				});
 			} else {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						description: `That countdown doesn't exist in this server!`,
@@ -85,7 +85,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 			});
 			await menu.init();
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					description: `There are no countdowns in this server 📅`,

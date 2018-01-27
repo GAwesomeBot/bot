@@ -116,7 +116,7 @@ class ManageCommands {
 			name: `The following commands were invalid 😵`,
 			value: `» **${invalid.join("**\n» **")}**`,
 		});
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color,
 				fields,
@@ -150,7 +150,7 @@ class ManageCommands {
 			name: `The following commands are disabled in __all__ channels 🤐`,
 			value: `» **${disabledAll.join("**\n» **")}**`,
 		});
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color: this.Colors.INFO,
 				fields: fields.length ? fields : [
@@ -203,7 +203,7 @@ class ManageCommands {
 			name: `The following commands were invalid 😵`,
 			value: `» **${invalid.join("**\n» **")}**`,
 		});
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color,
 				fields,
@@ -246,7 +246,7 @@ class ManageCommands {
 			name: `The following commands are enabled in this channel ✨`,
 			value: enabledString,
 		});
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color: this.Colors.INFO,
 				description: enabledAllString.length ? `**The following commands are enabled in __all__ channels** 🎉\n\n${enabledAllString}` : "",

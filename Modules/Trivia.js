@@ -17,9 +17,9 @@ const questionTitles = [
 ];
 
 module.exports = class Trivia {
-	static async start (bot, svr, serverDocument, member, ch, channelDocument, set) {
+	static async start (bot, svr, serverDocument, member, ch, channelDocument, set, msg) {
 		if (channelDocument.trivia.isOngoing) {
-			ch.send({
+			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					description: "There is already an ongoing trivia game in this channel, no need to start one 🏏",
@@ -34,7 +34,7 @@ module.exports = class Trivia {
 				if (triviaSetDocument) {
 					channelDocument.trivia.set_id = set;
 				} else {
-					ch.send({
+					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
 							description: `Trivia set \`${set}\` not found.`,
@@ -53,7 +53,7 @@ module.exports = class Trivia {
 			channelDocument.trivia.score = 0;
 			channelDocument.trivia.responders = [];
 			bot.logMessage(serverDocument, LoggingLevels.INFO, `User "${member.tag}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
-			ch.send({
+			msg.send({
 				embed: {
 					color: Colors.TRIVIA_START,
 					description: `Trivia game started by ${member} 🎮`,
@@ -71,7 +71,7 @@ module.exports = class Trivia {
 		}
 	}
 
-	static async next (bot, svr, serverDocument, ch, channelDocument) {
+	static async next (bot, svr, serverDocument, ch, channelDocument, msg) {
 		if (channelDocument.trivia.isOngoing) {
 			const doNext = () => {
 				let set = defaultTriviaSet;
@@ -109,7 +109,7 @@ module.exports = class Trivia {
 			};
 
 			if (channelDocument.trivia.current_question.answer) {
-				ch.send({
+				msg.send({
 					embed: {
 						color: 0xff9200,
 						description: `The answer was \`${channelDocument.trivia.current_question.answer}\` 😛`,
@@ -137,7 +137,7 @@ module.exports = class Trivia {
 		return question;
 	}
 
-	static async answer (bot, svr, serverDocument, usr, ch, channelDocument, response) {
+	static async answer (bot, svr, serverDocument, usr, ch, channelDocument, response, msg) {
 		if (channelDocument.trivia.isOngoing) {
 			channelDocument.trivia.attempts++;
 			let triviaResponderDocument = channelDocument.trivia.responders.id(usr.id);
@@ -158,7 +158,7 @@ module.exports = class Trivia {
 						}
 					}
 				}
-				ch.send({
+				msg.send({
 					embed: {
 						color: 0x50ff60,
 						description: `${usr} got it right! 🎉 The answer was \`${channelDocument.trivia.current_question.answer}\`.`,
@@ -171,7 +171,7 @@ module.exports = class Trivia {
 					this.next(bot, svr, serverDocument, ch, channelDocument);
 				});
 			} else {
-				ch.send({
+				msg.send({
 					content: `${usr},`,
 					embed: {
 						color: Colors.INVALID,
@@ -203,7 +203,7 @@ module.exports = class Trivia {
 		return false;
 	}
 
-	static async end (bot, svr, serverDocument, ch, channelDocument) {
+	static async end (bot, svr, serverDocument, ch, channelDocument, msg) {
 		if (channelDocument.trivia.isOngoing) {
 			channelDocument.trivia.isOngoing = false;
 			channelDocument.trivia.current_question.answer = null;
@@ -225,7 +225,7 @@ module.exports = class Trivia {
 				}
 			}
 
-			ch.send({
+			msg.send({
 				embed: {
 					color: Colors.TRIVIA_END,
 					title: `Thanks for playing! 🏆`,

@@ -26,7 +26,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 			case "start": {
 				if (channelDocument.lottery.isOngoing) {
 					const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
 							title: "There's already a lottery going on in this channel 🕰",
@@ -216,7 +216,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 			}
 			default: {
 				winston.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.INVALID,
 						description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
@@ -231,7 +231,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 		const ticketPrice = Math.floor(participantTotal * channelDocument.lottery.multiplier);
 		const multiplier = channelDocument.lottery.multiplier;
 		const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
 				title: `GAwesomePoint lottery started by "@__${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}__" 💸`,

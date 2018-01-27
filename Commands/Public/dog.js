@@ -1,7 +1,7 @@
 const { RandomAnimals } = require("../../Modules/");
 
 module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
-	let m = await msg.channel.send({
+	msg.send({
 		embed: {
 			color: Colors.INFO,
 			title: `We're getting you a cute dog picture 🐶`,
@@ -11,7 +11,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 	try {
 		let dog = await RandomAnimals.dog();
 		if (dog) {
-			m.edit({
+			msg.send({
 				embed: {
 					color: Colors.LIGHT_GREEN,
 					title: `Here's your adorale dog picture! Woof! 🐶`,
@@ -22,7 +22,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			});
 		}
 	} catch (err) {
-		return m.edit({
+		return msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
 				description: `I failed to fetch a dog picture...`,

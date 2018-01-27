@@ -12,7 +12,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channe
 						},
 					});
 				} else if (channelDocument.giveaway.participant_ids.includes(msg.author.id)) {
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
 							description: `You've already enrolled in the giveaway **${channelDocument.giveaway.title}**. 🤪`,
@@ -32,7 +32,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channe
 				}
 			} else {
 				winston.verbose(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.INVALID,
 						description: `🗯 Correct usage is: \`${commandData.name} ${commandData.usage}\``,
@@ -41,7 +41,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channe
 			}
 		} else {
 			const creator = msg.guild.members.get(channelDocument.giveaway.creator_id);
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `${channelDocument.giveaway.title} 🎁	`,
@@ -61,7 +61,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channe
 			});
 		}
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
 				description: "There's isn't a giveaway going on in this channel. 👻",

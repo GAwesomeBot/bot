@@ -98,7 +98,7 @@ module.exports = {
 
 	],
 	messageUpdate: [
-
+		"GAB.MessageCommandUpdateHandler",
 	],
 	messageDeleteBulk: [
 

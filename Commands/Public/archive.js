@@ -6,7 +6,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		let [count, lastID, ...other] = msg.suffix.split(" ");
 		count = parseInt(count);
 		if (isNaN(count) || !count || count <= 0) {
-			return msg.channel.send({
+			return msg.send({
 				embed: {
 					color: Colors.INVALID,
 					title: "What's that number? 🤔",
@@ -20,7 +20,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 			messages = await msg.channel.messages.fetch({ limit: count, before: lastID ? lastID : msg.channel.lastMessageID });
 			if (messages.size === 0) throw new Error(`Either there were no messages or I don't have the "Read Message History" permission in this channel`);
 		} catch (err) {
-			return msg.channel.send({
+			return msg.send({
 				embed: {
 					color: Colors.RED,
 					title: `Uh-oh.. I was unable to fetch the message(s)!`,
@@ -86,7 +86,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				files: [new Attachment(fileBuffer, `archive-${msg.guild.name}-${msg.channel.name}-${Date.now()}.json`)],
 			});
 		} catch (err) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: `I was unable to send the archive...`,
@@ -96,7 +96,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		}
 	} else {
 		winston.verbose(`Archive number not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,
 				description: `I'll need a number of messages to archive, please! 🔢`,

@@ -11,7 +11,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 		if (rankDocument) {
 			const info = getRankText(rankDocument._id);
 			if (info) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.RESPONSE,
 						title: `The top 10 members with rank **${rankDocument._id}** 🏆`,
@@ -22,7 +22,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 					},
 				});
 			} else {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						description: `Nobody on **${msg.guild.name}** has the rank \`${rankDocument._id}\` 🤐`,
@@ -30,7 +30,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 				});
 			}
 		} else if (msg.suffix.toLowerCase() === "me") {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					description: `You have the rank \`${memberDocument.rank}\` 🏅`,
@@ -45,7 +45,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 			}
 			if (member) {
 				if (member.user.bot) {
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
 							description: "All robots are created equal 🤖",
@@ -54,14 +54,14 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 				} else {
 					const targetMemberDocument = serverDocument.members.id(member.id);
 					if (targetMemberDocument && targetMemberDocument.rank) {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								color: Colors.INFO,
 								description: `**@${bot.getName(msg.guild, serverDocument, member)}** has the rank \`${targetMemberDocument.rank}\` 🎖`,
 							},
 						});
 					} else {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								color: Colors.INFO,
 								description: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** doesn't have a rank yet 😟`,
@@ -70,7 +70,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 					}
 				}
 			} else {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						description: `Rank \`${msg.suffix}\` does not exist on this guild.`,
@@ -100,7 +100,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 			name: rankDocument._id,
 			value: `${rankDocument.members} ${rankDocument.members === 1 ? "member needs" : "members need"} ${rankDocument.max_score} points total to rank up.`,
 		}));
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.RESPONSE,
 				title: `"${msg.guild.name}"'s ranks 🏆`,
