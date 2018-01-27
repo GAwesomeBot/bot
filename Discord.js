@@ -533,8 +533,8 @@ class GABClient extends DJSClient {
 						memberAboveAffected: false,
 					};
 					if (affectedUser && affectedUser.bannable) obj.canClientBan = true;
-					if (member.highestRole && affectedUser && affectedUser.highestRole) {
-						if (member.highestRole.comparePositionTo(affectedUser.highestRole) > 0) {
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
 							obj.memberAboveAffected = true;
 						}
 					}
