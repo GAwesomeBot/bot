@@ -1,6 +1,6 @@
 const BaseEvent = require("../BaseEvent");
 const levenshtein = require("fast-levenshtein");
-const { LoggingLevels } = require("../../Constants");
+const { LoggingLevels, Colors } = require("../../Constants");
 
 class SpamHandler extends BaseEvent {
 	requirements (msg) {
@@ -68,7 +68,7 @@ class SpamHandler extends BaseEvent {
 						// Message user and tell them to stop
 						msg.author.send({
 							embed: {
-								color: 0xFF0000,
+								color: Colors.RED,
 								title: `⚠️ Stop Spamming! ⚠️`,
 								description: `Stop spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.\nThe chat moderators have been notified about this.`,
 							},
@@ -77,7 +77,7 @@ class SpamHandler extends BaseEvent {
 						// Message bot admins about user spamming
 						this.bot.messageBotAdmins(msg.guild, this.serverDocument, {
 							embed: {
-								color: 0xFF0000,
+								color: Colors.RED,
 								description: `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.`,
 							},
 						});

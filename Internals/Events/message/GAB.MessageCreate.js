@@ -11,7 +11,7 @@ const {
 	},
 	Constants,
 } = require("../../index");
-const { LoggingLevels } = Constants;
+const { LoggingLevels, Colors } = Constants;
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
@@ -64,7 +64,7 @@ class MessageCreate extends BaseEvent {
 					}
 					user.send({
 						embed: {
-							color: 0x3669FA,
+							color: Colors.INFO,
 							author: {
 								name: `${msg.author.tag} just sent me a PM!`,
 								icon_url: msg.author.displayAvatarURL(),
@@ -95,7 +95,7 @@ class MessageCreate extends BaseEvent {
 					winston.warn(`Failed to process PM command "${msg.command}"`, { usrid: msg.author.id }, err);
 					msg.author.send({
 						embed: {
-							color: 0xFF0000,
+							color: Colors.ERROR,
 							title: `Something went wrong! 😱`,
 							description: `**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 							footer: {
@@ -112,7 +112,7 @@ class MessageCreate extends BaseEvent {
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM chatterbot prompt`, { usrid: msg.author.id });
 				const m = await msg.channel.send({
 					embed: {
-						color: 0x3669FA,
+						color: Colors.INFO,
 						description: `The chatter bot is thinking...`,
 					},
 				});
@@ -120,7 +120,7 @@ class MessageCreate extends BaseEvent {
 					winston.verbose(`Failed to get chatter prompt.`, err);
 					m.edit({
 						embed: {
-							color: 0xFF0000,
+							color: Colors.SOFT_ERR,
 							description: `Sorry, I didn't catch that. Could you repeat yourself?`,
 						},
 					});
@@ -134,7 +134,7 @@ class MessageCreate extends BaseEvent {
 							thumbnail: {
 								url: `https://cdn.program-o.com/images/program-o-luv-bunny.png`,
 							},
-							color: 0x00FF00,
+							color: Colors.RESPONSE,
 						},
 					});
 				}
@@ -181,9 +181,9 @@ class MessageCreate extends BaseEvent {
 								targetChannelDocument.bot_enabled = true;
 							});
 						}
-						msg.channel.send({
+						msg.send({
 							embed: {
-								color: 0x3669FA,
+								color: Colors.SUCCESS,
 								description: `Hello! I'm back${inAllChannels ? " in all channels" : ""}! 🐬`,
 							},
 						});
@@ -271,9 +271,9 @@ class MessageCreate extends BaseEvent {
 										winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
 										this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
 									} else {
-										msg.channel.send({
+										msg.send({
 											embed: {
-												color: 0x3669FA,
+												color: Colors.INFO,
 												title: `**@${this.bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:`,
 												description: `\`\`\`${translateRes}\`\`\``,
 												footer: {
@@ -350,9 +350,9 @@ class MessageCreate extends BaseEvent {
 									} catch (err) {
 										winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 										this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
-										msg.channel.send({
+										msg.send({
 											embed: {
-												color: 0xFF0000,
+												color: Colors.ERROR,
 												title: `Something went wrong! 😱`,
 												description: `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 												footer: {
@@ -372,7 +372,7 @@ class MessageCreate extends BaseEvent {
 							winston.verbose(`Treating "${msg.cleanContent}" as a tag command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 							this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
 							this.deleteCommandMessage(serverDocument, channelDocument, msg);
-							msg.channel.send(`${serverDocument.config.tags.list.id(msg.command).content}`, {
+							msg.send(`${serverDocument.config.tags.list.id(msg.command).content}`, {
 								disableEveryone: true,
 							});
 							await this.setCooldown(serverDocument, channelDocument);
@@ -407,9 +407,9 @@ class MessageCreate extends BaseEvent {
 								.trim();
 							let shouldRunChatterbot = true;
 							if ((msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command) && prompt.toLowerCase().trim() === "help") {
-								msg.channel.send({
+								msg.send({
 									embed: {
-										color: 0x3669FA,
+										color: Colors.INFO,
 										title: `Hey there, it seems like you are lost!`,
 										description: `Use \`${msg.guild.commandPrefix}help\` to learn how to use me on this server! 😄`,
 									},
@@ -421,23 +421,23 @@ class MessageCreate extends BaseEvent {
 								await this.setCooldown(serverDocument, channelDocument);
 								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 								this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
-								const m = await msg.channel.send({
+								msg.send({
 									embed: {
-										color: 0x3669FA,
+										color: Colors.INFO,
 										description: `The chatter bot is thinking...`,
 									},
 								});
 								const response = await this.chatterPrompt(msg.author.id, prompt).catch(err => {
 									winston.verbose(`Failed to get chatter prompt.`, err);
-									m.edit({
+									msg.send({
 										embed: {
-											color: 0xFF0000,
+											color: Colors.SOFT_ERR,
 											description: `Sorry, I didn't catch that. Could you repeat yourself?`,
 										},
 									});
 								});
 								if (response) {
-									await m.edit({
+									msg.send({
 										embed: {
 											title: `The Program-O Chatter Bot replied with:`,
 											url: `https://program-o.com`,
@@ -445,18 +445,21 @@ class MessageCreate extends BaseEvent {
 											thumbnail: {
 												url: `https://cdn.program-o.com/images/program-o-luv-bunny.png`,
 											},
-											color: 0x00FF00,
+											color: Colors.RESPONSE,
 										},
 									});
 								}
 							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.bot.user.id) && serverDocument.config.tag_reaction.isEnabled) {
 								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.bot.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
 								if (random) {
-									msg.channel.send(random);
+									msg.send({
+										content: random,
+										disableEveryone: true,
+									});
 								} else {
-									msg.channl.send({
+									msg.send({
 										embed: {
-											color: 0xFF0000,
+											color: Colors.SOFT_ERR,
 											title: `Uh-oh`,
 											description: `Something went wrong! 😱`,
 											footer: {

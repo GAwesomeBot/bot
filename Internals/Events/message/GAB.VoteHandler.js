@@ -1,4 +1,5 @@
 const BaseEvent = require("../BaseEvent");
+const { Colors } = require("../../Constants");
 
 class VoteHandler extends BaseEvent {
 	requirements (msg) {
@@ -69,9 +70,9 @@ class VoteHandler extends BaseEvent {
 									await saveTargetUserDocument();
 								} else {
 									winston.verbose(`User "${msg.author.tag}" does not have enough points to gild "${member.user.tag}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-									msg.channel.send({
+									msg.send({
 										embed: {
-											color: 0xFF0000,
+											color: Colors.SOFT_ERR,
 											description: `Hey ${msg.author}, you don't have enough GAwesomePoints to gild ${member}!`,
 										},
 									});

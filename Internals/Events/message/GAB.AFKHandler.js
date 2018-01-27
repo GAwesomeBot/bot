@@ -1,4 +1,5 @@
 const BaseEvent = require("../BaseEvent");
+const { Colors } = require("../../Constants");
 
 class AFKHandler extends BaseEvent {
 	requirements (msg) {
@@ -27,12 +28,12 @@ class AFKHandler extends BaseEvent {
 					// Takes priority over global AFK messages
 					const targetMemberDocument = this.serverDocument.members.id(member.id);
 					if (targetMemberDocument && targetMemberDocument.afk_message) {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								thumbnail: {
 									url: member.user.displayAvatarURL(),
 								},
-								color: 0x3669FA,
+								color: Colors.INFO,
 								title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
 								description: `${targetMemberDocument.afk_message}`,
 							},
@@ -43,12 +44,12 @@ class AFKHandler extends BaseEvent {
 							winston.verbose(`Failed to find user document for global AFK message >.>`, err);
 						});
 						if (targetUserDocument && targetUserDocument.afk_message) {
-							msg.channel.send({
+							msg.send({
 								embed: {
 									thumbnail: {
 										url: member.user.displayAvatarURL(),
 									},
-									color: 0x3669FA,
+									color: Colors.INFO,
 									title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
 									description: `${targetUserDocument.afk_message}`,
 								},
