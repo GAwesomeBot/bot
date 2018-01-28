@@ -577,7 +577,7 @@ destroy@~1.0.4:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/10f98d8e57033fa120dff68f6afb55042df3da9b"
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/2e0048add1036c4648a99cd6a780280b6dd4ce9b"
   dependencies:
     pako "^1.0.0"
     prism-media "github:hydrabolt/prism-media"
@@ -2304,9 +2304,9 @@ sliced@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/sliced/-/sliced-1.0.1.tgz#0b3a662b5d04c3177b1926bea82b03f837a2ef41"
 
-snekfetch@^3.5.0, snekfetch@^3.5.8, snekfetch@^3.6.1:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/snekfetch/-/snekfetch-3.6.1.tgz#9b77fa946cfa15c7041940593a2689dc547427ea"
+snekfetch@^3.5.0, snekfetch@^3.5.8, snekfetch@^3.6.1, snekfetch@^3.6.2:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/snekfetch/-/snekfetch-3.6.2.tgz#1a6cbf36f890b7d478e100469789e1c4e663083c"
 
 sntp@1.x.x:
   version "1.0.9"
@@ -2546,9 +2546,9 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^3.3.8:
-  version "3.3.8"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.8.tgz#51e9a5db73afb53ac98603d08224edcd0be45fd8"
+uglify-js@^3.3.9:
+  version "3.3.9"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.9.tgz#33869666c8ab7f7658ce3d22f0f1ced40097d33a"
   dependencies:
     commander "~2.13.0"
     source-map "~0.6.1"
@@ -2633,9 +2633,9 @@ which@^1.2.9:
   dependencies:
     isexe "^2.0.0"
 
-wikijs@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.5.0.tgz#06b845b141cfea5e337b92f84a2148146b7a7305"
+wikijs@^4.5.1:
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.5.1.tgz#b0b3d543a7d1b7870436cf8e9a9d2c5dbb26a6ef"
   dependencies:
     infobox-parser "2.2.1"
     isomorphic-fetch "^2.2.1"

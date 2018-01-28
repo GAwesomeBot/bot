@@ -53,13 +53,13 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "showdown": "^1.8.6",
-    "snekfetch": "^3.6.1",
+    "snekfetch": "^3.6.2",
     "socket.io": "^2.0.4",
     "text-diff": "*",
     "urban": "*",
     "uuid": "^3.2.1",
     "vm2": "^3.5.2",
-    "wikijs": "^4.5.0",
+    "wikijs": "^4.5.1",
     "winston": "^2.4.0",
     "winston-daily-rotate-file": "^1.7.2",
     "wolfram-node": "*",
@@ -70,6 +70,6 @@
   },
   "devDependencies": {
     "eslint": "^4.16.0",
-    "uglify-js": "^3.3.8"
+    "uglify-js": "^3.3.9"
   }
 }
