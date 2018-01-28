@@ -124,7 +124,7 @@ module.exports = {
 		"prefer-template": "error",
 		"rest-spread-spacing": "error",
 		"template-curly-spacing": "error",
-		"no-console": "off",
+		"no-console": "error",
 		"no-irregular-whitespace": ["error", { "skipStrings": true, "skipComments": true, "skipTemplates": true }],
 	},
 };
