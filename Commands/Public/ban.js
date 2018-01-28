@@ -98,7 +98,6 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				{ time: 120000 }
 			);
 			collector.on("collect", async message => {
-				console.log(message);
 				if (message.editedAt) {
 					collector.stop();
 					return null;
