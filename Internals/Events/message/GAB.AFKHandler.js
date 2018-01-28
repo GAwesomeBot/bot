@@ -28,7 +28,7 @@ class AFKHandler extends BaseEvent {
 					// Takes priority over global AFK messages
 					const targetMemberDocument = this.serverDocument.members.id(member.id);
 					if (targetMemberDocument && targetMemberDocument.afk_message) {
-						msg.send({
+						msg.channel.send({
 							embed: {
 								thumbnail: {
 									url: member.user.displayAvatarURL(),
@@ -44,7 +44,7 @@ class AFKHandler extends BaseEvent {
 							winston.verbose(`Failed to find user document for global AFK message >.>`, err);
 						});
 						if (targetUserDocument && targetUserDocument.afk_message) {
-							msg.send({
+							msg.channel.send({
 								embed: {
 									thumbnail: {
 										url: member.user.displayAvatarURL(),
