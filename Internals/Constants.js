@@ -117,6 +117,7 @@ exports.APIs = {
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
+	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 };
 
 // You may think there is nothing here
