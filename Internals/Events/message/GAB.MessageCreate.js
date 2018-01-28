@@ -474,6 +474,8 @@ class MessageCreate extends BaseEvent {
 				}
 			}
 		}
+		// Keep this here, to remind us to delete it!
+		// Even if Travis cries
 		console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
 	}
 

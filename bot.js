@@ -126,6 +126,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 				// Print startup ascii message
 				winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 				// Use console.log because winston never lets us have anything fun, MOM
+				// eslint-disable-next-line no-console
 				console.log(ascii);
 				sharder.finished = -1;
 				sharder.IPC.send("postAllData", {}, 0);

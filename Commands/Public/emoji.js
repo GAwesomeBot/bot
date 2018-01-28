@@ -20,7 +20,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				color: Colors.INFO,
 				description: `We're processing your input...`,
 				footer: {
-					text: `Please ${Math.floor(Math.random() * 4) > 8 ? "a" : ""}wait`,
+					text: `Please ${Math.floor(Math.random() * 4) > 6 ? "a" : ""}wait`,
 				},
 			},
 		});
@@ -53,7 +53,6 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 					try {
 						await msg.channel.send({ files: [new MessageAttachment(b, "jumbo.gif")] });
 					} catch (_) {
-						console.log(_);
 						// TODO: Figure out a way to send the image, either via imgur or other means
 					}
 				} else {

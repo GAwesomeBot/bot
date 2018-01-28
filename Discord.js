@@ -1171,9 +1171,6 @@ bot.IPC.on("getGuild", async (msg, callback) => {
 		try {
 			return callback({ guild: payload.guild, settings: payload.settings, result: JSON.stringify(val) });
 		} catch (err) {
-			console.log(val);
-
-			console.log(err);
 			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err, guildData: val });
 		}
 	}
