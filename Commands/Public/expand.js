@@ -50,7 +50,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 							`» **<${chain.url}>**`,
 							`\tSafe: ${chain.safe ? "Yes" : "No"}`,
 						];
-						if (!chain.safe) tempString.push(`\t Reason: ${chain.reasons.map(r => rawReasonToUserFriendly[r] || r).join(", ")}`);
+						if (!chain.safe) tempString.push(`\tReason: ${chain.reasons.map(r => rawReasonToUserFriendly[r] || r).join(", ")}`);
 						description.push(tempString.join("\n"));
 					}
 					msg.send({
