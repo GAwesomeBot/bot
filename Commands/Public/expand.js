@@ -64,6 +64,9 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 								url: `https://raw.githubusercontent.com/spoopy-link/site/master/logo.png`,
 							},
 							description: `Here is the redirect path for \`${msg.suffix}\`\n\n${description.join("\n\n")}`,
+							footer: {
+								text: res.body.safe ? "" : `We don't recommend clicking on any of the URLs that aren't marked as "Safe". They can be malicious!`,
+							},
 						},
 					});
 				}
