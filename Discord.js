@@ -1139,8 +1139,14 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 		bot.IPC.send("ready", { id: bot.shard.id });
 		process.setMaxListeners(0);
 	}).catch(err => {
-		winston.error(`Failed to connect to Discord :/\n${err}`);
-		process.exit(1);
+		if (err.code === "TOKEN_INVALID") {
+			winston.error(`You provided an invalid token! Don't do that.`);
+			winston.error(`Please rectify this issue and restart GAB.`);
+			bot.IPC.send("shutdown", { soft: false });
+		} else {
+			winston.error(`Failed to connect to Discord :/\n${err}`);
+			process.exit(1);
+		}
 	});
 });
 
