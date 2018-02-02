@@ -1,4 +1,4 @@
-const { MessageAttachment, MessageEmbed } = require("discord.js");
+const { MessageAttachment } = require("discord.js");
 const Emoji = require("../../Modules/Emoji");
 const EmojiGIF = require("../../Modules/EmojiGIF");
 const DJSUtil = require("discord.js/src/util/Util");
