@@ -1,4 +1,4 @@
-const { MessageAttachment } = require("discord.js");
+const { MessageAttachment, MessageEmbed } = require("discord.js");
 const Emoji = require("../../Modules/Emoji");
 const EmojiGIF = require("../../Modules/EmojiGIF");
 const DJSUtil = require("discord.js/src/util/Util");
@@ -51,7 +51,15 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				if (b) {
 					await m.delete();
 					try {
-						await msg.channel.send({ files: [new MessageAttachment(b, "jumbo.gif")] });
+						await msg.channel.send({
+							embed: {
+								files: [new MessageAttachment(b, "jumbo.gif")],
+								image: {
+									url: `attachment://jumbo.gif`,
+								},
+								color: Colors.SUCCESS,
+							},
+						});
 					} catch (_) {
 						// TODO: Figure out a way to send the image, either via imgur or other means
 					}
@@ -83,7 +91,15 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				if (b) {
 					await m.delete();
 					try {
-						await msg.channel.send({ files: [new MessageAttachment(b, "jumbo.png")] });
+						await msg.channel.send({
+							embed: {
+								files: [new MessageAttachment(b, "jumbo.png")],
+								image: {
+									url: `attachment://jumbo.png`,
+								},
+								color: Colors.SUCCESS,
+							},
+						});
 					} catch (_) {
 						// TODO: Figure out a way to send the image, either via imgur or other means
 					}
