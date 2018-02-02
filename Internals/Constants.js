@@ -118,6 +118,7 @@ exports.APIs = {
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
+	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${category ? category : ""}`,
 };
 
 // You may think there is nothing here
@@ -174,3 +175,17 @@ exports.NSFWEmbed = {
 
 // String for no suffixes for NSFW commands
 exports.NSFWInvalid = () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`;
+
+// Categories for the fortune command
+exports.FortuneCategories = [
+	"all",
+	"computers",
+	"cookie",
+	"definitions",
+	"miscellaneous",
+	"people",
+	"platitudes",
+	"politics",
+	"science",
+	"wisdom",
+];
