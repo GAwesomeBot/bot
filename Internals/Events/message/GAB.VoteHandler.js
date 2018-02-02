@@ -24,7 +24,12 @@ class VoteHandler extends BaseEvent {
 			!this.serverDocument.config.commands.points.disabled_channel_ids.includes(msg.channel.id) &&
 			msg.content.startsWith("<@") && msg.content.indexOf(">") < msg.content.indexOf(" ") && msg.content.includes(" ") &&
 			msg.content.indexOf(" ") < msg.content.length - 1) {
-			const member = await this.bot.memberSearch(msg.content.split(/\s+/)[0].trim(), msg.guild);
+			let member;
+			try {
+				member = await this.bot.memberSearch(msg.content.split(/\s+/)[0].trim(), msg.guild);
+			} catch (_) {
+				member = null;
+			}
 			const voteString = msg.content.split(/\s+/).splice(1).join(" ");
 			if (member && ![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 				const targetUserDocument = await Users.findOne({ _id: member.id });
