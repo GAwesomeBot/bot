@@ -1,7 +1,7 @@
 const { RandomAnimals } = require("../../Modules/");
 
 module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
-	msg.send({
+	await msg.send({
 		embed: {
 			color: Colors.INFO,
 			title: `We're getting you a cute dog picture 🐶`,

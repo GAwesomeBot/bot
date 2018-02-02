@@ -22,7 +22,7 @@ module.exports = async ({ Constants: { Colors, APIs, FortuneCategories, Text } }
 			});
 		}
 	}
-	msg.send({
+	await msg.send({
 		embed: {
 			color: Colors.INFO,
 			description: `We're preparing your fortune cookie`,

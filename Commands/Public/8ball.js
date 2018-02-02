@@ -88,7 +88,7 @@ module.exports = async (main, documents, msg, commandData) => {
 				answer: "Very doubtful",
 			},
 		];
-		msg.send({
+		await msg.send({
 			embed: {
 				color: Colors.BLUE,
 				description: `Asking the 🎱 your question..`,
