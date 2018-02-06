@@ -53,7 +53,7 @@
     "remove-markdown": "*",
     "require-reload": "*",
     "showdown": "^1.8.6",
-    "snekfetch": "^3.6.3",
+    "snekfetch": "^3.6.4",
     "socket.io": "^2.0.4",
     "text-diff": "*",
     "urban": "*",
@@ -69,7 +69,7 @@
     "zlib-sync": "^0.1.4"
   },
   "devDependencies": {
-    "eslint": "^4.16.0",
+    "eslint": "^4.17.0",
     "uglify-js": "^3.3.9"
   }
 }
