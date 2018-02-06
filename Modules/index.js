@@ -4,6 +4,7 @@ module.exports = {
 	Console: require("./Console.js"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
 	GetGuild: require("./GetGuild.js"),
+	Giphy: require("./Giphy"),
 	Giveaways: require("./Giveaways.js"),
 	Imgur: require("./Imgur"),
 	Lotteries: require("./Lotteries.js"),

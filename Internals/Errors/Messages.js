@@ -34,12 +34,14 @@ const Messages = {
 	CHILD_PROCESS_TYPE_INVALID: type => `"${type}" is an invalid child process type!`,
 	CHILD_PROCESS_MISSING_PROPERTY: prop => `${prop} is missing from the chosen child process function!`,
 
-	// Errors related to certain Worker errors
 	// Errors related to Extension Faults
 	UNKNOWN_MODULE: module => `${module} is not a valid GAwesomeScript module`,
 	MISSING_SCOPES: module => module ? `Your extension did not register sufficient scopes to require module ${module}` : `Your extension did not register sufficient scopes to perform this action`,
 	STORAGE_MAX_SIZE: `Extension Storage has reached it's maximum size`,
 	STORAGE_EMPTY: `The Extension Storage is empty!`,
+
+	MISSING_GIPHY_QUERY: `You need to provide a query for Giphy!`,
+	NO_GIPHY_RESULT: `There were to Giphy results for your query!`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
