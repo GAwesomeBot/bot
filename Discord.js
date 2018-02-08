@@ -1765,7 +1765,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
-			if (msg.guild && !msg.member)	await msg.guild.members.fetch(msg.author);
+			if (msg.guild && !msg.member) await msg.guild.members.fetch(msg.author);
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
 				(await bot.cache.get(msg.guild.id)).save().catch(async err => {
