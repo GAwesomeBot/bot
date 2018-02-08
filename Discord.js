@@ -1113,7 +1113,6 @@ class GABClient extends DJSClient {
 const bot = new GABClient({
 	shardId: Number(process.env.SHARD_ID),
 	shardCount: Number(process.env.SHARD_COUNT),
-	fetchAllMembers: true,
 	disabledEvents: disabledEvents,
 });
 
@@ -1758,7 +1757,7 @@ bot.on("message", async msg => {
 			if (!find) await Users.create(new Users({ _id: msg.author.id }));
 		} catch (err) {
 			if (!/duplicate key/.test(err.message)) {
-				winston.warn(`Failed to create user document for ${msg.author.username}`);
+				winston.warn(`Failed to create user document for ${msg.author.tag}`, { err });
 			}
 		}
 	}
@@ -1766,10 +1765,7 @@ bot.on("message", async msg => {
 	if (bot.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
-			if (msg.guild) {
-				// TODO: Remove this once Autofetch gets added to Discord
-				await msg.guild.members.fetch();
-			}
+			if (msg.guild && !msg.member)	await msg.guild.members.fetch(msg.author);
 			await bot.events.onEvent("message", msg, proctime);
 			if (msg.guild) {
 				(await bot.cache.get(msg.guild.id)).save().catch(async err => {
