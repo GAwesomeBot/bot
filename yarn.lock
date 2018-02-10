@@ -387,13 +387,9 @@ combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@>=0.3.0:
+commander@>=0.3.0, commander@~2.14.1:
   version "2.14.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.14.1.tgz#2235123e37af8ca3c65df45b026dbd357b01b9aa"
-
-commander@~2.13.0:
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
 
 complex.js@2.0.4:
   version "2.0.4"
@@ -584,7 +580,7 @@ destroy@~1.0.4:
   resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/66c0512de2a3bda5e3ae5f9443425a242987abd5"
   dependencies:
     pako "^1.0.0"
-    prism-media "github:hydrabolt/prism-media"
+    prism-media "^0.0.2"
     snekfetch "^3.5.0"
     tweetnacl "^1.0.0"
     ws "^3.3.1"
@@ -2555,11 +2551,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^3.3.9:
-  version "3.3.9"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.9.tgz#33869666c8ab7f7658ce3d22f0f1ced40097d33a"
+uglify-js@^3.3.10:
+  version "3.3.10"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.10.tgz#8e47821d4cf28e14c1826a0078ba0825ed094da8"
   dependencies:
-    commander "~2.13.0"
+    commander "~2.14.1"
     source-map "~0.6.1"
 
 uid-safe@~2.1.5:

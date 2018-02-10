@@ -70,6 +70,6 @@
   },
   "devDependencies": {
     "eslint": "^4.17.0",
-    "uglify-js": "^3.3.9"
+    "uglify-js": "^3.3.10"
   }
 }
