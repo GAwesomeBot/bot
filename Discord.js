@@ -27,7 +27,7 @@ const {
 
 StructureExtender();
 
-const configJS = require("./Configurations/config.js");
+const configJS = global.configJS = require("./Configurations/config.js");
 global.configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 
@@ -1139,9 +1139,8 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 		process.setMaxListeners(0);
 	}).catch(err => {
 		if (err.code === "TOKEN_INVALID") {
-			winston.error(`You provided an invalid token! Don't do that.`);
-			winston.error(`Please rectify this issue and restart GAB.`);
-			bot.IPC.send("shutdown", { soft: false });
+			winston.error(`The token you provided in auth.js could not be used to login into Discord.`);
+			bot.IPC.send("shutdown", { soft: false, err: true });
 		} else {
 			winston.error(`Failed to connect to Discord :/\n${err}`);
 			process.exit(1);

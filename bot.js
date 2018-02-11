@@ -69,6 +69,9 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.warn("Your session secret value appears to be default. Please note that this value is public!");
 			configWarnings.push("Your config.js secret value has not been reconfigured. This value is public!");
 		}
+		if ((configJS.httpPort !== "80" || configJS.httpsPort !== "443") && !process.argv.includes("-p") && !process.argv.includes("--proxy")) {
+			winston.warn("You are running GAwesomeBot on a non-standard port, if a reverse-proxy such as Nginx is being used, restart GAwesomeBot with the '--proxy' argument.");
+		}
 
 		winston.silly("Confirming config.json values.");
 		if (await Updater.check(configJSON) === 404) {
