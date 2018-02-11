@@ -112,6 +112,15 @@ exports.NumberEmojis = {
 	ten: "🔟",
 };
 
+exports.Templates = {
+	ReactionMenu: {
+		title: `Choose a number`,
+		color: exports.Colors.BLUE,
+		description: `{list}`,
+		footer: `Page {current} out of {total}`,
+	},
+};
+
 exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,

@@ -1,5 +1,5 @@
 const { get } = require("snekfetch");
-const ReactionMenu = require("../../Modules/MessageUtils/ReactionBasedMenu");
+const ReactionMenu = require("../../Modules/MessageUtils/ReactionMenus/ReactionBasedMenu");
 
 module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
@@ -73,7 +73,7 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 			if (list.length === 1) {
 				msg.send(results[0]);
 			} else {
-				let menu = new ReactionMenu(msg, list, results);
+				let menu = new ReactionMenu(msg, {}, { options: list, results });
 				await menu.init();
 			}
 		} else {
