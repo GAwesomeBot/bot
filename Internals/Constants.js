@@ -131,9 +131,7 @@ exports.APIs = {
 	GIPHY: (token, query, nsfw) => `http://api.giphy.com/v1/gifs/random?api_key=${token}&rating=${nsfw}&format=json&limit=1&tag=${encodeURIComponent(query)}`,
 };
 
-// You may think there is nothing here
-// In reality, there's a 0-width space
-exports.EmptySpace = `​`;
+exports.EmptySpace = `\u200b`;
 
 exports.Perms = {
 	eval: "⚙ Evaluation (Can execute `eval`)",
