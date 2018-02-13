@@ -1,6 +1,6 @@
 const { Giveaways } = require("../../Modules/");
 
-module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channelDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors } }, { serverDocument, channelDocument }, msg, commandData) => {
 	if (channelDocument.giveaway.isOngoing) {
 		if (msg.suffix) {
 			if (["enroll", "join"].includes(msg.suffix.toLowerCase().trim())) {
@@ -47,7 +47,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument, channe
 					title: `${channelDocument.giveaway.title} 🎁	`,
 					fields: [{
 						name: "Started by",
-						value: `@${creator ? bot.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}`,
+						value: `@${creator ? client.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}`,
 						inline: true,
 					}, {
 						name: "Total joined",

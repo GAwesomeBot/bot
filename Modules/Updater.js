@@ -35,11 +35,11 @@ module.exports = {
 			return res.body;
 		}
 	},
-	update: async (bot, config, io) => {
+	update: async (client, config, io) => {
 		io.isUpdateFinished = false;
 		const winston = new Console("Updater");
 		winston.info(`Preparing for update...`);
-		await bot.IPC.send("updating", {});
+		await client.IPC.send("updating", {});
 		config.isUpdating = true;
 
 		io.emit("update", "metadata");
@@ -132,7 +132,7 @@ module.exports = {
 					io.emit("update", "finished");
 					io.isUpdateFinished = true;
 					winston.info(`Finished updating. Please restart GAwesomeBot.`);
-					bot.IPC.send("shutdown", { err: false });
+					client.IPC.send("shutdown", { err: false });
 				} catch (err) {
 					winston.warn(`Failed to remove the Temp directory for update files:`, err);
 				}

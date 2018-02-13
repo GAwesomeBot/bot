@@ -7,7 +7,7 @@ const defTagReactions = require("../Configurations/tag_reactions.json");
 const Utils = require("./Utils/");
 
 // Set defaults for new server document
-module.exports = async (bot, server, serverDocument) => {
+module.exports = async (client, server, serverDocument) => {
 	// Default admin roles
 	server.roles.forEach(role => {
 		if (role.name !== "@everyone" && !role.managed && role.permissions.has("MANAGE_GUILD", true) && !serverDocument.config.admins.id(role.id)) {
@@ -38,13 +38,13 @@ module.exports = async (bot, server, serverDocument) => {
 	// Default tag reactions
 	serverDocument.config.tag_reaction.messages = defTagReactions;
 
-	let guildCount = await Utils.GetValue(bot, "guilds.size", "int");
+	let guildCount = await Utils.GetValue(client, "guilds.size", "int");
 	// Send message to server owner about GAwesomeBot
-	await bot.messageBotAdmins(server, serverDocument, {
+	await client.messageBotAdmins(server, serverDocument, {
 		embed: {
 			color: 0x43B581,
-			title: `Hello! ${bot.user.tag} (that's me) has been added to "${server}", a server you moderate!`,
-			description: `Use \`${bot.getCommandPrefix(server, serverDocument)}help\` to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
+			title: `Hello! ${client.user.tag} (that's me) has been added to "${server}", a server you moderate!`,
+			description: `Use \`${client.getCommandPrefix(server, serverDocument)}help\` to learn more, or check out https://gawesomebot.com/ 🙂 🎉`,
 			footer: {
 				text: `${guildCount % 1000 === 0 ? `*Wow, you're server #${guildCount} for me!* 🎉` : ""}`,
 			},

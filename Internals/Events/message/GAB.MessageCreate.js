@@ -16,8 +16,8 @@ const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
 	requirements (msg) {
-		if (msg.author.id === this.bot.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
-			if (msg.author.id === this.bot.user.id) {
+		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
+			if (msg.author.id === this.client.user.id) {
 				return false;
 			} else {
 				winston.silly(`Ignored ${msg.author.tag}.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
@@ -34,13 +34,13 @@ class MessageCreate extends BaseEvent {
 	async handle (msg, proctime) {
 		// Handle private messages
 		if (!msg.guild) {
-			if (this.bot.messageListeners[msg.channel.id] && this.bot.messageListeners[msg.channel.id][msg.author.id]) {
+			if (this.client.messageListeners[msg.channel.id] && this.client.messageListeners[msg.channel.id][msg.author.id]) {
 				if (msg.content.toLowerCase().trim() === "quit") {
-					this.bot.messageListeners[msg.channel.id][msg.author.id].reject(new GABError("AWAIT_QUIT"));
-					this.bot.deleteAwaitPMMessage(msg.channel, msg.author);
-				} else if (this.bot.messageListeners[msg.channel.id][msg.author.id].filter(msg)) {
-					this.bot.messageListeners[msg.channel.id][msg.author.id].resolve(msg);
-					this.bot.deleteAwaitPMMessage(msg.channel, msg.author);
+					this.client.messageListeners[msg.channel.id][msg.author.id].reject(new GABError("AWAIT_QUIT"));
+					this.client.deleteAwaitPMMessage(msg.channel, msg.author);
+				} else if (this.client.messageListeners[msg.channel.id][msg.author.id].filter(msg)) {
+					this.client.messageListeners[msg.channel.id][msg.author.id].resolve(msg);
+					this.client.deleteAwaitPMMessage(msg.channel, msg.author);
 				}
 				return;
 			}
@@ -48,7 +48,7 @@ class MessageCreate extends BaseEvent {
 			if (!this.configJSON.maintainers.includes(msg.author.id) && this.configJSON.pmForward) {
 				let url = "";
 				if (msg.content.length >= 1950) {
-					const GistUpload = new Gist(this.bot);
+					const GistUpload = new Gist(this.client);
 					const res = await GistUpload.upload({
 						title: "Bot DM",
 						text: msg.content,
@@ -58,9 +58,9 @@ class MessageCreate extends BaseEvent {
 					}
 				}
 				for (const maintainerID of this.configJSON.maintainers) {
-					let user = this.bot.users.get(maintainerID);
+					let user = this.client.users.get(maintainerID);
 					if (!user) {
-						user = await this.bot.users.fetch(maintainerID, true);
+						user = await this.client.users.fetch(maintainerID, true);
 					}
 					user.send({
 						embed: {
@@ -74,14 +74,13 @@ class MessageCreate extends BaseEvent {
 					});
 				}
 			}
-			const commandFunction = this.bot.getPMCommand(msg.command);
+			const commandFunction = this.client.getPMCommand(msg.command);
 			if (commandFunction) {
 				const userDocument = await Users.findOne({ _id: msg.author.id });
 				msg.author.userDocument = userDocument;
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
 				try {
 					await commandFunction({
-						bot: this.bot,
 						client: this.client,
 						configJS: this.configJS,
 						utils: Utils,
@@ -89,7 +88,7 @@ class MessageCreate extends BaseEvent {
 						Constants,
 					}, msg, {
 						name: msg.command,
-						usage: this.bot.getPMCommandMetadata(msg.command).usage,
+						usage: this.client.getPMCommandMetadata(msg.command).usage,
 					});
 				} catch (err) {
 					winston.warn(`Failed to process PM command "${msg.command}"`, { usrid: msg.author.id }, err);
@@ -107,7 +106,7 @@ class MessageCreate extends BaseEvent {
 				await msg.author.userDocument.save().catch(err => {
 					winston.verbose(`Failed to save user document...`, err);
 				});
-			} else if (!this.bot.getSharedCommand(msg.command)) {
+			} else if (!this.client.getSharedCommand(msg.command)) {
 				// Process chatterbot prompt
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM chatterbot prompt`, { usrid: msg.author.id });
 				const m = await msg.channel.send({
@@ -141,7 +140,7 @@ class MessageCreate extends BaseEvent {
 			}
 		} else {
 			// Handle public messages
-			const serverDocument = await this.bot.cache.get(msg.guild.id);
+			const serverDocument = await this.client.cache.get(msg.guild.id);
 			if (serverDocument) {
 				// Get channel data
 				let channelDocument = serverDocument.channels.id(msg.channel.id);
@@ -157,7 +156,7 @@ class MessageCreate extends BaseEvent {
 					serverDocument.members.push({ _id: msg.author.id });
 					memberDocument = serverDocument.members.id(msg.author.id);
 				}
-				const memberBotAdminLevel = this.bot.getUserBotAdmin(msg.guild, serverDocument, msg.member);
+				const memberBotAdminLevel = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member);
 				// Increment today's message count for server
 				serverDocument.messages_today++;
 				// Count server stats if enabled in this channel
@@ -167,7 +166,7 @@ class MessageCreate extends BaseEvent {
 					// Set now as the last active time for member
 					memberDocument.last_active = Date.now();
 					// Check if the user has leveled up a rank
-					this.bot.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
+					this.client.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
 				}
 
 				// Check for start command from server admin
@@ -187,7 +186,7 @@ class MessageCreate extends BaseEvent {
 								description: `Hello! I'm back${inAllChannels ? " in all channels" : ""}! 🐬`,
 							},
 						});
-						this.bot.logMessage(serverDocument, LoggingLevels.INFO, `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
+						this.client.logMessage(serverDocument, LoggingLevels.INFO, `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
 						return;
 					}
 				}
@@ -201,7 +200,7 @@ class MessageCreate extends BaseEvent {
 							await msg.delete();
 						} catch (err) {
 							winston.verbose(`Failed to delete filtered message from member "${msg.author.tag}" in channel ${msg.channel.name} on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-							this.bot.logMessage(serverDocument, LoggingLevels.WARN, `I failed to delete a message containing a filtered word x.x`, msg.channel.id, msg.author.id);
+							this.client.logMessage(serverDocument, LoggingLevels.WARN, `I failed to delete a message containing a filtered word x.x`, msg.channel.id, msg.author.id);
 						}
 					}
 					// Get user data
@@ -212,7 +211,7 @@ class MessageCreate extends BaseEvent {
 						if (!isNaN(serverDocument.config.moderation.filters.custom_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.custom_filter.violator_role_id)) {
 							violatorRoleID = serverDocument.config.moderation.filters.custom_filter.violator_role_id;
 						}
-						this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
+						this.client.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.client.getName(msg.guild, serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 					}
 					await userDocument.save().catch(err => {
 						winston.verbose(`Failed to save user document...`, err);
@@ -245,7 +244,7 @@ class MessageCreate extends BaseEvent {
 							if (!isNaN(serverDocument.config.moderation.filters.mention_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.mention_filter.violator_role_id)) {
 								violatorRoleID = serverDocument.config.moderation.filters.spam_filter.violator_role_id;
 							}
-							this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.guild, serverDocument, msg.member, true)}** mentioned ${totalMentions} members / roles in a message in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Mention spam (${totalMentions} members / roles) in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.mention_filter.action, violatorRoleID);
+							this.client.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You put ${totalMentions} mentions in a message in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.client.getName(msg.guild, serverDocument, msg.member, true)}** mentioned ${totalMentions} members / roles in a message in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Mention spam (${totalMentions} members / roles) in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.mention_filter.action, violatorRoleID);
 						}
 						await userDocument.save().catch(err => {
 							winston.debug(`Failed to save user document...`, err);
@@ -263,18 +262,18 @@ class MessageCreate extends BaseEvent {
 						mstranslate.detect({ text: msg.cleanContent }, (err, res) => {
 							if (err) {
 								winston.debug(`Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, usrid: msg.author.id }, err);
-								this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+								this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
 							} else if (res.toLowerCase() !== "en") {
 								// If the message is not in English, attempt to translate it from the language defined for the user
 								mstranslate.translate({ text: msg.cleanContent, from: translatedDocument.source_language, to: "EN" }, (translateErr, translateRes) => {
 									if (translateErr) {
 										winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
-										this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+										this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
 									} else {
 										msg.send({
 											embed: {
 												color: Colors.INFO,
-												title: `**@${this.bot.getName(msg.channel.guild, serverDocument, msg.member)}** said:`,
+												title: `**@${this.client.getName(msg.channel.guild, serverDocument, msg.member)}** said:`,
 												description: `\`\`\`${translateRes}\`\`\``,
 												footer: {
 													text: `Translated using Microsoft Translator. The translated text might not be accurate!`,
@@ -295,9 +294,9 @@ class MessageCreate extends BaseEvent {
 							cmd = this.client.getPublicCommandName(msg.command);
 							if (!cmd) cmd = msg.command;
 						}
-						if (msg.command !== null && cmd !== null && this.bot.getPublicCommandMetadata(cmd) &&
+						if (msg.command !== null && cmd !== null && this.client.getPublicCommandMetadata(cmd) &&
 								serverDocument.config.commands[cmd].isEnabled &&
-								(this.bot.getPublicCommandMetadata(cmd).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[cmd].admin_level) &&
+								(this.client.getPublicCommandMetadata(cmd).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[cmd].admin_level) &&
 								!serverDocument.config.commands[cmd].disabled_channel_ids.includes(msg.channel.id)) {
 							// Increment command usage count
 							this.incrementCommandUsage(serverDocument, cmd);
@@ -305,14 +304,14 @@ class MessageCreate extends BaseEvent {
 							const userDocument = await Users.findOne({ _id: msg.author.id });
 							if (userDocument) {
 								// NSFW filter for command suffix
-								if (memberBotAdminLevel < 1 && this.bot.getPublicCommandMetadata(cmd).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
+								if (memberBotAdminLevel < 1 && this.client.getPublicCommandMetadata(cmd).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
 									// Delete offending message if necessary
 									if (serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 										try {
 											await msg.delete();
 										} catch (err) {
 											winston.debug(`Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-											this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}"`, msg.channel.id, msg.author.id);
+											this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete NSFW command message from member "${msg.author.tag}" in channel "${msg.channel.name}"`, msg.channel.id, msg.author.id);
 										}
 									}
 									// Handle this as a violation
@@ -320,15 +319,14 @@ class MessageCreate extends BaseEvent {
 									if (!isNaN(serverDocument.config.moderation.filters.nsfw_filter.violator_role_id) && !msg.member.roles.has(serverDocument.config.moderation.filters.nsfw_filter.violator_role_id)) {
 										violatorRoleID = serverDocument.config.moderation.filters.nsfw_filter.violator_role_id;
 									}
-									this.bot.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You tried to fetch NSFW content in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.guild, serverDocument, msg.member, true)}** tried to fetch NSFW content (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `NSFW filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.nsfw_filter.action, violatorRoleID);
+									this.client.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You tried to fetch NSFW content in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.client.getName(msg.guild, serverDocument, msg.member, true)}** tried to fetch NSFW content (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `NSFW filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.nsfw_filter.action, violatorRoleID);
 								} else {
 									// Assume its a command, lets run it!
 									winston.verbose(`Treating "${msg.cleanContent}" as a command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-									this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a command`, msg.channel.id, msg.author.id);
+									this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a command`, msg.channel.id, msg.author.id);
 									this.deleteCommandMessage(serverDocument, channelDocument, msg);
 									try {
 										const botObject = {
-											bot: this.bot,
 											client: this.client,
 											configJS: this.configJS,
 											utils: Utils,
@@ -343,13 +341,13 @@ class MessageCreate extends BaseEvent {
 										};
 										const commandData = {
 											name: this.client.getPublicCommandName(msg.command),
-											usage: this.bot.getPublicCommandMetadata(cmd).usage,
-											description: this.bot.getPublicCommandMetadata(cmd).description,
+											usage: this.client.getPublicCommandMetadata(cmd).usage,
+											description: this.client.getPublicCommandMetadata(cmd).description,
 										};
-										await this.bot.getPublicCommand(cmd)(botObject, documents, msg, commandData);
+										await this.client.getPublicCommand(cmd)(botObject, documents, msg, commandData);
 									} catch (err) {
 										winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-										this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
+										this.client.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
 										msg.send({
 											embed: {
 												color: Colors.ERROR,
@@ -370,7 +368,7 @@ class MessageCreate extends BaseEvent {
 							// Check if it's a trigger for a tag command
 						} else if (serverDocument.config.tags.list.id(msg.command) && serverDocument.config.tags.list.id(msg.command).isCommand) {
 							winston.verbose(`Treating "${msg.cleanContent}" as a tag command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-							this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
+							this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
 							this.deleteCommandMessage(serverDocument, channelDocument, msg);
 							msg.send(`${serverDocument.config.tags.list.id(msg.command).content}`, {
 								disableEveryone: true,
@@ -385,7 +383,7 @@ class MessageCreate extends BaseEvent {
 									// Command extensions
 									if (serverDocument.extensions[i].type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
 										winston.verbose(`Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
-										this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
+										this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 										extensionApplied = true;
 
 										// Do the normal things for commands
@@ -395,7 +393,7 @@ class MessageCreate extends BaseEvent {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
 										if (((serverDocument.extensions[i].keywords.length > 1 || serverDocument.extensions[i].keywords[0] !== "*") && keywordMatch.selectedKeyword > -1) || (serverDocument.extensions[i].keywords.length === 1 && serverDocument.extensions[i].keywords[0] === "*")) {
 											winston.verbose(`Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
-											this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
+											this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 											// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, null, keywordMatch);
 										}
 									}
@@ -406,7 +404,7 @@ class MessageCreate extends BaseEvent {
 								.join(" ")
 								.trim();
 							let shouldRunChatterbot = true;
-							if ((msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command) && prompt.toLowerCase().trim() === "help") {
+							if ((msg.content.startsWith(`<@${this.client.user.id}>`) || msg.content.startsWith(`<@!${this.client.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.client.getSharedCommand(msg.command) && prompt.toLowerCase().trim() === "help") {
 								msg.send({
 									embed: {
 										color: Colors.INFO,
@@ -417,10 +415,10 @@ class MessageCreate extends BaseEvent {
 								shouldRunChatterbot = false;
 							}
 							// Check if it's a chatterbot prompt
-							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.bot.user.id}>`) || msg.content.startsWith(`<@!${this.bot.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
+							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.client.user.id}>`) || msg.content.startsWith(`<@!${this.client.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
 								await this.setCooldown(serverDocument, channelDocument);
 								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-								this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
+								this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
 								msg.send({
 									embed: {
 										color: Colors.INFO,
@@ -449,8 +447,8 @@ class MessageCreate extends BaseEvent {
 										},
 									});
 								}
-							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.bot.user.id) && serverDocument.config.tag_reaction.isEnabled) {
-								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.bot.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
+							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.client.user.id) && serverDocument.config.tag_reaction.isEnabled) {
+								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.client.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
 								if (random) {
 									msg.send({
 										content: random,
@@ -499,7 +497,7 @@ class MessageCreate extends BaseEvent {
 		let response;
 		if (res.status === 200 && res.body) {
 			response = JSON.parse(res.body).botsay
-				.replaceAll("Program-O", this.bot.user.username)
+				.replaceAll("Program-O", this.client.user.username)
 				.replaceAll("<br/>", "\n")
 				.replaceAll("Elizabeth", "Gilbert");
 		} else {
@@ -521,7 +519,7 @@ class MessageCreate extends BaseEvent {
 				await msg.delete();
 			} catch (err) {
 				winston.debug(`Failed to delete command message..`, err);
-				this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete command message in channel`, msg.channel.id, msg.author.id);
+				this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete command message in channel`, msg.channel.id, msg.author.id);
 			}
 			channelDocument.isMessageDeletedDisabled = false;
 		}
@@ -536,13 +534,13 @@ class MessageCreate extends BaseEvent {
 		if (channelDocument.command_cooldown > 0 || serverDocument.config.command_cooldown > 0) {
 			channelDocument.isCommandCooldownOngoing = true;
 			// End cooldown after interval (favor channel config over server)
-			this.bot.setTimeout(async () => {
+			this.client.setTimeout(async () => {
 				const newServerDocument = await this.client.cache.get(serverDocument._id);
 				const newChannelDocument = newServerDocument.channels.id(channelDocument._id);
 				newChannelDocument.isCommandCooldownOngoing = false;
 				await newServerDocument.save().catch(err => {
 					winston.debug(`Failed to save server data for command cooldown...`, { svrid: serverDocument._id }, err);
-					this.bot.logMessage(serverDocument, LoggingLevels.WARN, `Failed to save server data for command cooldown!`);
+					this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to save server data for command cooldown!`);
 				});
 			}, channelDocument.command_cooldown || serverDocument.config.command_cooldown);
 		}

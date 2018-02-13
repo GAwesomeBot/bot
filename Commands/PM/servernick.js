@@ -1,4 +1,4 @@
-module.exports = async ({ bot, configJS, Constants: { Colors } }, msg, commandData) => {
+module.exports = async ({ client, configJS, Constants: { Colors } }, msg, commandData) => {
 	const userDocument = msg.author.userDocument;
 	if (msg.suffix) {
 		if (msg.suffix.includes("|")) {
@@ -9,7 +9,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors } }, msg, commandDa
 				const serverNickDocument = userDocument.server_nicks.id(nick);
 				let svrname;
 				try {
-					svrname = (await bot.api.guilds[svrid].get()).name;
+					svrname = (await client.api.guilds[svrid].get()).name;
 				} catch (err) {
 					svrname = null;
 				}
@@ -34,7 +34,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors } }, msg, commandDa
 						});
 						let response;
 						try {
-							response = await bot.awaitPMMessage(msg.channel, msg.author, 300000);
+							response = await client.awaitPMMessage(msg.channel, msg.author, 300000);
 						} catch (err) {
 							return;
 						}
@@ -99,7 +99,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors } }, msg, commandDa
 			const serverNickDocument = userDocument.server_nicks.id(nick);
 			let svrname;
 			try {
-				svrname = (await bot.api.guilds[serverNickDocument.server_id].get()).name;
+				svrname = (await client.api.guilds[serverNickDocument.server_id].get()).name;
 			} catch (err) {
 				svrname = "invalid-server";
 			}

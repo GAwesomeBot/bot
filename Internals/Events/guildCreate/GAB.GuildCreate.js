@@ -8,9 +8,9 @@ class GuildCreate extends BaseEvent {
 			winston.info(`Left "${guild}" due to it being blocklisted!`, { guild: guild.id });
 			guild.leave();
 		} else {
-			this.bot.IPC.send("guilds", { latest: [guild.id], shard: this.bot.shardID });
-			this.bot.IPC.send("sendAllGuilds", {});
-			await Promise.all([guild.members.fetch(), PostShardedData(this.bot)]);
+			this.client.IPC.send("guilds", { latest: [guild.id], shard: this.client.shardID });
+			this.client.IPC.send("sendAllGuilds", {});
+			await Promise.all([guild.members.fetch(), PostShardedData(this.client)]);
 			let serverDocument, shouldMakeDocument = false;
 			try {
 				serverDocument = await Servers.findOne({ _id: guild.id }).exec();
@@ -19,16 +19,16 @@ class GuildCreate extends BaseEvent {
 			}
 			if (serverDocument) {
 				winston.info(`Rejoined server ${guild}`, { svrid: guild.id });
-				this.bot.logMessage(serverDocument, LoggingLevels.INFO, "I've been re-added to your server! (^-^)");
+				this.client.logMessage(serverDocument, LoggingLevels.INFO, "I've been re-added to your server! (^-^)");
 			} else if (shouldMakeDocument || !serverDocument) {
 				winston.info(`Joined server ${guild}`, { svrid: guild.id });
 				try {
-					let newServerDocument = await Servers.create(await getNewServerData(this.bot, guild, new Servers({ _id: guild.id })));
-					this.bot.cache.set(newServerDocument._id, newServerDocument);
+					let newServerDocument = await Servers.create(await getNewServerData(this.client, guild, new Servers({ _id: guild.id })));
+					this.client.cache.set(newServerDocument._id, newServerDocument);
 				} catch (err) {
 					winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
 				}
-				this.bot.logMessage(await Servers.findOne({ _id: guild.id }).exec(), LoggingLevels.INFO, "I've been added to your server! (^-^)");
+				this.client.logMessage(await Servers.findOne({ _id: guild.id }).exec(), LoggingLevels.INFO, "I've been added to your server! (^-^)");
 			}
 		}
 	}

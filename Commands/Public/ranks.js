@@ -1,10 +1,10 @@
-module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, channelDocument, memberDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocument, channelDocument, memberDocument }, msg, commandData) => {
 	const getRankText = (rank, amount = 10) => msg.guild.members.filter(member => {
 		const targetMemberDocument = serverDocument.members.id(member.id);
 		return targetMemberDocument && targetMemberDocument.rank === rank;
 	}).sort((memberA, memberB) => serverDocument.members.id(memberB.id).rank_score - serverDocument.members.id(memberA.id).rank_score)
 		.first(amount ? amount : 10)
-		.map(member => `@${bot.getName(msg.guild, serverDocument, member)}`)
+		.map(member => `@${client.getName(msg.guild, serverDocument, member)}`)
 		.join("\n");
 	if (msg.suffix) {
 		const rankDocument = serverDocument.config.ranks_list.id(msg.suffix);
@@ -39,7 +39,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 		} else {
 			let member;
 			try {
-				member = await bot.memberSearch(msg.suffix, msg.guild);
+				member = await client.memberSearch(msg.suffix, msg.guild);
 			} catch (err) {
 				member = false;
 			}
@@ -57,14 +57,14 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, { serverDocument, 
 						msg.send({
 							embed: {
 								color: Colors.INFO,
-								description: `**@${bot.getName(msg.guild, serverDocument, member)}** has the rank \`${targetMemberDocument.rank}\` 🎖`,
+								description: `**@${client.getName(msg.guild, serverDocument, member)}** has the rank \`${targetMemberDocument.rank}\` 🎖`,
 							},
 						});
 					} else {
 						msg.send({
 							embed: {
 								color: Colors.INFO,
-								description: `**@${bot.getName(msg.channel.guild, serverDocument, member)}** doesn't have a rank yet 😟`,
+								description: `**@${client.getName(msg.channel.guild, serverDocument, member)}** doesn't have a rank yet 😟`,
 							},
 						});
 					}

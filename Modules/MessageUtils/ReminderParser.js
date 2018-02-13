@@ -2,7 +2,7 @@ const { SetReminder } = require("../Utils/");
 const parseDuration = require("parse-duration");
 
 // Set a reminder from a remindme command suffix
-module.exports = async (bot, userDocument, str) => {
+module.exports = async (client, userDocument, str) => {
 	let timestr, remind;
 	const args = str.split("|").trimAll();
 	if (args.length === 2) {
@@ -20,7 +20,7 @@ module.exports = async (bot, userDocument, str) => {
 			name: remind,
 			expiry_timestamp: Date.now() + time,
 		});
-		SetReminder(bot, userDocument, userDocument.reminders[userDocument.reminders.length - 1]);
+		SetReminder(client, userDocument, userDocument.reminders[userDocument.reminders.length - 1]);
 		return time;
 	} else {
 		return "ERR";

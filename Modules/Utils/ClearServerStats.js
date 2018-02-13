@@ -2,20 +2,20 @@
 
 /**
  * Clear activity stats for a server
- * @param bot The bot instance
+ * @param client The client instance
  * @param {Guild} server The server which has its stats cleared
  * @param serverDocument The Server Document
  */
-module.exports = async (bot, server, serverDocument) => {
+module.exports = async (client, server, serverDocument) => {
 	// Rank members by activity score for the week
 	const topMembers = [];
 	await Promise.all(serverDocument.members.map(async memberDocument => {
 		const member = server.members.get(memberDocument._id);
-		if (member && member.id !== bot.user.id && !member.user.bot) {
+		if (member && member.id !== client.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
 			topMembers.push([member, activityScore]);
 			memberDocument.rank_score += activityScore / 10;
-			memberDocument.rank = await bot.checkRank(server, serverDocument, member, memberDocument, true);
+			memberDocument.rank = await client.checkRank(server, serverDocument, member, memberDocument, true);
 			memberDocument.messages = 0;
 			memberDocument.voice = 0;
 		} else {

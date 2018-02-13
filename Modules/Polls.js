@@ -2,7 +2,7 @@ const PaginatedEmbed = require("./MessageUtils/PaginatedEmbed");
 const { Colors } = require("../Internals/Constants");
 
 module.exports = {
-	start: async (bot, svr, serverDocument, usr, ch, channelDocument, title, options) => {
+	start: async (client, svr, serverDocument, usr, ch, channelDocument, title, options) => {
 		if (!channelDocument.poll.isOngoing) {
 			channelDocument.poll.isOngoing = true;
 			channelDocument.poll.created_timestamp = Date.now();

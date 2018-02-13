@@ -1,8 +1,8 @@
 const { tokens } = require("../Configurations/auth.js");
 const snekfetch = require("snekfetch");
 
-module.exports = async bot => {
-	const totalAmount = await bot.guilds.totalCount;
+module.exports = async client => {
+	const totalAmount = await client.guilds.totalCount;
 	if (tokens.discordList) {
 		let res;
 		try {

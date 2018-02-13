@@ -1,4 +1,4 @@
-module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors } }, msg, commandData) => {
+module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Colors } }, msg, commandData) => {
 	const handleQuit = () => {
 		msg.reply({
 			embed: {
@@ -29,7 +29,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 		let changes = {};
 		let message = null;
 		try {
-			message = await bot.awaitPMMessage(msg.channel, msg.author);
+			message = await client.awaitPMMessage(msg.channel, msg.author);
 		} catch (err) {
 			switch (err.code) {
 				case "AWAIT_QUIT": return handleQuit();
@@ -69,7 +69,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 			},
 		});
 		try {
-			message = await bot.awaitPMMessage(msg.channel, msg.author, 120000);
+			message = await client.awaitPMMessage(msg.channel, msg.author, 120000);
 		} catch (err) {
 			message = undefined;
 			switch (err.code) {
@@ -115,7 +115,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 			},
 		});
 		try {
-			message = await bot.awaitPMMessage(msg.channel, msg.author, 300000);
+			message = await client.awaitPMMessage(msg.channel, msg.author, 300000);
 		} catch (err) {
 			message = undefined;
 			switch (err.code) {

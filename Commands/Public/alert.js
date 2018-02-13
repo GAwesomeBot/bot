@@ -1,4 +1,4 @@
-module.exports = async ({ bot, Constants: { Colors } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, msg, commandData) => {
 	if (!msg.suffix) {
 		msg.send({
 			embed: {
@@ -17,7 +17,7 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument }, msg,
 				},
 			},
 		};
-		bot.messageBotAdmins(msg.guild, serverDocument, embedObj);
+		client.messageBotAdmins(msg.guild, serverDocument, embedObj);
 		msg.send({
 			embed: {
 				color: Colors.LIGHT_GREEN,

@@ -6,7 +6,7 @@ module.exports = class Giveaways {
 		throw new Error("STATIC_CLASS", this.constructor.name);
 	}
 
-	static async start (bot, server, serverDocument, user, channel, channelDocument, title, secret, duration) {
+	static async start (client, server, serverDocument, user, channel, channelDocument, title, secret, duration) {
 		if (!channelDocument.giveaway.isOngoing) {
 			channelDocument.giveaway.isOngoing = true;
 			channelDocument.giveaway.expiry_timestamp = Date.now() + duration;
@@ -19,18 +19,18 @@ module.exports = class Giveaways {
 					color: 0x3669FA,
 					description: `${user} has started a giveaway called **${title}**! Good luck! 🍻`,
 					footer: {
-						text: `Use "${bot.getCommandPrefix(server, serverDocument)}giveaway enroll" or "${bot.getCommandPrefix(server, serverDocument)}giveaway join" for a chance to win.`,
+						text: `Use "${client.getCommandPrefix(server, serverDocument)}giveaway enroll" or "${client.getCommandPrefix(server, serverDocument)}giveaway join" for a chance to win.`,
 					},
 				},
 			});
-			bot.setTimeout(() => {
-				this.end(bot, server, channel);
+			client.setTimeout(() => {
+				this.end(client, server, channel);
 			}, duration);
 		}
 	}
 
-	static async end (bot, server, channel, serverDoc) {
-		const serverDocument = serverDoc || await bot.cache.get(server.id);
+	static async end (client, server, channel, serverDoc) {
+		const serverDocument = serverDoc || await client.cache.get(server.id);
 		if (serverDocument) {
 			const channelDocument = serverDocument.channels.id(channel.id);
 			if (channelDocument.giveaway.isOngoing) {
@@ -49,7 +49,7 @@ module.exports = class Giveaways {
 					channel.send({
 						embed: {
 							color: 0x00FF00,
-							description: `Congratulations **@${bot.getName(server, serverDocument, winner)}**! 🎊`,
+							description: `Congratulations **@${client.getName(server, serverDocument, winner)}**! 🎊`,
 							footer: {
 								text: `You won the giveaway "${channelDocument.giveaway.title}" out of ${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "person!" : "users!"}`,
 							},
@@ -68,7 +68,7 @@ module.exports = class Giveaways {
 					creator.send({
 						embed: {
 							color: 0x3669FA,
-							description: `Your giveaway "${channelDocument.giveaway.title}" running in #${channel.name} on \`${server}\` has ended.\n${winner ? `The winner was **@${bot.getName(server, serverDocument, winner)}**.` : "Nobody won this time 😕"}`,
+							description: `Your giveaway "${channelDocument.giveaway.title}" running in #${channel.name} on \`${server}\` has ended.\n${winner ? `The winner was **@${client.getName(server, serverDocument, winner)}**.` : "Nobody won this time 😕"}`,
 						},
 					});
 				}
@@ -76,10 +76,10 @@ module.exports = class Giveaways {
 			}
 		}
 	}
-	static async endTimedGiveaway (bot, server, channel, timer) {
-		bot.setTimeout(async () => {
-			const serverDocument = await bot.cache.get(server.id);
-			await this.end(bot, server, channel, serverDocument);
+	static async endTimedGiveaway (client, server, channel, timer) {
+		client.setTimeout(async () => {
+			const serverDocument = await client.cache.get(server.id);
+			await this.end(client, server, channel, serverDocument);
 			serverDocument.save();
 		}, timer - Date.now());
 	}

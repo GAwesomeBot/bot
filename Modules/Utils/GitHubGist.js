@@ -4,8 +4,8 @@ const { discord, tokens } = require("../../Configurations/auth.js");
 const { gistKey } = tokens;
 
 module.exports = class GitHubGist {
-	constructor (bot) {
-		this.bot = bot;
+	constructor (client) {
+		this.client = client;
 		this.public = gistKey === "";
 		this.headers = {
 			"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
@@ -45,7 +45,7 @@ module.exports = class GitHubGist {
 		let res;
 		try {
 			res = await snekfetch.post(this.apiURL).set(this.headers).send({
-				description: `GAwesomeBot (${this.bot.user.tag} | ${this.bot.user.id})${title ? ` | ${title}` : ""}`,
+				description: `GAwesomeBot (${this.client.user.tag} | ${this.client.user.id})${title ? ` | ${title}` : ""}`,
 				public: this.public,
 				files: {
 					[file]: {

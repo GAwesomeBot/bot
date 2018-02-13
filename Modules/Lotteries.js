@@ -9,7 +9,7 @@ const { Colors, LoggingLevels } = require("../Internals/Constants.js");
 
 module.exports = {
 	multipliers,
-	start: (bot, svr, serverDocument, usr, ch, channelDocument, multiplier) => {
+	start: (client, svr, serverDocument, usr, ch, channelDocument, multiplier) => {
 		if (!channelDocument.lottery.isOngoing) {
 			channelDocument.lottery.isOngoing = true;
 			channelDocument.lottery.expiry_timestamp = Date.now() + 3600000;
@@ -17,11 +17,11 @@ module.exports = {
 			channelDocument.lottery.participant_ids = [];
 			channelDocument.lottery.multiplier = multiplier ? multiplier : 2;
 			setTimeout(() => {
-				module.exports.end(bot, svr, serverDocument, ch, channelDocument);
+				module.exports.end(client, svr, serverDocument, ch, channelDocument);
 			}, 3600000);
 		}
 	},
-	end: async (bot, svr, serverDocument, ch, channelDocument) => {
+	end: async (client, svr, serverDocument, ch, channelDocument) => {
 		if (channelDocument.lottery.isOngoing) {
 			channelDocument.lottery.isOngoing = false;
 			let winner;
@@ -50,7 +50,7 @@ module.exports = {
 						content: `${winner},`,
 						embed: {
 							color: Colors.INFO,
-							title: `Congratulations @__${bot.getName(svr, serverDocument, winner)}__! 🎊`,
+							title: `Congratulations @__${client.getName(svr, serverDocument, winner)}__! 🎊`,
 							description: `You won the lottery for **${prize}** GAwesomePoint${prize === 1 ? "" : "s"} out of ${participantTotal} participant${participantTotal === 1 ? "" : "s"}.`,
 							footer: {
 								text: "Enjoy the cash! 💰",
@@ -61,7 +61,7 @@ module.exports = {
 				return winner;
 			} catch (err) {
 				winston.debug(`An error occurred while attempting to end a lottery (*0*)\n`, err);
-				bot.logMessage(serverDocument, LoggingLevels.ERROR, `An error occurred while attempting to end the lottery.`, ch.id);
+				client.logMessage(serverDocument, LoggingLevels.ERROR, `An error occurred while attempting to end the lottery.`, ch.id);
 			}
 		}
 	},

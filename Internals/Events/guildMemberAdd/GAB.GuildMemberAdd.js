@@ -8,7 +8,7 @@ const { LoggingLevels } = require("../../Constants");
 class GuildMemberAdd extends BaseEvent {
 	async handle (member) {
 		// Get server data
-		let serverDocument = await this.bot.cache.get(member.guild.id);
+		let serverDocument = await this.client.cache.get(member.guild.id);
 		if (serverDocument) {
 			if (serverDocument.config.moderation.isEnabled) {
 				// Send new_member_message if necessary
@@ -18,7 +18,7 @@ class GuildMemberAdd extends BaseEvent {
 					if (ch) {
 						const channelDocument = serverDocument.channels.id(ch.id);
 						if (!channelDocument || channelDocument.bot_enabled) {
-							const random = serverDocument.config.moderation.status_messages.new_member_message.messages.random.replaceAll("@user", `**@${this.bot.getName(member.guild, serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`);
+							const random = serverDocument.config.moderation.status_messages.new_member_message.messages.random.replaceAll("@user", `**@${this.client.getName(member.guild, serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`);
 							if (random) {
 								ch.send({
 									embed: {
@@ -54,7 +54,7 @@ class GuildMemberAdd extends BaseEvent {
 								title: `Welcome to ${member.guild} Discord Chat!`,
 								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message for new members! Have a cookie instead 🍪",
 								footer: {
-									text: `I'm ${this.bot.getName(member.guild, serverDocument, member.guild.member(this.bot.user.id))} by the way. Learn more by using "${member.guild.commandPrefix}help"!`,
+									text: `I'm ${this.client.getName(member.guild, serverDocument, member.guild.member(this.client.user.id))} by the way. Learn more by using "${member.guild.commandPrefix}help"!`,
 								},
 							},
 						});
@@ -81,7 +81,7 @@ class GuildMemberAdd extends BaseEvent {
 							winston.verbose(`Failed to add new role to member`, { svrid: member.guild.id, usrid: member.id, role: role.id }, err);
 						}
 					}
-					(x === arrayOfRoles.length && this.bot.logMessage(serverDocument, LoggingLevels.INFO, `Added new member roles to a new member.`, null, member.id)) || this.bot.logMessage(serverDocument, LoggingLevels.ERROR, `I was unable to add some roles to a new member!`, null, member.id);
+					(x === arrayOfRoles.length && this.client.logMessage(serverDocument, LoggingLevels.INFO, `Added new member roles to a new member.`, null, member.id)) || this.client.logMessage(serverDocument, LoggingLevels.ERROR, `I was unable to add some roles to a new member!`, null, member.id);
 				}
 			}
 		}

@@ -20,18 +20,18 @@ module.exports = async (main, { serverDocument, channelDocument }, msg, commandD
 		switch (action) {
 			case "start":
 				if (msg.suffix.includes(" ") && split.length) set = split.join(" ");
-				await Trivia.start(main.bot, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, set, msg);
+				await Trivia.start(main.client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, set, msg);
 				break;
 			case "end":
 			case ".":
-				await Trivia.end(main.bot, msg.guild, serverDocument, msg.channel, channelDocument, msg);
+				await Trivia.end(main.client, msg.guild, serverDocument, msg.channel, channelDocument, msg);
 				break;
 			case "skip":
 			case "next":
-				Trivia.next(main.bot, msg.guild, serverDocument, msg.channel, channelDocument, msg);
+				Trivia.next(main.client, msg.guild, serverDocument, msg.channel, channelDocument, msg);
 				break;
 			default:
-				Trivia.answer(main.bot, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, msg.suffix, msg);
+				Trivia.answer(main.client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, msg.suffix, msg);
 				break;
 		}
 	} else if (channelDocument.trivia.isOngoing) {

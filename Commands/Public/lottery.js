@@ -9,7 +9,7 @@ const multipliers = {
 const { Lotteries } = require("../../Modules/");
 const moment = require("moment");
 
-module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, userDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, userDocument }, msg, commandData) => {
 	const notOngoing = () => {
 		msg.channel.send({
 			embed: {
@@ -129,7 +129,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 							},
 						});
 					}
-					Lotteries.start(bot, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, multiplier);
+					Lotteries.start(client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, multiplier);
 					msg.channel.send({
 						embed: {
 							color: Colors.SUCCESS,
@@ -191,8 +191,8 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 			case "end":
 			case ".": {
 				if (channelDocument.lottery.isOngoing) {
-					if (channelDocument.lottery.creator_id === msg.author.id || bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) >= 1 || configJSON.maintainers.includes(msg.author.id)) {
-						const winner = await Lotteries.end(bot, msg.guild, serverDocument, msg.channel, channelDocument);
+					if (channelDocument.lottery.creator_id === msg.author.id || client.getUserBotAdmin(msg.guild, serverDocument, msg.member) >= 1 || configJSON.maintainers.includes(msg.author.id)) {
+						const winner = await Lotteries.end(client, msg.guild, serverDocument, msg.channel, channelDocument);
 						if (!winner) {
 							msg.channel.send({
 								embed: {
@@ -234,7 +234,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 		msg.send({
 			embed: {
 				color: Colors.INFO,
-				title: `GAwesomePoint lottery started by "@__${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}__" 💸`,
+				title: `GAwesomePoint lottery started by "@__${creator ? client.getName(msg.guild, serverDocument, creator) : "invalid-user"}__" 💸`,
 				fields: [
 					{
 						name: "Current Ticket Price",

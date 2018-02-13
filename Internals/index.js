@@ -1,5 +1,6 @@
 module.exports = {
 	Cache: require("./Cache/"),
+	Client: require("./Client"),
 	Constants: require("./Constants"),
 	ConversionHandler: require("./ConversionHandler"),
 	Encryption: require("./Encryption"),

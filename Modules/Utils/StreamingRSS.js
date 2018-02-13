@@ -8,7 +8,7 @@ const moment = require("moment");
  * @param feedDocument The RSS document from the serverDocument
  */
 /* eslint-disable require-await*/
-module.exports = async (bot, server, serverDocument, feedDocument) => {
+module.exports = async (client, server, serverDocument, feedDocument) => {
 	getRSS(feedDocument.url, 100).then(async articles => {
 		if (articles && articles.length > 0 && articles[0]) {
 			let info = [];

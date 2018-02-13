@@ -3,18 +3,18 @@ const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 const Gist = require("../../Modules/Utils/GitHubGist");
 
 class TagCommand {
-	constructor ({ bot, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
+	constructor ({ client, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
 		// Command Data
 		this.suffix = msg.suffix;
 		this.channel = msg.channel;
 		this.msg = msg;
 		this.commandData = commandData;
-		this.bot = bot;
+		this.client = client;
 		this.config = configJS;
 
 		// User/Server Data
 		this.serverDocument = serverDocument;
-		this.isAdmin = this.bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
+		this.isAdmin = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
 
 		// New Tag Data
 		this.isCommand = false;
@@ -39,7 +39,7 @@ class TagCommand {
 			});
 			return;
 		}
-		const gistUploader = new Gist(this.bot);
+		const gistUploader = new Gist(this.client);
 		const info = this.serverDocument.config.tags.list.map(async tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			const useSpacing = tag.isLocked && tag.isCommand;
@@ -170,7 +170,7 @@ class TagCommand {
 		}
 		if (response && this.confirmAction(response)) {
 			this.serverDocument.config.tags.list = [];
-			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
+			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
 			this.msg.send({
 				embed: {
 					color: this.Colors.SUCCESS,
@@ -194,7 +194,7 @@ class TagCommand {
 
 		if (this.checkPerms(data.isCommand ? "deleteCommand" : "delete")) {
 			data.remove();
-			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
+			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
 			this.msg.send({
 				embed: {
 					color: this.Colors.SUCCESS,
@@ -222,7 +222,7 @@ class TagCommand {
 					isCommand: this.isCommand,
 					isLocked: this.isLocked,
 				});
-				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
+				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
 				this.msg.send({
 					embed: {
 						color: this.Colors.SUCCESS,
@@ -259,7 +259,7 @@ class TagCommand {
 				data.content = this.value;
 				data.isCommand = this.isCommand;
 				data.isLocked = this.isLocked;
-				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
+				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
 				this.msg.send({
 					embed: {
 						color: this.Colors.SUCCESS,

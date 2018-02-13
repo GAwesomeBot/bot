@@ -53,7 +53,7 @@ class Sharder {
 	constructor (token, count, winston) {
 		this.cluster = cluster;
 		this.cluster.setupMaster({
-			exec: "Discord.js",
+			exec: "GAwesomeBot.js",
 		});
 		this.winston = winston;
 		this.token = token ? token : process.env.CLIENT_TOKEN;

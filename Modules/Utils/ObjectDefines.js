@@ -1,7 +1,7 @@
 const GetValue = require("./GetValue.js");
 
 /* eslint-disable max-len */
-module.exports = bot => {
+module.exports = client => {
 	const properties = 9;
 	/**
 	 * Removes null objects from an array
@@ -136,15 +136,15 @@ module.exports = bot => {
 	 * Total count of users or guilds across all shards.
 	 * @returns {Number}
 	 */
-	Object.defineProperty(bot.guilds, "totalCount", {
+	Object.defineProperty(client.guilds, "totalCount", {
 		get: async function get () {
-			return GetValue(bot, "guilds.size", "int");
+			return GetValue(client, "guilds.size", "int");
 		},
 	});
 
-	Object.defineProperty(bot.users, "totalCount", {
+	Object.defineProperty(client.users, "totalCount", {
 		get: async function get () {
-			return GetValue(bot, "users.size", "int");
+			return GetValue(client, "users.size", "int");
 		},
 	});
 

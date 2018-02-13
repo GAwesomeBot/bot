@@ -1,6 +1,6 @@
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ bot, configJS, Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		const createCount = async name => {
 			const prompt = await msg.channel.send({

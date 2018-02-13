@@ -1,19 +1,19 @@
 const snekfetch = require("snekfetch");
 const { tokens } = require("../Configurations/auth.js");
 
-module.exports = async bot => {
+module.exports = async client => {
 	// Send server amount to DBots per shard
 	if (tokens.discordBots) {
 		let res;
 		try {
-			res = await snekfetch.post(`https://bots.discord.pw/api/bots/${bot.user.id}/stats`).set({
+			res = await snekfetch.post(`https://bots.discord.pw/api/bots/${client.user.id}/stats`).set({
 				Accept: "application/json",
 				"Content-Type": "application/json",
 				Authorization: tokens.discordBots,
 			}).send({
 				shard_id: Number(process.env.SHARD_ID),
 				shard_total: Number(process.env.SHARD_COUNT),
-				server_count: bot.guilds.size,
+				server_count: client.guilds.size,
 			});
 		} catch (err) {
 			winston.warn(`Failed to post to DiscordBots..\n`, err);
