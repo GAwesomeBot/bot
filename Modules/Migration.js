@@ -39,10 +39,10 @@ module.exports = () => {
 
 	const MigrateDocumentsAndCommands = async () => {
 		let serverDocuments = await Servers.find({});
-		for (const serverDocument of serverDocuments) {
-			let allCommandsKey = Object.keys(public);
-			let defaultCommandObject = (adminLevel, isEnabled) => ({ isEnabled, admin_level: adminLevel, disabled_channel_ids: [] });
+		let allCommandsKey = Object.keys(public);
+		let defaultCommandObject = (adminLevel, isEnabled) => ({ isEnabled, admin_level: adminLevel, disabled_channel_ids: [] });
 
+		for (const serverDocument of serverDocuments) {
 			const objectServerDocument = await Servers.findOne({ _id: serverDocument._id }).lean();
 			delete objectServerDocument.__v;
 			if (!Array.isArray(objectServerDocument.logs)) objectServerDocument.logs = [];
