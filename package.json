@@ -40,7 +40,7 @@
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.14",
     "money": "^0.2.0",
-    "mongoose": "^5.0.4",
+    "mongoose": "^5.0.6",
     "mongoose-findorcreate": "*",
     "mstranslator": "^3.0.0",
     "node-base64-image": "^1.0.4",
@@ -70,6 +70,6 @@
   },
   "devDependencies": {
     "eslint": "^4.17.0",
-    "uglify-js": "^3.3.10"
+    "uglify-js": "^3.3.11"
   }
 }
