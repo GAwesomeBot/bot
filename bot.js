@@ -9,6 +9,7 @@ const ascii = `
 			`;
 
 const { Console, Sharder, Traffic, Boot, Updater } = require("./Modules/");
+const { Stopwatch } = require("./Modules/Utils/");
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
 
@@ -304,12 +305,11 @@ database.initialize(configJS.databaseURL).catch(err => {
 					break;
 			}
 			data.master.PID = process.pid;
-			const beforeQuery = process.hrtime();
+			const timer = new Stopwatch();
 			data.master.guilds = await db.servers.count().exec();
-			const afterQuery = process.hrtime(beforeQuery);
-			const afterQuerySeconds = afterQuery[0] * 1000;
-			const afterQueryNano = afterQuery[1] / 1000000;
-			data.master.ping = Math.round((afterQuerySeconds + afterQueryNano) * 100) / 100;
+			const afterQuery = timer.friendlyDuration;
+			timer.stop();
+			data.master.ping = afterQuery;
 			data.master.users = await db.users.count().exec();
 			if (!msg.noShards) data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
 			callback(data);

@@ -4,9 +4,9 @@ const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const dbl = require("dblposter");
 
-const commands = require("./Configurations/commands.js");
-const auth = require("./Configurations/auth.js");
-const Timeouts = require("./Modules/Timeouts/index");
+const commands = require("../Configurations/commands.js");
+const auth = require("../Configurations/auth.js");
+const Timeouts = require("../Modules/Timeouts/index");
 const {
 	Constants: {
 		LoggingLevels,
@@ -17,7 +17,7 @@ const {
 	WorkerManager,
 	ShardUtil,
 	ConversionHandler,
-} = require("./index");
+} = require("./");
 const { ModLog } = require("../Modules/index");
 const {	RankScoreCalculator: computeRankScores } = require("../Modules/Utils/index");
 

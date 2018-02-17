@@ -4,7 +4,6 @@ const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giv
 const { ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
-	Client: GABClient,
 	Cache: {
 		ServerDocumentCache,
 	},
@@ -31,11 +30,8 @@ const disabledEvents = ["TYPING_START"];
 if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledEvents.push("MESSAGE_CREATE");
 
 winston.silly("Creating Discord.js client.");
-const client = new GABClient({
-	// shardId: Number(process.env.SHARD_ID),
-	// shardCount: Number(process.env.SHARD_COUNT),
-	disabledEvents,
-});
+const GABClient = require("./Internals/Client");
+const client = new GABClient({ disabledEvents });
 
 ObjectDefines(client);
 global.ThatClientThatDoesCaching = client;

@@ -24,6 +24,7 @@ module.exports = {
 	SearchiTunes: require("./SearchiTunes.js"),
 	SetCountdown: require("./SetCountdown.js"),
 	SetReminder: require("./SetReminder.js"),
+	Stopwatch: require("./Stopwatch"),
 	StreamChecker: require("./StreamChecker.js"),
 	StreamerUtils: require("./StreamerUtils.js"),
 	StreamingRSS: require("./StreamingRSS.js"),
