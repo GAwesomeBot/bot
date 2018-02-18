@@ -159,11 +159,11 @@ class MessageCreate extends BaseEvent {
 				}
 				const memberBotAdminLevel = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member);
 				// Increment today's message count for server
-				serverDocument.messages_today++;
+				if (!msg.editedAt) serverDocument.messages_today++;
 				// Count server stats if enabled in this channel
 				if (channelDocument.isStatsEnabled) {
 					// Increment this week's message count for member
-					memberDocument.messages++;
+					if (!msg.editedAt) memberDocument.messages++;
 					// Set now as the last active time for member
 					memberDocument.last_active = Date.now();
 					// Check if the user has leveled up a rank
