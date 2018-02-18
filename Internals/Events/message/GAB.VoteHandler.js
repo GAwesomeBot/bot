@@ -4,6 +4,7 @@ const { Colors } = require("../../Constants");
 class VoteHandler extends BaseEvent {
 	requirements (msg) {
 		if (!msg.guild) return false;
+		if (msg.editedAt) return false;
 		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
 				return false;
