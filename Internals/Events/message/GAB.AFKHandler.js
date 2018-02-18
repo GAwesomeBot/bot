@@ -4,7 +4,7 @@ const { Colors } = require("../../Constants");
 class AFKHandler extends BaseEvent {
 	requirements (msg) {
 		if (!msg.guild) return false;
-		if (msg.author.id === this.client.user.id || msg.author.client || this.configJSON.userBlocklist.includes(msg.author.id)) {
+		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
 				return false;
 			} else {
@@ -12,6 +12,7 @@ class AFKHandler extends BaseEvent {
 				return false;
 			}
 		}
+		if (!msg.channel.postable) return false;
 		if (!msg.mentions.members.size > 0) return false;
 		return true;
 	}

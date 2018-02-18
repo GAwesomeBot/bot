@@ -16,6 +16,7 @@ const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
 	requirements (msg) {
+		if (!msg.channel.postable) return false;
 		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
 				return false;

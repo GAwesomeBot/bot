@@ -4,6 +4,7 @@ const { Colors } = Constants;
 
 class MaintainerMessageCreate extends BaseEvent {
 	requirements (msg) {
+		if (!msg.channel.postable) return false;
 		if (configJSON.userBlocklist.includes(msg.author.id)) return false;
 		if (configJSON.sudoMaintainers.includes(msg.author.id) ||
 			configJSON.maintainers.includes(msg.author.id)) {

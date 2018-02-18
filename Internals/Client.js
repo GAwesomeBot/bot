@@ -3,6 +3,8 @@ const ProcessAsPromised = require("process-as-promised");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const dbl = require("dblposter");
+const { readdir } = require("fs-nextra");
+const { join } = require("path");
 
 const commands = require("../Configurations/commands.js");
 const auth = require("../Configurations/auth.js");
@@ -46,6 +48,24 @@ module.exports = class GABClient extends DJSClient {
 		this.shard = new ShardUtil(this);
 
 		this.conversionHandler = new ConversionHandler(this);
+
+		this.extendables = new Collection();
+		this.initExtendables();
+	}
+
+	/**
+	 * Initializes all extendables
+	 * @private
+	 */
+	async initExtendables () {
+		const dir = await readdir(join(__dirname, "Extendables"));
+		for (const file of dir) {
+			if (file.startsWith("_") || !file.endsWith(".js")) continue;
+			let extendable = require(`./Extendables/${file}`);
+			if (typeof extendable === "function") extendable = new extendable();
+			extendable.enable();
+			this.extendables.set(extendable.name, extendable);
+		}
 	}
 
 	/**
@@ -182,7 +202,7 @@ module.exports = class GABClient extends DJSClient {
 	// Bot Command Handlers
 	reloadPrivateCommand (command, returnError = false) {
 		try {
-			privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
+			privateCommandModules[command] = reload(`../Commands/PM/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload private command "${command}"`, err);
 			if (returnError) return err;
@@ -192,7 +212,7 @@ module.exports = class GABClient extends DJSClient {
 	reloadPublicCommand (command, returnError = false) {
 		try {
 			command = this.getPublicCommandName(command);
-			commandModules[command] = reload(`./Commands/Public/${command}.js`);
+			commandModules[command] = reload(`../Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
 			if (returnError) return err;
@@ -202,7 +222,7 @@ module.exports = class GABClient extends DJSClient {
 	reloadSharedCommand (command, returnError = false) {
 		try {
 			command = this.getSharedCommandName(command);
-			sharedModules[command] = reload(`./Commands/Shared/${command}.js`);
+			sharedModules[command] = reload(`../Commands/Shared/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload shared command "${command}"`, err);
 			if (returnError) return err;
@@ -1077,5 +1097,37 @@ module.exports = class GABClient extends DJSClient {
 		await super.login(process.env.CLIENT_TOKEN);
 		await this.workerManager.startWorker();
 		return process.env.CLIENT_TOKEN;
+	}
+
+	sweepMessages (lifetime = this.options.messageCacheLifetime, responseLifetime = 1800) {
+		if (typeof lifetime !== "number" || isNaN(lifetime)) throw new TypeError("The lifetime must be a number.");
+		if (lifetime <= 0) {
+			this.emit("debug", "Didn't sweep messages - lifetime is unlimited");
+			return -1;
+		}
+
+		const lifetimeMs = lifetime * 1000;
+		const responseLifetimeMs = responseLifetime * 1000;
+		const now = Date.now();
+		let channels = 0;
+		let messages = 0;
+		let commandMessages = 0;
+
+		for (const channel of this.channels.values()) {
+			if (!channel.messages) continue;
+			channels++;
+
+			for (const message of channel.messages.values()) {
+				if (message.command && now - (message.editedTimestamp || message.createdTimestamp) > responseLifetimeMs) {
+					channel.messages.delete(message.id);
+					commandMessages++;
+				} else if (!message.command && now - (message.editedTimestamp || message.createdTimestamp) > lifetimeMs) {
+					channel.messages.delete(message.id);
+					messages++;
+				}
+			}
+		}
+		this.emit("debug", `Swept ${messages} messages older than ${lifetime} seconds and ${commandMessages} command messages older than ${responseLifetime} seconds in ${channels} text-based channels`);
+		return messages;
 	}
 };

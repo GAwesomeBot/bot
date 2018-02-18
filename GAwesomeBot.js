@@ -31,7 +31,12 @@ if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledE
 
 winston.silly("Creating Discord.js client.");
 const GABClient = require("./Internals/Client");
-const client = new GABClient({ disabledEvents });
+const client = new GABClient({
+	disabledEvents,
+	messageCacheLifetime: 1800,
+	messageSweepInterval: 900,
+	messageCacheMaxSize: 1000,
+});
 
 ObjectDefines(client);
 global.ThatClientThatDoesCaching = client;
@@ -681,6 +686,7 @@ client.on("message", async msg => {
 	if (client.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
+			if (msg.guild && !msg.guild.me) await msg.guild.members.fetch(client.user);
 			if (msg.guild && !msg.member) await msg.guild.members.fetch(msg.author);
 			await client.events.onEvent("message", msg, proctime);
 			if (msg.guild) {

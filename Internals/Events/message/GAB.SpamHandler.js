@@ -10,7 +10,7 @@ class SpamHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await this.bot.cache.get(msg.guild.id);
+		this.serverDocument = await this.client.cache.get(msg.guild.id);
 		this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
 		if (!this.channelDocument) {
 			this.serverDocument.channels.push({ _id: msg.channel.id });
@@ -20,7 +20,7 @@ class SpamHandler extends BaseEvent {
 
 	async handle (msg) {
 		if (this.serverDocument) {
-			const memberAdminLevel = this.bot.getUserBotAdmin(msg.guild, this.serverDocument, msg.member);
+			const memberAdminLevel = this.client.getUserBotAdmin(msg.guild, this.serverDocument, msg.member);
 			// Get member data (for this server)
 			let memberDocument = this.serverDocument.members.id(msg.author.id);
 			// Create member data if not found
@@ -39,17 +39,17 @@ class SpamHandler extends BaseEvent {
 					spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
 					spamDocument.message_count++;
 					spamDocument.last_message_content = msg.cleanContent;
-					this.bot.setTimeout(async () => {
+					this.client.setTimeout(async () => {
 						this.serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
 							winston.debug(`Failed to get server document for spam filter..`, err);
 						});
 						if (this.serverDocument) {
-							this.bot.cache.set(this.serverDocument._id, this.serverDocument);
+							this.client.cache.set(this.serverDocument._id, this.serverDocument);
 							this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
 							spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
 							if (spamDocument) {
 								spamDocument.remove();
-								(await this.bot.cache.get(msg.guild.id)).save().catch(err => {
+								(await this.client.cache.get(msg.guild.id)).save().catch(err => {
 									winston.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
 								});
 							}
@@ -64,7 +64,8 @@ class SpamHandler extends BaseEvent {
 					if (spamDocument.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
 						// eslint-disable-next-line max-len
 						winston.verbose(`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-						this.bot.logMessage(this.serverDocument, LoggingLevels.INFO, `Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
+						this.client.logMessage(this.serverDocument, LoggingLevels.INFO,
+							`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
 						// Message user and tell them to stop
 						msg.author.send({
 							embed: {
@@ -75,10 +76,10 @@ class SpamHandler extends BaseEvent {
 						});
 
 						// Message bot admins about user spamming
-						this.bot.messageBotAdmins(msg.guild, this.serverDocument, {
+						this.client.messageBotAdmins(msg.guild, this.serverDocument, {
 							embed: {
 								color: Colors.RED,
-								description: `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.`,
+								description: `**@${this.client.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.`,
 							},
 						});
 
@@ -95,7 +96,7 @@ class SpamHandler extends BaseEvent {
 						}
 						// Add strike for user
 						memberDocument.strikes.push({
-							_id: this.bot.user.id,
+							_id: this.client.user.id,
 							reason: `First-time spam violation in #${msg.channel.name} (${msg.channel})`,
 						});
 						// TODO: ModLog.create
@@ -103,7 +104,8 @@ class SpamHandler extends BaseEvent {
 						// Second-time spam filter violation
 						// eslint-disable-next-line max-len
 						winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-						this.bot.logMessage(this.serverDocument, LoggingLevels.INFO, `Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
+						this.client.logMessage(this.serverDocument, LoggingLevels.INFO,
+							`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
 
 						// Delete spam messages if necessary
 						if (this.serverDocument.config.moderation.filters.spam_filter.delete_messages) {
@@ -136,7 +138,7 @@ class SpamHandler extends BaseEvent {
 								violatorRoleID = this.serverDocument.config.moderation.filters.spam_filter.violator_role_id;
 							}
 							// eslint-disable-next-line max-len
-							this.bot.handleViolation(msg.guild, this.serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** (${msg.member}) continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, this.serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
+							this.client.handleViolation(msg.guild, this.serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** (${msg.member}) continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, this.serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
 						}
 						await userDocument.save().catch(err => {
 							winston.debug(`Failed to save user document...`, err);
