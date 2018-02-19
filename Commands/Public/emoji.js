@@ -24,7 +24,8 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				},
 			},
 		});
-		const animated = msg.suffix.trim().split(/\s+/).trimAll();
+		const suffixNoNewline = msg.suffix.replace(/[\r\n]/g, " ");
+		const animated = suffixNoNewline.trim().split(/\s+/).trimAll();
 		let every = true;
 		for (const param of animated) {
 			const parsed = DJSUtil.parseEmoji(param);
@@ -87,7 +88,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 			}
 		} else {
 			try {
-				const b = await Emoji(msg.suffix);
+				const b = await Emoji(suffixNoNewline);
 				if (b) {
 					await m.delete();
 					try {
