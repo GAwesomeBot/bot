@@ -672,18 +672,18 @@ client.on("guildUpdate", async (oldGuild, newGuild) => {
  * MESSAGE_CREATE
  */
 client.on("message", async msg => {
-	if (!msg.author.bot) {
-		try {
-			let find = await Users.findOne({ _id: msg.author.id });
-			if (!find) await Users.create(new Users({ _id: msg.author.id }));
-		} catch (err) {
-			if (!/duplicate key/.test(err.message)) {
-				winston.warn(`Failed to create user document for ${msg.author.tag}`, { err });
+	if (client.isReady) {
+		let proctime = process.hrtime();
+		if (!msg.author.bot) {
+			try {
+				let find = await Users.findOne({ _id: msg.author.id });
+				if (!find) await Users.create(new Users({ _id: msg.author.id }));
+			} catch (err) {
+				if (!/duplicate key/.test(err.message)) {
+					winston.warn(`Failed to create user document for ${msg.author.tag}`, { err });
+				}
 			}
 		}
-	}
-	let proctime = process.hrtime();
-	if (client.isReady) {
 		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
 		try {
 			if (msg.guild && !msg.guild.me) await msg.guild.members.fetch(client.user);
