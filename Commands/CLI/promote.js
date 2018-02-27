@@ -4,7 +4,6 @@ const configJSON = require("../../Configurations/config.json");
 
 module.exports = async ({ cli }, cmdData, args) => {
 	args = args.trim();
-	console.log("fat")
 	const [action, ...ids] = args.split(" ");
 	let isSudo = false;
 	if (ids[0].toLowerCase() === "sudo") {
@@ -27,7 +26,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 	const updateCfg = new Promise(rs => ids.forEach((user, i) => {
 		if (action === "add") {
 			if (isMaintainer(user, isSudo)) {
-				winston.warn(`${user} is a maintainer already.`)
+				winston.warn(`${user} is a maintainer already.`);
 				return;
 			}
 			if (isSudo && !isMaintainer(user, isSudo)) add(user, isSudo);
@@ -40,7 +39,7 @@ module.exports = async ({ cli }, cmdData, args) => {
 			if (isSudo && isMaintainer(user, isSudo)) remove(user, isSudo);
 			if (isMaintainer(user, false)) remove(user, false);
 		}
-		if (i == (ids.length - 1)) return rs();
+		if (i === (ids.length - 1)) return rs();
 	}));
 
 	await updateCfg;

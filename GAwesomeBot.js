@@ -82,11 +82,10 @@ process.on("uncaughtException", err => {
 
 client.IPC.on("updateConfig", async (msg, callback) => {
 	try {
-		delete require.cache[require.resolve("./Configurations/config.json")]
+		delete require.cache[require.resolve("./Configurations/config.json")];
 		global.configJSON = require("./Configurations/config.json");
 		return callback({ error: false });
 	} catch (err) {
-		winston.error("I suffered from some high temperature burns here aaa\r\n", err)
 		return callback({ error: true });
 	}
 });
