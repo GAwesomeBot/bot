@@ -976,14 +976,9 @@ const commands = {
 			isMultiline: true,
 		},
 
-		addmaintainer: {
-			description: "Adds (sudo) maintainers.",
-			usage: "[sudo] <ids...>",
-		},
-
-		removemaintainer: {
-			description: "Removes (sudo) maintainers.",
-			usage: "[sudo] <ids...>",
+		promote: {
+			description: "Adds/removes (sudo) maintainers.",
+			usage: "<add|remove> [sudo] <ids...>",
 		},
 
 		bigmessage: {

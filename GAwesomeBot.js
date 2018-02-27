@@ -79,6 +79,18 @@ process.on("uncaughtException", err => {
 	process.exit(1);
 });
 
+
+client.IPC.on("updateConfig", async (msg, callback) => {
+	try {
+		delete require.cache[require.resolve("./Configurations/config.json")]
+		global.configJSON = require("./Configurations/config.json");
+		return callback({ error: false });
+	} catch (err) {
+		winston.error("I suffered from some high temperature burns here aaa\r\n", err)
+		return callback({ error: true });
+	}
+});
+
 client.IPC.on("getGuild", async (msg, callback) => {
 	let payload = msg;
 	if (payload.guild === "*") {
@@ -927,3 +939,4 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
 client.on("warn", async info => {
 	winston.warn(`Received WARN event from Discord.js!`, { info });
 });
+
