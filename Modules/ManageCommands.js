@@ -1,3 +1,5 @@
+const Gist = require("./Utils/GitHubGist");
+
 class ManageCommands {
 	constructor ({ client, Constants: { Colors, Text, LoggingLevels } }, { serverDocument, channelDocument }, msg, commandData) {
 		// Command stuff
@@ -63,7 +65,18 @@ class ManageCommands {
 			}
 			case "enable": {
 				// Parse for enabling
-				return true;
+				params.forEach(param => {
+					let split = param.split(".").trimAll();
+					if (split.length === 2 && split[1] === "all") {
+						this.enableAll.push(split[0]);
+					} else if (split.length === 2 && split[0] === "all") {
+						// Some people are stupid
+						this.enableAll.push(split[1]);
+					} else {
+						this.enableInChannel.push(param);
+					}
+				});
+				return this.enableAll.length || this.enableInChannel.length;
 			}
 		}
 	}
@@ -85,7 +98,7 @@ class ManageCommands {
 			} else if (!invalid.includes(cmd)) { invalid.push(cmd); }
 		});
 		let color = this.Colors.SUCCESS;
-		if (invalid.length && ((disabledInCh.length || disabledAll.length) || alreadyDisabled.length)) color = this.Colors.SOFT_ERR;
+		if (invalid.length) color = this.Colors.SOFT_ERR;
 		const fields = [];
 		disabledInCh.length && fields.push({
 			name: `The following commands were disabled in this channel 💫`,
@@ -103,7 +116,7 @@ class ManageCommands {
 			name: `The following commands were invalid 😵`,
 			value: `» **${invalid.join("**\n» **")}**`,
 		});
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color,
 				fields,
@@ -137,7 +150,7 @@ class ManageCommands {
 			name: `The following commands are disabled in __all__ channels 🤐`,
 			value: `» **${disabledAll.join("**\n» **")}**`,
 		});
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color: this.Colors.INFO,
 				fields: fields.length ? fields : [
@@ -146,6 +159,106 @@ class ManageCommands {
 						value: `You can disable some by using \`${this.msg.guild.commandPrefix}${this.commandData.name} ${this.commandData.usage}\`, but why would you do that...?`,
 					},
 				],
+			},
+		});
+	}
+
+	async executeEnable () {
+		const enabledInCh = [], enabledAll = [], invalid = [], alreadyEnabled = [];
+		this.enableInChannel.length && this.enableInChannel.forEach(cmd => {
+			if (this.serverDocument.config.commands.hasOwnProperty(cmd)) {
+				this.serverDocument.config.commands[cmd].isEnabled = true;
+				const index = this.serverDocument.config.commands[cmd].disabled_channel_ids.indexOf(this.channel.id);
+				if (~index) {
+					this.serverDocument.config.commands[cmd].disabled_channel_ids.splice(index, 1);
+					enabledInCh.push(cmd);
+				} else {
+					alreadyEnabled.push(cmd);
+				}
+			} else if (!invalid.includes(cmd)) { invalid.push(cmd); }
+		});
+		this.enableAll.length && this.enableAll.forEach(cmd => {
+			if (this.serverDocument.config.commands.hasOwnProperty(cmd)) {
+				this.serverDocument.config.commands[cmd].isEnabled = true;
+				this.serverDocument.config.commands[cmd].disabled_channel_ids = [];
+				enabledAll.push(cmd);
+			} else if (!invalid.includes(cmd)) { invalid.push(cmd); }
+		});
+		let color = this.Colors.SUCCESS;
+		if (invalid.length) color = this.Colors.SOFT_ERR;
+		const fields = [];
+		enabledInCh.length && fields.push({
+			name: `The following commands were enabled in this channel ✨`,
+			value: `» **${enabledInCh.join("**\n» **")}**`,
+		});
+		enabledAll.length && fields.push({
+			name: `The following commands were enabled in __all__ channels 🎉`,
+			value: `» **${enabledAll.join("**\n» **")}**`,
+		});
+		alreadyEnabled.length && fields.push({
+			name: `The following commands are already enabled in this channel 😴`,
+			value: `» **${alreadyEnabled.join("**\n» **")}**`,
+		});
+		invalid.length && fields.push({
+			name: `The following commands were invalid 😵`,
+			value: `» **${invalid.join("**\n» **")}**`,
+		});
+		this.msg.send({
+			embed: {
+				color,
+				fields,
+				footer: {
+					text: invalid.length ? "You cannot enable inexistent commands or extension commands through this command!" : "",
+				},
+			},
+		});
+	}
+
+	async listEnabled () {
+		const commandKeys = Object.keys(this.serverDocument.config.commands.toObject());
+		const allCommands = Object.keys(require("../Configurations/commands").public);
+		const enabled = [], enabledAll = [];
+		commandKeys.forEach(command => {
+			if (allCommands.includes(command)) {
+				if (this.serverDocument.config.commands[command].isEnabled && this.serverDocument.config.commands[command].disabled_channel_ids.length === 0) {
+					enabledAll.push(command);
+				} else if (this.serverDocument.config.commands[command].isEnabled && !this.serverDocument.config.commands[command].disabled_channel_ids.includes(this.channel.id)) {
+					enabled.push(command);
+				}
+			}
+		});
+		const gistUploader = new Gist(this.client);
+		const fields = [];
+		let enabledString = `» **${enabled.join("**\n» **")}**`;
+		let enabledAllString = `» **${enabledAll.join("**\n» **")}**`;
+		if (enabledString.length > 1024) {
+			enabledString = `» **${enabled.join("**\n\n» **")}**`;
+			const res = await gistUploader.upload({
+				title: `Enabled Commands in "${this.channel.name}"`,
+				text: enabledString,
+				file: "commands.md",
+			});
+			if (res.url) {
+				enabledString = `There are so many enabled commands, I cannot list them all!\nPlease go [here](${res.url}) to see them all!`;
+			}
+		}
+		enabled.length && fields.push({
+			name: `The following commands are enabled in this channel ✨`,
+			value: enabledString,
+		});
+		this.msg.send({
+			embed: {
+				color: this.Colors.INFO,
+				description: enabledAllString.length ? `**The following commands are enabled in __all__ channels** 🎉\n\n${enabledAllString}` : "",
+				fields: fields.length ? fields : !enabledAllString.length ? [
+					{
+						name: `There are no commands enabled in this server. 😔`,
+						value: `You can enable some by using \`${this.msg.guild.commandPrefix}${this.commandData.name} ${this.commandData.usage}\``,
+					},
+				] : [],
+				footer: {
+					text: fields.length ? "" : enabledAllString.length ? "" : "Wait... How did you manage to get this message?!",
+				},
 			},
 		});
 	}

@@ -24,7 +24,7 @@
 		if(newRankName.val() && newRankScore.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-name": newRankName.val(),
 					"new-max_score": newRankScore.val(),

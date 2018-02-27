@@ -1,10 +1,10 @@
 const remind = require("../../Modules/MessageUtils/ReminderParser");
 const moment = require("moment");
 
-module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandData) => {
 	const userDocument = msg.author.userDocument;
 	if (msg.suffix) {
-		const result = await remind(bot, userDocument, msg.suffix);
+		const result = await remind(client, userDocument, msg.suffix);
 		if (result === "ERR") {
 			msg.channel.send({
 				embed: {

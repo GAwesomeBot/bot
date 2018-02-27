@@ -1,9 +1,9 @@
 const Timeout = require("./Timeout");
 const Interval = require("./Interval");
 
-exports.setTimeout = (listener, after, ...args) => new Timeout(listener, after, ...args);
+exports.setTimeout = (listener, after, key, ...args) => new Timeout(listener, after, key, ...args);
 
-exports.setInterval = (listener, after, ...args) => new Interval(listener, after, ...args);
+exports.setInterval = (listener, after, key, ...args) => new Interval(listener, after, key, ...args);
 
 exports.clearTimeout = exports.clearInterval = timer => {
 	if (timer && (timer instanceof Timeout || timer instanceof Interval)) timer.close();

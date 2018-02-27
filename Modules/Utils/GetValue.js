@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 const ProcessAsPromised = require("process-as-promised");
 const IPC = new ProcessAsPromised();
 
-module.exports = (bot, val, merge, func) => {
+module.exports = (client, val, merge, func) => {
 	try {
 		let code = `this.${val}`;
 		if (func) {

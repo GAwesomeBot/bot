@@ -1,19 +1,19 @@
 /**
  * Set a reminder for a user
- * @param bot The bot instance
+ * @param client The client instance
  * @param {Document} userDocument The full user document
  * @param {Document} reminderDocument The reminder document
  */
-module.exports = async (bot, userDocument, reminderDocument) => {
+module.exports = async (client, userDocument, reminderDocument) => {
 	let usr;
 	try {
-		usr = bot.users.get(userDocument._id);
+		usr = client.users.get(userDocument._id);
 	} catch (err) {
-		usr = await bot.users.fetch(userDocument._id, true);
+		usr = await client.users.fetch(userDocument._id, true);
 	}
-	if (!usr) usr = await bot.users.fetch(userDocument._id, true);
+	if (!usr) usr = await client.users.fetch(userDocument._id, true);
 	if (usr) {
-		bot.setTimeout(async () => {
+		client.setTimeout(async () => {
 			const newUserDocument = await Users.findOne({ _id: userDocument._id }).exec();
 			const newReminderDocument = newUserDocument.reminders.id(reminderDocument._id);
 			usr.send({

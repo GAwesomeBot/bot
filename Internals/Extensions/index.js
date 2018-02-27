@@ -86,7 +86,7 @@ const parseScopes = extensionDocument => {
 	return parsed;
 };
 
-exports.run = async (bot, serverDocument, extensionDocument, params) => {
+exports.run = async (client, serverDocument, extensionDocument, params) => {
 	let extensionCode;
 	try {
 		extensionCode = await getExtensionCode(extensionDocument);
@@ -97,7 +97,7 @@ exports.run = async (bot, serverDocument, extensionDocument, params) => {
 		const scopes = parseScopes(extensionDocument);
 		const vm = new VM({
 			timeout: extensionDocument.timeout,
-			sandbox: new Sandbox(bot, serverDocument, extensionDocument, params, scopes),
+			sandbox: new Sandbox(client, serverDocument, extensionDocument, params, scopes),
 		});
 		vm.run(extensionCode);
 	} catch (err) {

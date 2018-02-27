@@ -1,4 +1,4 @@
-<form id="form" onsubmit="GAwesomeUtil.saveExtension(<%= isGallery %>, '<%- isGallery ? "/extensions/builder?" : currentPage + "?svrid=" + serverData.id + "&" %><%= extensionData._id ? ('extid=' + extensionData._id) : "" %>'); return false;">
+<form id="form" onsubmit="GAwesomeUtil.saveExtension(<%= isGallery %>, '<%- isGallery ? "/extensions/builder?" : currentPage + "?" %><%= extensionData._id ? ('extid=' + extensionData._id) : "" %>'); return false;">
 	<div class="field">
 		<label class="label">Name</label>
 		<p class="control">

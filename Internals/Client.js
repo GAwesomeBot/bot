@@ -1,60 +1,33 @@
-const process = require("process");
-
-const commands = require("./Configurations/commands.js");
+const { Client: DJSClient, Collection } = require("discord.js");
+const ProcessAsPromised = require("process-as-promised");
 const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const dbl = require("dblposter");
+const { readdir } = require("fs-nextra");
+const { join } = require("path");
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
-const { RankScoreCalculator: computeRankScores, ModLog, ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
-const Timeouts = require("./Modules/Timeouts/index");
+const commands = require("../Configurations/commands.js");
+const auth = require("../Configurations/auth.js");
+const Timeouts = require("../Modules/Timeouts/index");
 const {
-	Cache: {
-		ServerDocumentCache,
-	},
 	Constants: {
 		LoggingLevels,
 	},
-	Encryption,
 	Errors: {
 		Error: GABError,
 	},
-	EventHandler,
 	WorkerManager,
 	ShardUtil,
 	ConversionHandler,
-} = require("./Internals/index");
-
-const configJS = require("./Configurations/config.js");
-global.configJSON = require("./Configurations/config.json");
-const auth = require("./Configurations/auth.js");
-
-// Set up a global instance of Winston for this Shard
-global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
-
-const database = require("./Database/Driver.js");
-const WebServer = require("./Web/WebServer");
-
-const ProcessAsPromised = require("process-as-promised");
+} = require("./");
+const { ModLog } = require("../Modules/index");
+const {	RankScoreCalculator: computeRankScores } = require("../Modules/Utils/index");
 
 const privateCommandModules = {};
 const commandModules = {};
 const sharedModules = {};
-const privateCommandFiles = require("./Commands/Private");
 
-/* eslint-disable max-len */
-// Create a Discord.js Shard Client
-const disabledEvents = [
-	"TYPING_START",
-];
-if (process.argv.includes("--nm") || process.argv.includes("--build")) disabledEvents.push("MESSAGE_CREATE");
-
-const {
-	Client: DJSClient,
-	Collection,
-} = require("discord.js");
-winston.silly("Creating Discord.js client.");
-class GABClient extends DJSClient {
+module.exports = class GABClient extends DJSClient {
 	constructor (options) {
 		super(options);
 		// Value set once READY triggers
@@ -75,6 +48,24 @@ class GABClient extends DJSClient {
 		this.shard = new ShardUtil(this);
 
 		this.conversionHandler = new ConversionHandler(this);
+
+		this.extendables = new Collection();
+		this.initExtendables();
+	}
+
+	/**
+	 * Initializes all extendables
+	 * @private
+	 */
+	async initExtendables () {
+		const dir = await readdir(join(__dirname, "Extendables"));
+		for (const file of dir) {
+			if (file.startsWith("_") || !file.endsWith(".js")) continue;
+			let extendable = require(`./Extendables/${file}`);
+			if (typeof extendable === "function") extendable = new extendable();
+			extendable.enable();
+			this.extendables.set(extendable.name, extendable);
+		}
 	}
 
 	/**
@@ -88,9 +79,9 @@ class GABClient extends DJSClient {
 			if (server.me) {
 				return `@${server.me.nickname || this.user.username} `;
 			} else if (!(server.members instanceof Collection)) {
-				return `@${server.members[bot.user.id].nickname || this.user.username} `;
+				return `@${server.members[this.user.id].nickname || this.user.username} `;
 			} else {
-				return `@${server.members.get(bot.user.id).nickname || this.user.username} `;
+				return `@${server.members.get(this.user.id).nickname || this.user.username} `;
 			}
 		} else {
 			return serverDocument.config.command_prefix;
@@ -151,7 +142,7 @@ class GABClient extends DJSClient {
 			command: null,
 			suffix: null,
 		};
-		if (!serverDocument) return commandObject;
+		if (!serverDocument) return Promise.resolve(commandObject);
 		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
 			cmdstr = message.substring(this.user.toString().length + 1);
 		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
@@ -211,7 +202,7 @@ class GABClient extends DJSClient {
 	// Bot Command Handlers
 	reloadPrivateCommand (command, returnError = false) {
 		try {
-			privateCommandModules[command] = reload(`./Commands/PM/${command}.js`);
+			privateCommandModules[command] = reload(`../Commands/PM/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload private command "${command}"`, err);
 			if (returnError) return err;
@@ -221,7 +212,7 @@ class GABClient extends DJSClient {
 	reloadPublicCommand (command, returnError = false) {
 		try {
 			command = this.getPublicCommandName(command);
-			commandModules[command] = reload(`./Commands/Public/${command}.js`);
+			commandModules[command] = reload(`../Commands/Public/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload public command "${command}"`, err);
 			if (returnError) return err;
@@ -231,7 +222,7 @@ class GABClient extends DJSClient {
 	reloadSharedCommand (command, returnError = false) {
 		try {
 			command = this.getSharedCommandName(command);
-			sharedModules[command] = reload(`./Commands/Shared/${command}.js`);
+			sharedModules[command] = reload(`../Commands/Shared/${command}.js`);
 		} catch (err) {
 			winston.verbose(`Failed to reload shared command "${command}"`, err);
 			if (returnError) return err;
@@ -531,8 +522,8 @@ class GABClient extends DJSClient {
 						memberAboveAffected: false,
 					};
 					if (affectedUser && affectedUser.bannable) obj.canClientBan = true;
-					if (member.highestRole && affectedUser && affectedUser.highestRole) {
-						if (member.highestRole.comparePositionTo(affectedUser.highestRole) > 0) {
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
 							obj.memberAboveAffected = true;
 						}
 					}
@@ -666,6 +657,7 @@ class GABClient extends DJSClient {
 	 * @param {String} action What action should be taken.
 	 * @param {String} roleID The role ID that the user should get due to the violation
 	 */
+	// TODO: Rewrite this to hell
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
 		roleID = roleID.id || roleID;
 		this.logMessage(serverDocument, LoggingLevels.INFO, `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
@@ -1044,14 +1036,15 @@ class GABClient extends DJSClient {
 	 * Sets a timeout that will be automatically cancelled if the client is destroyed
 	 * @param {Function} fn
 	 * @param {Number} delay time to wait before executing (in milliseconds)
+	 * @param {String} [key="generic"] The key representing this timer
 	 * @param {...*} args Arguments for the function
 	 * @returns {Timeout}
 	 */
-	setTimeout (fn, delay, ...args) {
+	setTimeout (fn, delay, key = "generic", ...args) {
 		const timeout = Timeouts.setTimeout(() => {
 			fn(...args);
 			this._timeouts.delete(timeout);
-		}, delay);
+		}, delay, key);
 		this._timeouts.add(timeout);
 		return timeout;
 	}
@@ -1069,11 +1062,12 @@ class GABClient extends DJSClient {
 	 * Sets an interval that will be automatically cancelled if the client is destroyed
 	 * @param {Function} fn Function to execute
 	 * @param {Number} delay Time to wait between executions (in milliseconds)
+	 * @param {String} [key="generic"] The key representing this interval
 	 * @param {...*} args Arguments for the function
 	 * @returns {Timeout}
 	 */
-	setInterval (fn, delay, ...args) {
-		const interval = Timeouts.setInterval(fn, delay, ...args);
+	setInterval (fn, delay, key = "generic", ...args) {
+		const interval = Timeouts.setInterval(fn, delay, key, ...args);
 		this._intervals.add(interval);
 		return interval;
 	}
@@ -1104,912 +1098,36 @@ class GABClient extends DJSClient {
 		await this.workerManager.startWorker();
 		return process.env.CLIENT_TOKEN;
 	}
-}
 
-StructureExtender();
-
-const bot = new GABClient({
-	shardId: Number(process.env.SHARD_ID),
-	shardCount: Number(process.env.SHARD_COUNT),
-	fetchAllMembers: true,
-	disabledEvents: disabledEvents,
-});
-
-ObjectDefines(bot);
-global.ThatClientThatDoesCaching = bot;
-
-winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
-database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL, global.ThatClientThatDoesCaching).catch(err => {
-	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
-	process.exit(1);
-}).then(async () => {
-	winston.info("Successfully connected to MongoDB!");
-	winston.debug("Initializing Discord Events.");
-	bot.events = new EventHandler(bot, configJS);
-	await bot.events.init();
-	// Store server documents by ID
-	bot.cache = new ServerDocumentCache();
-	bot.traffic = new Traffic(bot.IPC, true);
-
-	winston.debug("Logging in to Discord Gateway.");
-	bot.init().then(() => {
-		winston.info("Successfully connected to Discord!");
-		bot.IPC.send("ready", { id: bot.shard.id });
-		process.setMaxListeners(0);
-	}).catch(err => {
-		winston.error(`Failed to connect to Discord :/\n${err}`);
-		process.exit(1);
-	});
-});
-
-process.on("unhandledRejection", reason => {
-	winston.error(`An unexpected error occurred, and we failed to handle it. x.x\n`, reason);
-});
-
-process.on("uncaughtException", err => {
-	winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
-	process.exit(1);
-});
-
-bot.IPC.on("getGuild", async (msg, callback) => {
-	let payload = msg;
-	if (payload.guild === "*") {
-		let result = {};
-		let guilds = payload.settings.mutual ? bot.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : bot.guilds;
-		let query = payload.settings.findFilter;
-		if (query) guilds = guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || svr.members.get(svr.ownerID).user.username.toLowerCase().indexOf(query) > -1);
-		guilds.forEach((val, key) => {
-			result[key] = GG.generate(val, payload.settings);
-		});
-
-		return callback({ guild: "*", settings: payload.settings, result: result });
-	} else {
-		let guild = bot.guilds.get(payload.guild);
-		let val = GG.generate(guild, payload.settings);
-		try {
-			return callback({ guild: payload.guild, settings: payload.settings, result: JSON.stringify(val) });
-		} catch (err) {
-			console.log(val);
-
-			console.log(err);
-			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err, guildData: val });
+	sweepMessages (lifetime = this.options.messageCacheLifetime, responseLifetime = 1800) {
+		if (typeof lifetime !== "number" || isNaN(lifetime)) throw new TypeError("The lifetime must be a number.");
+		if (lifetime <= 0) {
+			this.emit("debug", "Didn't sweep messages - lifetime is unlimited");
+			return -1;
 		}
-	}
-});
 
-bot.IPC.on("muteMember", async msg => {
-	const guild = bot.guilds.get(msg.guild);
-	const channel = guild.channels.get(msg.channel);
-	const member = guild.members.get(msg.member);
+		const lifetimeMs = lifetime * 1000;
+		const responseLifetimeMs = responseLifetime * 1000;
+		const now = Date.now();
+		let channels = 0;
+		let messages = 0;
+		let commandMessages = 0;
 
-	await bot.muteMember(channel, member);
-});
+		for (const channel of this.channels.values()) {
+			if (!channel.messages) continue;
+			channels++;
 
-bot.IPC.on("unmuteMember", async msg => {
-	const guild = bot.guilds.get(msg.guild);
-	const channel = guild.channels.get(msg.channel);
-	const member = guild.members.get(msg.member);
-
-	await bot.unmuteMember(channel, member);
-});
-
-bot.IPC.on("createMOTD", async msg => {
-	try {
-		const guild = bot.guilds.get(msg.guild);
-		const serverDocument = await bot.cache.get(guild.id);
-
-		MessageOfTheDay(bot, guild, serverDocument.config.message_of_the_day);
-	} catch (err) {
-		winston.warn("Failed to create a MOTD timer for server!", { svrid: msg.guild });
-	}
-});
-
-bot.IPC.on("postAllData", async () => {
-	PostTotalData(bot);
-});
-
-bot.IPC.on("createPublicInviteLink", async msg => {
-	let guildID = msg.guild;
-	let guild = bot.guilds.get(guildID);
-	const serverDocument = await bot.cache.get(guild.id);
-	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
-	if (channel) {
-		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
-		serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
-		serverDocument.save();
-	}
-});
-
-bot.IPC.on("deletePublicInviteLink", async msg => {
-	let guildID = msg.guild;
-	let guild = bot.guilds.get(guildID);
-	const serverDocument = await bot.cache.get(guild.id);
-	let invites = await guild.fetchInvites();
-	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
-	if (invite) invite.delete("GAwesomeBot Public Server Listing");
-	serverDocument.config.public_data.server_listing.invite_link = null;
-	serverDocument.save();
-});
-
-bot.IPC.on("eval", async (msg, callback) => {
-	let result = bot._eval(msg);
-	if (result instanceof Map) result = Array.from(result.entries());
-	callback(result);
-});
-
-bot.IPC.on("evaluate", async (msg, callback) => {
-	let result = {};
-	try {
-		result.result = bot._eval(msg);
-	} catch (err) {
-		result.err = true;
-		result.result = err;
-	}
-	if (typeof result.result !== "string") result.result = require("util").inspect(result.result, false, 1);
-	callback(result);
-});
-
-bot.IPC.on("cacheUpdate", msg => {
-	let guildID = msg.guild;
-	let guild = bot.guilds.get(guildID);
-	if (guild) bot.cache.update(guild.id);
-});
-
-bot.IPC.on("leaveGuild", async msg => {
-	let guild = bot.guilds.get(msg);
-	if (guild) guild.leave();
-});
-
-bot.IPC.on("sendMessage", async msg => {
-	let payload = typeof msg === "string" ? JSON.parse(msg) : msg;
-	if (payload.guild === "*") {
-		bot.guilds.forEach(svr => {
-			svr.defaultChannel.send(payload.message);
-		});
-	} else {
-		let guild = bot.guilds.get(payload.guild);
-		let channel;
-		if (guild) channel = guild.channels.get(payload.channel);
-		if (channel) channel.send(payload.message);
-	}
-});
-
-bot.IPC.on("updateBotUser", async msg => {
-	let payload = msg;
-	if (payload.avatar) bot.user.setAvatar(payload.avatar);
-	if (payload.username && payload.username !== bot.user.username) bot.user.setUsername(payload.username);
-	let activity = {};
-	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "https://gawesomebot.com | Shard {shard}".format({ shard: bot.shardID });
-	else activity.name = payload.game.format({ shard: bot.shardID, totalShards: bot.shard.count });
-	activity.type = "PLAYING";
-	bot.user.setPresence({
-		status: payload.status || "online",
-		activity: activity,
-	});
-});
-
-bot.IPC.on("traffic", async (msg, callback) => {
-	winston.info("Getting traffic data");
-	callback(bot.traffic.get);
-});
-
-bot.IPC.on("shardData", async (msg, callback) => {
-	let data = {};
-	data.isFrozen = global.isFrozen;
-	if (!data.isFrozen) {
-		data.users = bot.users.size;
-		data.guilds = bot.guilds.size;
-		data.ping = Math.floor(bot.ping);
-	}
-	data.rss = Math.floor((process.memoryUsage().rss / 1024) / 1024);
-	data.uptime = Math.round(((process.uptime() / 60) / 60) * 10) / 10;
-	data.PID = process.pid;
-	data.ID = bot.shardID;
-	callback(data);
-});
-
-bot.IPC.on("modifyActivity", async msg => {
-	switch (msg.activity) {
-		case "trivia": {
-			const svr = bot.guilds.get(msg.guild);
-			const ch = bot.channels.get(msg.channel);
-
-			if (!ch) return;
-
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
-			if (!serverDocument) return;
-			let channelDocument = serverDocument.channels.id(ch.id);
-			if (!channelDocument) {
-				serverDocument.channels.push({ _id: ch.id });
-				channelDocument = serverDocument.channels.id(ch.id);
-			}
-			if (msg.action === "end") await Trivia.end(bot, svr, serverDocument, ch, channelDocument);
-			try {
-				await serverDocument.save();
-				bot.IPC.send("cacheUpdate", { guild: msg.guild });
-			} catch (err) {
-				winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
-			}
-			break;
-		}
-		case "poll": {
-			const svr = bot.guilds.get(msg.guild);
-			const ch = svr.channels.get(msg.channel);
-
-			if (!ch) return;
-
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
-			if (!serverDocument) return;
-			let channelDocument = serverDocument.channels.id(ch.id);
-			if (!channelDocument) {
-				serverDocument.channels.push({ _id: ch.id });
-				channelDocument = serverDocument.channels.id(ch.id);
-			}
-			if (msg.action === "end") await Polls.end(serverDocument, ch, channelDocument);
-			try {
-				await serverDocument.save();
-				bot.IPC.send("cacheUpdate", { guild: msg.guild });
-			} catch (err) {
-				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
-			}
-			break;
-		}
-		case "giveaway": {
-			const svr = bot.guilds.get(msg.guild);
-			const ch = svr.channels.get(msg.channel);
-
-			if (!ch) return;
-
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
-			if (!serverDocument) return;
-			if (msg.action === "end") await Giveaways.end(bot, svr, ch, serverDocument);
-			try {
-				await serverDocument.save();
-				bot.IPC.send("cacheUpdate", { guild: msg.guild });
-			} catch (err) {
-				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
-			}
-			break;
-		}
-		case "lottery": {
-			const svr = bot.guilds.get(msg.guild);
-			const ch = bot.channels.get(msg.channel);
-
-			if (!ch) return;
-
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
-			if (!serverDocument) return;
-			let channelDocument = serverDocument.channels.id(ch.id);
-			if (!channelDocument) {
-				serverDocument.channels.push({ _id: ch.id });
-				channelDocument = serverDocument.channels.id(ch.id);
-			}
-			if (msg.action === "end") await Lotteries.end(bot, svr, serverDocument, ch, channelDocument);
-			try {
-				await serverDocument.save();
-				bot.IPC.send("cacheUpdate", { guild: msg.guild });
-			} catch (err) {
-				winston.warn(`A ${err.name} occurred while attempting to end a Lottery.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+			for (const message of channel.messages.values()) {
+				if (message.command && now - (message.editedTimestamp || message.createdTimestamp) > responseLifetimeMs) {
+					channel.messages.delete(message.id);
+					commandMessages++;
+				} else if (!message.command && now - (message.editedTimestamp || message.createdTimestamp) > lifetimeMs) {
+					channel.messages.delete(message.id);
+					messages++;
+				}
 			}
 		}
+		this.emit("debug", `Swept ${messages} messages older than ${lifetime} seconds and ${commandMessages} command messages older than ${responseLifetime} seconds in ${channels} text-based channels`);
+		return messages;
 	}
-});
-
-bot.IPC.on("relay", async (msg, callback) => {
-	const command = privateCommandFiles[msg.command];
-	const main = {
-		bot,
-		configJS,
-		Constants: require("./Internals/index").Constants,
-	};
-	const commandData = {
-		name: msg.command,
-		usage: bot.getPublicCommandMetadata(msg.command).usage,
-		description: bot.getPublicCommandMetadata(msg.command).description,
-	};
-	if (command) return callback(await command[msg.action](main, msg.params, commandData));
-});
-
-bot.IPC.on("awaitMessage", async (msg, callback) => {
-	const user = await bot.users.fetch(msg.usr, true);
-	let channel = await bot.channels.get(msg.ch);
-	if (!channel) channel = user.dmChannel;
-	if (!channel) channel = await user.createDM();
-	return callback((await bot.awaitPMMessage(channel, user, msg.timeout ? msg.timeout : undefined, msg.filter ? msg.filter : undefined)).content);
-});
-
-bot.IPC.on("updating", async (msg, callback) => {
-	winston.debug("Closing Discord client & Web Interface for updater.");
-	global.isUnavailable = true;
-	bot.destroy();
-	callback();
-});
-
-bot.IPC.on("freeze", async (msg, callback) => {
-	winston.info("Freezing shard...");
-	global.isFrozen = true;
-	bot.destroy();
-	callback();
-});
-
-bot.IPC.on("restart", async (msg, callback) => {
-	let shouldReset = msg.soft;
-	if (!shouldReset) {
-		bot.isReady = false;
-		callback(); // eslint-disable-line callback-return
-		bot.destroy();
-		// Have faith that the master will revive us
-		process.exit(0);
-	} else {
-		bot.isReady = false;
-		for (const t of bot._timeouts) Timeouts.clearTimeout(t);
-		for (const i of bot._intervals) Timeouts.clearInterval(i);
-		bot._timeouts.clear();
-		bot._intervals.clear();
-		await bot.events.onEvent("ready");
-		bot.isReady = true;
-		return callback();
-	}
-});
-
-bot.IPC.on("updateConfig", async (msg, callback) => {
-	try {
-		global.configJSON = reload("./Configurations/config.json");
-		return callback({ error: false });
-	} catch (err) {
-		return callback({ error: true });
-	}
-});
-
-/**
- * CHANNEL_CREATE
- */
-bot.on("channelCreate", async channel => {
-	if (bot.isReady) {
-		winston.silly(`Received CHANNEL_CREATE event from Discord!`, { ch: channel.id });
-		try {
-			await bot.events.onEvent("channelCreate", channel);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a CHANNEL_CREATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * CHANNEL_DELETE
- */
-bot.on("channelDelete", async channel => {
-	if (bot.isReady) {
-		winston.silly(`Received CHANNEL_DELETE event from Discord!`, { ch: channel.id });
-		try {
-			await bot.events.onEvent("channelDelete", channel);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a CHANNEL_DELETE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * CHANNEL_PINS_UPDATE
- */
-bot.on("channelPinsUpdate", async (channel, time) => {
-	if (bot.isReady) {
-		winston.silly(`Received CHANNEL_PINS_UPDATE event from Discord!`, { ch: channel.id, date: time });
-		try {
-			await bot.events.onEvent("channelPinsUpdate", channel, time);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a CHANNEL_PINS_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * CHANNEL_UPDATE
- */
-bot.on("channelUpdate", async (oldCh, newCh) => {
-	if (bot.isReady) {
-		winston.silly(`Received CHANNEL_UPDATE event from Discord!`, { chid: newCh.id });
-		try {
-			await bot.events.onEvent("channelUpdate", oldCh, newCh);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a CHANNEL_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * Internal debug event
- */
-bot.on("debug", async info => {
-	if (bot.isReady) winston.silly(`Received DEBUG event from Discord.js!`, { info });
-});
-
-/**
- * Disconnect event
- */
-bot.on("disconnect", async event => {
-	winston.silly(`Received DISCONNECT event from Discord.js!`, { code: event.code || "unknown" });
-	try {
-		await bot.events.onEvent("disconnect", event);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a DISCONNECT event! x.x\n`, err);
-	}
-});
-
-/**
- * EMOJI_CREATE
- */
-bot.on("emojiCreate", async emoji => {
-	if (bot.isReady) {
-		winston.silly(`Received EMOJI_CREATE event from Discord!`, { emoji: emoji.id });
-		try {
-			await bot.events.onEvent("emojiCreate", emoji);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a EMOJI_CREATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * EMOJI_DELETE
- */
-bot.on("emojiDelete", async emoji => {
-	if (bot.isReady) {
-		winston.silly(`Received EMOJI_DELETE event from Discord!`, { emoji: emoji.id });
-		try {
-			await bot.events.onEvent("emojiDelete", emoji);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a EMOJI_DELETE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * EMOJI_UPDATE
- */
-bot.on("emojiUpdate", async (oldEmoji, newEmoji) => {
-	if (bot.isReady) {
-		winston.silly(`Received EMOJI_UPDATE event from Discord!`, { emoji: newEmoji.id });
-		try {
-			await bot.events.onEvent("emojiUpdate", oldEmoji, newEmoji);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a EMOJI_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * WebSocket Errors
- */
-bot.on("error", async error => {
-	winston.warn(`Received ERROR event from Discord.js!`, { error });
-});
-
-/**
- * GUILD_BAN_ADD
- */
-bot.on("guildBanAdd", async (guild, user) => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_BAN_ADD event from Discord!`, { guild: guild.id, user: user.id });
-		try {
-			await bot.events.onEvent("guildBanAdd", guild, user);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_BAN_ADD event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_BAN_REMOVE
- */
-bot.on("guildBanRemove", async (guild, user) => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_BAN_REMOVE event from Discord!`, { guild: guild.id, user: user.id });
-		try {
-			await bot.events.onEvent("guildBanRemove", guild, user);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_BAN_REMOVE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_CREATE
- */
-bot.on("guildCreate", async guild => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_CREATE event from Discord!`, { guild: guild.id });
-		try {
-			await bot.events.onEvent("guildCreate", guild);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_DELETE
- */
-bot.on("guildDelete", async guild => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_DELETE event from Discord!`, { guild: guild.id });
-		try {
-			await bot.events.onEvent("guildDelete", guild);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_MEMBER_ADD
- */
-bot.on("guildMemberAdd", async member => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_ADD event from Discord!`, { member: member.id });
-		try {
-			await bot.events.onEvent("guildMemberAdd", member);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_MEMBER_AVAILABLE
- * Do we need this?
- */
-bot.on("guildMemberAvailable", async member => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_AVAILABLE event from Discord!`, { member: member.id });
-		try {
-			await bot.events.onEvent("guildMemberAvailable", member);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_AVAILABLE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_MEMBER_REMOVE
- */
-bot.on("guildMemberRemove", async member => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_REMOVE event from Discord!`, { member: member.id });
-		try {
-			await bot.events.onEvent("guildMemberRemove", member);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_REMOVE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_MEMBERS_CHUNK
- */
-bot.on("guildMembersChunk", async (members, guild) => {
-	winston.silly(`Received GUILD_MEMBERS_CHUNK event from Discord!`, { members: members.size, guild: guild.id });
-	try {
-		await bot.events.onEvent("guildMembersChunk", members, guild);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a GUILD_MEMBERS_CHUNK event! x.x\n`, err);
-	}
-});
-
-/**
- * GUILD_MEMBER_SPEAKING
- */
-bot.on("guildMemberSpeaking", async (member, speaking) => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_SPEAKING event from Discord!`, { member: member.id, speaking });
-		try {
-			await bot.events.onEvent("guildMemberSpeaking", member, speaking);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_SPEAKING event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_MEMBER_UPDATE
- */
-bot.on("guildMemberUpdate", async (oldMember, newMember) => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_MEMBER_UPDATE event from Discord!`, { member: newMember.id });
-		try {
-			await bot.events.onEvent("guildMemberUpdate", oldMember, newMember);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_UNAVAILABLE
- */
-bot.on("guildUnavailable", async guild => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_UNAVAILABLE event from Discord!`, { guild: guild.id });
-		try {
-			await bot.events.onEvent("guildUnavailable", guild);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_UNAVAILABLE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * GUILD_UPDATE
- */
-bot.on("guildUpdate", async (oldGuild, newGuild) => {
-	if (bot.isReady) {
-		winston.silly(`Received GUILD_UPDATE event from Discord!`, { guild: newGuild.id });
-		try {
-			await bot.events.onEvent("guildUpdate", oldGuild, newGuild);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_CREATE
- */
-bot.on("message", async msg => {
-	if (!msg.author.bot) {
-		try {
-			let find = await Users.findOne({ _id: msg.author.id });
-			if (!find) await Users.create(new Users({ _id: msg.author.id }));
-		} catch (err) {
-			if (!/duplicate key/.test(err.message)) {
-				winston.warn(`Failed to create user document for ${msg.author.username}`);
-			}
-		}
-	}
-	let proctime = process.hrtime();
-	if (bot.isReady) {
-		winston.silly("Received MESSAGE_CREATE event from Discord!", { message: msg.id });
-		try {
-			if (msg.guild) {
-				// TODO: Remove this once Autofetch gets added to Discord
-				await msg.guild.members.fetch();
-			}
-			await bot.events.onEvent("message", msg, proctime);
-			if (msg.guild) {
-				(await bot.cache.get(msg.guild.id)).save().catch(async err => {
-					if (err.name === "VersionError") {
-						winston.verbose(`Cached document is out of sync! Updating...`, { oldV: (await bot.cache.get(msg.guild.id)).__v, guild: msg.guild.id });
-						bot.cache.update(msg.guild.id);
-					}
-				});
-			}
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_DELETE
- */
-bot.on("messageDelete", async msg => {
-	if (bot.isReady) {
-		winston.silly("Received MESSAGE_DELETE event from Discord!", { message: msg.id });
-		try {
-			await bot.events.onEvent("messageDelete", msg);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_DELETE_BULK
- */
-bot.on("messageDeleteBulk", async msgs => {
-	if (bot.isReady) {
-		winston.silly("Received MESSAGE_DELETE_BULK event from Discord!", { messages: msgs.size });
-		try {
-			await bot.events.onEvent("messageDeleteBulk", msgs);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE_BULK event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_REACTION_ADD
- */
-bot.on("messageReactionAdd", async (reaction, user) => {
-	if (bot.isReady) {
-		winston.silly(`Received MESSAGE_REACTION_ADD event from Discord!`, { message: reaction.message.id, user: user.id });
-		try {
-			await bot.events.onEvent("messageReactionAdd", reaction, user);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_ADD event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_REACTION_REMOVE
- */
-bot.on("messageReactionRemove", async (reaction, user) => {
-	if (bot.isReady) {
-		winston.silly(`Received MESSAGE_REACTION_REMOVE event from Discord!`, { message: reaction.message.id, user: user.id });
-		try {
-			await bot.events.onEvent("messageReactionRemove", reaction, user);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_REACTION_REMOVE_ALL
- */
-bot.on("messageReactionRemoveAll", async msg => {
-	if (bot.isReady) {
-		winston.silly("Received MESSAGE_REACTION_REMOVE_ALL event from Discord!", { message: msg.id });
-		try {
-			await bot.events.onEvent("messageReactionRemoveAll", msg);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE_ALL event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * MESSAGE_UPDATE
- */
-bot.on("messageUpdate", async (oldMSG, newMSG) => {
-	if (bot.isReady) {
-		winston.silly(`Received MESSAGE_UPDATE event from Discord!`, { message: newMSG.id });
-		try {
-			await bot.events.onEvent("messageUpdate", oldMSG, newMSG);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a MESSAGE_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * PRESENCE_UPDATE
- */
-bot.on("presenceUpdate", async (oldMember, newMember) => {
-	if (bot.isReady) {
-		winston.silly(`Received PRESENCE_UPDATE event from Discord!`, { member: newMember.id, guild: newMember.guild.id });
-		try {
-			await bot.events.onEvent("presenceUpdate", oldMember, newMember);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a PRESENCE_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * RATE_LIMIT
- */
-bot.on("rateLimit", async rateLimitInfo => {
-	winston.silly(`Received RATE_LIMIT event from Discord.js!`, rateLimitInfo);
-	try {
-		await bot.events.onEvent("rateLimit", rateLimitInfo);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a RATE_LIMIT event! x.x\n`, err);
-	}
-});
-
-/**
- * READY
- */
-bot.once("ready", async () => {
-	try {
-		await winston.silly(`Received READY event from Discord!`);
-		await bot.events.onEvent("ready");
-		await winston.silly("Initializing the encryption manager..");
-		bot.encryptionManager = new Encryption(bot);
-		await winston.silly("Running webserver");
-		WebServer(bot, auth, configJS, winston);
-		bot.isReady = true;
-		global.ThatClientThatDoesCaching = bot;
-	} catch (err) {
-		winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
-		process.exit(1);
-	}
-});
-
-/**
- * RECONNECTING
- */
-bot.on("reconnecting", async () => {
-	winston.silly(`Reconnecting to Discord...`);
-});
-
-/**
- * RESUME
- */
-bot.on("resumed", async replayed => {
-	winston.silly(`Received RESUME event from Discord!`, { replayedEvents: replayed });
-	try {
-		await bot.events.onEvent("resumed", replayed);
-	} catch (err) {
-		winston.error(`An unexpected error occurred while handling a RESUME event! x.x\n`, err);
-	}
-});
-
-/**
- * ROLE_CREATE
- */
-bot.on("roleCreate", async role => {
-	if (bot.isReady) {
-		winston.silly(`Received ROLE_CREATE event from Discord!`, { role: role.id });
-		try {
-			await bot.events.onEvent("roleCreate", role);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a ROLE_CREATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * ROLE_DELETE
- */
-bot.on("roleDelete", async role => {
-	if (bot.isReady) {
-		winston.silly(`Received ROLE_DELETE event from Discord!`, { role: role.id });
-		try {
-			await bot.events.onEvent("roleDelete", role);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a ROLE_DELETE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * ROLE_UPDATE
- */
-bot.on("roleUpdate", async (oldRole, newRole) => {
-	if (bot.isReady) {
-		winston.silly(`Received ROLE_UPDATE event from Discord!`, { role: newRole.id });
-		try {
-			await bot.events.onEvent("roleUpdate", oldRole, newRole);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a ROLE_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * USER_UPDATE
- */
-bot.on("userUpdate", async (oldUser, newUser) => {
-	if (bot.isReady) {
-		winston.silly(`Received USER_UPDATE event from Discord!`, { user: newUser.id });
-		try {
-			await bot.events.onEvent("userUpdate", oldUser, newUser);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a USER_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * VOICE_STATE_UPDATE
- */
-bot.on("voiceStateUpdate", async (oldMember, newMember) => {
-	if (bot.isReady) {
-		winston.silly(`Received VOICE_STATE_UPDATE event from Discord!`, { member: newMember.id });
-		try {
-			await bot.events.onEvent("voiceStateUpdate", oldMember, newMember);
-		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a VOICE_STATE_UPDATE event! x.x\n`, err);
-		}
-	}
-});
-
-/**
- * WARN
- */
-bot.on("warn", async info => {
-	winston.warn(`Received WARN event from Discord.js!`, { info });
-});
+};

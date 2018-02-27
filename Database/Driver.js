@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+mongoose.pluralize(null);
 mongoose.Promise = global.Promise;
 const serverSchema = require("./Schemas/serverSchema");
 const userSchema = require("./Schemas/userSchema");
@@ -32,7 +33,6 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 	}
 	mongoose.connect(url, {
 		keepAlive: 120,
-		useMongoClient: true,
 		promiseLibrary: global.Promise,
 	});
 	const [

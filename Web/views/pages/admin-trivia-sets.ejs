@@ -26,7 +26,7 @@
 	        reader.onload = function(event) {
 	            $.ajax({
 					type: "POST",
-					url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+					url: "<%= currentPage %>",
 					data: {
 						"new-name": newTriviaName.val(),
 						"new-items": event.target.result,
@@ -83,7 +83,7 @@
 													<%= configData.trivia_sets[i].items.length %>
 												</td>
 												<td>
-													<a class="button is-small" href="<%= currentPage %>?svrid=<%= serverData.id %>&i=<%= i %>" target="_blank" download="<%= configData.trivia_sets[i]._id %>.json">
+													<a class="button is-small" href="<%= currentPage %>?i=<%= i %>" target="_blank" download="<%= configData.trivia_sets[i]._id %>.json">
 														<span>Download</span>
 														<span class="icon is-small">
 															<i class="fa fa-download"></i>

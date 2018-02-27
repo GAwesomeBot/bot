@@ -169,7 +169,7 @@ GAwesomeUtil.switchActivityLayout = type => {
 
 GAwesomeUtil.activityBanGuild = svrid => {
 	if (confirm("Are you sure you want to remove this guild from the activity page? It will no longer be visible on this page.")) {
-		$.post("/dashboard/servers/server-list?svrid=maintainer", { removeFromActivity: svrid }).done(() => {
+		$.post("/dashboard/maintainer/servers/server-list", { removeFromActivity: svrid }).done(() => {
 			const cardContent = $(`#cardContent-${svrid}`);
 			GAwesomeData.activity.guildData[svrid] = cardContent.html();
 			cardContent.html(`
@@ -186,7 +186,7 @@ GAwesomeUtil.activityBanGuild = svrid => {
 };
 
 GAwesomeUtil.activityUnbanGuild = svrid => {
-	$.post("/dashboard/servers/server-list?svrid=maintainer", { unbanFromActivity: svrid }).done(() => {
+	$.post("/dashboard/maintainer/servers/server-list", { unbanFromActivity: svrid }).done(() => {
 		const cardContent = $(`#cardContent-${svrid}`);
 		cardContent.removeClass("has-text-centered");
 		cardContent.html(GAwesomeUtil.activity.guildData[svrid]);

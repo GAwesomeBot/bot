@@ -23,8 +23,8 @@ class Ready extends BaseEvent {
 		let leftGuilds = 0;
 		if (this.configJSON.guildBlocklist.length) {
 			this.configJSON.guildBlocklist.forEach(guildID => {
-				if (this.bot.guilds.get(guildID)) {
-					this.bot.guilds.get(guildID).leave();
+				if (this.client.guilds.get(guildID)) {
+					this.client.guilds.get(guildID).leave();
 					leftGuilds++;
 				}
 			});
@@ -73,11 +73,11 @@ class Ready extends BaseEvent {
 					}
 				}
 			} else {
-				newServerDocuments.push(await getNewServerData(this.bot, guild, new Servers({ _id: guild.id })));
+				newServerDocuments.push(await getNewServerData(this.client, guild, new Servers({ _id: guild.id })));
 			}
 		};
 		let promiseArray = [];
-		this.bot.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
+		this.client.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
 		await Promise.all(promiseArray);
 		return newServerDocuments;
 	}
@@ -87,7 +87,7 @@ class Ready extends BaseEvent {
 		winston.debug(`Deleting data for old servers...`);
 		Servers.find({
 			_id: {
-				$nin: await Utils.GetValue(this.bot, "guilds.keys()", "arr", "Array.from"),
+				$nin: await Utils.GetValue(this.client, "guilds.keys()", "arr", "Array.from"),
 			},
 		}).remove()
 			.exec()
@@ -100,18 +100,18 @@ class Ready extends BaseEvent {
 	async setBotActivity () {
 		winston.debug("Setting bots playing activity.");
 		let activity = {
-			name: configJSON.activity.name.format({ shard: this.bot.shardID, totalShards: this.bot.shard.count }),
+			name: configJSON.activity.name.format({ shard: this.client.shardID, totalShards: this.client.shard.count }),
 			url: configJSON.activity.twitchURL || null,
 			type: configJSON.activity.twitchURL !== "" ? "WATCHING" : "PLAYING",
 		};
 		if (configJSON.activity.name === "default") {
 			activity = {
-				name: "https://gawesomebot.com | Shard {shard}".format({ shard: this.bot.shardID }),
+				name: "https://gawesomebot.com | Shard {shard}".format({ shard: this.client.shardID }),
 				type: "PLAYING",
 				url: null,
 			};
 		}
-		await this.bot.user.setPresence({
+		await this.client.user.setPresence({
 			activity,
 			status: configJSON.status,
 		});
@@ -131,13 +131,13 @@ class Ready extends BaseEvent {
 			winston.debug("Good new 24 hours! Clearing message counters.");
 			Servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
-		this.bot.setInterval(clearMessageCount, 86400000);
+		this.client.setInterval(clearMessageCount, 86400000);
 		// TODO: Add to array this.startTimerExtensions()
 		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
-		await PostShardedData(this.bot);
+		await PostShardedData(this.client);
 		await winston.debug(`Reloading all commands.`);
-		this.bot.reloadAllCommands();
+		this.client.reloadAllCommands();
 		await Cache(this.client);
 		this.showStartupMessage();
 	}
@@ -146,8 +146,8 @@ class Ready extends BaseEvent {
 	async sendGuilds () {
 		try {
 			winston.debug("Sending list of guild IDs to Master.");
-			let guilds = Array.from(this.bot.guilds.keys());
-			this.bot.IPC.send("guilds", { latest: guilds, shard: this.bot.shardID });
+			let guilds = Array.from(this.client.guilds.keys());
+			this.client.IPC.send("guilds", { latest: guilds, shard: this.client.shardID });
 		} catch (err) {
 			throw err;
 		}
@@ -184,7 +184,7 @@ class Ready extends BaseEvent {
 			"help people out!",
 		];
 		winston.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
-		this.bot.IPC.send("finished", { id: this.bot.shard.id });
+		this.client.IPC.send("finished", { id: this.client.shard.id });
 	}
 
 	/**
@@ -203,10 +203,10 @@ class Ready extends BaseEvent {
 		if (serverDocuments) {
 			const promiseArray = [];
 			for (let i = 0; i < serverDocuments.length; i++) {
-				const server = this.bot.guilds.get(serverDocuments[i]._id);
+				const server = this.client.guilds.get(serverDocuments[i]._id);
 				if (server) {
 					winston.verbose(`Starting MOTD timer for server ${server}`, { svrid: server.id });
-					promiseArray.push(createMessageOfTheDay(this.bot, server, serverDocuments[i].config.message_of_the_day));
+					promiseArray.push(createMessageOfTheDay(this.client, server, serverDocuments[i].config.message_of_the_day));
 				}
 			}
 			await Promise.all(promiseArray);
@@ -230,7 +230,7 @@ class Ready extends BaseEvent {
 			const checkStreamersForServer = async i => {
 				if (i < serverDocuments.length) {
 					const serverDocument = serverDocuments[i];
-					const server = this.bot.guilds.get(serverDocument._id);
+					const server = this.client.guilds.get(serverDocument._id);
 					if (server) {
 						winston.verbose(`Checking for streamers in server ${server}`, { svrid: server.id });
 						const checkIfStreaming = async j => {
@@ -247,7 +247,7 @@ class Ready extends BaseEvent {
 						await checkIfStreaming(0);
 					}
 				} else {
-					this.bot.setTimeout(async () => {
+					this.client.setTimeout(async () => {
 						await this.checkStreamers();
 					}, 600000);
 				}
@@ -272,13 +272,13 @@ class Ready extends BaseEvent {
 			const sendStreamingRSSToServer = async i => {
 				if (i < serverDocuments.length) {
 					const serverDocument = serverDocuments[i];
-					const server = this.bot.guilds.get(serverDocument._id);
+					const server = this.client.guilds.get(serverDocument._id);
 					if (server) {
 						winston.verbose(`Setting streaming RSS timers for server ${server}`, { svrid: server.id });
 						const sendStreamingRSSFeed = async j => {
 							if (j < serverDocument.config.rss_feeds.length) {
 								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
-									sendStreamingRSSUpdates(this.bot, server, serverDocument, serverDocument.config.rss_feeds[j]).then(async () => {
+									sendStreamingRSSUpdates(this.client, server, serverDocument, serverDocument.config.rss_feeds[j]).then(async () => {
 										await sendStreamingRSSFeed(++j);
 									});
 								} else {
@@ -291,7 +291,7 @@ class Ready extends BaseEvent {
 						await sendStreamingRSSFeed(0);
 					}
 				} else {
-					this.bot.setTimeout(async () => {
+					this.client.setTimeout(async () => {
 						await this.startStreamingRSS();
 					}, 600000);
 				}
@@ -320,14 +320,14 @@ class Ready extends BaseEvent {
 		if (serverDocuments) {
 			winston.debug("Setting existing giveaways for servers.");
 			serverDocuments.forEach(serverDocument => {
-				const svr = this.bot.guilds.get(serverDocument._id);
+				const svr = this.client.guilds.get(serverDocument._id);
 				if (svr) {
 					winston.verbose(`Setting existing giveaways for server ${svr.id}.`, { svrid: svr.id });
 					serverDocument.channels.forEach(channelDocument => {
 						if (channelDocument.giveaway.isOngoing) {
 							const ch = svr.channels.get(channelDocument._id);
 							if (ch) {
-								promiseArray.push(Giveaways.endTimedGiveaway(this.bot, svr, ch, channelDocument.giveaway.expiry_timestamp));
+								promiseArray.push(Giveaways.endTimedGiveaway(this.client, svr, ch, channelDocument.giveaway.expiry_timestamp));
 							}
 						}
 					});
@@ -359,7 +359,7 @@ class Ready extends BaseEvent {
 			for (let i = 0; i < serverDocuments.length; i++) {
 				winston.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id });
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
-					promiseArray.push(setCountdown(this.bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
+					promiseArray.push(setCountdown(this.client, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
 				}
 			}
 		}
@@ -370,7 +370,7 @@ class Ready extends BaseEvent {
 	 * Set existing reminders to send message when they expire
 	 */
 	async setReminders () {
-		if (this.bot.shardID !== "0") return;
+		if (this.client.shardID !== "0") return;
 		const promiseArray = [];
 		const userDocuments = await Users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
@@ -380,7 +380,7 @@ class Ready extends BaseEvent {
 			for (let i = 0; i < userDocuments.length; i++) {
 				winston.silly("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
 				for (let j = 0; j < userDocuments[i].reminders.length; j++) {
-					promiseArray.push(setReminder(this.bot, userDocuments[i], userDocuments[i].reminders[j]));
+					promiseArray.push(setReminder(this.client, userDocuments[i], userDocuments[i].reminders[j]));
 				}
 			}
 		}
@@ -401,13 +401,13 @@ class Ready extends BaseEvent {
 				winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
 				// Clear stats for server if older than a week
 				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
-					await clearStats(this.bot, server, serverDocument);
+					await clearStats(this.client, server, serverDocument);
 				} else {
 					// Iterate through all members
 					server.members.forEach(async member => {
-						if (member.id !== this.bot.user.id && !member.user.bot) {
+						if (member.id !== this.client.user.id && !member.user.bot) {
 							await winston.silly(`Collecting member stats from guild ${server} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
-							const game = await this.bot.getGame(member);
+							const game = await this.client.getGame(member);
 							if (game !== "" && member.presence.status === "online") {
 								await winston.silly(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
 								let gameDocument = serverDocument.games.id(game);
@@ -420,7 +420,7 @@ class Ready extends BaseEvent {
 
 							// Kick member if they're inactive and autokick is on
 							const memberDocument = serverDocument.members.id(member.id);
-							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.bot.getUserBotAdmin(server, serverDocument, member) === 0) {
+							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(server, serverDocument, member) === 0) {
 								try {
 									await member.kick(`Kicked for inactivity on server.`);
 									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id });
@@ -439,11 +439,11 @@ class Ready extends BaseEvent {
 				}
 			}
 		};
-		this.bot.guilds.forEach(guild => {
+		this.client.guilds.forEach(guild => {
 			promiseArray.push(countServerStats(guild));
 		});
 		await Promise.all(promiseArray);
-		this.bot.setTimeout(async () => {
+		this.client.setTimeout(async () => {
 			await this.statsCollector();
 		}, 900000);
 	}

@@ -112,16 +112,26 @@ exports.NumberEmojis = {
 	ten: "🔟",
 };
 
+exports.Templates = {
+	ReactionMenu: {
+		title: `Choose a number`,
+		color: exports.Colors.BLUE,
+		description: `{list}`,
+		footer: `Page {current} out of {total}`,
+	},
+};
+
 exports.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
+	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
+	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${category ? category : ""}`,
+	GIPHY: (token, query, nsfw) => `http://api.giphy.com/v1/gifs/random?api_key=${token}&rating=${nsfw}&format=json&limit=1&tag=${encodeURIComponent(query)}`,
 };
 
-// You may think there is nothing here
-// In reality, there's a 0-width space
-exports.EmptySpace = `​`;
+exports.EmptySpace = `\u200b`;
 
 exports.Perms = {
 	eval: "⚙ Evaluation (Can execute `eval`)",
@@ -173,3 +183,17 @@ exports.NSFWEmbed = {
 
 // String for no suffixes for NSFW commands
 exports.NSFWInvalid = () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`;
+
+// Categories for the fortune command
+exports.FortuneCategories = [
+	"all",
+	"computers",
+	"cookie",
+	"definitions",
+	"miscellaneous",
+	"people",
+	"platitudes",
+	"politics",
+	"science",
+	"wisdom",
+];

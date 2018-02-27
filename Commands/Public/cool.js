@@ -6,7 +6,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 		if (msg.suffix === "." || msg.suffix.trim().toLowerCase() === "clear") {
 			channelDocument.command_cooldown = 0;
 			channelDocument.isCommandCooldownOngoing = false;
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
 					description: `The cooldown was removed. 🚀`,
@@ -19,7 +19,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 			const cooldown = parseDuration(msg.suffix.trim());
 			if (cooldown && cooldown > 0 && cooldown <= 300000) {
 				channelDocument.command_cooldown = cooldown;
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SUCCESS,
 						description: `Set a command cooldown of **${moment.duration(cooldown).humanize()}** in this channel. 🐌`,
@@ -30,7 +30,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 				});
 			} else {
 				winston.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.INVALID,
 						description: `The duration you entered is too large!`,
@@ -42,7 +42,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 			}
 		}
 	} else if (channelDocument.command_cooldown > 0) {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
 				description: `There's a cooldown of **${moment.duration(channelDocument.command_cooldown).humanize()}** set for this channel. ⏱`,
@@ -52,7 +52,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 			},
 		});
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
 				title: `Woosh! 🎢`,

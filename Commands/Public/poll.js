@@ -6,7 +6,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocu
 		if (msg.suffix) {
 			const voteDocument = channelDocument.poll.responses.id(msg.author.id);
 			if (voteDocument) {
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						title: `You've already voted in this poll.`,
@@ -30,14 +30,14 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocu
 						_id: msg.author.id,
 						vote,
 					});
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SUCCESS,
 							description: `I casted your vote for **${channelDocument.poll.options[vote]}** 🍻`,
 						},
 					});
 				} else {
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
 							description: `There's no matching option for \`${msg.suffix}\`. 😩`,
@@ -71,7 +71,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocu
 			await menu.init();
 		}
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
 				description: `There isn't an ongoing poll in this channel. 🛡`,

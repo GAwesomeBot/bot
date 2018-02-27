@@ -7,7 +7,7 @@
 	<script>
 		function unbanGuild(svrid) {
 			$("#unbanGuild").addClass("is-loading");
-			$.post("/dashboard/servers/server-list?svrid=maintainer", { unbanFromActivity: svrid }).done(() => {
+			$.post("/dashboard/maintainer/servers/server-list", { unbanFromActivity: svrid }).done(() => {
 				$(`#unbanGuild`).removeClass("is-loading").html("<span class='icon'><i class='fa fa-check'></i></span> &nbsp; Unbanned");
 			});
 		}

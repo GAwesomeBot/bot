@@ -3,18 +3,18 @@ const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 const Gist = require("../../Modules/Utils/GitHubGist");
 
 class TagCommand {
-	constructor ({ bot, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
+	constructor ({ client, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
 		// Command Data
 		this.suffix = msg.suffix;
 		this.channel = msg.channel;
 		this.msg = msg;
 		this.commandData = commandData;
-		this.bot = bot;
+		this.client = client;
 		this.config = configJS;
 
 		// User/Server Data
 		this.serverDocument = serverDocument;
-		this.isAdmin = this.bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
+		this.isAdmin = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
 
 		// New Tag Data
 		this.isCommand = false;
@@ -31,7 +31,7 @@ class TagCommand {
 	// List all tags
 	async list () {
 		if (!this.checkPerms("list")) {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
 					description: `Only admins can list all tags. ✋`,
@@ -39,7 +39,7 @@ class TagCommand {
 			});
 			return;
 		}
-		const gistUploader = new Gist(this.bot);
+		const gistUploader = new Gist(this.client);
 		const info = this.serverDocument.config.tags.list.map(async tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			const useSpacing = tag.isLocked && tag.isCommand;
@@ -69,7 +69,7 @@ class TagCommand {
 			});
 			await menu.init();
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
 					description: "This server doesn't have any tags yet! 📑",
@@ -126,14 +126,14 @@ class TagCommand {
 	async show (tag) {
 		const data = this.get(tag);
 		if (data) {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.RESPONSE,
 					description: data.content,
 				},
 			});
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
 					description: `Tag \`${this.suffix}\` does not exist.`,
@@ -151,7 +151,7 @@ class TagCommand {
 			return;
 		}
 
-		await this.channel.send({
+		this.msg.send({
 			embed: {
 				color: this.Colors.PROMPT,
 				description: "Are you sure you want to clear **all** tags?",
@@ -170,8 +170,8 @@ class TagCommand {
 		}
 		if (response && this.confirmAction(response)) {
 			this.serverDocument.config.tags.list = [];
-			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
-			this.msg.channel.send({
+			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
+			this.msg.send({
 				embed: {
 					color: this.Colors.SUCCESS,
 					description: "All tags have been cleared 🗑",
@@ -184,7 +184,7 @@ class TagCommand {
 	deleteTag () {
 		const data = this.get();
 		if (!data) {
-			return this.channel.send({
+			return this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
 					description: `Tag \`${this.tag}\` does not exist 😞`,
@@ -194,15 +194,15 @@ class TagCommand {
 
 		if (this.checkPerms(data.isCommand ? "deleteCommand" : "delete")) {
 			data.remove();
-			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
-			this.channel.send({
+			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
+			this.msg.send({
 				embed: {
 					color: this.Colors.SUCCESS,
 					description: `Deleted tag \`${this.tag}\` (✖╭╮✖)`,
 				},
 			});
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
 					description: `Only admins can delete \`${this.tag}\` ✋`,
@@ -222,15 +222,15 @@ class TagCommand {
 					isCommand: this.isCommand,
 					isLocked: this.isLocked,
 				});
-				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
-				this.channel.send({
+				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
+				this.msg.send({
 					embed: {
 						color: this.Colors.SUCCESS,
 						description: `New ${this.isCommand ? "command " : ""}tag \`${this.tag}\` created 😃`,
 					},
 				});
 			} else {
-				this.channel.send({
+				this.msg.send({
 					embed: {
 						color: this.Colors.MISSING_PERMS,
 						description: `Only admins can create new${this.isCommand ? " command " : " "}tags ✋`,
@@ -238,7 +238,7 @@ class TagCommand {
 				});
 			}
 		} else if (this.checkPerms("update")) {
-			await this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.PROMPT,
 					description: `Tag \`${this.tag}\` already exists. Do you want to overwrite it?`,
@@ -259,8 +259,8 @@ class TagCommand {
 				data.content = this.value;
 				data.isCommand = this.isCommand;
 				data.isLocked = this.isLocked;
-				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
-				this.channel.send({
+				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
+				this.msg.send({
 					embed: {
 						color: this.Colors.SUCCESS,
 						description: `Tag \`${this.tag}\` updated! ✏`,
@@ -268,7 +268,7 @@ class TagCommand {
 				});
 			}
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
 					description: `Only admins can update this tag. ✋`,
@@ -311,7 +311,7 @@ class TagCommand {
 	// Load default tags
 	loadDefaults () {
 		this.serverDocument.config.tags.list = defaultTags;
-		this.channel.send({
+		this.msg.send({
 			embed: {
 				color: this.Colors.SUCCESS,
 				description: "Loaded default tags! 📥",

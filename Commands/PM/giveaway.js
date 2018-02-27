@@ -1,4 +1,4 @@
-module.exports = async ({ bot, Constants: { Colors } }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => {
 	if (msg.suffix && msg.suffix.includes("|")) {
 		const params = msg.suffix.split("|");
 		const svrname = params[0].trim();
@@ -8,8 +8,8 @@ module.exports = async ({ bot, Constants: { Colors } }, msg, commandData) => {
 				embed: {
 					color: 0x3669FA,
 					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL(),
+						name: client.user.username,
+						icon_url: client.user.avatarURL(),
 						url: "https://github.com/GilbertGobbels/GAwesomeBot",
 					},
 					description: "⌛ Preparing Giveaway...",
@@ -18,7 +18,7 @@ module.exports = async ({ bot, Constants: { Colors } }, msg, commandData) => {
 					},
 				},
 			});
-			const relay = () => bot.relayCommand("giveaway", { str: svrname, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname });
+			const relay = () => client.relayCommand("giveaway", { str: svrname, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname });
 			setTimeout(async () => {
 				const relayRes = await relay();
 				let errMsg = "An unknown Error occurred";
@@ -28,8 +28,8 @@ module.exports = async ({ bot, Constants: { Colors } }, msg, commandData) => {
 					initMsg.edit({
 						embed: {
 							author: {
-								name: bot.user.username,
-								icon_url: bot.user.avatarURL(),
+								name: client.user.username,
+								icon_url: client.user.avatarURL(),
 								url: "https://github.com/GilbertGobbels/GAwesomeBot",
 							},
 							description: "Something went wrong while fetching server data!",

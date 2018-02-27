@@ -17,7 +17,7 @@
 		if(newReactionMessage.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-message": newReactionMessage.val()
 				},

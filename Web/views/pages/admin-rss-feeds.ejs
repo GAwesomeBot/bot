@@ -25,7 +25,7 @@
 		  hide_update_modal = true;
 		  $.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-url": newRssUrl.val(),
 					"new-name": newRssName.val().toLowerCase()

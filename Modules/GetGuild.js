@@ -68,16 +68,16 @@ const generateGuild = (guild, settings) => {
 
 /**
  * Fetches a guild from other shards if required, resolving getters as specified.
- * @param {Object} bot The discord.js client instance containing the IPC instance used to communicate with the master.
+ * @param {Object} client The discord.js client instance containing the IPC instance used to communicate with the master.
  * @param {string} guildID The ID of the guild to be fetched, or "*" to fetch all guils.
  * @param {getGuildSettings} settings The settings to apply on generateGuild() when a guild was found.
  * @returns {Promise} Promise object representing the fetched guild object or array of guilds. Or, when no guild was found, 404.
  */
-const getGuild = async (bot, guildID, settings) => {
-	if (bot.guilds.has(guildID)) {
-		return generateGuild(bot.guilds.get(guildID), settings);
+const getGuild = async (client, guildID, settings) => {
+	if (client.guilds.has(guildID)) {
+		return generateGuild(client.guilds.get(guildID), settings);
 	}
-	return bot.IPC.send("getGuild", { guild: guildID, settings: settings }).then(msg => {
+	return client.IPC.send("getGuild", { guild: guildID, settings: settings }).then(msg => {
 		if (msg.err && msg.err !== 404) throw msg.err;
 		if (msg.err && msg.err === 404) return null;
 		try {

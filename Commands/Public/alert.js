@@ -1,6 +1,6 @@
-module.exports = async ({ bot, Constants: { Colors } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, msg, commandData) => {
 	if (!msg.suffix) {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.RED,
 				description: `You need to provide a message for this alert!`,
@@ -17,8 +17,8 @@ module.exports = async ({ bot, Constants: { Colors } }, { serverDocument }, msg,
 				},
 			},
 		};
-		bot.messageBotAdmins(msg.guild, serverDocument, embedObj);
-		msg.channel.send({
+		client.messageBotAdmins(msg.guild, serverDocument, embedObj);
+		msg.send({
 			embed: {
 				color: Colors.LIGHT_GREEN,
 				description: `I've alerted the admins about it! ⚠️`,

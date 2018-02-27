@@ -28,7 +28,7 @@
 		if((member || newStrikeMember.val()) && newStrikeReason.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-member": member || newStrikeMember.val(),
 					"new-reason": newStrikeReason.val()
@@ -50,7 +50,7 @@
 			const parts = strike.id.split("-");
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: send,
 				success: function() {
 					const docs = document.getElementsByClassName('strikes-' + parts[1]);

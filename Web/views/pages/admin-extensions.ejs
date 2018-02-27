@@ -9,7 +9,7 @@
 	function updateExtensionFromGallery(extid) {
 		$.ajax({
 			type: "POST",
-			url: "/dashboard/other/extensions?svrid=<%= serverData.id %>",
+			url: "<%= currentPage %>",
 			data: {
 				"new-gallery": extid
 			},
@@ -45,7 +45,7 @@
 					</div>
 					<br>
 					<div class="container">
-						<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+						<form id="form" action="<%= currentPage %>" method="post">
 							<div style="overflow-x: scroll;">
 								<% if(configData.extensions.length>0) { %>
 									<table class="table">
@@ -80,7 +80,7 @@
 														<%= configData.extensions[i].store %> KB
 													</td>
 													<td>
-														<a class="button is-small is-primary" href="/dashboard/other/extension-builder?svrid=<%= serverData.id %>&extid=<%= configData.extensions[i]._id %>">
+														<a class="button is-small is-primary" href="/dashboard/<%= serverData.id %>/other/extension-builder?extid=<%= configData.extensions[i]._id %>">
 															<span class="icon is-small">
 																<i class="fa fa-pencil"></i>
 															</span>
@@ -106,14 +106,14 @@
 											<span>Nothing to see here</span>
 										</div>
 										<div class="message-body">
-											You haven't created any extensions yet. Head over to the <a href="/dashboard/other/extension-builder?svrid=<%= serverData.id %>">extension builder</a> to get started building one!
+											You haven't created any extensions yet. Head over to the <a href="/dashboard/<%= serverData.id %>/other/extension-builder">extension builder</a> to get started building one!
 										</div>
 									</article>
 									<br>
 								<% } %>
 							</div>
 							<div class="control is-horizontal is-grouped">
-								<a class="button" href="/dashboard/other/extension-builder?svrid=<%= serverData.id %>">
+								<a class="button" href="/dashboard/<%= serverData.id %>/other/extension-builder">
 									<span class="icon">
 								        <i class="fa fa-code"></i>
 								    </span>

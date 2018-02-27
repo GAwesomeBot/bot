@@ -25,7 +25,7 @@ module.exports = {
 
 	],
 	guildUnavailable: [
-
+		"GAB.GuildUnavailable",
 	],
 	guildAvailable: [
 
@@ -98,7 +98,7 @@ module.exports = {
 
 	],
 	messageUpdate: [
-
+		"GAB.MessageCommandUpdateHandler",
 	],
 	messageDeleteBulk: [
 

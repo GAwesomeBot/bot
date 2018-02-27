@@ -26,7 +26,7 @@
 		if(newTranslatedMember.val() && newTranslatedLanguage.val() && Array.prototype.slice.call(document.getElementById("new-translated-enabled_channel_ids").querySelectorAll('input[type="checkbox"]')).some(x => x.checked)) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-member": newTranslatedMember.val(),
 					"new-source_language": newTranslatedLanguage.val(),

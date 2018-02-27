@@ -20,11 +20,12 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				color: Colors.INFO,
 				description: `We're processing your input...`,
 				footer: {
-					text: `Please ${Math.floor(Math.random() * 4) > 8 ? "a" : ""}wait`,
+					text: `Please ${Math.floor(Math.random() * 4) > 6 ? "a" : ""}wait`,
 				},
 			},
 		});
-		const animated = msg.suffix.trim().split(/\s+/).trimAll();
+		const suffixNoNewline = msg.suffix.replace(/[\r\n]/g, " ");
+		const animated = suffixNoNewline.trim().split(/\s+/).trimAll();
 		let every = true;
 		for (const param of animated) {
 			const parsed = DJSUtil.parseEmoji(param);
@@ -51,9 +52,16 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 				if (b) {
 					await m.delete();
 					try {
-						await msg.channel.send({ files: [new MessageAttachment(b, "jumbo.gif")] });
+						await msg.channel.send({
+							embed: {
+								files: [new MessageAttachment(b, "jumbo.gif")],
+								image: {
+									url: `attachment://jumbo.gif`,
+								},
+								color: Colors.SUCCESS,
+							},
+						});
 					} catch (_) {
-						console.log(_);
 						// TODO: Figure out a way to send the image, either via imgur or other means
 					}
 				} else {
@@ -80,11 +88,19 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 			}
 		} else {
 			try {
-				const b = await Emoji(msg.suffix);
+				const b = await Emoji(suffixNoNewline);
 				if (b) {
 					await m.delete();
 					try {
-						await msg.channel.send({ files: [new MessageAttachment(b, "jumbo.png")] });
+						await msg.channel.send({
+							embed: {
+								files: [new MessageAttachment(b, "jumbo.png")],
+								image: {
+									url: `attachment://jumbo.png`,
+								},
+								color: Colors.SUCCESS,
+							},
+						});
 					} catch (_) {
 						// TODO: Figure out a way to send the image, either via imgur or other means
 					}
@@ -113,7 +129,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		}
 	} else {
 		winston.verbose(`Emoji(s) not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INVALID,
 				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),

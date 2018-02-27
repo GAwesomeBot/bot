@@ -6,17 +6,17 @@ module.exports = {
 		let server;
 		const checkServer = svr => svr && svr.members.has(filter.usrid);
 
-		server = main.bot.guilds.find(svr => svr.name === filter.str || svr.name.toLowerCase() === filter.str.toLowerCase());
+		server = main.client.guilds.find(svr => svr.name === filter.str || svr.name.toLowerCase() === filter.str.toLowerCase());
 		if (checkServer(server)) return server.id;
 
-		server = main.bot.guilds.get(filter.str);
+		server = main.client.guilds.get(filter.str);
 		if (checkServer(server)) return server.id;
 
 		const userDocument = await Users.findOne({ _id: filter.usrid }).exec();
 		if (userDocument) {
 			const svrnick = userDocument.server_nicks.id(filter.str.toLowerCase());
 			if (svrnick) {
-				server = main.bot.guilds.get(svrnick.server_id);
+				server = main.client.guilds.get(svrnick.server_id);
 				if (checkServer(server)) return server.id;
 			}
 		}
@@ -25,12 +25,12 @@ module.exports = {
 	// Params: { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname }
 	run: async (main, { initMsg: initMsgID, usrid, chname, guildid }) => {
 		const Colors = main.Constants.Colors;
-		const usr = await main.bot.users.fetch(usrid, true);
+		const usr = await main.client.users.fetch(usrid, true);
 		try {
 			const usrch = await usr.createDM();
 			const initMsg = await usrch.messages.fetch(initMsgID);
 
-			const svr = main.bot.guilds.get(guildid);
+			const svr = main.client.guilds.get(guildid);
 			const member = svr.members.get(usr.id);
 			const serverDocument = svr.serverDocument;
 
@@ -38,7 +38,7 @@ module.exports = {
 
 			let ch;
 			try {
-				ch = await main.bot.channelSearch(chname, svr);
+				ch = await main.client.channelSearch(chname, svr);
 			} catch (err) {
 				initMsg.edit({
 					embed: {
@@ -72,13 +72,13 @@ module.exports = {
 						});
 						let response;
 						try {
-							response = await main.bot.awaitPMMessage(usrch, usr);
+							response = await main.client.awaitPMMessage(usrch, usr);
 						} catch (err) {
 							return;
 						}
 						if (response.content) response = response.content;
 						if (main.configJS.yesStrings.includes(response.toLowerCase().trim())) {
-							await Giveaways.end(main.bot, svr, ch);
+							await Giveaways.end(main.client, svr, ch);
 							serverDocument.save();
 						} else {
 							usrch.send({
@@ -101,7 +101,7 @@ module.exports = {
 						});
 						let response;
 						try {
-							response = await main.bot.awaitPMMessage(usrch, usr);
+							response = await main.client.awaitPMMessage(usrch, usr);
 						} catch (err) {
 							return;
 						}
@@ -139,7 +139,7 @@ module.exports = {
 						});
 						let response;
 						try {
-							response = await main.bot.awaitPMMessage(usrch, usr);
+							response = await main.client.awaitPMMessage(usrch, usr);
 						} catch (err) {
 							return;
 						}
@@ -162,7 +162,7 @@ module.exports = {
 							});
 						}
 					}
-				} else if (main.bot.getUserBotAdmin(svr, serverDocument, member) > serverDocument.config.commands.giveaway.admin_level || configJSON.maintainers.includes(usr.id)) {
+				} else if (main.client.getUserBotAdmin(svr, serverDocument, member) > serverDocument.config.commands.giveaway.admin_level || configJSON.maintainers.includes(usr.id)) {
 					await initMsg.edit({
 						embed: {
 							color: Colors.INFO,
@@ -175,7 +175,7 @@ module.exports = {
 					});
 					let secret;
 					try {
-						secret = await main.bot.awaitPMMessage(usrch, usr, 300000);
+						secret = await main.client.awaitPMMessage(usrch, usr, 300000);
 					} catch (err) {
 						return;
 					}
@@ -194,7 +194,7 @@ module.exports = {
 					});
 					let title;
 					try {
-						title = await main.bot.awaitPMMessage(usrch, usr, 300000);
+						title = await main.client.awaitPMMessage(usrch, usr, 300000);
 					} catch (err) {
 						return;
 					}
@@ -213,7 +213,7 @@ module.exports = {
 					});
 					let duration;
 					try {
-						duration = await main.bot.awaitPMMessage(usrch, usr, 300000);
+						duration = await main.client.awaitPMMessage(usrch, usr, 300000);
 					} catch (err) {
 						return;
 					}
@@ -233,7 +233,7 @@ module.exports = {
 						});
 						duration = 3600000;
 					}
-					Giveaways.start(main.bot, svr, serverDocument, usr, ch, channelDocument, title, secret, duration);
+					Giveaways.start(main.client, svr, serverDocument, usr, ch, channelDocument, title, secret, duration);
 					usrch.send({
 						embed: {
 							color: Colors.SUCCESS,

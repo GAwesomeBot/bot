@@ -1,4 +1,4 @@
-module.exports = async ({ bot }, msg, commandData) => {
+module.exports = async ({ client }, msg, commandData) => {
 	const commands = require("../../Configurations/commands");
 	let params = [];
 	if (msg.suffix)	params = msg.suffix.trim().split(/\s+/);
@@ -7,7 +7,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 			`To reload a PM command, use \`pm.<command>\`, where \`<command>\` is your PM command.`,
 			`To reload a Public command, use \`public.<command>\`, where \`<command>\` is your Public command.`,
 		].join("\n");
-		return msg.channel.send({
+		return msg.send({
 			embed: {
 				color: 0xFF0000,
 				title: `You didn't provide any commands to reload!`,
@@ -33,12 +33,12 @@ module.exports = async ({ bot }, msg, commandData) => {
 			// Reload everything?
 			if (cmd === "*") {
 				switch (type) {
-					case "pm": bot.reloadAllPrivateCommands(); break;
-					case "public": bot.reloadAllPublicCommands(); break;
-					case "shared": bot.reloadAllSharedCommands(); break;
+					case "pm": client.reloadAllPrivateCommands(); break;
+					case "public": client.reloadAllPublicCommands(); break;
+					case "shared": client.reloadAllSharedCommands(); break;
 				}
 				winston.verbose(`Reloaded all ${type} commands!`, { usrid: msg.author.id });
-				return msg.channel.send({
+				return msg.send({
 					embed: {
 						color: 0x00FF00,
 						description: `Reloaded all ${type} commands! 🎉`,
@@ -47,11 +47,11 @@ module.exports = async ({ bot }, msg, commandData) => {
 			}
 			let fail = false;
 			switch (type) {
-				case "pm": fail = bot.reloadPrivateCommand(cmd, true); break;
+				case "pm": fail = client.reloadPrivateCommand(cmd, true); break;
 				case "public": {
 					if (!(commands.public.hasOwnProperty(cmd) || Object.values(commands.public).some(cmdData => cmdData.aliases && cmdData.aliases.includes(cmd.toLowerCase())))) {
 						winston.warn(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
-						return msg.channel.send({
+						return msg.send({
 							embed: {
 								color: 0xFF0000,
 								title: `Unable to reload ${type} command "${cmd}"!`,
@@ -59,13 +59,13 @@ module.exports = async ({ bot }, msg, commandData) => {
 							},
 						});
 					}
-					fail = bot.reloadPublicCommand(cmd, true);
+					fail = client.reloadPublicCommand(cmd, true);
 					break;
 				}
 				case "shared": {
 					if (!(commands.shared.hasOwnProperty(cmd) || Object.values(commands.shared).some(cmdData => cmdData.aliases && cmdData.aliases.includes(cmd.toLowerCase())))) {
 						winston.warn(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
-						return msg.channel.send({
+						return msg.send({
 							embed: {
 								color: 0xFF0000,
 								title: `Unable to reload ${type} command "${cmd}"!`,
@@ -73,10 +73,10 @@ module.exports = async ({ bot }, msg, commandData) => {
 							},
 						});
 					}
-					fail = bot.reloadSharedCommand(cmd, true);
+					fail = client.reloadSharedCommand(cmd, true);
 					break;
 				}
-				default: msg.channel.send({
+				default: msg.send({
 					embed: {
 						color: 0xFF0000,
 						description: `I was unable to find command \`${cmd}\` of type \`${type}\`.`,
@@ -88,7 +88,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 			}
 			if (!fail) {
 				winston.verbose(`Reloaded ${type} command "${cmd}"`, { usrid: msg.author.id, cmd });
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: 0x3669FA,
 						description: `Reloaded ${type} command \`${cmd}\` successfully!`,
@@ -96,7 +96,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 				});
 			} else if (fail) {
 				winston.verbose(`Failed to reload ${type} command "${cmd}"`, { usrid: msg.author.id, cmd }, fail);
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: 0xFF0000,
 						title: `Failed to reload ${type} command "${cmd}"!`,
@@ -106,7 +106,7 @@ module.exports = async ({ bot }, msg, commandData) => {
 			}
 		} else {
 			winston.verbose(`Invalid command type or command not in commands.js provided!`, { usrid: msg.author.id, cmd });
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: 0xFF0000,
 					title: `Invalid command type (__${type}__) or command (__${cmd}__)!`,

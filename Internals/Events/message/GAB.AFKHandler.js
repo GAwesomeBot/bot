@@ -1,28 +1,31 @@
 const BaseEvent = require("../BaseEvent");
+const { Colors } = require("../../Constants");
 
 class AFKHandler extends BaseEvent {
 	requirements (msg) {
 		if (!msg.guild) return false;
-		if (msg.author.id === this.bot.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
-			if (msg.author.id === this.bot.user.id) {
+		if (msg.editedAt) return false;
+		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
+			if (msg.author.id === this.client.user.id) {
 				return false;
 			} else {
 				winston.silly(`Ignored ${msg.author.tag} for AFK handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
 				return false;
 			}
 		}
+		if (!msg.channel.postable) return false;
 		if (!msg.mentions.members.size > 0) return false;
 		return true;
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await this.bot.cache.get(msg.guild.id);
+		this.serverDocument = await this.client.cache.get(msg.guild.id);
 	}
 
 	async handle (msg) {
 		if (this.serverDocument && msg.mentions.members.size) {
 			msg.mentions.members.forEach(async member => {
-				if (![this.bot.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
+				if (![this.client.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 					// Check if they have a server AFK message
 					// Takes priority over global AFK messages
 					const targetMemberDocument = this.serverDocument.members.id(member.id);
@@ -32,8 +35,8 @@ class AFKHandler extends BaseEvent {
 								thumbnail: {
 									url: member.user.displayAvatarURL(),
 								},
-								color: 0x3669FA,
-								title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
+								color: Colors.INFO,
+								title: `@__${this.client.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
 								description: `${targetMemberDocument.afk_message}`,
 							},
 						});
@@ -48,8 +51,8 @@ class AFKHandler extends BaseEvent {
 									thumbnail: {
 										url: member.user.displayAvatarURL(),
 									},
-									color: 0x3669FA,
-									title: `@__${this.bot.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
+									color: Colors.INFO,
+									title: `@__${this.client.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
 									description: `${targetUserDocument.afk_message}`,
 								},
 							});

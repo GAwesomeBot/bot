@@ -46,7 +46,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			msg.channel.send(msgObj);
 		}
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,
 				description: `[What app would you like to find today...?](https://www.apple.com/itunes/charts/free-apps/) 🤔`,

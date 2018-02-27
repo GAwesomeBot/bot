@@ -1,6 +1,6 @@
-module.exports = async ({ bot, configJS, Constants: { Colors } }, msg, commandData) => {
-	const info = bot.getPMCommandList()
-		.map(command => `${command} ${bot.getPMCommandMetadata(command).usage}`).sort();
+module.exports = async ({ client, configJS, Constants: { Colors } }, msg, commandData) => {
+	const info = client.getPMCommandList()
+		.map(command => `${command} ${client.getPMCommandMetadata(command).usage}`).sort();
 	msg.reply({
 		embed: {
 			color: Colors.BLUE,

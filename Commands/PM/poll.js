@@ -18,7 +18,7 @@ module.exports = async (main, msg, commandData) => {
 					},
 				},
 			});
-			const relayRes = await main.bot.relayCommand("poll", { str: svrid, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrid, chname });
+			const relayRes = await main.client.relayCommand("poll", { str: svrid, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrid, chname });
 			let errMsg = "An unknown Error occurred";
 			if (relayRes === "none") errMsg = "The requested server was not found. Double check for typo's!";
 			if (relayRes === "multi") errMsg = "Multiple servers were found. Set a unique server nick or use server ID instead of name.";

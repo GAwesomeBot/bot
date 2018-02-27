@@ -2,11 +2,11 @@ const { LoggingLevels } = require("../../Internals/Constants");
 
 /**
  * Send message of the day to a server
- * @param bot The bot instance / shard
+ * @param client The client instance / shard
  * @param server The server
  * @param motdDocument The message_of_the_day document
  */
-module.exports = async (bot, server, motdDocument) => {
+module.exports = async (client, server, motdDocument) => {
 	if (!motdDocument.last_run) motdDocument.last_run = Date.now();
 	const sendMOTD = async serverDocument => {
 		const serverConfigDocument = serverDocument.config;
@@ -16,14 +16,14 @@ module.exports = async (bot, server, motdDocument) => {
 				serverConfigDocument.message_of_the_day.last_run = Date.now();
 				await serverConfigDocument.message_of_the_day.save().catch(err => {
 					winston.warn(`Failed to save message of the day data... 😞\n`, err);
-					bot.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
+					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 				});
 				channel.send(serverConfigDocument.message_of_the_day.message_content);
-				bot.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", null, channel.id);
+				client.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", null, channel.id);
 			} else {
-				bot.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
+				client.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 			}
-			bot.setTimeout(async () => {
+			client.setTimeout(async () => {
 				const newserverConfigDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
 					winston.warn(`Failed to set timeout for MOTD... (*-*)\n`, err);
 				});
@@ -32,8 +32,8 @@ module.exports = async (bot, server, motdDocument) => {
 		}
 	};
 	if (motdDocument.isEnabled) {
-		if (bot.MOTDTimers.has(server.id)) bot.clearTimeout(bot.MOTDTimers.get(server.id));
-		bot.MOTDTimers.set(server.id, bot.setTimeout(async () => {
+		if (client.MOTDTimers.has(server.id)) client.clearTimeout(client.MOTDTimers.get(server.id));
+		client.MOTDTimers.set(server.id, client.setTimeout(async () => {
 			const serverDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});

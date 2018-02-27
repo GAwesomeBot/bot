@@ -81,7 +81,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, API
 			}
 		} else {
 			winston.verbose(`Parameters not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INVALID,
 					title: NSFWInvalid(),
@@ -90,6 +90,6 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, API
 			});
 		}
 	} else {
-		msg.channel.send(NSFWEmbed);
+		msg.send(NSFWEmbed);
 	}
 };

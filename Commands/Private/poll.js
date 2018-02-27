@@ -7,29 +7,29 @@ module.exports = {
 		let server;
 		const checkServer = svr => svr && svr.members.has(filter.usrid);
 
-		server = main.bot.guilds.find(svr => svr.name === filter.str || svr.name.toLowerCase() === filter.str.toLowerCase());
+		server = main.client.guilds.find(svr => svr.name === filter.str || svr.name.toLowerCase() === filter.str.toLowerCase());
 		if (checkServer(server)) return server.id;
 
-		server = main.bot.guilds.get(filter.str);
+		server = main.client.guilds.get(filter.str);
 		if (checkServer(server)) return server.id;
 
 		const userDocument = await Users.findOne({ _id: filter.usrid }).exec();
 		if (userDocument) {
 			const svrnick = userDocument.server_nicks.id(filter.str.toLowerCase());
 			if (svrnick) {
-				server = main.bot.guilds.get(svrnick.server_id);
+				server = main.client.guilds.get(svrnick.server_id);
 				if (checkServer(server)) return server.id;
 			}
 		}
 		return false;
 	},
 	run: async (main, params) => {
-		const usr = await main.bot.users.fetch(params.usrid, true);
+		const usr = await main.client.users.fetch(params.usrid, true);
 		try {
 			const usrch = await usr.createDM();
 			let initMsg = await usrch.messages.fetch(params.initMsg);
 
-			const svr = main.bot.guilds.get(params.guildid);
+			const svr = main.client.guilds.get(params.guildid);
 			const member = svr.members.get(usr.id);
 			const serverDocument = svr.serverDocument;
 
@@ -37,7 +37,7 @@ module.exports = {
 
 			let ch;
 			try {
-				ch = await main.bot.channelSearch(params.chname, svr);
+				ch = await main.client.channelSearch(params.chname, svr);
 			} catch (err) {
 				return initMsg.edit({
 					embed: {
@@ -69,7 +69,7 @@ module.exports = {
 						});
 						let response;
 						try {
-							response = await main.bot.awaitPMMessage(usrch, usr);
+							response = await main.client.awaitPMMessage(usrch, usr);
 						} catch (_) {
 							return;
 						}
@@ -107,7 +107,7 @@ module.exports = {
 							});
 							let response;
 							try {
-								response = await main.bot.awaitPMMessage(usrch, usr);
+								response = await main.client.awaitPMMessage(usrch, usr);
 							} catch (err) {
 								return;
 							}
@@ -161,7 +161,7 @@ module.exports = {
 							await menu.init();
 							let response;
 							try {
-								response = await main.bot.awaitPMMessage(usrch, usr, 240000, msg => {
+								response = await main.client.awaitPMMessage(usrch, usr, 240000, msg => {
 									msg.content = msg.content.trim();
 									return msg.content && !isNaN(msg.content) && msg.content > 0 && msg.content <= channelDocument.poll.options.length;
 								});
@@ -185,7 +185,7 @@ module.exports = {
 							});
 						}
 					}
-				} else if (main.bot.getUserBotAdmin(svr, serverDocument, member) >= serverDocument.config.commands.poll.admin_level || configJSON.maintainers.includes(usr.id)) {
+				} else if (main.client.getUserBotAdmin(svr, serverDocument, member) >= serverDocument.config.commands.poll.admin_level || configJSON.maintainers.includes(usr.id)) {
 					initMsg = await initMsg.edit({
 						embed: {
 							color: Colors.PROMPT,
@@ -197,7 +197,7 @@ module.exports = {
 					});
 					let title;
 					try {
-						title = await main.bot.awaitPMMessage(usrch, usr);
+						title = await main.client.awaitPMMessage(usrch, usr);
 					} catch (err) {
 						return;
 					}
@@ -214,7 +214,7 @@ module.exports = {
 					});
 					let options;
 					try {
-						options = await main.bot.awaitPMMessage(usrch, usr, 300000);
+						options = await main.client.awaitPMMessage(usrch, usr, 300000);
 					} catch (err) {
 						return;
 					}
@@ -222,7 +222,7 @@ module.exports = {
 					if (options.content) options = options.content;
 					options = options.trim() === "." ? ["No", "Yes"] : options.split(",").trimAll();
 
-					Polls.start(main.bot, svr, serverDocument, usr, ch, channelDocument, title, options);
+					Polls.start(main.client, svr, serverDocument, usr, ch, channelDocument, title, options);
 
 					let map = options.map((option, i) => [
 						`» ${i + 1} «`,

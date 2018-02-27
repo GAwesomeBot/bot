@@ -1,8 +1,10 @@
 const BaseEvent = require("../BaseEvent");
 const { Constants } = require("../../index");
+const { Colors } = Constants;
 
 class MaintainerMessageCreate extends BaseEvent {
 	requirements (msg) {
+		if (!msg.channel.postable) return false;
 		if (configJSON.userBlocklist.includes(msg.author.id)) return false;
 		if (configJSON.sudoMaintainers.includes(msg.author.id) ||
 			configJSON.maintainers.includes(msg.author.id)) {
@@ -18,7 +20,6 @@ class MaintainerMessageCreate extends BaseEvent {
 				if (await this.client.canRunSharedCommand(msg.command, msg.author)) {
 					try {
 						await command({
-							bot: this.bot,
 							client: this.client,
 							configJS: this.configJS,
 							Constants,
@@ -28,9 +29,9 @@ class MaintainerMessageCreate extends BaseEvent {
 						});
 					} catch (err) {
 						winston.warn(`Failed to process shared command "${msg.command}"`, { usrid: msg.author.id }, err);
-						msg.channel.send({
+						msg.send({
 							embed: {
-								color: 0xFF0000,
+								color: Colors.ERROR,
 								title: `Something went wrong! 😱`,
 								description: `**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 								footer: {
@@ -40,9 +41,9 @@ class MaintainerMessageCreate extends BaseEvent {
 						});
 					}
 				} else {
-					msg.channel.send({
+					msg.send({
 						embed: {
-							color: 0xFF0000,
+							color: Colors.MISSING_PERMS,
 							title: `Sorry, you're not authorized to run this!`,
 							description: `You are unable to run the \`${msg.command}\` command, because you're lacking permissions! 😦`,
 						},
