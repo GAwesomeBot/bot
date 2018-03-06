@@ -8,6 +8,9 @@ controllers.extensions = require("./extensions");
 controllers.wiki = require("./wiki");
 controllers.blog = require("./blog");
 controllers.donate = require("./donate");
+
+controllers.dashboard = require("./dashboard");
+
 controllers.auth = require("./auth");
 controllers.api = require("./api");
 controllers.debug = require("./debug");

@@ -1,18 +1,16 @@
 const middleware = module.exports;
 
-middleware.populateRequest = route => {
-	return (req, res, next) => {
-		// App Libraries
-		req.client = req.bot = route.router.bot;
-		req.passport = route.router.passport;
+middleware.populateRequest = route => (req, res, next) => {
+	// App Libraries
+	req.client = req.bot = route.router.bot;
+	req.passport = route.router.passport;
 
-		// Request information
-		req.isAPI = route.isAPI;
-		req.isStatic = route.isStatic;
-		req.isBusy = route.router.toobusy();
-		req.debugMode = route.router.get("debug mode");
-		next();
-	}
+	// Request information
+	req.isAPI = route.isAPI;
+	req.isStatic = route.isStatic;
+	req.isBusy = route.router.toobusy();
+	req.debugMode = route.router.get("debug mode");
+	next();
 };
 
 middleware.registerTraffic = (req, res, next) => {
@@ -20,7 +18,7 @@ middleware.registerTraffic = (req, res, next) => {
 		let TID = req.bot.traffic.TID;
 		res.cookie("trafficID", TID, { httpOnly: true });
 	}
-	req.bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
+	req.bot.traffic.count(req.cookies.trafficID, req.isAuthenticated());
 	next();
 };
 
@@ -36,7 +34,7 @@ middleware.checkUnavailableAPI = (req, res, next) => {
 
 middleware.enforceProtocol = (req, res, next) => {
 	if (!req.secure) {
-		return res.redirect(`https://${req.hostname}:${configJS.httpsPort}${req.url}`);
+		return res.redirect(`https://${req.hostname}:${global.configJS.httpsPort}${req.url}`);
 	}
 	next();
 };

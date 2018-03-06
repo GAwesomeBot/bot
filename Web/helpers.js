@@ -1,4 +1,7 @@
+const fs = require("fs-nextra");
+
 const mw = require("./middleware");
+const { LoggingLevels } = require("../Internals/Constants");
 
 module.exports = {
 	denyRequest: (res, isAPI) => isAPI ? res.sendStatus(403) : res.status(403).redirect("/dashboard"),
@@ -7,7 +10,18 @@ module.exports = {
 
 	renderError: (res, text, line, code = 500) => res.status(code).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] }),
 
-	checkSudoMode: id => configJSON.perms.sudoMode === 0 ? process.env.GAB_HOST === id : (configJSON.perms.sudoMode === 2 ? configJSON.sudoMaintainers.includes(id) : configJSON.maintainers.includes(id)),
+	checkSudoMode: id => configJSON.perms.sudo === 0 ? process.env.GAB_HOST === id : (configJSON.perms.sudo === 2 ? configJSON.sudoMaintainers.includes(id) : configJSON.maintainers.includes(id)),
+
+	fetchMaintainerPrivileges: id => {
+		let permLevel;
+		if (process.env.GAB_HOST === id) permLevel = 0;
+		else if (configJSON.sudoMaintainers.includes(id)) permLevel = 2;
+		else if (configJSON.maintainers.includes(id)) permLevel = 1;
+		else return [];
+		return JSON.keys(configJSON.perms).filter(key => configJSON.perms[key] === permLevel || permLevel === 0 || (permLevel === 2 && configJSON.perms[key] === 1));
+	},
+
+	canDo: (action, id) => module.exports.fetchMaintainerPrivileges(id).includes(action),
 
 	setupPage: (app, route, middleware, controller, acceptSockets = false) => {
 		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
@@ -28,8 +42,38 @@ module.exports = {
 		});
 	},
 
-	saveAdminConsoleOptions: (req, res, override) => {
+	saveAdminConsoleOptions: async (req, res, isAPI) => {
+		if (req.svr.document.validateSync()) return module.exports.renderError(res, "Your request is malformed.", null, 400);
+		try {
+			req.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, req.consolemember.id);
+			module.exports.dashboardUpdate(req, req.path, req.svr.id);
+			await req.svr.document.save();
+			req.client.IPC.send("cacheUpdate", { guild: req.svr.document._id });
+			if (isAPI) {
+				res.sendStatus(200);
+			} else {
+				res.redirect(req.originalUrl);
+			}
+		} catch (err) {
+			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: req.svr.id, usrid: req.consolemember.id }, err);
+			module.exports.renderError(res, "An internal error occurred!");
+		}
+	},
 
+	saveMaintainerConsoleOptions: async (req, res, isAPI, silent) => {
+		fs.writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
+			.then(() => {
+				module.exports.dashboardUpdate(req, req.path, "maintainer");
+				if (isAPI && !silent) {
+					res.sendStatus(200);
+				} else if (!silent) {
+					res.redirect(req.originalUrl);
+				}
+			})
+			.catch(err => {
+				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember.id }, err);
+				module.exports.renderError(res, "An internal error occurred!");
+			});
 	},
 
 	setupResource: (app, route, middleware, controller, method, authType) => {
@@ -63,30 +107,28 @@ module.exports = {
 		id: role.id,
 		color: role.hexColor.substring(1),
 		position: role.position,
-	})).sort((a, b) => b.position - a.position),
+	}))
+		.sort((a, b) => b.position - a.position),
 
 	getChannelData: (svr, type) => Object.values(svr.channels).filter(ch => ch.type === (type || "text")).map(ch => ({
 		name: ch.name,
 		id: ch.id,
 		position: ch.position,
 		rawPosition: ch.rawPosition,
-	})).sort((a, b) => a.rawPosition - b.rawPosition),
+	}))
+		.sort((a, b) => a.rawPosition - b.rawPosition),
 
 	getUserList: list => list.filter(usr => usr.bot !== true).map(usr => `${usr.username}#${usr.discriminator}`).sort(),
 
 	findQueryUser: (query, list) => {
 		let usr = list[query];
-		if(!usr) {
-			const usernameQuery = query.substring(0, query.lastIndexOf("#")>-1 ? query.lastIndexOf("#") : query.length);
-			const discriminatorQuery = query.indexOf("#")>-1 ? query.substring(query.lastIndexOf("#")+1) : "";
-			const usrs = Object.values(list).filter(a => {
-				return (a.user || a).username === usernameQuery;
-			});
-			if(discriminatorQuery) {
-				usr = usrs.find(a => {
-					return (a.user || a).discriminator === discriminatorQuery;
-				});
-			} else if(usrs.length>0) {
+		if (!usr) {
+			const usernameQuery = query.substring(0, query.lastIndexOf("#") > -1 ? query.lastIndexOf("#") : query.length);
+			const discriminatorQuery = query.indexOf("#") > -1 ? query.substring(query.lastIndexOf("#") + 1) : "";
+			const usrs = Object.values(list).filter(a => (a.user || a).username === usernameQuery);
+			if (discriminatorQuery) {
+				usr = usrs.find(a => (a.user || a).discriminator === discriminatorQuery);
+			} else if (usrs.length > 0) {
 				usr = usrs[0];
 			}
 		}

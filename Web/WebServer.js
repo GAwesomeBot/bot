@@ -174,31 +174,6 @@ module.exports = async (bot, auth, configJS, winston) => {
 	require("./routes")(app);
 	/* eslint-disable */
 	/*
-
-	// Deny authentication for console
-	const deny = (res, isAPI) => isAPI ? res.sendStatus(403) : res.status(403).redirect("/dashboard");
-	// Check authentication for console
-	const checkPerms = (path, id, svrid) => {
-		path = path.replace(`/${svrid}`, "");
-		let section = path;
-		if (path === `/dashboard/management/eval`) section = "eval";
-		else if (path.startsWith(`/dashboard/global-options`)) section = "administration";
-		else if (path.startsWith(`/dashboard/management`)) section = "management";
-		else if (path.startsWith(`/dashboard`) && svrid !== "maintainer") section = "sudoMode";
-		switch (configJSON.perms[section]) {
-			case 0:
-				return process.env.GAB_HOST === id;
-				break;
-			case 1:
-				return configJSON.maintainers.includes(id);
-				break;
-			case 2:
-				return configJSON.sudoMaintainers.includes(id);
-				break;
-			default:
-				return true;
-		}
-	};
 	const checkAuth = async (req, res, next, api) => {
 		if (req.isAuthenticated()) {
 			const usr = await bot.users.fetch(req.user.id, true);
@@ -258,107 +233,9 @@ module.exports = async (bot, auth, configJS, winston) => {
 		}
 	};
 
-	// Save serverDocument after admin console form data is received
-	const saveAdminConsoleOptions = async (consolemember, svr, serverDocument, req, res, override) => {
-		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
-		try {
-			bot.logMessage(serverDocument, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, consolemember.id);
-			dashboardUpdate(req.path, svr.id);
-			await serverDocument.save();
-			bot.IPC.send("cacheUpdate", { guild: serverDocument._id });
-			if (override) {
-				res.sendStatus(200);
-			} else {
-				res.redirect(req.originalUrl);
-			}
-		} catch (err) {
-			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: svr.id, usrid: consolemember.id }, err);
-			renderError(res, "An internal error occurred!");
-			return;
-		}
-	};
-
-	// Save config.json after maintainer console form data is received
-	const saveMaintainerConsoleOptions = (consolemember, req, res, override, silent) => {
-		fsn.writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
-			.then(() => {
-				dashboardUpdate(req.path, "maintainer");
-				if (override && !silent) {
-					res.sendStatus(200);
-				} else if (!silent) res.redirect(req.originalUrl);
-			})
-			.catch(err => {
-				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: consolemember.id }, err);
-				renderError(res, "An internal error occurred!");
-				return;
-			});
-	};
-
-	// Admin console support for legacy URL's
-	app.use("/dashboard", (req, res, next) => {
-		if (req.query.svrid) {
-			res.redirect(307, `/dashboard/${req.query.svrid}${req.path}`);
-		} else next();
-	});
-
 	// Admin console dashboard
 	app.get("/dashboard", async (req, res) => {
-		if (!req.isAuthenticated()) {
-			res.redirect("/login");
-		} else {
-			const serverData = [];
-			const usr = await bot.users.fetch(req.user.id, true);
-			const addServerData = async (i, callback) => {
-				if (req.user.guilds && i < req.user.guilds.length) {
-					const svr = await getGuild.get(bot, req.user.guilds[i].id, { members: ["id", "roles"], convert: { id_only: true } });
-					if (!svr && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
-						addServerData(++i, callback);
-						return;
-					}
-					const data = {
-						name: req.user.guilds[i].name,
-						id: req.user.guilds[i].id,
-						icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
-						botJoined: svr !== null,
-						isAdmin: false,
-					};
-					if (svr && usr) {
-						db.servers.findOne({ _id: req.user.guilds[i].id }, (err, serverDocument) => {
-							if (!err && serverDocument) {
-								const member = svr.members[usr.id];
-								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3 || checkPerms(req.path, usr.id, "dashboard")) {
-									data.isAdmin = true;
-								}
-							}
-							serverData.push(data);
-							addServerData(++i, callback);
-						});
-					} else {
-						serverData.push(data);
-						addServerData(++i, callback);
-					}
-				} else {
-					callback();
-				}
-			};
-			addServerData(0, () => {
-				serverData.sort((a, b) => a.name.localeCompare(b.name));
-				if (configJSON.maintainers.indexOf(req.user.id) > -1) {
-					serverData.push({
-						name: "Maintainer Console",
-						id: "maintainer",
-						icon: "/static/img/transparent.png",
-						botJoined: true,
-						isAdmin: true,
-					});
-				}
-				res.render("pages/dashboard.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					serverData,
-					rawJoinLink: `https://discordapp.com/oauth2/authorize?&client_id=${auth.discord.clientID}&scope=bot&permissions=470019135`,
-				});
-			});
-		}
+
 	});
 
 	// Admin console overview (home)
@@ -393,7 +270,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					const topGame = serverDocument.games.sort((a, b) => b.time_played - a.time_played)[0];
 					res.render("pages/admin-overview.ejs", {
 						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        		sudoMode: adminLvl !== 3,
+        		sudo: adminLvl !== 3,
 						serverData: {
 							name: svr.name,
 							id: svr.id,
@@ -430,7 +307,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, async (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-command-options.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -493,7 +370,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			});
 			res.render("pages/admin-command-list.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -563,7 +440,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-rss-feeds.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -628,7 +505,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-streamers.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -685,7 +562,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const data = {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -788,7 +665,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			const data = {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -869,7 +746,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			} else {
 				res.render("pages/admin-trivia-sets.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-          sudoMode: adminLvl !== 3,
+          sudo: adminLvl !== 3,
 					serverData: {
 						name: svr.name,
 						id: svr.id,
@@ -921,7 +798,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-api-keys.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -951,7 +828,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-tag-reaction.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -990,7 +867,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-stats-collection.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1036,7 +913,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-ranks.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1096,7 +973,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-gawesome-points.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1138,7 +1015,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-admins.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1187,7 +1064,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-moderation.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1238,7 +1115,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-blocked.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1304,7 +1181,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
 			res.render("pages/admin-muted.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1379,7 +1256,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-strikes.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1474,7 +1351,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			}
 			res.render("pages/admin-status-messages.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1565,7 +1442,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			}
 			res.render("pages/admin-filters.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1628,7 +1505,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-message-of-the-day.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1667,7 +1544,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-voicetext-channels.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1704,7 +1581,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-roles.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1794,7 +1671,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 
 				res.render("pages/admin-logs.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					sudoMode: adminLvl !== 3,
+					sudo: adminLvl !== 3,
 					serverData: {
 						name: svr.name,
 						id: svr.id,
@@ -1818,7 +1695,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-name-display.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1923,7 +1800,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 
 			res.render("pages/admin-ongoing-activities.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1971,7 +1848,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-public-data.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2021,7 +1898,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			});
 			res.render("pages/admin-extensions.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -2123,7 +2000,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 			}
 			res.render("pages/admin-extension-builder.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudoMode: adminLvl !== 3,
+        sudo: adminLvl !== 3,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
