@@ -47,7 +47,7 @@
 							</div>
 						</div>
 						<% if(isContributor) { %>
-							<a class="button is-fullwidth" href="/wiki/edit">
+							<a class="button is-fullwidth" href="/wiki/new">
 								<span class="icon">
 			                        <i class="fa fa-plus"></i>
 			                    </span>
@@ -136,7 +136,7 @@
 											<span>History</span>
 										</a>
 									<% if(isContributor) { %>
-						                	<a class="button is-info is-outlined" href="/wiki/edit?id=<%= data.title %>">
+						                	<a class="button is-info is-outlined" href="/wiki/<%= data.title %>/edit">
 						                    	<span class="icon is-small">
 						                        	<i class="fa fa-pencil"></i>
 						                    	</span>

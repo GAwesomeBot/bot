@@ -5,7 +5,6 @@ const compression = require("compression");
 const sio = require("socket.io");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const RateLimit = require("express-rate-limit");
 const ejs = require("ejs");
 const session = require("express-session");
 const mongooseSessionStore = require("connect-mongo")(session);
@@ -13,118 +12,95 @@ const passport = require("passport");
 const passportSocketIo = require("passport.socketio");
 const discordStrategy = require("passport-discord").Strategy;
 const discordOAuthScopes = ["identify", "guilds", "email"];
+const toobusy = require("toobusy-js");
 const path = require("path");
 const fs = require("fs");
 const fsn = require("fs-nextra");
-const writeFile = require("write-file-atomic");
 const sizeof = require("object-sizeof");
-const moment = require("moment");
-const textDiff = require("text-diff");
-const diff = new textDiff();
 
 const reload = require("require-reload")(require);
 
-const showdown = require("showdown");
-const md = new showdown.Converter({
-	tables: true,
-	simplifiedAutoLink: true,
-	strikethrough: true,
-	tasklists: true,
-	smoothLivePreview: true,
-	smartIndentationFix: true,
-});
-md.setFlavor("github");
-const xssFilters = require("xss-filters");
-const removeMd = require("remove-markdown");
-
-const database = require("./../Database/Driver.js");
-
-const Giveaways = require("./../Modules/Giveaways.js");
-// const Lotteries = require("./../Modules/Lotteries.js");
-// const Polls = require("./../Modules/Polls.js");
-const Trivia = require("./../Modules/Trivia.js");
-const Updater = require("./../Modules/Updater.js");
-
-const Utils = require("./../Modules/Utils");
-const getGuild = require("./../Modules").GetGuild;
-
-const { LoggingLevels, AllowedEvents, Colors } = require("../Internals/Constants");
-
+const Utils = require("../Modules").Utils;
+const middleware = require("./middleware");
 const app = express();
-app.use(compression());
-if (process.argv.includes("-p") || process.argv.includes("--proxy")) app.enable("trust proxy");
-app.use(bodyParser.urlencoded({
-	extended: true,
-	parameterLimit: 10000,
-	limit: "5mb",
-}));
-app.use(bodyParser.json({
-	parameterLimit: 10000,
-	limit: "5mb",
-}));
-app.use(cookieParser());
-app.set("json spaces", 2);
 
-app.engine("ejs", ejs.renderFile);
-app.set("views", `${__dirname}/views`);
-app.set("view engine", "ejs");
+const listen = async configJS => {
+	const servers = {};
 
-const findQueryUser = (query, list) => {
-	let usr = list[query];
-	if(!usr) {
-		const usernameQuery = query.substring(0, query.lastIndexOf("#")>-1 ? query.lastIndexOf("#") : query.length);
-		const discriminatorQuery = query.indexOf("#")>-1 ? query.substring(query.lastIndexOf("#")+1) : "";
-		const usrs = Object.values(list).filter(a => {
-			return (a.user || a).username === usernameQuery;
-		});
-		if(discriminatorQuery) {
-			usr = usrs.find(a => {
-				return (a.user || a).discriminator === discriminatorQuery;
-			});
-		} else if(usrs.length>0) {
-			usr = usrs[0];
+	if (global.configJS.cert && configJS.privKey && configJS.httpsPort) {
+		if (configJS.httpsRedirect) {
+			app.use(middleware.enforceProtocol);
 		}
+		let credentials;
+		try {
+			const privKey = await fsn.readFile(configJS.privKey, "utf8");
+			const cert = await fsn.readFile(configJS.cert, "utf8");
+			credentials = {
+				key: privKey,
+				cert: cert,
+			};
+		} catch (err) {
+			winston.error("Something went wrong while reading the given HTTPS Private Key and Certificate *0*\n", err);
+		}
+
+		const httpsServer = servers.httpsServer = https.createServer(credentials, app);
+		httpsServer.on("error", (err) => {
+			winston.error("Something went wrong while starting the HTTPS Web Interface x/\n", err);
+		});
+		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
+			winston.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
+		});
 	}
-	return usr;
+
+	const server = servers.server = http.createServer(app);
+	server.on("error", err => {
+		winston.error("Something went wrong while starting the HTTP Web Interface x/\n", err);
+	});
+	server.listen(configJS.httpPort, configJS.serverIP, () => {
+		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
+		process.setMaxListeners(0);
+	});
+
+	return servers;
 };
 
-const getUserList = list => list.filter(usr => usr.bot !== true).map(usr => `${usr.username}#${usr.discriminator}`).sort();
-
-const getChannelData = (svr, type) => Object.values(svr.channels).filter(ch => ch.type === (type || "text")).map(ch => ({
-	name: ch.name,
-	id: ch.id,
-	position: ch.position,
-	rawPosition: ch.rawPosition,
-})).sort((a, b) => a.rawPosition - b.rawPosition);
-
-const getRoleData = svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
-	name: role.name,
-	id: role.id,
-	color: role.hexColor.substring(1),
-	position: role.position,
-})).sort((a, b) => b.position - a.position);
-
-const getAuthUser = user => ({
-	username: user.username,
-	id: user.id,
-	avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : "/static/img/discord-icon.png",
-});
-
-const getRoundedUptime = uptime => uptime > 86400 ? `${Math.floor(uptime / 86400)}d` : `${Math.floor(uptime / 3600)}h`;
-
-/* eslint-disable max-len, no-shadow, callback-return, max-nested-callbacks, no-empty-function, handle-callback-err, newline-per-chained-call, no-useless-concat, no-fallthrough, no-mixed-operators, no-unused-vars */
 // Setup the web server
-module.exports = (bot, auth, configJS, winston, db = global.Database) => {
-	const renderError = (res, text, line, code = 500) => res.status(code).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] });
+module.exports = async (bot, auth, configJS, winston) => {
+	// Setup Express App object
+	app.bot = bot;
+	app.auth = auth;
+	app.toobusy = toobusy;
+	app.routes = [];
 
-	const dashboardUpdate = (namespace, location) => bot.IPC.send("dashboardUpdate", { namespace: namespace, location: location });
+	// We always recommend using a reverse proxy like nginx, so unless you're on port 80, always run GAB with the --proxy option!
+	if (process.argv.includes("-p") || process.argv.includes("--proxy")) app.enable("trust proxy");
 
-	const createMessageOfTheDay = (id) => bot.IPC.send("createMOTD", { guild: id });
+	// Configure global middleware & Server properties
+	app.use(compression());
+
+	app.use(bodyParser.urlencoded({
+		extended: true,
+		parameterLimit: 10000,
+		limit: "5mb",
+	}));
+	app.use(bodyParser.json({
+		parameterLimit: 10000,
+		limit: "5mb",
+	}));
+	app.use(cookieParser());
+
+	app.set("json spaces", 2);
+
+	app.engine("ejs", ejs.renderFile);
+	app.set("views", `${__dirname}/views`);
+	app.set("view engine", "ejs");
+
+	app.set("debug mode", process.argv.includes("--debug"));
 
 	// Set the clientID and clientSecret from argv if needed
 	if (process.argv.includes("--CID")) {
-		auth.discord.clientID = process.argv[process.argv.indexOf("--CID") + 1]
-		auth.discord.clientSecret = process.argv[process.argv.indexOf("--CID") + 2]
+		auth.discord.clientID = process.argv[process.argv.indexOf("--CID") + 1];
+		auth.discord.clientSecret = process.argv[process.argv.indexOf("--CID") + 2];
 	}
 
 	// Setup passport and express-session
@@ -136,6 +112,7 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	}, (accessToken, refreshToken, profile, done) => {
 		process.nextTick(() => done(null, profile));
 	}));
+
 	passport.serializeUser((user, done) => {
 		delete user.email;
 		done(null, user);
@@ -143,9 +120,11 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	passport.deserializeUser((id, done) => {
 		done(null, id);
 	});
+
 	const sessionStore = new mongooseSessionStore({
 		mongooseConnection: Database.Raw,
 	});
+
 	app.use(session({
 		secret: configJS.secret,
 		resave: false,
@@ -154,71 +133,26 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	}));
 	app.use(passport.initialize());
 	app.use(passport.session());
+	app.passport = passport;
 
-	app.use((req, res, next) => {
-		res.header("Access-Control-Allow-Origin", "*");
-		res.header("Access-Control-Allow-Credentials", true);
-		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-		next();
-	});
+	app.use(middleware.setHeaders);
 
-	app.use("/", (req, res, next) => {
-		winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
-		if (global.isUnavailable) {
-			res.status(503).render("pages/503.ejs", {});
-		}	else {
-			if (!req.cookies.trafficID || req.cookies.trafficID !== bot.traffic.TID) {
-				let TID = bot.traffic.TID;
-				res.cookie("trafficID", TID, { httpOnly: true });
-			}
-			if (req.method === "GET" && !req.path.startsWith("/static") && !req.path.startsWith("/api") && !["/header-image", "/userlist", "/serverlist"].includes(req.path)) bot.traffic.count(req.cookies["trafficID"], req.isAuthenticated());
-			next();
-		}
-	});
+	app.use(middleware.logRequest);
 
-	// Serve public dir
+	// (Horribly) serve public dir
 	app.use("/static/:type", (req, res, next) => {
-		if (req.get("Accept") && req.get("Accept").indexOf("image/webp") > -1 && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
-			res.redirect("/static/img" + req.path.substring(0, req.path.lastIndexOf(".")) + ".webp");
-		} else return express.static(`${__dirname}/public/${req.params.type}`, { maxAge: 86400000 })(req, res, next);
+		if (req.get("Accept") && req.get("Accept").includes("image/webp") && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
+			res.redirect(`/static/img${req.path.substring(0, req.path.lastIndexOf("."))}.webp`);
+		} else {
+			return express.static(`${__dirname}/public/${req.params.type}`, { maxAge: 86400000 })(req, res, next);
+		}
 	});
 
-	// Open web interface
-	function requireHTTPS(req, res, next) {
-		if (!req.secure) {
-			return res.redirect(`https://${req.hostname}:${configJS.httpsPort}${req.url}`);
-		}
-		next();
-	}
-	if (configJS.cert && configJS.privKey && configJS.httpsPort) {
-		if (configJS.httpsRedirect) {
-			app.use(requireHTTPS);
-		}
-		const privKey = fs.readFileSync(configJS.privKey, "utf8", err => { if (err) winston.error(err); });
-		const cert = fs.readFileSync(configJS.cert, "utf8", err => { if (err) winston.error(err); });
-		const credentials = {
-			key: privKey,
-			cert: cert,
-		};
-		const httpsServer = https.createServer(credentials, app);
-		httpsServer.on("error", (err) => {
-			winston.error("We failed to listen to incoming web requests on the secure WebServer x/\n", { "err": err })
-		})
-		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
-			winston.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
-		});
-	}
-	const server = http.createServer(app);
-	server.on("error", (err) => {
-		winston.error("We failed to listen to incoming web requests on the WebServer x/\n", { "err": err });
-	})
-	server.listen(configJS.httpPort, configJS.serverIP, () => {
-		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
-		process.setMaxListeners(0);
-	});
+	// Listen for incoming connections
+	const { server, httpsServer } = await listen(configJS);
 
 	// Setup socket.io for dashboard
-	const io = sio(typeof httpsServer !== "undefined" ? httpsServer : server);
+	const io = app.io = sio(typeof httpsServer !== "undefined" ? httpsServer : server);
 	io.use(passportSocketIo.authorize({
 		key: "connect.sid",
 		secret: configJS.secret,
@@ -227,515 +161,19 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 	}));
 
 	bot.IPC.on("dashboardUpdate", msg => {
-		const path = msg.namespace;
+		const namespace = msg.namespace;
 		const param = msg.location;
 		try {
-			io.of(path).emit("update", param);
+			io.of(namespace).emit("update", param);
 			if (param === "maintainer") global.configJSON = reload("../Configurations/config.json");
 		} catch (err) {
 			winston.warn("An error occurred while handling a dashboard WebSocket!", err);
 		}
 	});
 
-	// Landing page
-	app.get("/", async (req, res) => {
-		const uptime = process.uptime();
-		const guildSize = bot.guilds.totalCount;
-		const userSize = bot.users.totalCount;
-		res.render("pages/landing.ejs", {
-			authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-			bannerMessage: configJSON.homepageMessageHTML,
-			rawServerCount: await guildSize,
-			roundedServerCount: Math.floor(await guildSize / 100) * 100,
-			rawUserCount: `${Math.floor(await userSize / 1000)}K`,
-			rawUptime: moment.duration(uptime, "seconds").humanize(),
-			roundedUptime: getRoundedUptime(uptime),
-		});
-	});
-
-	// Add to server link
-	app.get("/add", (req, res) => {
-		res.redirect(configJS.oauthLink.format({ id: bot.user.id }));
-	});
-
-	// GAwesomeBot data API
-	app.use("/api/", new RateLimit({
-		windowMs: 3600000,
-		max: 150,
-		delayMs: 0,
-	}));
-	app.get("/api", async (req, res) => {
-		res.json({
-			server_count: await bot.guilds.totalCount,
-			user_count: await bot.users.totalCount,
-		});
-	});
-	const getServerData = async (serverDocument, webp = false) => {
-		let data;
-		let svr = await getGuild.get(bot, serverDocument._id, { resolve: ["icon", "createdAt", "ownerID", "id", "name"], members: ["nickname", "user"] });
-		if (svr) {
-			const owner = bot.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
-			data = {
-				name: svr.name,
-				id: svr.id,
-				icon: bot.getAvatarURL(svr.id, svr.icon, "icons", webp),
-				owner: {
-					username: owner.username,
-					id: owner.id,
-					avatar: bot.getAvatarURL(owner.id, owner.avatar, "avatars", webp),
-					name: owner.username,
-				},
-				members: Object.keys(svr.members).length,
-				messages: serverDocument.messages_today,
-				rawCreated: moment(svr.createdAt).format(configJS.moment_date_format),
-				relativeCreated: Math.ceil((Date.now() - new Date(svr.createdAt)) / 86400000),
-				command_prefix: bot.getCommandPrefix(svr, serverDocument),
-				category: serverDocument.config.public_data.server_listing.category,
-				description: serverDocument.config.public_data.server_listing.isEnabled ? md.makeHtml(xssFilters.inHTMLData(serverDocument.config.public_data.server_listing.description || "No description provided.")) : null,
-				invite_link: serverDocument.config.public_data.server_listing.isEnabled ? serverDocument.config.public_data.server_listing.invite_link || "javascript:alert('Invite link not available');" : null,
-			};
-		}
-		return data;
-	};
-	app.get("/api/servers", async (req, res) => {
-		const params = {
-			"config.public_data.isShown": true,
-		};
-		if (req.query.id) {
-			params._id = req.query.id;
-		}
-		let webp = req.accepts("image/webp") !== false;
-		db.servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
-			.exec(async (err, serverDocuments) => {
-				if (!err && serverDocuments) {
-					const data = await Promise.all(serverDocuments.map(serverDocument => getServerData(serverDocument, webp) || serverDocument._id));
-					res.json(data);
-				} else {
-					res.sendStatus(400);
-				}
-			});
-	});
-	const getUserData = async (usr, userDocument) => {
-		const botServers = Object.values(await getGuild.get(bot, "*", { resolve: ["name", "id", "icon", "ownerID"], mutual: usr.id }));
-		const mutualServers = botServers.sort((a, b) => a.name.localeCompare(b.name));
-		const userProfile = {
-			username: usr.username,
-			discriminator: usr.discriminator,
-			avatar: usr.avatarURL() || "/static/img/discord-icon.png",
-			id: usr.id,
-			status: usr.presence.status,
-			game: await bot.getGame(usr),
-			roundedAccountAge: moment(usr.createdAt).fromNow(),
-			rawAccountAge: moment(usr.createdAt).format(configJS.moment_date_format),
-			backgroundImage: userDocument.profile_background_image || "http://i.imgur.com/8UIlbtg.jpg",
-			points: userDocument.points || 1,
-			lastSeen: userDocument.last_seen ? moment(userDocument.last_seen).fromNow() : null,
-			rawLastSeen: userDocument.last_seen ? moment(userDocument.last_seen).format(configJS.moment_date_format) : null,
-			mutualServerCount: Object.keys(mutualServers).length,
-			pastNameCount: (userDocument.past_names || {}).length || 0,
-			isAfk: userDocument.afk_message !== undefined && userDocument.afk_message !== "" && userDocument.afk_message !== null,
-			mutualServers: [],
-			isMaintainer: configJSON.maintainers.includes(usr.id) || configJSON.sudoMaintainers.includes(usr.id),
-			isContributor: configJSON.wikiContributors.includes(usr.id) || configJSON.maintainers.includes(usr.id) || configJSON.sudoMaintainers.includes(usr.id),
-			isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
-		};
-		switch (userProfile.status) {
-			case "online":
-				userProfile.statusColor = "is-success";
-				break;
-			case "idle":
-				userProfile.statusColor = "is-warning";
-				break;
-			case "dnd":
-				userProfile.statusColor = "is-danger";
-				userProfile.status = "Do Not Disturb";
-				break;
-			case "offline":
-			default:
-				userProfile.statusColor = "is-dark";
-				break;
-		}
-		if (userDocument.isProfilePublic) {
-			let profileFields;
-			if (userDocument.profile_fields) {
-				profileFields = {};
-				for (const key in userDocument.profile_fields) {
-					profileFields[key] = md.makeHtml(xssFilters.inHTMLData(userDocument.profile_fields[key]));
-					profileFields[key] = profileFields[key].substring(3, profileFields[key].length - 4);
-				}
-			}
-			userProfile.profileFields = profileFields;
-			userProfile.pastNames = userDocument.past_names;
-			userProfile.afkMessage = userDocument.afk_message;
-			for (let svr of mutualServers) {
-				const owner = await bot.users.fetch(svr.ownerID, true);
-				userProfile.mutualServers.push({
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
-					owner: owner.username,
-				});
-			}
-		}
-		return userProfile;
-	};
-	app.get("/api/users", async (req, res) => {
-		if (!req.query.id) {
-			res.status(400).json({ message: `Query param "id" is missing` });
-			return;
-		}
-		try {
-			let user = bot.users.get(req.query.id);
-			if (!user) user = await bot.users.fetch(req.query.id, true);
-
-			if (user) {
-				let userDocument = await db.users.findOne({ _id: user.id });
-				if (!userDocument) userDocument = await db.users.create(new Users({ _id: user.id }));
-				res.json(await getUserData(user, userDocument));
-			} else {
-				res.status(400).json({ message: `Invalid user ID provided` });
-			}
-		} catch (_) {
-			res.status(400).json({ message: `Invalid user ID provided` });
-		}
-	});
-	const getExtensionData = async galleryDocument => {
-		const owner = await bot.users.fetch(galleryDocument.owner_id, true) || {};
-		let typeIcon, typeDescription;
-		switch (galleryDocument.type) {
-			case "command":
-				typeIcon = "magic";
-				typeDescription = galleryDocument.key;
-				break;
-			case "keyword":
-				typeIcon = "key";
-				typeDescription = galleryDocument.keywords.join(", ");
-				break;
-			case "timer":
-				typeIcon = "clock-o";
-				if (moment(galleryDocument.interval)) {
-					let interval = moment.duration(galleryDocument.interval);
-					typeDescription = `${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
-				} else {
-					typeDescription = `${galleryDocument.interval}ms`;
-				}
-				break;
-			case "event":
-				typeIcon = "code";
-				typeDescription = `${galleryDocument.event}`;
-				break;
-		}
-		return {
-			_id: galleryDocument._id,
-			name: galleryDocument.name,
-			type: galleryDocument.type,
-			typeIcon,
-			typeDescription,
-			description: md.makeHtml(xssFilters.inHTMLData(galleryDocument.description)),
-			featured: galleryDocument.featured,
-			owner: {
-				name: owner.username || "invalid-user",
-				id: owner.id || "invalid-user",
-				discriminator: owner.discriminator || "0000",
-				avatar: owner.avatarURL() || "/static/img/discord-icon.png",
-			},
-			status: galleryDocument.state,
-			points: galleryDocument.points,
-			relativeLastUpdated: moment(galleryDocument.last_updated).fromNow(),
-			rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),
-			scopes: galleryDocument.scopes,
-			fields: galleryDocument.fields,
-			timeout: galleryDocument.timeout,
-		};
-	};
-	app.get("/api/extensions", async (req, res) => {
-		const params = {};
-		if (req.query.id) {
-			params._id = req.query.id;
-		}
-		if (req.query.name) {
-			params.name = req.query.name;
-		}
-		if (req.query.type) {
-			params.type = req.query.type;
-		}
-		if (req.query.status) {
-			params.state = req.query.status;
-		}
-		if (req.query.owner) {
-			params.owner_id = req.query.owner;
-		}
-		db.gallery.count(params, (err, rawCount) => {
-			if (!err || rawCount === null) {
-				rawCount = 0;
-			}
-			db.gallery.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : rawCount)
-				.exec((erro, galleryDocuments) => {
-					if (!erro && galleryDocuments) {
-						const data = galleryDocuments.map(galleryDocument => getExtensionData(galleryDocument));
-						res.json(data);
-					} else {
-						res.sendStatus(400);
-					}
-				});
-		});
-	});
-
-	// Activity page (servers, profiles, etc.)
-	app.get("/activity", (req, res) => {
-		res.redirect("/activity/servers");
-	});
-	app.get("/activity/(|servers|users)", (req, res) => {
-		db.servers.aggregate([{
-			$group: {
-				_id: null,
-				total: {
-					$sum: {
-						$add: ["$messages_today"],
-					},
-				},
-				active: {
-					$sum: {
-						$cond: [
-							{ $gt: ["$messages_today", 0] },
-							1,
-							0,
-						],
-					},
-				},
-			},
-		}], async (err, result) => {
-			const guildAmount = await bot.guilds.totalCount;
-			const userAmount = await bot.users.totalCount;
-			let messageCount = 0;
-			let activeServers = guildAmount;
-			if (!err && result) {
-				messageCount = result[0].total;
-				activeServers = result[0].active;
-			}
-
-			const renderPage = data => {
-				res.render("pages/activity.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(getAuthUser(req.user).id) : false,
-					rawServerCount: guildAmount,
-					rawUserCount: userAmount,
-					totalMessageCount: messageCount,
-					numActiveServers: activeServers,
-					activeSearchQuery: req.query.q,
-					mode: req.path.substring(req.path.lastIndexOf("/") + 1),
-					data,
-				});
-			};
-
-			if (req.path === "/activity/servers") {
-				if (!req.query.q) {
-					req.query.q = "";
-				}
-				let count;
-				if (!req.query.count || isNaN(req.query.count) || req.query.count > 64) {
-					count = 16;
-				} else {
-					count = parseInt(req.query.count) || guildAmount;
-				}
-				let page;
-				if (!req.query.page || isNaN(req.query.page)) {
-					page = 1;
-				} else {
-					page = parseInt(req.query.page);
-				}
-				if (!req.query.sort) {
-					req.query.sort = "messages-des";
-				}
-				if (!req.query.category) {
-					req.query.category = "All";
-				}
-				if (!req.query.publiconly) {
-					req.query.publiconly = false;
-				}
-
-				const matchCriteria = {
-					"config.public_data.isShown": true,
-				};
-				if (req.query.q) {
-					const query = req.query.q.toLowerCase();
-					const servers = await getGuild.get(bot, "*", { only: true, resolve: ["id", "name"] });
-					matchCriteria._id = {
-						$in: Object.keys(servers).map(k => servers[k]).filter(svr => {
-							return svr.name.toLowerCase().indexOf(query)>-1 || svr.id === query;
-						}).map(svr => {
-							return svr.id;
-						}),
-					};
-				} else {
-					matchCriteria._id = {
-						$in: (await Utils.GetValue(bot, "guilds.keys()", "arr", "Array.from")).filter(svrid => !configJSON.activityBlocklist.includes(svrid)),
-					};
-				}
-				if (req.query.category !== "All") {
-					matchCriteria["config.public_data.server_listing.category"] = req.query.category;
-				}
-				if (req.query.publiconly === "true") {
-					matchCriteria["config.public_data.server_listing.isEnabled"] = true;
-				}
-
-				let sortParams;
-				switch (req.query.sort) {
-					case "members-asc":
-						sortParams = {
-							member_count: 1,
-							added_timestamp: 1,
-						};
-						break;
-					case "members-des":
-						sortParams = {
-							member_count: -1,
-							added_timestamp: -1,
-						};
-						break;
-					case "messages-asc":
-						sortParams = {
-							messages_today: 1,
-							added_timestamp: 1,
-						};
-						break;
-					case "messages-des":
-					default:
-						sortParams = {
-							messages_today: -1,
-							added_timestamp: -1,
-						};
-						break;
-				}
-				db.servers.count(matchCriteria, (err, rawCount) => {
-					if (err || rawCount === null) {
-						rawCount = guildAmount;
-					}
-					db.servers.aggregate([
-						{
-							$match: matchCriteria,
-						},
-						{
-							$project: {
-								messages_today: 1,
-								"config.public_data": 1,
-								"config.command_prefix": 1,
-								member_count: {
-									$size: "$members",
-								},
-								added_timestamp: 1,
-							},
-						},
-						{
-							$sort: sortParams,
-						},
-						{
-							$skip: count * (page - 1),
-						},
-						{
-							$limit: count,
-						},
-					], async (err, serverDocuments) => {
-						let serverData = [];
-						if (!err && serverDocuments) {
-							let webp = req.accepts("image/webp") === "image/webp";
-							serverData = serverDocuments.map(serverDocument => getServerData(serverDocument, webp));
-						}
-						serverData = await Promise.all(serverData);
-						let pageTitle = "Servers";
-						if (req.query.q) {
-							pageTitle = `Search for server "${req.query.q}"`;
-						}
-						renderPage({
-							pageTitle,
-							itemsPerPage: req.query.count === 0 ? "0" : count.toString(),
-							currentPage: page,
-							numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
-							serverData,
-							selectedCategory: req.query.category,
-							isPublicOnly: req.query.publiconly,
-							sortOrder: req.query.sort,
-						});
-					});
-				});
-			} else if (req.path === "/activity/users") {
-				if (!req.query.q) {
-					req.query.q = "";
-				}
-				if (req.query.q) {
-					db.users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err, userDocument) => {
-						if (!err && userDocument) {
-							const usr = await bot.users.fetch(userDocument._id, true);
-							const userProfile = await getUserData(usr, userDocument);
-							renderPage({
-								pageTitle: `${userProfile.username}'s Profile`,
-								userProfile,
-							});
-						} else {
-							renderPage({ pageTitle: `Lookup for user "${req.query.q}"` });
-						}
-					});
-				} else {
-					db.users.aggregate([{
-						$group: {
-							_id: null,
-							totalPoints: {
-								$sum: {
-									$add: "$points",
-								},
-							},
-							publicProfilesCount: {
-								$sum: {
-									$cond: [
-										{ $ne: ["$isProfilePublic", false] },
-										1,
-										0,
-									],
-								},
-							},
-							reminderCount: {
-								$sum: {
-									$size: "$reminders",
-								},
-							},
-						},
-					}], (err, result) => {
-						let totalPoints = 0;
-						let publicProfilesCount = 0;
-						let reminderCount = 0;
-						if (!err && result) {
-							totalPoints = result[0].totalPoints;
-							publicProfilesCount = result[0].publicProfilesCount;
-							reminderCount = result[0].reminderCount;
-						}
-
-						renderPage({
-							pageTitle: "Users",
-							totalPoints,
-							publicProfilesCount,
-							reminderCount,
-						});
-					});
-				}
-			}
-		});
-	});
-
-	// Header image provider
-	app.get("/header-image", (req, res) => {
-		let headerImage = configJSON.headerImage;
-		if (req.get("Accept") && req.get("Accept").indexOf("image/webp") > -1) headerImage = headerImage.substring(0, headerImage.lastIndexOf(".")) + ".webp"
-		res.sendFile(`${__dirname}/public/img/${headerImage}`, err => {
-			if (err) winston.warn("It seems your headerImage value is invalid!", err)
-		});
-	});
-
-	// Server list provider for typeahead
-	app.get("/serverlist", async (req, res) => {
-		const servers = Object.values(await getGuild.get(bot, "*", { only: true, resolve: ["name"] })).map(val => val.name);
-		servers.sort();
-		res.json(servers);
-	});
+	require("./routes")(app);
+	/* eslint-disable */
+	/*
 
 	// Deny authentication for console
 	const deny = (res, isAPI) => isAPI ? res.sendStatus(403) : res.status(403).redirect("/dashboard");
@@ -820,1026 +258,6 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		}
 	};
 
-	app.get("/api/servers/:svrid/:value", (req, res) => {
-		checkAuth(req, res, (usr, svr) => {
-			switch (req.params.value) {
-				case "channels":
-					res.json(svr.channels);
-					break;
-				default:
-					res.sendStatus(400);
-					break;
-			}
-		}, true);
-	});
-
-	// User list provider for typeahead
-	app.get("/userlist", (req, res) => {
-		if (req.query.svrid) {
-			checkAuth(req, res, (usr, svr) => {
-				res.json(getUserList(Object.keys(svr.members).map(member => svr.members[member].user)));
-			});
-		} else {
-			db.users.aggregate([{
-				$project: {
-					username: 1
-				}
-			}], (err, users) => {
-				if (!err && users) {
-					let response = users.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
-					response.spliceNullElements();
-					res.json(response);
-				} else {
-					next(err);
-				}
-			});
-		}
-	});
-
-	// Extension gallery
-	app.get("/extensions", (req, res) => {
-		res.redirect("/extensions/gallery");
-	});
-	app.get("/extensions/(|gallery|queue)", async (req, res) => {
-		let count;
-		if (!req.query.count) {
-			count = 18;
-		} else {
-			count = parseInt(req.query.count);
-		}
-		let page;
-		if (!req.query.page) {
-			page = 1;
-		} else {
-			page = parseInt(req.query.page);
-		}
-
-		const renderPage = (upvoted_gallery_extensions, serverData) => {
-			const extensionState = req.path.substring(req.path.lastIndexOf("/") + 1);
-			db.gallery.count({
-				state: extensionState,
-			}, (err, rawCount) => {
-				if (err || rawCount === null) {
-					rawCount = 0;
-				}
-
-				const matchCriteria = {
-					state: extensionState,
-				};
-				if (req.query.id) {
-					matchCriteria._id = req.query.id;
-				} else if (req.query.q) {
-					matchCriteria.$text = {
-						$search: req.query.q,
-					};
-				}
-
-				db.gallery.find(matchCriteria).sort("-featured -points -last_updated").skip(count * (page - 1)).limit(count).exec(async (err, galleryDocuments) => {
-					const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-					const extensionData = await Promise.all(galleryDocuments.map(getExtensionData));
-
-					res.render("pages/extensions.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-						pageTitle,
-						serverData,
-						activeSearchQuery: req.query.id || req.query.q,
-						mode: extensionState,
-						rawCount,
-						itemsPerPage: req.query.count,
-						currentPage: page,
-						numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
-						extensions: extensionData,
-						upvotedData: upvoted_gallery_extensions,
-					});
-				});
-			});
-		};
-
-		if (req.isAuthenticated()) {
-			const serverData = [];
-			const usr = await bot.users.fetch(req.user.id, true);
-			const addServerData = async (i, callback) => {
-				if (req.user.guilds && i < req.user.guilds.length) {
-					const svr = await getGuild.get(bot, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
-					if (svr && usr) {
-						db.servers.findOne({ _id: svr.id }, (err, serverDocument) => {
-							if (!err && serverDocument) {
-								const member = svr.members[usr.id];
-								if (bot.getUserBotAdmin(svr, serverDocument, member) >= 3) {
-									serverData.push({
-										name: req.user.guilds[i].name,
-										id: req.user.guilds[i].id,
-										icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
-										prefix: serverDocument.config.command_prefix,
-									});
-								}
-							}
-							addServerData(++i, callback);
-						});
-					} else {
-						addServerData(++i, callback);
-					}
-				} else {
-					callback();
-				}
-			};
-			addServerData(0, () => {
-				serverData.sort((a, b) => a.name.localeCompare(b.name));
-				db.users.findOne({ _id: req.user.id }, (err, userDocument) => {
-					if (!err && userDocument) {
-						renderPage(userDocument.upvoted_gallery_extensions, serverData);
-					} else {
-						renderPage([], serverData);
-					}
-				});
-			});
-		} else {
-			renderPage();
-		}
-	});
-
-	// My extensions
-	app.get("/extensions/my", (req, res) => {
-		if (req.isAuthenticated()) {
-			db.gallery.find({
-				owner_id: req.user.id,
-			}, (err, galleryDocuments) => {
-				res.render("pages/extensions.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					currentPage: req.path,
-					pageTitle: "My GAwesomeBot Extensions",
-					serverData: {
-						id: req.user.id,
-					},
-					activeSearchQuery: req.query.q,
-					mode: "my",
-					rawCount: (galleryDocuments || []).length,
-					extensions: galleryDocuments || [],
-				});
-			});
-		} else {
-			res.redirect("/login");
-		}
-	});
-	io.of("/extensions/my").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/extensions/my", (req, res) => {
-		if (req.isAuthenticated()) {
-			db.gallery.find({
-				owner_id: req.user.id,
-			}, (err, galleryDocuments) => {
-				if (!err && galleryDocuments) {
-					res.redirect(req.originalUrl);
-				} else {
-					renderError(res, "Something went wrong while we tried to fetch your extensions.");
-				}
-			});
-		} else {
-			res.redirect("/login");
-		}
-	});
-
-	const generateCodeID = code => require("crypto")
-		.createHash("md5")
-		.update(code, "utf8")
-		.digest("hex");
-
-	// Extension builder
-	app.get("/extensions/builder", (req, res) => {
-		if (req.isAuthenticated()) {
-			const renderPage = extensionData => {
-				res.render("pages/extensions.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					currentPage: req.path,
-					pageTitle: `${extensionData.name ? `${extensionData.name} - ` : ""}GAwesomeBot Extension Builder`,
-					serverData: {
-						id: req.user.id,
-					},
-					activeSearchQuery: req.query.q,
-					mode: "builder",
-					extensionData,
-					events: AllowedEvents,
-				});
-			};
-
-			if (req.query.extid) {
-				db.gallery.findOne({
-					_id: req.query.extid,
-					owner_id: req.user.id,
-				}, (err, galleryDocument) => {
-					if (!err && galleryDocument) {
-						try {
-							galleryDocument.code = fs.readFileSync(`${__dirname}/../Extensions/${galleryDocument.code_id}.gabext`);
-						} catch (err) {
-							galleryDocument.code = "";
-						}
-						renderPage(galleryDocument);
-					} else {
-						renderPage({});
-					}
-				});
-			} else {
-				renderPage({});
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-	io.of("/extensions/builder").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
-	const writeExtensionData = (extensionDocument, data) => {
-		extensionDocument.name = data.name;
-		extensionDocument.type = data.type;
-		extensionDocument.key = data.type === "command" ? data.key : null;
-		extensionDocument.keywords = data.type === "keyword" ? data.keywords.split(",") : null;
-		extensionDocument.case_sensitive = data.type === "keyword" ? data.case_sensitive === "on" : null;
-		extensionDocument.interval = data.type === "timer" ? data.interval : null;
-		extensionDocument.usage_help = data.type === "command" ? data.usage_help : null;
-		extensionDocument.extended_help = data.type === "command" ? data.extended_help : null;
-		extensionDocument.event = data.type === "event" ? data.event : undefined;
-		extensionDocument.last_updated = Date.now();
-		extensionDocument.timeout = data.timeout;
-		extensionDocument.code_id = generateCodeID(data.code);
-		extensionDocument.scopes = [];
-		Object.keys(data).forEach(val => {
-			if (val.startsWith("scope_")) {
-				extensionDocument.scopes.push(val.split("scope_")[1]);
-			}
-		});
-
-		return extensionDocument;
-	};
-	app.post("/extensions/builder", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (validateExtensionData(req.body)) {
-				const sendResponse = isErr => {
-					dashboardUpdate(req.path, req.user.id);
-					if (isErr) return res.sendStatus(500);
-					res.sendStatus(200);
-				};
-				const saveExtensionCode = (err, codeID) => {
-					if (err) {
-						winston.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
-						sendResponse(true);
-					} else {
-						writeFile(`${__dirname}/../Extensions/${codeID}.gabext`, req.body.code, () => {
-							sendResponse();
-						});
-					}
-				};
-				const saveExtensionData = (galleryDocument, isUpdate) => {
-					galleryDocument.level = "gallery";
-					galleryDocument.state = "saved";
-					galleryDocument.description = req.body.description;
-					const oldName = galleryDocument.name;
-					const oldID = galleryDocument.code_id;
-					writeExtensionData(galleryDocument, req.body);
-
-					if (!isUpdate) {
-						galleryDocument.owner_id = req.user.id;
-						dashboardUpdate("/extensions/my", req.user.id);
-					} else {
-						galleryDocument.versions.push({
-							_id: oldName,
-							code_id: oldID,
-						});
-						if (oldName === req.body.name) galleryDocument.name = `${galleryDocument.name} (2)`;
-					}
-					if (galleryDocument.validateSync()) {
-						winston.warn("Failed to validate extension data", galleryDocument.validateSync());
-						return sendResponse(true);
-					}
-					galleryDocument.save().catch(err => {
-						winston.warn("Failed to save extension metadata: " + err);
-						sendResponse(true);
-					});
-					saveExtensionCode(false, generateCodeID(req.body.code));
-				};
-
-				if (req.query.extid) {
-					db.gallery.findOne({
-						_id: req.query.extid,
-						owner_id: req.user.id,
-					}, (err, galleryDocument) => {
-						if (!err && galleryDocument) {
-							saveExtensionData(galleryDocument, true);
-						} else {
-							saveExtensionData(new db.gallery(), false);
-						}
-					});
-				} else {
-					saveExtensionData(new db.gallery(), false);
-				}
-			} else {
-				renderError(res, "Failed to verify extension data!", undefined, 400);
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-
-	// Download extension code
-	app.get("/extensions/:extid", async (req, res) => {
-		let extensionDocument;
-		try {
-			extensionDocument = await db.gallery.findOne({ _id: req.params.extid }).exec();
-		} catch (err) {
-			return res.sendStatus(500);
-		}
-		if (extensionDocument || extensionDocument.state === "saved") {
-			try {
-				res.set({
-					"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext` + "'",
-					"Content-Type": "text/javascript",
-				});
-				res.sendFile(path.resolve(`${__dirname}/../Extensions/${extensionDocument.code_id}.gabext`));
-			} catch (err) {
-				res.sendStatus(500);
-			}
-		} else {
-			res.sendStatus(404);
-		}
-	});
-
-	// Modify extensions
-	app.post("/extensions/:extid/:action", async (req, res) => {
-		if (req.isAuthenticated()) {
-			if (req.params.extid && req.params.action) {
-				if (["accept", "feature", "reject", "remove"].includes(req.params.action) && !configJSON.maintainers.includes(req.user.id)) {
-					res.sendStatus(403);
-					return;
-				}
-
-				const getGalleryDocument = async () => {
-					let doc;
-					try {
-						doc = await db.gallery.findOne({_id: req.params.extid}).exec();
-					} catch (err) {
-						res.sendStatus(500);
-						return false;
-					}
-					return doc;
-				};
-				const getUserDocument = async () => {
-					let userDocument = await db.users.findOne({ _id: req.user.id });
-					if (userDocument) {
-						return userDocument;
-					} else {
-						// TODO: Gilbert, decide if this needs to be an error 500 or not!
-						userDocument = await db.users.create(new Users({ _id: req.user.id }));
-						return userDocument;
-					}
-				};
-				const messageOwner = async (usrid, message) => {
-					try {
-						const usr = await bot.users.fetch(usrid, true);
-						if (usr) {
-							const ch = await usr.createDM();
-							ch.send(message);
-						}
-					} catch (err) {}
-				};
-
-				const galleryDocument = await getGalleryDocument();
-				if (!galleryDocument) return;
-				switch (req.params.action) {
-					case "upvote":
-						const userDocument = await getUserDocument();
-						const vote = userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id) === -1 ? 1 : -1;
-						if (vote === 1) {
-							userDocument.upvoted_gallery_extensions.push(galleryDocument._id);
-						} else {
-							userDocument.upvoted_gallery_extensions.splice(userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id), 1);
-						}
-						galleryDocument.points += vote;
-						await galleryDocument.save();
-						await userDocument.save();
-						let ownerUserDocument = await db.users.findOne({ _id: galleryDocument.owner_id });
-						if (!ownerUserDocument) ownerUserDocument = await db.users.create(new Users({ _id: gallery.owner_id }));
-						ownerUserDocument.points += vote * 10;
-						await ownerUserDocument.save();
-						res.sendStatus(200);
-						break;
-					case "accept":
-						messageOwner(galleryDocument.owner_id, {
-							embed: {
-								color: Colors.GREEN,
-								title: `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉`,
-								description: `View your creation [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id})!`,
-							},
-						});
-						galleryDocument.state = "gallery";
-						galleryDocument.save(err => {
-							res.sendStatus(err ? 500 : 200);
-							db.servers.find({
-								extensions: {
-									$elemMatch: {
-										_id: galleryDocument._id,
-									},
-								},
-							}, (err, serverDocuments) => {
-								if (!err && serverDocuments) {
-									serverDocuments.forEach(serverDocument => {
-										serverDocument.extensions.id(galleryDocument._id).updates_available++;
-										serverDocument.save(err => {
-											if (err) {
-												winston.error("Failed to save server data for extension update", { svrid: serverDocument._id }, err);
-											}
-										});
-									});
-								}
-							});
-						});
-						break;
-					case "feature":
-						if (!galleryDocument.featured) {
-							messageOwner(galleryDocument.owner_id, {
-								embed: {
-									color: Colors.GREEN,
-									title: `Your extension ${galleryDocument.name} has been featured on the GAwesomeBot extension gallery! 🌟`,
-									description: `View your achievement [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id})`,
-								},
-							});
-						}
-						galleryDocument.featured = galleryDocument.featured !== true;
-						galleryDocument.save(err => {
-							res.sendStatus(err ? 500 : 200);
-						});
-						break;
-					case "reject":
-					case "remove":
-						messageOwner(galleryDocument.owner_id, {
-							embed: {
-								color: Colors.LIGHT_RED,
-								title: `Your extension ${galleryDocument.name} has been ${req.params.action}${req.params.action === "reject" ? "e" : ""}d from the GAwesomeBot extension gallery`,
-								description: `${req.body.reason.replace(/\\n/g, "\n")}`,
-							},
-						});
-						const ownerUserDocument2 = await db.users.findOne({ _id: galleryDocument.owner_id });
-						if (ownerUserDocument2) {
-								ownerUserDocument2.points -= galleryDocument.points * 10;
-								await ownerUserDocument2.save();
-						}
-						galleryDocument.state = "saved";
-						galleryDocument.featured = false;
-						galleryDocument.save(err => {
-							res.sendStatus(err ? 500 : 200);
-						});
-						break;
-					case "publish":
-						if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
-						galleryDocument.state = "queue";
-						await galleryDocument.save();
-						res.sendStatus(200);
-						break;
-					case "delete":
-						if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
-						await db.gallery.findByIdAndRemove(galleryDocument._id).exec();
-						dashboardUpdate(req.path, req.user.id);
-						try {
-							fs.unlinkSync(`${__dirname}/../Extensions/${galleryDocument.code_id}.gabext`);
-						} catch (err) {}
-						res.sendStatus(200);
-						break;
-					case "unpublish":
-						if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(403);
-						galleryDocument.state = "saved";
-						galleryDocument.featured = false;
-						await galleryDocument.save();
-						res.sendStatus(200);
-						break;
-					default:
-						res.sendStatus(400);
-						break;
-				}
-			} else {
-				res.sendStatus(400);
-			}
-		} else {
-			res.sendStatus(403);
-		}
-	});
-
-	// Blog (updates + announcements)
-	const getBlogData = async blogDocument => {
-		const author = await bot.users.fetch(blogDocument.author_id, true) || {
-			id: "invalid-user",
-			username: "invalid-user",
-		};
-		let categoryColor;
-		switch (blogDocument.category) {
-			case "Development":
-				categoryColor = "is-warning";
-				break;
-			case "Announcement":
-				categoryColor = "is-danger";
-				break;
-			case "New Stuff":
-				categoryColor = "is-info";
-				break;
-			case "Tutorial":
-				categoryColor = "is-success";
-				break;
-			case "Random":
-				categoryColor = "is-primary";
-				break;
-				}
-		const avatarURL = (await bot.users.fetch(blogDocument.author_id, true)).avatarURL();
-		return {
-			id: blogDocument._id,
-			title: blogDocument.title,
-			author: {
-				name: author.username,
-				id: author.id,
-				avatar: avatarURL || "/static/img/discord-icon.png",
-			},
-			category: blogDocument.category,
-			categoryColor,
-			rawPublished: moment(blogDocument.published_timestamp).format(configJS.moment_date_format),
-			roundedPublished: moment(blogDocument.published_timestamp).fromNow(),
-			content: blogDocument.content,
-		};
-	};
-	const getPageTitle = () => [
-		"Dolphin Musings",
-		"The Fault in Our Syntax",
-		"How to Become Popular",
-		"I wish I were a GAB",
-		"A Robot's Thoughts",
-		"My Meme Library",
-		"Top 10 Prank Channels",
-		"Why do we exist?",
-		"What is Love?",
-		"Updating GAB; My Story",
-		"What did I ever do to you?",
-		"Welcome back to",
-		"BitQuote made this happen",
-		"I didn't want this either",
-		"The tragic story",
-		"Developer Vs. Bot",
-		"What did we mess up today?",
-		"Where are your fingers?"
-	][Math.floor(Math.random() * 17)]
-	app.get("/blog", (req, res) => {
-		let count;
-		if (!req.query.count || isNaN(req.query.count)) {
-			count = 4;
-		} else {
-			count = parseInt(req.query.count);
-		}
-		let page;
-		if (!req.query.page || isNaN(req.query.page)) {
-			page = 1;
-		} else {
-			page = parseInt(req.query.page);
-		}
-
-		db.blog.count({}, (err, rawCount) => {
-			if (err || rawCount === null) {
-				rawCount = 0;
-			}
-
-			db.blog.find({}).sort("-published_timestamp").skip(count * (page - 1)).limit(count).exec(async (err, blogDocuments) => {
-				let blogPosts = [];
-				if (!err && blogDocuments) {
-					blogPosts = Promise.all(blogDocuments.map(async blogDocument => {
-						const data = await getBlogData(blogDocument);
-						data.isPreview = true;
-						if (data.content.length > 1000) {
-							data.content = `${data.content.slice(0, 1000)}...`;
-						}
-						data.content = md.makeHtml(data.content);
-						return data;
-					}));
-				}
-				res.render("pages/blog.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					mode: "list",
-					currentPage: page,
-					numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
-					pageTitle: "GAwesomeBot Blog",
-					data: await blogPosts,
-					headerTitle: getPageTitle(),
-				});
-			});
-		});
-	});
-	app.get("/blog/compose", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (configJSON.maintainers.indexOf(req.user.id) > -1) {
-				const renderPage = data => {
-					res.render("pages/blog.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						isMaintainer: true,
-						pageTitle: `${data.title ? `Edit ${data.title}` : "New Post"} - GAwesomeBot Blog`,
-						mode: "compose",
-						data,
-						headerTitle: getPageTitle(),
-					});
-				};
-
-				if (req.query.id) {
-					db.blog.findOne({ _id: req.query.id }, (err, blogDocument) => {
-						if (err || !blogDocument) {
-							renderPage({});
-						} else {
-							renderPage({
-								id: blogDocument._id,
-								title: blogDocument.title,
-								category: blogDocument.category,
-								content: blogDocument.content,
-							});
-						}
-					});
-				} else {
-					renderPage({});
-				}
-			} else {
-				renderError(res, "You must be a maintainer to access this page!", "<strong>Hey</strong>! Don't think I didn't see you!");
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-	app.post("/blog/compose", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (configJSON.maintainers.indexOf(req.user.id) > -1) {
-				if (req.query.id) {
-					db.blog.findOne({ _id: req.query.id }, (err, blogDocument) => {
-						if (err || !blogDocument) {
-							renderError(res, "Sorry, that blog post was not found.");
-						} else {
-							blogDocument.title = req.body.title;
-							blogDocument.category = req.body.category;
-							blogDocument.content = req.body.content;
-
-							blogDocument.save(() => {
-								res.redirect(`/blog/${blogDocument._id}`);
-							});
-						}
-					});
-				} else {
-					const blogDocument = new db.blog({
-						title: req.body.title,
-						author_id: req.user.id,
-						category: req.body.category,
-						content: req.body.content,
-					});
-					blogDocument.save(() => {
-						res.redirect(`/blog/${blogDocument._id}`);
-					});
-				}
-			} else {
-				renderError(res, "Cool maintainer dudes only.", "<strong>You!</strong> I demand you to stop!");
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-	app.get("/blog/:id", (req, res) => {
-		db.blog.findOne({
-			_id: req.params.id,
-		}, async (err, blogDocument) => {
-			if (err || !blogDocument) {
-				renderError(res, "Sorry, that blog doesn't exist!");
-			} else {
-				const data = await getBlogData(blogDocument);
-				const getReactionCount = value => blogDocument.reactions.reduce((count, reactionDocument) => count + (reactionDocument.value === value), 0);
-				data.reactions = {};
-				[-1, 0, 1].forEach(reaction => {
-					data.reactions[reaction] = getReactionCount(reaction);
-				});
-				if (req.isAuthenticated()) {
-					data.userReaction = blogDocument.reactions.id(req.user.id) || {};
-				}
-				data.content = md.makeHtml(data.content);
-				res.render("pages/blog.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					mode: "article",
-					pageTitle: `${blogDocument.title} - GAwesomeBot Blog`,
-					blogPost: data,
-					headerTitle: getPageTitle(),
-				});
-			}
-		});
-	});
-	app.post("/blog/:id/react", (req, res) => {
-		if (req.isAuthenticated()) {
-			db.blog.findOne({ _id: req.params.id }, (err, blogDocument) => {
-				if (err || !blogDocument) {
-					res.sendStatus(500);
-				} else {
-					req.query.value = parseInt(req.query.value);
-
-					const userReactionDocument = blogDocument.reactions.id(req.user.id);
-					if (userReactionDocument) {
-						if (userReactionDocument.value === req.query.value) {
-							userReactionDocument.remove();
-						} else {
-							userReactionDocument.value = req.query.value;
-						}
-					} else {
-						blogDocument.reactions.push({
-							_id: req.user.id,
-							value: req.query.value,
-						});
-					}
-
-					blogDocument.save(err => {
-						res.sendStatus(err ? 500 : 200);
-					});
-				}
-			});
-		} else {
-			res.sendStatus(403);
-		}
-	});
-	app.post("/blog/:id/delete", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (configJSON.maintainers.indexOf(req.user.id) > -1) {
-				db.blog.findByIdAndRemove(req.params.id, err => {
-					res.sendStatus(err ? 500 : 200);
-				});
-			} else {
-				renderError(res, "Only maintainers are allowed in this club.", "<strong>Hey</strong> you! Stop right there!");
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-
-	// Wiki page (documentation)
-	app.get("/wiki", (req, res) => {
-		db.wiki.find({}).sort({
-			_id: 1,
-		}).exec((err, wikiDocuments) => {
-			if (err || !wikiDocuments) {
-				renderError(res, "An error occurred while fetching wiki documents.");
-			} else if (req.query.q) {
-				req.query.q = req.query.q.toLowerCase().trim();
-
-				const searchResults = [];
-				wikiDocuments.forEach(wikiDocument => {
-					const titleMatch = wikiDocument._id.toLowerCase().indexOf(req.query.q);
-					const content = removeMd(wikiDocument.content);
-					const contentMatch = content.toLowerCase().indexOf(req.query.q);
-
-					if (titleMatch > -1 || contentMatch > -1) {
-						let matchText;
-						if (contentMatch) {
-							const startIndex = contentMatch < 300 ? 0 : contentMatch - 300;
-							const endIndex = contentMatch > content.length - 300 ? content.length : contentMatch + 300;
-							matchText = `${content.substring(startIndex, contentMatch)}<strong>${content.substring(contentMatch, contentMatch + req.query.q.length)}</strong>${content.substring(contentMatch + req.query.q.length, endIndex)}`;
-							if (startIndex > 0) {
-								matchText = `...${matchText}`;
-							}
-							if (endIndex < content.length) {
-								matchText += "...";
-							}
-						} else {
-							matchText = content.slice(0, 300);
-							if (content.length > 300) {
-								matchText += "...";
-							}
-						}
-						searchResults.push({
-							title: wikiDocument._id,
-							matchText,
-						});
-					}
-				});
-
-				res.render("pages/wiki.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					isContributor: req.isAuthenticated() ? configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					pageTitle: `Search for "${req.query.q}" - GAwesomeBot Wiki`,
-					pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
-					mode: "search",
-					data: {
-						title: req.query.q ? `Search for "${req.query.q}"` : "List of all pages",
-						activeSearchQuery: req.query.q,
-						searchResults,
-					},
-				});
-			} else {
-				res.redirect("/wiki/Home");
-			}
-		});
-	});
-	app.get("/wiki/edit", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1) {
-				const renderPage = data => {
-					res.render("pages/wiki.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-						pageTitle: `${data.title ? `Edit ${data.title}` : "New Page"} - GAwesomeBot Wiki`,
-						mode: "edit",
-						data,
-					});
-				};
-
-				if (req.query.id) {
-					db.wiki.findOne({ _id: req.query.id }, (err, wikiDocument) => {
-						if (err || !wikiDocument) {
-							renderPage({
-								title: req.query.id,
-							});
-						} else {
-							renderPage({
-								title: wikiDocument._id,
-								content: wikiDocument.content,
-							});
-						}
-					});
-				} else {
-					renderPage({});
-				}
-			} else {
-				renderError(res, "Hah! You thought you could fool me? Maintainers only!", "<strong>You</strong> shall not pass!");
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-	app.post("/wiki/edit", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1) {
-				if (req.query.id) {
-					db.wiki.findOne({ _id: req.query.id }, (err, wikiDocument) => {
-						if (err || !wikiDocument) {
-							renderError(res, "An error occurred while saving wiki documents!");
-						} else {
-							wikiDocument.updates.push({
-								_id: req.user.id,
-								diff: diff.prettyHtml(diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0)),
-							});
-							wikiDocument.content = req.body.content;
-
-							wikiDocument.save(async () => {
-								res.redirect(`/wiki/${wikiDocument._id}`);
-							});
-						}
-					});
-				} else {
-					const wikiDocument = new db.wiki({
-						_id: req.body.title,
-						content: req.body.content,
-						updates: [{
-							_id: req.user.id,
-						}],
-					});
-					wikiDocument.save(() => {
-						res.redirect(`/wiki/${wikiDocument._id}`);
-					});
-				}
-			} else {
-				renderError(res, "Only maintainers are allowed to post on me.");
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-	app.get("/wiki/:id", (req, res) => {
-		db.wiki.find({}).sort({
-			_id: 1,
-		}).exec((err, wikiDocuments) => {
-			if (err || !wikiDocuments) {
-				renderError(res, "Failed to fetch wiki pages!");
-			} else {
-				const page = wikiDocuments.find(wikiDocument => wikiDocument._id === req.params.id) || {
-					_id: req.params.id,
-				};
-				const getReactionCount = value => page.reactions.reduce((count, reactionDocument) => count + (reactionDocument.value === value), 0);
-				let reactions, userReaction;
-				if (page.updates && page.reactions) {
-					reactions = {
-						"-1": getReactionCount(-1),
-						1: getReactionCount(1),
-					};
-					if (req.isAuthenticated()) {
-						userReaction = page.reactions.id(req.user.id) || {};
-					}
-				}
-				res.render("pages/wiki.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					isContributor: req.isAuthenticated() ? configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					pageTitle: `${page._id} - GAwesomeBot Wiki`,
-					pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
-					mode: "page",
-					data: {
-						title: page._id,
-						content: md.makeHtml(page.content),
-						reactions,
-						userReaction,
-					},
-				});
-			}
-		});
-	});
-	app.get("/wiki/:id/history", (req, res) => {
-		db.wiki.find({}).sort({
-			_id: 1,
-		}).exec(async (err, wikiDocuments) => {
-			if (err || !wikiDocuments) {
-				renderError(res, "Failed to fetch wiki data!");
-			} else {
-				const page = wikiDocuments.find(wikiDocument => wikiDocument._id === req.params.id) || {
-					_id: req.params.id,
-				};
-				let updates;
-				if (page.updates && page.reactions) {
-					updates = page.updates.map(async updateDocument => {
-						const author = await bot.users.fetch(updateDocument._id, true) || {
-							id: "invalid-user",
-							username: "invalid-user",
-						};
-						return {
-							responsibleUser: {
-								name: author.username,
-								id: author.id,
-								avatar: author.avatarURL() || "/static/img/discord-icon.png",
-							},
-							relativeTimestamp: moment(updateDocument.timestamp).fromNow(),
-							rawTimestamp: moment(updateDocument.timestamp).format(configJS.moment_date_format),
-							diffHtml: updateDocument.diff,
-						};
-					});
-					updates = await Promise.all(updates);
-				}
-				res.render("pages/wiki.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					isContributor: req.isAuthenticated() ? configJSON.wikiContributors.indexOf(req.user.id) > -1 || configJSON.maintainers.indexOf(req.user.id) > -1 : false,
-					pageTitle: `Edit history for ${page._id} - GAwesomeBot Wiki`,
-					pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
-					mode: "history",
-					data: {
-						title: `Edit history for ${page._id}`,
-						updates,
-					},
-				});
-			}
-		});
-	});
-	app.post("/wiki/:id/react", (req, res) => {
-		if (req.isAuthenticated()) {
-			db.wiki.findOne({ _id: req.params.id }, (err, wikiDocument) => {
-				if (err || !wikiDocument) {
-					res.sendStatus(500);
-				} else {
-					req.query.value = parseInt(req.query.value);
-
-					const userReactionDocument = wikiDocument.reactions.id(req.user.id);
-					if (userReactionDocument) {
-						if (userReactionDocument.value === req.query.value) {
-							userReactionDocument.remove();
-						} else {
-							userReactionDocument.value = req.query.value;
-						}
-					} else {
-						wikiDocument.reactions.push({
-							_id: req.user.id,
-							value: req.query.value,
-						});
-					}
-
-					wikiDocument.save(err => {
-						res.sendStatus(err ? 500 : 200);
-					});
-				}
-			});
-		} else {
-			res.sendStatus(403);
-		}
-	});
-	app.post("/wiki/:id/delete", (req, res) => {
-		if (req.isAuthenticated()) {
-			if (configJSON.maintainers.indexOf(req.user.id) > -1) {
-				db.wiki.findByIdAndRemove(req.params.id, err => {
-					res.sendStatus(err ? 500 : 200);
-				});
-			} else {
-				renderError(res, "You should know this by now. You're not a maintainer.", "<strong>Get</strong> out of here now!");
-			}
-		} else {
-			res.redirect("/login");
-		}
-	});
-
-	// Donation options
-	app.get("/donate", (req, res) => {
-		res.render("pages/donate.ejs", {
-			authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-			charities: configJS.donateCharities,
-			donate_subtitle: configJS.donateSubtitle,
-		});
-	});
-
 	// Save serverDocument after admin console form data is received
 	const saveAdminConsoleOptions = async (consolemember, svr, serverDocument, req, res, override) => {
 		if (serverDocument.validateSync()) return renderError(res, "Your request is malformed.", null, 400);
@@ -1875,25 +293,6 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 				return;
 			});
 	};
-
-	// Login to admin console
-	app.get("/login", passport.authenticate("discord", {
-		scope: discordOAuthScopes,
-	}));
-
-	// Callback for Discord OAuth2
-	app.get("/login/callback", passport.authenticate("discord", {
-		failureRedirect: "/error?err=discord",
-	}), (req, res) => {
-		if (configJSON.userBlocklist.indexOf(req.user.id) > -1 || req.user.verified === false) {
-			req.session.destroy(err => {
-				if (!err) renderError(res, "Your Discord account must have a verified email.", "<strong>Hah!</strong> Thought you were close, didn'tcha?");
-				else renderError(res, "Failed to destroy your session.");
-			});
-		} else {
-			res.redirect("/dashboard");
-		}
-	});
 
 	// Admin console support for legacy URL's
 	app.use("/dashboard", (req, res, next) => {
@@ -4395,32 +2794,10 @@ module.exports = (bot, auth, configJS, winston, db = global.Database) => {
 		socket.on("disconnect", () => stream.destroy());
 	});
 
-	// 503 testing page
-	app.get("/503", (req, res) => {
-		res.render("pages/503.ejs");
-	});
-
-	// Logout of admin console
-	app.get("/logout", (req, res) => {
-		req.logout();
-		res.redirect("/activity");
-	});
-
-	// Error page
-	app.get("/error", (req, res) => {
-		if (req.query.err === "discord") renderError(res, "The Discord OAuth flow could not be completed.");
-		else if (req.query.err === "json") renderError(res, "That doesn't look like a valid trivia set to me!");
-		else renderError(res, "I AM ERROR");
-	});
-
-	// 404 page
-	app.use((req, res, next) => {
-		res.status(404).render("pages/404.ejs");
-	});
-
 	// Handle errors (redirect to error page)
 	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
 		winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, error, { params: req.params, query: req.query });
 		renderError(res, "An unexpected and unknown error occurred!<br>Please contact your GAB maintainer for support.");
 	});
+	*/
 };

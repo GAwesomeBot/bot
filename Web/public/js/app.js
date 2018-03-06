@@ -600,7 +600,7 @@ GAwesomePaths["activity"] = () => {
 				GAwesomeUtil.searchUsers(this.value);
 			}
 		};
-		$.getJSON("/userlist", function(data) {
+		$.getJSON("/api/list/users", function(data) {
 			searchInputAutocomplete = new autoComplete({
 				selector: "#search-input",
 				minChars: 2,
@@ -621,7 +621,7 @@ GAwesomePaths["activity"] = () => {
 				GAwesomeUtil.searchServers(this.value);
 			}
 		};
-		$.getJSON("/serverlist", function(data) {
+		$.getJSON("/api/list/servers", function(data) {
 			searchInputAutocomplete = new autoComplete({
 				selector: "#search-input",
 				minChars: 2,
@@ -642,7 +642,7 @@ GAwesomePaths["blog"] = () => {
 	setTimeout(function() {
 		saveFormState();
 	}, 0);
-	if (window.location.pathname !== "/blog/compose") return;
+	if (!window.location.toString().endsWith("/compose")) return;
 	const converter = new showdown.Converter({
 		tables: true,
 		simplifiedAutoLink: true,
@@ -670,7 +670,7 @@ GAwesomePaths["wiki"] = () => {
 	}, 0);
 	GAwesomeData.wiki.bookmarks = JSON.parse(localStorage.getItem("wiki-bookmarks")) || [];
 	GAwesomeUtil.populateWikiBookmarks();
-	if (window.location.pathname !== "/wiki/edit") return;
+	if (!window.location.toString().endsWith("/edit")) return;
 	const converter = new showdown.Converter({
 		tables: true,
 		simplifiedAutoLink: true,
@@ -739,19 +739,38 @@ GAwesomePaths["dashboard"] = () => {
 };
 
 document.addEventListener("turbolinks:load", () => {
-	GAwesomeUtil.updateHeader();
-	bulma();
-	$("html").removeClass("is-clipped");
-	hide_update_modal = false;
-	initial_form_state = $("#form").serialize();
-	if (GAwesomeData.dashboard.socket) {
-		GAwesomeData.dashboard.socket.close();
-		delete GAwesomeData.dashboard.socket;
+	try {
+		// Update active navbar item
+		GAwesomeUtil.updateHeader();
+
+		// Prepare Bulma Javascript Listeners
+		bulma();
+
+		// Initialize forms
+		hide_update_modal = false;
+		initial_form_state = $("#form").serialize();
+
+		// Close old dashboard socket if still open
+		if (GAwesomeData.dashboard.socket) {
+			GAwesomeData.dashboard.socket.close();
+			delete GAwesomeData.dashboard.socket;
+		}
+
+		// Find page function
+		GAwesomeData.section = window.location.pathname.split("/")[1];
+		let func = GAwesomePaths[GAwesomeData.section];
+		if (GAwesomeData.section === "") func = GAwesomePaths["landing"];
+
+		// Execute page function and finish loading bar when done
+		if (func) func();
+		NProgress.done();
+		NProgress.remove();
+	} catch (err) {
+		NProgress.done();
+		NProgress.remove();
+		GAwesomeUtil.error(`An exception occurred while trying to prepare ${location.pathname}: ${err}`);
+		swal("An exception occurred.", err.toString(), "error");
 	}
-	GAwesomeData.section = window.location.pathname.split("/")[1]
-	let func = GAwesomePaths[GAwesomeData.section]
-	if (GAwesomeData.section === "") func = GAwesomePaths["landing"];
-	if (func) func();
 });
 
 const GAwesomeListeners = {};
@@ -760,7 +779,7 @@ GAwesomeListeners.activityMQL = window.matchMedia("screen and (max-width: 768px)
 GAwesomeListeners.activityMQL.addListener(GAwesomeUtil.activityViewPortUpdate);
 
 function setUserAutocomplete(svrid) {
-	$.getJSON("/userlist" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
+	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
 		new autoComplete({
 			selector: ".user-autocomplete",
 			minChars: 2,
@@ -789,10 +808,6 @@ $(window).scroll(function() {
 
 $(document).on('turbolinks:click', function() {
 	NProgress.start();
-});
-$(document).on('turbolinks:render', function() {
-	NProgress.done();
-	NProgress.remove();
 });
 
 String.prototype.replaceAll = function(target, replacement) {

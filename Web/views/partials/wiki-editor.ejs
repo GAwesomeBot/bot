@@ -1,4 +1,4 @@
-<form id="form" action="/wiki/edit?id=<%= data.title %>" method="post">
+<form id="form" action="/wiki/<%= data.title ? data.title : "new" %>/edit" method="post">
 	<div class="field">
     	<label class="label">Title</label>
 		<p class="control">
