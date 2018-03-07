@@ -1,24 +1,20 @@
 const middleware = module.exports;
 
 middleware.populateRequest = route => (req, res, next) => {
-	// App Libraries
-	req.client = req.bot = route.router.bot;
-	req.passport = route.router.passport;
-
 	// Request information
 	req.isAPI = route.isAPI;
 	req.isStatic = route.isStatic;
-	req.isBusy = route.router.toobusy();
-	req.debugMode = route.router.get("debug mode");
+	req.isBusy = req.app.toobusy();
+	req.debugMode = req.app.get("debug mode");
 	next();
 };
 
 middleware.registerTraffic = (req, res, next) => {
-	if (!req.cookies.trafficID || req.cookies.trafficID !== req.bot.traffic.TID) {
-		let TID = req.bot.traffic.TID;
+	if (!req.cookies.trafficID || req.cookies.trafficID !== req.app.client.traffic.TID) {
+		let TID = req.app.client.traffic.TID;
 		res.cookie("trafficID", TID, { httpOnly: true });
 	}
-	req.bot.traffic.count(req.cookies.trafficID, req.isAuthenticated());
+	req.app.client.traffic.count(req.cookies.trafficID, req.isAuthenticated());
 	next();
 };
 

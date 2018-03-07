@@ -18,26 +18,27 @@ module.exports = {
 		else if (configJSON.sudoMaintainers.includes(id)) permLevel = 2;
 		else if (configJSON.maintainers.includes(id)) permLevel = 1;
 		else return [];
-		return JSON.keys(configJSON.perms).filter(key => configJSON.perms[key] === permLevel || permLevel === 0 || (permLevel === 2 && configJSON.perms[key] === 1));
+		return Object.keys(configJSON.perms).filter(key => configJSON.perms[key] === permLevel || permLevel === 0 || (permLevel === 2 && configJSON.perms[key] === 1));
 	},
 
 	canDo: (action, id) => module.exports.fetchMaintainerPrivileges(id).includes(action),
 
-	setupPage: (app, route, middleware, controller, acceptSockets = false) => {
+	setupPage: (router, route, middleware, controller, acceptSockets = false) => {
 		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
-		app.routes.push(new (require("./routes/Route")).Route(app, route, middleware, controller, "get", "general"));
+		router.routes.push(new (require("./routes/Route")).Route(router, route, middleware, controller, "get", "general"));
 		if (acceptSockets) {
-			app.io.of(route).on("connection", socket => {
+			router.app.io.of(route).on("connection", socket => {
 				socket.on("disconnect", () => undefined);
 			});
 		}
 	},
 
-	setupDashboardPage: (app, route, middleware, controller, middlewarePOST = []) => {
+	setupDashboardPage: (router, route, middleware, controller, middlewarePOST = []) => {
 		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
 		middlewarePOST = [mw.checkUnavailableAPI, ...middlewarePOST];
-		app.routes.push(new (require("./routes/Route")).DashboardRoute(app, route, middleware, middlewarePOST, controller, controller.post ? controller.post : (req, res) => res.sendStatus(405)));
-		app.io.of(route).on("connection", socket => {
+		controller.post = controller.post ? controller.post : (req, res) => res.sendStatus(405);
+		router.routes.push(new (require("./routes/Route")).DashboardRoute(router, `/:svrid${route}`, middleware, middlewarePOST, controller, controller.post));
+		router.app.io.of(`/dashboard/:svrid${route}`).on("connection", socket => {
 			socket.on("disconnect", () => undefined);
 		});
 	},
@@ -45,14 +46,14 @@ module.exports = {
 	saveAdminConsoleOptions: async (req, res, isAPI) => {
 		if (req.svr.document.validateSync()) return module.exports.renderError(res, "Your request is malformed.", null, 400);
 		try {
-			req.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, req.consolemember.id);
-			module.exports.dashboardUpdate(req, req.path, req.svr.id);
+			req.app.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path}.`, null, req.consolemember.id);
+			module.exports.dashboardUpdate(req, `/dashboard${req.path}`, req.svr.id);
 			await req.svr.document.save();
-			req.client.IPC.send("cacheUpdate", { guild: req.svr.document._id });
+			req.app.client.IPC.send("cacheUpdate", { guild: req.svr.document._id });
 			if (isAPI) {
 				res.sendStatus(200);
 			} else {
-				res.redirect(req.originalUrl);
+				res.redirect(`${req.originalUrl}`);
 			}
 		} catch (err) {
 			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: req.svr.id, usrid: req.consolemember.id }, err);
@@ -76,18 +77,18 @@ module.exports = {
 			});
 	},
 
-	setupResource: (app, route, middleware, controller, method, authType) => {
+	setupResource: (router, route, middleware, controller, method, authType) => {
 		const authMiddleware = [];
 		if (authType === "authentication" || authType === "authorization") authMiddleware.push(mw.authenticateResourceRequest);
 		if (authType === "authorization") authMiddleware.push(mw.authorizeResourceRequest);
 		if (authMiddleware.length) middleware = [mw.checkUnavailableAPI, ...authMiddleware, ...middleware];
 		else middleware = [mw.checkUnavailableAPI, ...middleware];
 
-		app.routes.push(new (require("./routes/Route")).Route(app, `/api${route}`, middleware, controller, method, "API"));
+		router.routes.push(new (require("./routes/Route")).Route(router, `${route}`, middleware, controller, method, "API"));
 	},
 
-	setupRedirection: (app, route, redirection) => {
-		app.routes.push(new (require("./routes/Route")).Route(app, route, [], (req, res) => res.redirect(redirection), "get", "redirection"));
+	setupRedirection: (router, route, redirection) => {
+		router.routes.push(new (require("./routes/Route")).Route(router, route, [], (req, res) => res.redirect(redirection), "get", "redirection"));
 	},
 
 	parseAuthUser: user => ({
@@ -98,9 +99,9 @@ module.exports = {
 
 	getRoundedUptime: uptime => uptime > 86400 ? `${Math.floor(uptime / 86400)}d` : `${Math.floor(uptime / 3600)}h`,
 
-	createMessageOfTheDay: (req, id) => req.bot.IPC.send("createMOTD", { guild: id }),
+	createMessageOfTheDay: (req, id) => req.app.client.IPC.send("createMOTD", { guild: id }),
 
-	dashboardUpdate: (req, namespace, location) => req.client.IPC.send("dashboardUpdate", { namespace: namespace, location: location }),
+	dashboardUpdate: (req, namespace, location) => req.app.client.IPC.send("dashboardUpdate", { namespace: namespace, location: location }),
 
 	getRoleData: svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
 		name: role.name,

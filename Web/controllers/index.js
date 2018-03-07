@@ -30,4 +30,4 @@ controllers.error = (req, res, next) => {
 	else return next();
 };
 
-controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.bot.user.id }));
+controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.app.client.user.id }));

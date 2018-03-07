@@ -8,8 +8,8 @@ const controllers = module.exports;
 controllers.status = async (req, res) => {
 	res.json({
 		api_version: "4.1",
-		server_count: await req.bot.guilds.totalCount,
-		user_count: await req.bot.users.totalCount,
+		server_count: await req.app.client.guilds.totalCount,
+		user_count: await req.app.client.users.totalCount,
 	});
 };
 
@@ -35,7 +35,7 @@ controllers.servers = async (req, res) => {
 controllers.servers.channels = async (req, res) => res.json(req.svr.channels);
 
 controllers.servers.list = async (req, res) => {
-	const servers = Object.values(await getGuild.get(req.client, "*", { only: true, resolve: ["name"] })).map(val => val.name);
+	const servers = Object.values(await getGuild.get(req.app.client, "*", { only: true, resolve: ["name"] })).map(val => val.name);
 	servers.sort();
 	res.json(servers);
 };
@@ -46,8 +46,8 @@ controllers.users = async (req, res) => {
 		return;
 	}
 	try {
-		let user = req.bot.users.get(req.query.id);
-		if (!user) user = await req.bot.users.fetch(req.query.id, true);
+		let user = req.app.client.users.get(req.query.id);
+		if (!user) user = await req.app.client.users.fetch(req.query.id, true);
 
 		if (user) {
 			let userDocument = await Users.findOne({ _id: user.id });

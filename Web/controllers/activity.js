@@ -22,8 +22,8 @@ module.exports = (req, res) => {
 			},
 		},
 	}], async (err, result) => {
-		const guildAmount = await req.client.guilds.totalCount;
-		const userAmount = await req.client.users.totalCount;
+		const guildAmount = await req.app.client.guilds.totalCount;
+		const userAmount = await req.app.client.users.totalCount;
 		let messageCount = 0;
 		let activeServers = guildAmount;
 		if (!err && result) {
@@ -76,7 +76,7 @@ module.exports = (req, res) => {
 			};
 			if (req.query.q) {
 				const query = req.query.q.toLowerCase();
-				const servers = await getGuild.get(req.client, "*", { only: true, resolve: ["id", "name"] });
+				const servers = await getGuild.get(req.app.client, "*", { only: true, resolve: ["id", "name"] });
 				matchCriteria._id = {
 					$in: Object.values(servers).filter(svr => {
 						return svr.name.toLowerCase().indexOf(query)>-1 || svr.id === query;
@@ -84,7 +84,7 @@ module.exports = (req, res) => {
 				};
 			} else {
 				matchCriteria._id = {
-					$in: (await Utils.GetValue(req.client, "guilds.keys()", "arr", "Array.from")).filter(svrid => !configJSON.activityBlocklist.includes(svrid)),
+					$in: (await Utils.GetValue(req.app.client, "guilds.keys()", "arr", "Array.from")).filter(svrid => !configJSON.activityBlocklist.includes(svrid)),
 				};
 			}
 			if (req.query.category !== "All") {
@@ -180,7 +180,7 @@ module.exports = (req, res) => {
 			if (req.query.q) {
 				Users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err, userDocument) => {
 					if (!err && userDocument) {
-						const usr = await req.client.users.fetch(userDocument._id, true);
+						const usr = await req.app.client.users.fetch(userDocument._id, true);
 						const userProfile = await parsers.userData(req, usr, userDocument);
 						renderPage({
 							pageTitle: `${userProfile.username}'s Profile`,

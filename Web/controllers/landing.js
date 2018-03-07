@@ -3,8 +3,8 @@ const { parseAuthUser, getRoundedUptime } = require("../helpers");
 
 module.exports = async (req, res) => {
 	const uptime = process.uptime();
-	const guildSize = req.app.bot.guilds.totalCount;
-	const userSize = req.bot.users.totalCount;
+	const guildSize = req.app.client.guilds.totalCount;
+	const userSize = req.app.client.users.totalCount;
 	res.render("pages/landing.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 		bannerMessage: configJSON.homepageMessageHTML,

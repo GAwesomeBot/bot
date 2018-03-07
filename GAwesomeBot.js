@@ -823,7 +823,7 @@ client.once("ready", async () => {
 		await winston.silly("Initializing the encryption manager..");
 		client.encryptionManager = new Encryption(client);
 		await winston.silly("Running webserver");
-		WebServer(client, auth, configJS, winston);
+		WebServer.open(client, auth, configJS, winston);
 		client.isReady = true;
 		global.ThatClientThatDoesCaching = client;
 	} catch (err) {

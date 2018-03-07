@@ -11,12 +11,12 @@ module.exports = middleware => {
 		// Confirm user is authenticated
 		if (req.isAuthenticated()) {
 			// Fetch user data from Discord
-			const usr = await req.bot.users.fetch(req.user.id, true);
+			const usr = await req.app.client.users.fetch(req.user.id, true);
 			if (usr) {
 				// Legacy URL support
 				if (!req.params.svrid && req.query.svrid) req.params.svrid = req.query.svrid;
 				// Get server data from shard that has said server cached
-				const svr = await getGuild.get(req.bot, req.params.svrid, {
+				const svr = await getGuild.get(req.app.client, req.params.svrid, {
 					resolve: ["id", "ownerID", "name", "icon"],
 					members: ["id", "roles", "user", "nickname"],
 					channels: ["id", "type", "name", "position", "rawPosition"],
@@ -39,11 +39,12 @@ module.exports = middleware => {
 					}
 					// Authorize the user's request
 					const member = svr.members[usr.id];
-					const adminLevel = req.bot.getUserBotAdmin(svr, serverDocument, member);
+					const adminLevel = req.app.client.getUserBotAdmin(svr, serverDocument, member);
 					if (adminLevel >= 3 || checkSudoMode(usr.id)) {
 						// Populate the request object with Authorization details
 						try {
 							req.isAuthorized = true;
+							req.isSudo = adminLevel !== 3;
 							req.consolemember = member;
 							req.consolemember.level = adminLevel;
 							req.svr = svr;
@@ -119,7 +120,7 @@ module.exports = middleware => {
 	};
 
 	// Builders
-	middleware.buildAuthenticateMiddleware = router => router.passport.authenticate("discord", {
+	middleware.buildAuthenticateMiddleware = router => router.app.passport.authenticate("discord", {
 		failureRedirect: "/error?err=discord",
 	});
 };

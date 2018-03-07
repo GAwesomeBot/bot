@@ -95,16 +95,16 @@ controllers.gallery = async (req, res) => {
 
 	if (req.isAuthenticated()) {
 		const serverData = [];
-		const usr = await req.client.users.fetch(req.user.id, true);
+		const usr = await req.app.client.users.fetch(req.user.id, true);
 		const addServerData = async (i, callback) => {
 			if (req.user.guilds && i < req.user.guilds.length) {
-				const svr = await getGuild.get(req.client, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
+				const svr = await getGuild.get(req.app.client, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
 				if (svr && usr) {
 					try {
 						const serverDocument = await Servers.findOne({_id: svr.id}).exec();
 						if (serverDocument) {
 							const member = svr.members[usr.id];
-							if (req.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
+							if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
 								serverData.push({
 									name: req.user.guilds[i].name,
 									id: req.user.guilds[i].id,
@@ -148,7 +148,7 @@ controllers.my = async (req, res) => {
 			}).exec();
 			res.render("pages/extensions.ejs", {
 				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				pageTitle: "My GAwesomeBot Extensions",
 				serverData: {
 					id: req.user.id,
@@ -171,7 +171,7 @@ controllers.builder = async (req, res) => {
 		const renderPage = extensionData => {
 			res.render("pages/extensions.ejs", {
 				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				pageTitle: `${extensionData.name ? `${extensionData.name} - ` : ""}GAwesomeBot Extension Builder`,
 				serverData: {
 					id: req.user.id,
@@ -339,7 +339,7 @@ controllers.gallery.modify = async (req, res) => {
 			};
 			const messageOwner = async (usrid, message) => {
 				try {
-					const usr = await req.client.users.fetch(usrid, true);
+					const usr = await req.app.client.users.fetch(usrid, true);
 					if (usr) {
 						const ch = await usr.createDM();
 						ch.send(message);

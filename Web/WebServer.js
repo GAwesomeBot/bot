@@ -65,9 +65,9 @@ const listen = async configJS => {
 };
 
 // Setup the web server
-module.exports = async (bot, auth, configJS, winston) => {
+module.exports.open = async (bot, auth, configJS, winston) => {
 	// Setup Express App object
-	app.bot = bot;
+	app.bot = app.client = bot;
 	app.auth = auth;
 	app.toobusy = toobusy;
 	app.routes = [];
@@ -172,6 +172,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 	});
 
 	require("./routes")(app);
+	return { server, httpsServer };
 	/* eslint-disable */
 	/*
 	const checkAuth = async (req, res, next, api) => {
@@ -233,98 +234,17 @@ module.exports = async (bot, auth, configJS, winston) => {
 		}
 	};
 
-	// Admin console dashboard
-	app.get("/dashboard", async (req, res) => {
-
-	});
-
 	// Admin console overview (home)
 	app.get("/dashboard/:svrid/overview", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			// Redirect to maintainer console if necessary
-			if (!svr) {
-				res.redirect("/dashboard/maintainer/maintainer");
-			} else {
-				let topCommand;
-				let topCommandUsage = 0;
-				for (const cmd in serverDocument.command_usage) {
-					if (serverDocument.command_usage[cmd] > topCommandUsage) {
-						topCommand = cmd;
-						topCommandUsage = serverDocument.command_usage[cmd];
-					}
-				}
-				const topMemberID = serverDocument.members.sort((a, b) => b.messages - a.messages)[0];
-				const topMember = svr.members[topMemberID ? topMemberID._id : null];
-				const memberIDs = Object.values(svr.members).map(a => a.id);
-				db.users.find({
-					_id: {
-						$in: memberIDs,
-					},
-				}).sort({
-					points: -1,
-				}).limit(1).exec((err, userDocuments) => {
-					let richestMember;
-					if (!err && userDocuments && userDocuments.length > 0) {
-						richestMember = svr.members[userDocuments[0]._id];
-					}
-					const topGame = serverDocument.games.sort((a, b) => b.time_played - a.time_played)[0];
-					res.render("pages/admin-overview.ejs", {
-						authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        		sudo: adminLvl !== 3,
-						serverData: {
-							name: svr.name,
-							id: svr.id,
-							icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-							owner: {
-								username: svr.members[svr.ownerID].user.username,
-								id: svr.members[svr.ownerID].id,
-								avatar: bot.getAvatarURL(svr.members[svr.ownerID].id, svr.members[svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
-							},
-						},
-						currentPage: req.path,
-						messagesToday: serverDocument.messages_today,
-						topCommand,
-						memberCount: Object.keys(svr.members).length,
-						topMember: topMember ? {
-							username: topMember.user.username,
-							id: topMember.id,
-							avatar: bot.getAvatarURL(topMember.id, topMember.user.avatar) || "/static/img/discord-icon.png",
-						} : null,
-						topGame: topGame ? topGame._id : null,
-						richestMember: richestMember ? {
-							username: richestMember.user.username,
-							id: richestMember.id,
-							avatar: bot.getAvatarURL(richestMember.id, richestMember.user.avatar) || "/static/img/discord-icon.png",
-						} : null,
-					});
-				});
-			}
+
 		});
 	});
 
 	// Admin console command options
 	app.get("/dashboard/:svrid/commands/command-options", (req, res) => {
 		checkAuth(req, res, async (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-command-options.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				currentPage: req.path,
-				configData: {
-					chatterbot: serverDocument.config.chatterbot,
-					command_cooldown: serverDocument.config.command_cooldown,
-					command_fetch_properties: serverDocument.config.command_fetch_properties,
-					command_prefix: serverDocument.config.command_prefix,
-					delete_command_messages: serverDocument.config.delete_command_messages,
-					ban_gif: serverDocument.config.ban_gif,
-				},
-				channelData: getChannelData(svr),
-				botName: svr.members[bot.user.id].nickname || bot.user.username,
-			});
+
 		});
 	});
 	io.of("/dashboard/commands/command-options").on("connection", socket => {
@@ -332,29 +252,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/commands/command-options", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body.command_prefix !== bot.getCommandPrefix(svr, serverDocument)) {
-				serverDocument.config.command_prefix = req.body.command_prefix;
-			}
-			serverDocument.config.delete_command_messages = req.body.delete_command_messages === "on";
-			serverDocument.config.chatterbot.isEnabled = req.body["chatterbot-isEnabled"] === "on";
-			serverDocument.config.ban_gif = req.body["ban_gif"];
-			if (req.body["ban_gif"] === "Default") serverDocument.config.ban_gif = "https://imgur.com/3QPLumg.gif";
-			if (req.body["chatterbot-isEnabled"] === "on") {
-				const channels = getChannelData(svr).map(ch => ch.id);
-				const enabledChannels = Object.keys(req.body).filter(key => key.startsWith("chatterbot_enabled_channel_ids")).map(chstring => chstring.split("-")[1]);
-				channels.forEach(ch => {
-					if (!enabledChannels.some(id => ch === id)) {
-						serverDocument.config.chatterbot.disabled_channel_ids.push(ch);
-					} else if (serverDocument.config.chatterbot.disabled_channel_ids.indexOf(ch) > -1) {
-						serverDocument.config.chatterbot.disabled_channel_ids = serverDocument.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch);
-					}
-				});
-			}
-			serverDocument.config.command_cooldown = parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown);
-			serverDocument.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? serverDocument.config.command_fetch_properties.default_count : parseInt(req.body.default_count);
-			serverDocument.config.command_fetch_properties.max_count = isNaN(parseInt(req.body.max_count)) ? serverDocument.config.command_fetch_properties.max_count : parseInt(req.body.max_count);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -377,7 +275,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					commands: serverDocument.toObject().config.commands,
 				},
@@ -447,7 +345,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					rss_feeds: serverDocument.config.rss_feeds,
 					commands: {
@@ -512,7 +410,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					streamers_data: serverDocument.config.streamers_data,
 					commands: {
@@ -569,7 +467,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					tags: serverDocument.config.tags,
 					commands: {
@@ -672,7 +570,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					translated_messages: serverDocument.config.translated_messages,
 					commands: {
@@ -752,7 +650,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 						id: svr.id,
 						icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 					},
-					currentPage: req.path,
+					currentPage: `${req.baseUrl}${req.path}`,
 					configData: {
 						trivia_sets: serverDocument.config.trivia_sets,
 						commands: {
@@ -804,7 +702,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					custom_api_keys: serverDocument.config.custom_api_keys || {},
 				},
@@ -834,7 +732,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					tag_reaction: serverDocument.config.tag_reaction,
 				},
@@ -874,7 +772,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					commands: {
 						games: serverDocument.config.commands.games,
@@ -921,7 +819,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					ranks_list: serverDocument.config.ranks_list.map(a => {
 						a.members = serverDocument.members.filter(memberDocument => memberDocument.rank === a._id).length;
@@ -980,7 +878,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					commands: {
 						points: serverDocument.config.commands.points,
@@ -1013,25 +911,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 	// Admin console admins
 	app.get("/dashboard/:svrid/administration/admins", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-admins.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				roleData: getRoleData(svr).filter(role => serverDocument.config.admins.id(role.id) === null),
-				currentPage: req.path,
-				configData: {
-					admins: serverDocument.config.admins.filter(adminDocument => svr.roles.hasOwnProperty(adminDocument._id)).map(adminDocument => {
-						adminDocument.name = svr.roles[adminDocument._id].name;
-						return adminDocument;
-					}),
-					auto_add_admins: serverDocument.config.auto_add_admins,
-				},
-			});
+
 		});
 	});
 	io.of("/dashboard/administration/admins").on("connection", socket => {
@@ -1039,23 +919,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/administration/admins", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-role_id"] && req.body["new-level"] && !serverDocument.config.admins.id(req.body["new-role_id"])) {
-				let level = parseInt(req.body["new-level"]);
-				if (isNaN(level) || level > 3 || level < 1) level = 1;
-				serverDocument.config.admins.push({
-					_id: req.body["new-role_id"],
-					level: level,
-				});
-			} else {
-				for (let i = 0; i < serverDocument.config.admins.length; i++) {
-					if (req.body[`admin-${i}-removed`]) {
-						serverDocument.config.admins[i] = null;
-					}
-				}
-				serverDocument.config.admins.spliceNullElements();
-			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
 		});
 	});
 
@@ -1072,7 +936,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					moderation: {
 						isEnabled: serverDocument.config.moderation.isEnabled,
@@ -1121,7 +985,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					blocked: Object.values(svr.members).filter(member => serverDocument.config.blocked.indexOf(member.id) > -1).map(member => ({
 						name: member.user.username,
@@ -1188,7 +1052,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					moderation: {
 						isEnabled: serverDocument.config.moderation.isEnabled,
@@ -1262,7 +1126,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					moderation: {
 						isEnabled: serverDocument.config.moderation.isEnabled,
@@ -1358,7 +1222,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					moderation: {
 						isEnabled: serverDocument.config.moderation.isEnabled,
@@ -1450,7 +1314,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					moderation: {
 						isEnabled: serverDocument.config.moderation.isEnabled,
@@ -1513,7 +1377,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					message_of_the_day: serverDocument.config.message_of_the_day,
 				},
@@ -1551,7 +1415,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
 				voiceChannelData: getChannelData(svr, "voice"),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					voicetext_channels: serverDocument.config.voicetext_channels,
 				},
@@ -1589,7 +1453,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 				},
 				channelData: getChannelData(svr),
 				roleData: getRoleData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					commands: {
 						perms: serverDocument.config.commands.perms,
@@ -1678,7 +1542,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 						icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 					},
 					channelData: getChannelData(svr),
-					currentPage: req.path,
+					currentPage: `${req.baseUrl}${req.path}`,
 					logData: serverLogs.reverse(),
 					searchQuery: req.query.q,
 					channelQuery: req.query.chid,
@@ -1701,7 +1565,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					name_display: serverDocument.config.name_display,
 				},
@@ -1807,7 +1671,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
 					defaultChannel: defaultChannel.name,
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				trivia: ongoingTrivia,
 				polls: ongoingPolls,
 				giveaways: ongoingGiveaways,
@@ -1854,7 +1718,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					public_data: serverDocument.config.public_data,
 					isBanned: configJSON.activityBlocklist.includes(svr.id),
@@ -1904,7 +1768,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					id: svr.id,
 					icon: svr.iconURL || "/static/img/discord-icon.png",
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				configData: {
 					extensions: extensionData,
 				},
@@ -2007,7 +1871,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					icon: svr.iconURL || "/static/img/discord-icon.png",
 				},
 				channelData: getChannelData(svr),
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				extensionData,
 			});
 		});
@@ -2102,7 +1966,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 						accessManagement: checkPerms("/dashboard/management", req.user.id),
 						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 					},
-					currentPage: req.path,
+					currentPage: `${req.baseUrl}${req.path}`,
 					serverCount: await bot.guilds.totalCount,
 					userCount: await bot.users.totalCount,
 					totalMessageCount: messageCount,
@@ -2135,7 +1999,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 						accessManagement: checkPerms("/dashboard/management", req.user.id),
 						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 					},
-					currentPage: req.path,
+					currentPage: `${req.baseUrl}${req.path}`,
 					activeSearchQuery: req.query.q,
 					selectedServer: req.query.i || "0",
 					data,
@@ -2204,7 +2068,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				serverCount: await bot.guilds.totalCount,
 			});
 		});
@@ -2235,7 +2099,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				config: {
 					global_blocklist: await Promise.all(configJSON.userBlocklist.map(async a => {
 						const usr = await bot.users.fetch(a, true) || {};
@@ -2288,7 +2152,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				bot_user: {
 					status: configJSON.status,
 					game: configJSON.activity.name,
@@ -2328,7 +2192,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				config: {
 					header_image: configJSON.headerImage,
 					homepageMessageHTML: configJSON.homepageMessageHTML,
@@ -2364,7 +2228,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				config: {
 					wiki_contributors: await Promise.all(configJSON.maintainers.map(async a => {
 						const usr = await bot.users.fetch(a, true) || {
@@ -2432,7 +2296,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", consolemember.id),
 					accessEval: checkPerms("/dashboard/management/eval", consolemember.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				config: {
 					maintainers: await Promise.all(configJSON.maintainers.map(async id => {
 						const usr = await bot.users.fetch(id, true) || {
@@ -2523,7 +2387,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", req.user.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 			});
 		});
 	});
@@ -2561,7 +2425,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessManagement: checkPerms("/dashboard/management", consolemember.id),
 					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				config: {
 					shardTotal: Number(process.env.SHARD_COUNT),
 				},
@@ -2598,7 +2462,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 					accessEval: checkPerms("/dashboard/management/eval", consolemember.id),
 					accessShutdown: checkPerms("shutdown", consolemember.id),
 				},
-				currentPage: req.path,
+				currentPage: `${req.baseUrl}${req.path}`,
 				config: {
 					shardTotal: Number(process.env.SHARD_COUNT),
 					currentShard: bot.shardID,
@@ -2653,7 +2517,7 @@ module.exports = async (bot, auth, configJS, winston) => {
 						accessManagement: checkPerms("/dashboard/management", req.user.id),
 						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
 					},
-					currentPage: req.path,
+					currentPage: `${req.baseUrl}${req.path}`,
 					logs: JSON.stringify(logs),
 				});
 			});
@@ -2677,4 +2541,11 @@ module.exports = async (bot, auth, configJS, winston) => {
 		renderError(res, "An unexpected and unknown error occurred!<br>Please contact your GAB maintainer for support.");
 	});
 	*/
+};
+
+module.exports.close = (servers) => {
+	if (!servers.forEach) servers = Object.values(servers);
+	winston.info("Closing Web Interface...");
+	servers.forEach(server => server.close());
+	winston.warn("This shard is no longer hosting a Web Interface.");
 };

@@ -1,3 +1,5 @@
+const express = require("express");
+
 const { setupPage, setupRedirection } = require("../helpers");
 const controllers = require("../controllers");
 const middleware = require("../middleware");
@@ -63,18 +65,36 @@ const blogRouting = router => {
 	router.routes.push(new Route(router, "/blog/:id/react", [middleware.checkUnavailable], controllers.blog.article.react, "post", "general"));
 };
 
-module.exports = router => {
-	generalRouting(router);
-	activityRouting(router);
-	galleryRouting(router);
-	wikiRouting(router);
-	blogRouting(router);
-	dashboardRouting(router);
-	maintainerDashboardRouting(router);
-	setupAPI(router);
+module.exports = app => {
+	const routers = {
+		general: express.Router(),
+		dashboard: express.Router(),
+		maintainerDashboard: express.Router(),
+		API: express.Router(),
+	};
 
-	if (router.get("debug mode")) debugRouting(router);
+	Object.keys(routers).forEach(ID => {
+		routers[ID].ID = ID;
+		routers[ID].routes = [];
+		routers[ID].app = app;
+	});
+
+	generalRouting(routers.general);
+	activityRouting(routers.general);
+	galleryRouting(routers.general);
+	wikiRouting(routers.general);
+	blogRouting(routers.general);
+	dashboardRouting(routers.dashboard);
+	maintainerDashboardRouting(routers.maintainerDashboard);
+	setupAPI(routers.API);
+
+	if (app.get("debug mode")) debugRouting(routers.general);
+
+	app.use("/dashboard/maintainer", routers.maintainerDashboard);
+	app.use("/dashboard", routers.dashboard);
+	app.use("/api", routers.API);
+	app.use("/", routers.general);
 
 	// 404 Page
-	router.routes.push(new Route(router, "*", [middleware.checkUnavailable], controllers.debug["404"], "all", "special"));
+	routers.general.routes.push(new Route(routers.general, "*", [middleware.checkUnavailable], controllers.debug["404"], "all", "special"));
 };

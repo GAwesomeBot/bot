@@ -180,7 +180,7 @@ module.exports.history = async (req, res) => {
 		let updates;
 		if (page.updates && page.reactions) {
 			updates = page.updates.map(async updateDocument => {
-				const author = await req.client.users.fetch(updateDocument._id, true) || {
+				const author = await req.app.client.users.fetch(updateDocument._id, true) || {
 					id: "invalid-user",
 					username: "invalid-user",
 				};

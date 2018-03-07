@@ -4,7 +4,7 @@ const { renderError } = require("../helpers");
 const controllers = module.exports;
 
 // Builders
-controllers.buildLoginController = router => router.passport.authenticate("discord", {
+controllers.buildLoginController = router => router.app.passport.authenticate("discord", {
 	scope: discordOAuthScopes,
 });
 
