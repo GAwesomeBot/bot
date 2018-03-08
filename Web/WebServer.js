@@ -234,100 +234,10 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 		}
 	};
 
-	// Admin console RSS feeds
-	app.get("/dashboard/:svrid/commands/rss-feeds", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-rss-feeds.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					rss_feeds: serverDocument.config.rss_feeds,
-					commands: {
-						rss: serverDocument.config.commands.rss,
-						trivia: {
-							isEnabled: serverDocument.config.commands.trivia ? serverDocument.config.commands.trivia.isEnabled : null,
-						},
-					},
-				},
-				commandDescriptions: {
-					rss: bot.getPublicCommandMetadata("rss").description,
-				},
-				commandCategories: {
-					rss: bot.getPublicCommandMetadata("rss").category,
-				},
-			});
-		});
-	});
-	io.of("/dashboard/commands/rss-feeds").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/commands/rss-feeds", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"])) {
-				serverDocument.config.rss_feeds.push({
-					_id: req.body["new-name"],
-					url: req.body["new-url"],
-				});
-			} else {
-				parseCommandOptions(svr, serverDocument, "rss", req.body);
-				for (let i = 0; i < serverDocument.config.rss_feeds.length; i++) {
-					if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-removed`]) {
-						serverDocument.config.rss_feeds[i] = null;
-					} else {
-						serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
-						serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
-						Object.values(svr.channels).forEach(ch => {
-							if (ch.type === "text") {
-								if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
-									serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
-								}
-							}
-						});
-					}
-				}
-				serverDocument.config.rss_feeds.spliceNullElements();
-			}
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
 	// Admin console streamers
 	app.get("/dashboard/:svrid/commands/streamers", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-streamers.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					streamers_data: serverDocument.config.streamers_data,
-					commands: {
-						streamers: serverDocument.config.commands.streamers,
-						trivia: {
-							isEnabled: serverDocument.config.commands.trivia.isEnabled,
-						},
-					},
-				},
-				commandDescriptions: {
-					streamers: bot.getPublicCommandMetadata("streamers").description,
-				},
-				commandCategories: {
-					streamers: bot.getPublicCommandMetadata("streamers").category,
-				},
-			});
+
 		});
 	});
 	io.of("/dashboard/commands/streamers").on("connection", socket => {
@@ -335,24 +245,7 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/commands/streamers", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-name"] && req.body["new-type"] && !serverDocument.config.streamers_data.id(req.body["new-name"])) {
-				serverDocument.config.streamers_data.push({
-					_id: req.body["new-name"],
-					type: req.body["new-type"],
-				});
-			} else {
-				parseCommandOptions(svr, serverDocument, "streamers", req.body);
-				for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
-					if (req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-removed`]) {
-						serverDocument.config.streamers_data[i] = null;
-					} else {
-						serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
-					}
-				}
-				serverDocument.config.streamers_data.spliceNullElements();
-			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

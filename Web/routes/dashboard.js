@@ -18,6 +18,7 @@ module.exports = router => {
 	// Commands
 	setupDashboardPage(router, "/commands/command-options", [], controllers.dashboard.commands.options);
 	setupDashboardPage(router, "/commands/command-list", [], controllers.dashboard.commands.list);
+	setupDashboardPage(router, "/commands/rss-feeds", [], controllers.dashboard.commands.rss);
 
 	// Administration
 	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins);
