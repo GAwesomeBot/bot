@@ -19,6 +19,10 @@ module.exports = router => {
 	setupDashboardPage(router, "/commands/command-options", [], controllers.dashboard.commands.options);
 	setupDashboardPage(router, "/commands/command-list", [], controllers.dashboard.commands.list);
 	setupDashboardPage(router, "/commands/rss-feeds", [], controllers.dashboard.commands.rss);
+	setupDashboardPage(router, "/commands/streamers", [], controllers.dashboard.commands.streamers);
+	setupDashboardPage(router, "/commands/tags", [], controllers.dashboard.commands.tags);
+	setupDashboardPage(router, "/commands/auto-translation", [], controllers.dashboard.commands.translation);
+	setupDashboardPage(router, "/commands/trivia-sets", [], controllers.dashboard.commands.trivia);
 
 	// Administration
 	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins);

@@ -1,5 +1,5 @@
 const getGuild = require("../../Modules").GetGuild;
-const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save } = require("../helpers");
+const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save, findQueryUser, renderError } = require("../helpers");
 const parsers = require("../parsers");
 
 const controllers = module.exports;
@@ -292,6 +292,291 @@ controllers.commands.rss.post = async (req, res) => {
 			}
 		}
 		serverDocument.config.rss_feeds.spliceNullElements();
+	}
+
+	save(req, res, true);
+};
+
+controllers.commands.streamers = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-streamers.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			streamers_data: serverDocument.config.streamers_data,
+			commands: {
+				streamers: serverDocument.config.commands.streamers,
+				trivia: {
+					isEnabled: serverDocument.config.commands.trivia.isEnabled,
+				},
+			},
+		},
+		commandDescriptions: {
+			streamers: client.getPublicCommandMetadata("streamers").description,
+		},
+		commandCategories: {
+			streamers: client.getPublicCommandMetadata("streamers").category,
+		},
+	});
+};
+controllers.commands.streamers.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-name"] && req.body["new-type"] && !serverDocument.config.streamers_data.id(req.body["new-name"])) {
+		serverDocument.config.streamers_data.push({
+			_id: req.body["new-name"],
+			type: req.body["new-type"],
+		});
+	} else {
+		parsers.commandOptions(req, "streamers", req.body);
+		for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
+			if (req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-removed`]) {
+				serverDocument.config.streamers_data[i] = null;
+			} else {
+				serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
+			}
+		}
+		serverDocument.config.streamers_data.spliceNullElements();
+	}
+
+	save(req, res, true);
+};
+
+controllers.commands.tags = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	const data = {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			tags: serverDocument.config.tags,
+			commands: {
+				tag: serverDocument.config.commands.tag,
+				trivia: {
+					isEnabled: serverDocument.config.commands.trivia.isEnabled,
+				},
+			},
+		},
+		commandDescriptions: {
+			tag: client.getPublicCommandMetadata("tag").description,
+		},
+		commandCategories: {
+			tag: client.getPublicCommandMetadata("tag").category,
+		},
+	};
+
+	const cleanTag = content => {
+		let cleanContent = "";
+		while (content.indexOf("<") > -1) {
+			cleanContent += content.substring(0, content.indexOf("<"));
+			content = content.substring(content.indexOf("<") + 1);
+			if (content && content.indexOf(">") > 1) {
+				const type = content.charAt(0);
+				const id = content.substring(1, content.indexOf(">"));
+				if (!isNaN(id)) {
+					if (type === "@") {
+						const usr = svr.members[id];
+						if (usr) {
+							cleanContent += `<b>@${usr.username}</b>`;
+							content = content.substring(content.indexOf(">") + 1);
+							continue;
+						}
+					} else if (type === "#") {
+						const ch = svr.channels[id];
+						if (ch) {
+							cleanContent += `<b>#${ch.name}</b>`;
+							content = content.substring(content.indexOf(">") + 1);
+							continue;
+						}
+					}
+				}
+			}
+			cleanContent += "<";
+		}
+		cleanContent += content;
+		return cleanContent;
+	};
+
+	for (let i = 0; i < data.configData.tags.list.length; i++) {
+		data.configData.tags.list[i].content = cleanTag(data.configData.tags.list[i].content);
+		data.configData.tags.list[i].index = i;
+	}
+	data.configData.tags.list.sort((a, b) => a._id.localeCompare(b._id));
+	res.render("pages/admin-tags.ejs", data);
+};
+controllers.commands.tags.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-name"] && req.body["new-type"] && req.body["new-content"] && !serverDocument.config.tags.list.id(req.body["new-name"])) {
+		serverDocument.config.tags.list.push({
+			_id: req.body["new-name"],
+			content: req.body["new-content"],
+			isCommand: req.body["new-type"] === "command",
+		});
+	} else {
+		parsers.commandOptions(req, "tag", req.body);
+		serverDocument.config.tags.listIsAdminOnly = req.body.listIsAdminOnly === "true";
+		serverDocument.config.tags.addingIsAdminOnly = req.body.addingIsAdminOnly === "true";
+		serverDocument.config.tags.addingCommandIsAdminOnly = req.body.addingCommandIsAdminOnly === "true";
+		serverDocument.config.tags.removingIsAdminOnly = req.body.removingIsAdminOnly === "true";
+		serverDocument.config.tags.removingCommandIsAdminOnly = req.body.removingCommandIsAdminOnly === "true";
+		for (let i = 0; i < serverDocument.config.tags.list.length; i++) {
+			if (req.body[`tag-${i}-removed`]) {
+				serverDocument.config.tags.list[i] = null;
+			} else {
+				serverDocument.config.tags.list[i].isCommand = req.body[`tag-${i}-isCommand`] === "command";
+				serverDocument.config.tags.list[i].isLocked = req.body[`tag-${i}-isLocked`] === "on";
+			}
+		}
+		serverDocument.config.tags.list.spliceNullElements();
+	}
+
+	save(req, res, true);
+};
+
+controllers.commands.translation = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	const data = {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			translated_messages: serverDocument.config.translated_messages,
+			commands: {
+				trivia: {
+					isEnabled: serverDocument.config.commands.trivia.isEnabled,
+				},
+			},
+		},
+	};
+	for (let i = 0; i < data.configData.translated_messages.length; i++) {
+		const member = svr.members[data.configData.translated_messages[i]._id] || {};
+		data.configData.translated_messages[i].username = member.user.username;
+		data.configData.translated_messages[i].avatar = client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png";
+	}
+	res.render("pages/admin-auto-translation.ejs", data);
+};
+controllers.commands.translation.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-member"] && req.body["new-source_language"]) {
+		const member = findQueryUser(req.body["new-member"], req.svr.members);
+		if (member && !serverDocument.config.translated_messages.id(member.id)) {
+			const enabled_channel_ids = [];
+			Object.values(req.svr.channels).forEach(ch => {
+				if (ch.type === "text") {
+					if (req.body[`new-enabled_channel_ids-${ch.id}`] === "true") {
+						enabled_channel_ids.push(ch.id);
+					}
+				}
+			});
+			serverDocument.config.translated_messages.push({
+				_id: member.id,
+				source_language: req.body["new-source_language"],
+				enabled_channel_ids: enabled_channel_ids,
+			});
+		}
+	} else {
+		for (let i = 0; i < serverDocument.config.translated_messages.length; i++) {
+			if (req.body[`translated_messages-${i}-removed`]) {
+				serverDocument.config.translated_messages[i] = null;
+			} else {
+				serverDocument.config.translated_messages[i].enabled_channel_ids = [];
+				Object.values(req.svr.channels).forEach(ch => {
+					if (ch.type === "text") {
+						if (req.body[`translated_messages-${i}-enabled_channel_ids-${ch.id}`] === "on") {
+							serverDocument.config.translated_messages[i].enabled_channel_ids.push(ch.id);
+						}
+					}
+				});
+			}
+		}
+		serverDocument.config.translated_messages.spliceNullElements();
+	}
+	save(req, res, true);
+};
+
+controllers.commands.trivia = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	if (req.query.i) {
+		const triviaSetDocument = serverDocument.config.trivia_sets[req.query.i];
+		if (triviaSetDocument) {
+			res.json(triviaSetDocument.items);
+		} else {
+			renderError(res, "Are you sure that trivia set exists?", null, 404);
+		}
+	} else {
+		res.render("pages/admin-trivia-sets.ejs", {
+			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+			sudo: req.isSudo,
+			serverData: {
+				name: svr.name,
+				id: svr.id,
+				icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+			},
+			currentPage: `${req.baseUrl}${req.path}`,
+			configData: {
+				trivia_sets: serverDocument.config.trivia_sets,
+				commands: {
+					trivia: {
+						isEnabled: serverDocument.config.commands.trivia.isEnabled,
+					},
+				},
+			},
+		});
+	}
+};
+controllers.commands.trivia.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-name"] && req.body["new-items"] && !serverDocument.config.trivia_sets.id(req.body["new-name"])) {
+		try {
+			serverDocument.config.trivia_sets.push({
+				_id: req.body["new-name"],
+				items: JSON.parse(req.body["new-items"]),
+			});
+		} catch (err) {
+			renderError(res, "That doesn't look like valid JSON to me!", null, 400);
+			return;
+		}
+	} else {
+		for (let i = 0; i < serverDocument.config.trivia_sets.length; i++) {
+			if (req.body[`trivia_set-${i}-removed`]) {
+				serverDocument.config.trivia_sets[i] = null;
+			}
+		}
+		serverDocument.config.trivia_sets.spliceNullElements();
 	}
 
 	save(req, res, true);
