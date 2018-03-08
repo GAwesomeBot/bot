@@ -807,6 +807,8 @@ $(window).scroll(function() {
 });
 
 $(document).on('turbolinks:click', function() {
+	if (window.location.pathname.startsWith("/dashboard")) NProgress.configure({ parent: "section.section.is-white"});
+	else NProgress.configure({ parent: "body" });
 	NProgress.start();
 });
 

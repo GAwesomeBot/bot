@@ -1,5 +1,6 @@
 const getGuild = require("../../Modules").GetGuild;
 const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save } = require("../helpers");
+const parsers = require("../parsers");
 
 const controllers = module.exports;
 
@@ -178,6 +179,61 @@ controllers.commands.options.post = async (req, res) => {
 	save(req, res, true);
 };
 
+controllers.commands.list = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	const commandDescriptions = {};
+	const commandCategories = {};
+	client.getPublicCommandList().forEach(command => {
+		const commandData = client.getPublicCommandMetadata(command);
+		commandDescriptions[command] = commandData.description;
+		commandCategories[command] = commandData.category;
+	});
+	res.render("pages/admin-command-list.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			commands: serverDocument.toObject().config.commands,
+		},
+		commandDescriptions,
+		commandCategories,
+	});
+};
+
+controllers.commands.list.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["preset-applied"]) {
+		const disabled_channel_ids = [];
+		Object.values(req.svr.channels).forEach(ch => {
+			if (ch.type === "text") {
+				if (!req.body[`preset-disabled_channel_ids-${ch.id}`]) {
+					disabled_channel_ids.push(ch.id);
+				}
+			}
+		});
+		for (const command in serverDocument.toObject().config.commands) {
+			if (!serverDocument.config.commands[command]) continue;
+			serverDocument.config.commands[command].admin_level = req.body["preset-admin_level"] || 0;
+			serverDocument.config.commands[command].disabled_channel_ids = disabled_channel_ids;
+		}
+	} else {
+		for (const command in serverDocument.toObject().config.commands) {
+			parsers.commandOptions(req, command, req.body);
+		}
+	}
+
+	save(req, res, true);
+};
 
 controllers.administration = {};
 
