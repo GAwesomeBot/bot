@@ -582,6 +582,34 @@ controllers.commands.trivia.post = async (req, res) => {
 	save(req, res, true);
 };
 
+controllers.commands.APIKeys = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-api-keys.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			custom_api_keys: serverDocument.config.custom_api_keys || {},
+		},
+	});
+};
+controllers.commands.APIKeys.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	serverDocument.config.custom_api_keys.google_api_key = req.body.google_api_key;
+	serverDocument.config.custom_api_keys.google_cse_id = req.body.google_cse_id;
+
+	save(req, res, true);
+};
+
 controllers.administration = {};
 
 controllers.administration.admins = (req, res) => {

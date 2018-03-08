@@ -175,67 +175,12 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-	// Admin console trivia sets
-	app.get("/dashboard/:svrid/commands/trivia-sets", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
-	});
-	io.of("/dashboard/commands/trivia-sets").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/commands/trivia-sets", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
-	});
-
-	// Admin console API keys
-	app.get("/dashboard/:svrid/commands/api-keys", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-api-keys.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					custom_api_keys: serverDocument.config.custom_api_keys || {},
-				},
-			});
-		});
-	});
-	io.of("/dashboard/commands/api-keys").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/commands/api-keys", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			serverDocument.config.custom_api_keys.google_api_key = req.body.google_api_key;
-			serverDocument.config.custom_api_keys.google_cse_id = req.body.google_cse_id;
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
 
 	// Admin console tag reaction
 	app.get("/dashboard/:svrid/commands/tag-reaction", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-tag-reaction.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					tag_reaction: serverDocument.config.tag_reaction,
-				},
-			});
+
+
 		});
 	});
 	io.of("/dashboard/commands/tag-reaction").on("connection", socket => {
