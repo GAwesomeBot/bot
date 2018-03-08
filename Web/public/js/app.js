@@ -764,7 +764,6 @@ document.addEventListener("turbolinks:load", () => {
 		// Execute page function and finish loading bar when done
 		if (func) func();
 		NProgress.done();
-		NProgress.remove();
 	} catch (err) {
 		NProgress.done();
 		NProgress.remove();
