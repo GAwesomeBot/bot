@@ -188,19 +188,7 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/commands/tag-reaction", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-message"] && req.body["new-message"].length <= 2000) {
-				serverDocument.config.tag_reaction.messages.push(req.body["new-message"]);
-			} else {
-				serverDocument.config.tag_reaction.isEnabled = req.body.isEnabled === "on";
-				for (let i = 0; i < serverDocument.config.tag_reaction.messages.length; i++) {
-					if (req.body[`tag_reaction-${i}-removed`]) {
-						serverDocument.config.tag_reaction.messages[i] = null;
-					}
-				}
-				serverDocument.config.tag_reaction.messages.spliceNullElements();
-			}
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

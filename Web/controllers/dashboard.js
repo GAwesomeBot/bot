@@ -610,6 +610,43 @@ controllers.commands.APIKeys.post = async (req, res) => {
 	save(req, res, true);
 };
 
+controllers.commands.reaction = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-tag-reaction.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			tag_reaction: serverDocument.config.tag_reaction,
+		},
+	});
+};
+controllers.commands.reaction.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-message"] && req.body["new-message"].length <= 2000) {
+		serverDocument.config.tag_reaction.messages.push(req.body["new-message"]);
+	} else {
+		serverDocument.config.tag_reaction.isEnabled = req.body.isEnabled === "on";
+		for (let i = 0; i < serverDocument.config.tag_reaction.messages.length; i++) {
+			if (req.body[`tag_reaction-${i}-removed`]) {
+				serverDocument.config.tag_reaction.messages[i] = null;
+			}
+		}
+		serverDocument.config.tag_reaction.messages.spliceNullElements();
+	}
+
+	save(req, res, true);
+};
+
 controllers.administration = {};
 
 controllers.administration.admins = (req, res) => {
