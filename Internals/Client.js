@@ -1091,15 +1091,15 @@ module.exports = class GABClient extends DJSClient {
 
 	async init () {
 		if (auth.tokens.discordBotsOrg) {
-			const poster = new dbl(auth.tokens.discordBotsOrg);
-			poster.bind(this);
+			const poster = new dbl(auth.tokens.discordBotsOrg, this);
+			poster.bind();
 		}
 		await super.login(process.env.CLIENT_TOKEN);
 		await this.workerManager.startWorker();
 		return process.env.CLIENT_TOKEN;
 	}
 
-	sweepMessages (lifetime = this.options.messageCacheLifetime, responseLifetime = 1800) {
+	sweepMessages (lifetime = this.options.messageCacheLifetime, commandLifetime = 1800) {
 		if (typeof lifetime !== "number" || isNaN(lifetime)) throw new TypeError("The lifetime must be a number.");
 		if (lifetime <= 0) {
 			this.emit("debug", "Didn't sweep messages - lifetime is unlimited");
@@ -1107,7 +1107,7 @@ module.exports = class GABClient extends DJSClient {
 		}
 
 		const lifetimeMs = lifetime * 1000;
-		const responseLifetimeMs = responseLifetime * 1000;
+		const commandLifetimeMs = commandLifetime * 1000;
 		const now = Date.now();
 		let channels = 0;
 		let messages = 0;
@@ -1118,16 +1118,14 @@ module.exports = class GABClient extends DJSClient {
 			channels++;
 
 			for (const message of channel.messages.values()) {
-				if (message.command && now - (message.editedTimestamp || message.createdTimestamp) > responseLifetimeMs) {
-					channel.messages.delete(message.id);
-					commandMessages++;
-				} else if (!message.command && now - (message.editedTimestamp || message.createdTimestamp) > lifetimeMs) {
-					channel.messages.delete(message.id);
-					messages++;
-				}
+				if (message.command && now - (message.editedTimestamp || message.createdTimestamp) > commandLifetimeMs) commandMessages++;
+				else if (!message.command && now - (message.editedTimestamp || message.createdTimestamp) > lifetimeMs) messages++;
+				else continue;
+				channel.messages.delete(message.id);
 			}
 		}
-		this.emit("debug", `Swept ${messages} messages older than ${lifetime} seconds and ${commandMessages} command messages older than ${responseLifetime} seconds in ${channels} text-based channels`);
+
+		this.emit("debug", `Swept ${messages} messages older than ${lifetime} seconds and ${commandMessages} command messages older than ${commandLifetime} seconds in ${channels} text-based channels`);
 		return messages;
 	}
 };
