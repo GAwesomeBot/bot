@@ -44,7 +44,7 @@ const listen = async configJS => {
 		}
 
 		const httpsServer = servers.httpsServer = https.createServer(credentials, app);
-		httpsServer.on("error", (err) => {
+		httpsServer.on("error", err => {
 			winston.error("Something went wrong while starting the HTTPS Web Interface x/\n", err);
 		});
 		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
@@ -65,9 +65,9 @@ const listen = async configJS => {
 };
 
 // Setup the web server
-module.exports.open = async (bot, auth, configJS, winston) => {
+exports.open = async (client, auth, configJS, winston) => {
 	// Setup Express App object
-	app.bot = app.client = bot;
+	app.bot = app.client = client;
 	app.auth = auth;
 	app.toobusy = toobusy;
 	app.routes = [];
@@ -160,7 +160,7 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 		passport,
 	}));
 
-	bot.IPC.on("dashboardUpdate", msg => {
+	client.IPC.on("dashboardUpdate", msg => {
 		const namespace = msg.namespace;
 		const param = msg.location;
 		try {
@@ -175,21 +175,8 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-
-	// Admin console tag reaction
-	app.get("/dashboard/:svrid/commands/tag-reaction", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-
-		});
-	});
 	io.of("/dashboard/commands/tag-reaction").on("connection", socket => {
 		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/commands/tag-reaction", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
 	});
 
 	// Admin console stats collection
@@ -1975,8 +1962,8 @@ module.exports.open = async (bot, auth, configJS, winston) => {
 	*/
 };
 
-module.exports.close = (servers) => {
-	if (!servers.forEach) servers = Object.values(servers);
+exports.close = (servers) => {
+	if (typeof servers.forEach !== "function") servers = Object.values(servers);
 	winston.info("Closing Web Interface...");
 	servers.forEach(server => server.close());
 	winston.warn("This shard is no longer hosting a Web Interface.");

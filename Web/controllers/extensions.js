@@ -1,6 +1,5 @@
 const path = require("path");
-const writeFile = require("write-file-atomic");
-const fs = require("fs");
+const fs = require("fs-nextra");
 
 const parsers = require("../parsers");
 const getGuild = require("../../Modules").GetGuild;
@@ -72,7 +71,7 @@ controllers.gallery = async (req, res) => {
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-			const extensionData = await Promise.all(galleryDocuments.map((a) => parsers.extensionData(req, a)));
+			const extensionData = await Promise.all(galleryDocuments.map(a => parsers.extensionData(req, a)));
 
 			res.render("pages/extensions.ejs", {
 				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -89,7 +88,7 @@ controllers.gallery = async (req, res) => {
 				upvotedData,
 			});
 		} catch (err) {
-			renderError(res, "An error occurred while fetching extension data.")
+			renderError(res, "An error occurred while fetching extension data.");
 		}
 	};
 
@@ -101,7 +100,7 @@ controllers.gallery = async (req, res) => {
 				const svr = await getGuild.get(req.app.client, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
 				if (svr && usr) {
 					try {
-						const serverDocument = await Servers.findOne({_id: svr.id}).exec();
+						const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
 						if (serverDocument) {
 							const member = svr.members[usr.id];
 							if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
@@ -122,7 +121,7 @@ controllers.gallery = async (req, res) => {
 				try {
 					callback();
 				} catch (err) {
-					renderError(res, "An error occurred while fetching user data.")
+					renderError(res, "An error occurred while fetching user data.");
 				}
 			}
 		};
@@ -159,7 +158,7 @@ controllers.my = async (req, res) => {
 				extensions: galleryDocuments || [],
 			});
 		} catch (err) {
-			renderError(res, "An error occurred while fetching extension data.")
+			renderError(res, "An error occurred while fetching extension data.");
 		}
 	} else {
 		res.redirect("/login");
@@ -191,7 +190,7 @@ controllers.builder = async (req, res) => {
 				}).exec();
 				if (galleryDocument) {
 					try {
-						galleryDocument.code = fs.readFileSync(`${__dirname}/../../Extensions/${galleryDocument.code_id}.gabext`);
+						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.code_id}.gabext`);
 					} catch (err) {
 						galleryDocument.code = "";
 					}
@@ -218,14 +217,18 @@ controllers.builder.post = async (req, res) => {
 				if (isErr) return res.sendStatus(500);
 				res.sendStatus(200);
 			};
-			const saveExtensionCode = (err, codeID) => {
+			const saveExtensionCode = async (err, codeID) => {
 				if (err) {
 					winston.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
 					sendResponse(true);
 				} else {
-					writeFile(`${__dirname}/../../Extensions/${codeID}.gabext`, req.body.code, () => {
+					try {
+						await fs.outputFileAtomic(`${__dirname}/../../../Extensions/${codeID}.gabext`, req.body.code);
 						sendResponse();
-					});
+					} catch (error) {
+						winston.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
+						sendResponse(true);
+					}
 				}
 			};
 			const saveExtensionData = (galleryDocument, isUpdate) => {
@@ -252,7 +255,7 @@ controllers.builder.post = async (req, res) => {
 					return sendResponse(true);
 				}
 				galleryDocument.save().catch(err => {
-					winston.warn("Failed to save extension metadata: " + err);
+					winston.warn(`Failed to save extension metadata: ${err}`);
 					sendResponse(true);
 				});
 				saveExtensionCode(false, generateCodeID(req.body.code));
@@ -292,7 +295,7 @@ controllers.download = async (req, res) => {
 				"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext` + "'",
 				"Content-Type": "text/javascript",
 			});
-			res.sendFile(path.resolve(`${__dirname}/../../Extensions/${extensionDocument.code_id}.gabext`));
+			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${extensionDocument.code_id}.gabext`));
 		} catch (err) {
 			res.sendStatus(500);
 		}
@@ -312,7 +315,7 @@ controllers.gallery.modify = async (req, res) => {
 			const getGalleryDocument = async () => {
 				let doc;
 				try {
-					doc = await Gallery.findOne({_id: req.params.extid}).exec();
+					doc = await Gallery.findOne({ _id: req.params.extid }).exec();
 				} catch (err) {
 					res.sendStatus(500);
 					return null;
@@ -329,7 +332,7 @@ controllers.gallery.modify = async (req, res) => {
 					return userDocument;
 				} else {
 					try {
-						userDocument = await Users.create(new Users({_id: req.user.id}));
+						userDocument = await Users.create(new Users({ _id: req.user.id }));
 					} catch (err) {
 						res.sendStatus(500);
 						return null;
@@ -340,17 +343,16 @@ controllers.gallery.modify = async (req, res) => {
 			const messageOwner = async (usrid, message) => {
 				try {
 					const usr = await req.app.client.users.fetch(usrid, true);
-					if (usr) {
-						const ch = await usr.createDM();
-						ch.send(message);
-					}
-				} catch (_) {}
+					usr.send(message);
+				} catch (_) {
+					// No-op
+				}
 			};
 
 			const galleryDocument = await getGalleryDocument();
 			if (!galleryDocument) return;
 			switch (req.params.action) {
-				case "upvote":
+				case "upvote": {
 					const userDocument = await getUserDocument();
 					if (!userDocument) return;
 
@@ -372,7 +374,8 @@ controllers.gallery.modify = async (req, res) => {
 
 					res.sendStatus(200);
 					break;
-				case "accept":
+				}
+				case "accept": {
 					galleryDocument.state = "gallery";
 
 					try {
@@ -408,6 +411,7 @@ controllers.gallery.modify = async (req, res) => {
 						},
 					});
 					break;
+				}
 				case "feature":
 					if (!galleryDocument.featured) {
 						messageOwner(galleryDocument.owner_id, {
@@ -425,7 +429,7 @@ controllers.gallery.modify = async (req, res) => {
 					});
 					break;
 				case "reject":
-				case "remove":
+				case "remove": {
 					const ownerUserDocument2 = await Users.findOne({ _id: galleryDocument.owner_id });
 					if (ownerUserDocument2) {
 						ownerUserDocument2.points -= galleryDocument.points * 10;
@@ -446,6 +450,7 @@ controllers.gallery.modify = async (req, res) => {
 						},
 					});
 					break;
+				}
 				case "publish":
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
 
@@ -461,8 +466,10 @@ controllers.gallery.modify = async (req, res) => {
 					dashboardUpdate(req, req.path, req.user.id);
 
 					try {
-						fs.unlinkSync(`${__dirname}/../../Extensions/${galleryDocument.code_id}.gabext`);
-					} catch (_) {}
+						await fs.unlink(`${__dirname}/../../../Extensions/${galleryDocument.code_id}.gabext`);
+					} catch (_) {
+						// No-op
+					}
 
 					res.sendStatus(200);
 					break;

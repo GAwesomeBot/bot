@@ -19,6 +19,7 @@ module.exports = {
 		Wiki: true,
 		Database: true,
 		Raw: true,
+		configJS: true,
 		configJSON: true,
 	},
 	rules: {

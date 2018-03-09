@@ -10,7 +10,7 @@ const md = new showdown.Converter({
 	smartIndentationFix: true,
 });
 md.setFlavor("github");
-const getGuild = require('../Modules').GetGuild;
+const getGuild = require("../Modules").GetGuild;
 
 const parsers = module.exports;
 

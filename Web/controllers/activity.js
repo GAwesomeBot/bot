@@ -1,5 +1,5 @@
 const { parseAuthUser } = require("../helpers");
-const { GetGuild: getGuild, Utils } = require('../../Modules');
+const { GetGuild: getGuild, Utils } = require("../../Modules");
 const parsers = require("../parsers");
 
 module.exports = (req, res) => {
@@ -78,9 +78,7 @@ module.exports = (req, res) => {
 				const query = req.query.q.toLowerCase();
 				const servers = await getGuild.get(req.app.client, "*", { only: true, resolve: ["id", "name"] });
 				matchCriteria._id = {
-					$in: Object.values(servers).filter(svr => {
-						return svr.name.toLowerCase().indexOf(query)>-1 || svr.id === query;
-					}).map(svr => svr.id),
+					$in: Object.values(servers).filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query).map(svr => svr.id),
 				};
 			} else {
 				matchCriteria._id = {
@@ -122,8 +120,8 @@ module.exports = (req, res) => {
 					};
 					break;
 			}
-			Servers.count(matchCriteria, (err, rawCount) => {
-				if (err || rawCount === null) {
+			Servers.count(matchCriteria, (err2, rawCount) => {
+				if (err2 || rawCount === null) {
 					rawCount = guildAmount;
 				}
 				Servers.aggregate([
@@ -150,9 +148,9 @@ module.exports = (req, res) => {
 					{
 						$limit: count,
 					},
-				], async (err, serverDocuments) => {
+				], async (err3, serverDocuments) => {
 					let serverData = [];
-					if (!err && serverDocuments) {
+					if (!err3 && serverDocuments) {
 						let webp = req.accepts("image/webp") === "image/webp";
 						serverData = serverDocuments.map(serverDocument => parsers.serverData(req, serverDocument, webp));
 					}
@@ -214,14 +212,14 @@ module.exports = (req, res) => {
 							},
 						},
 					},
-				}], (err, result) => {
+				}], (err4, userResult) => {
 					let totalPoints = 0;
 					let publicProfilesCount = 0;
 					let reminderCount = 0;
-					if (!err && result) {
-						totalPoints = result[0].totalPoints;
-						publicProfilesCount = result[0].publicProfilesCount;
-						reminderCount = result[0].reminderCount;
+					if (!err4 && userResult) {
+						totalPoints = userResult[0].totalPoints;
+						publicProfilesCount = userResult[0].publicProfilesCount;
+						reminderCount = userResult[0].reminderCount;
 					}
 
 					renderPage({

@@ -61,7 +61,7 @@ controllers.index = async (req, res) => {
 			.exec();
 		let blogPosts = [];
 		if (blogDocuments) {
-			blogPosts = Promise.all(blogDocuments.map(async blogDocument => {
+			blogPosts = await Promise.all(blogDocuments.map(async blogDocument => {
 				const data = await parsers.blogData(req, blogDocument);
 				data.isPreview = true;
 				if (data.content.length > 1000) {
@@ -78,7 +78,7 @@ controllers.index = async (req, res) => {
 			currentPage: page,
 			numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
 			pageTitle: "GAwesomeBot Blog",
-			data: await blogPosts,
+			data: blogPosts,
 		});
 	} catch (err) {
 		renderError(res, "An error occurred while fetching blog data.");
