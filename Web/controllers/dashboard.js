@@ -647,6 +647,146 @@ controllers.commands.reaction.post = async (req, res) => {
 	save(req, res, true);
 };
 
+controllers.stats = {};
+
+controllers.stats.collection = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-stats-collection.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			commands: {
+				games: serverDocument.config.commands.games,
+				messages: serverDocument.config.commands.messages,
+				stats: serverDocument.config.commands.stats,
+			},
+		},
+		commandDescriptions: {
+			games: client.getPublicCommandMetadata("games").description,
+			messages: client.getPublicCommandMetadata("messages").description,
+			stats: client.getPublicCommandMetadata("stats").description,
+		},
+		commandCategories: {
+			games: client.getPublicCommandMetadata("games").category,
+			messages: client.getPublicCommandMetadata("messages").category,
+			stats: client.getPublicCommandMetadata("stats").category,
+		},
+	});
+};
+controllers.stats.collection.post = async (req, res) => {
+	parsers.commandOptions(req, "stats", req.body);
+	parsers.commandOptions(req, "games", req.body);
+	parsers.commandOptions(req, "messages", req.body);
+
+	save(req, res, true);
+};
+
+controllers.stats.ranks = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-ranks.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		roleData: getRoleData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			ranks_list: serverDocument.config.ranks_list.map(a => {
+				a.members = serverDocument.members.filter(memberDocument => memberDocument.rank === a._id).length;
+				return a;
+			}),
+		},
+	});
+};
+controllers.stats.ranks.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-name"] && req.body["new-max_score"] && !serverDocument.config.ranks_list.id(req.body["new-name"])) {
+		serverDocument.config.ranks_list.push({
+			_id: req.body["new-name"],
+			max_score: req.body["new-max_score"],
+			role_id: req.body["new-role_id"] || null,
+		});
+	} else {
+		for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
+			if (req.body[`rank-${i}-removed`]) {
+				serverDocument.config.ranks_list[i] = null;
+			} else {
+				serverDocument.config.ranks_list[i].max_score = parseInt(req.body[`rank-${i}-max_score`]);
+				if (serverDocument.config.ranks_list[i].role_id || req.body[`rank-${i}-role_id`]) {
+					serverDocument.config.ranks_list[i].role_id = req.body[`rank-${i}-role_id`];
+				}
+			}
+		}
+		if (req.body["ranks_list-reset"]) {
+			for (let i = 0; i < serverDocument.members.length; i++) {
+				if (serverDocument.members[i].rank && serverDocument.members[i].rank !== serverDocument.config.ranks_list[0]._id) {
+					serverDocument.members[i].rank = serverDocument.config.ranks_list[0]._id;
+				}
+			}
+		}
+	}
+	serverDocument.config.ranks_list.spliceNullElements();
+	serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
+
+	save(req, res, true);
+};
+
+controllers.stats.points = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-gawesome-points.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			commands: {
+				points: serverDocument.config.commands.points,
+				lottery: serverDocument.config.commands.lottery,
+			},
+		},
+		commandDescriptions: {
+			points: client.getPublicCommandMetadata("points").description,
+			lottery: client.getPublicCommandMetadata("lottery").description,
+		},
+		commandCategories: {
+			points: client.getPublicCommandMetadata("points").category,
+			lottery: client.getPublicCommandMetadata("lottery").category,
+		},
+	});
+};
+controllers.stats.points.post = async (req, res) => {
+	parsers.commandOptions(req, "points", req.body);
+	parsers.commandOptions(req, "lottery", req.body);
+
+	save(req, res, true);
+};
+
 controllers.administration = {};
 
 controllers.administration.admins = (req, res) => {

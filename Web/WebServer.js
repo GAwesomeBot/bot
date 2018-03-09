@@ -175,144 +175,11 @@ exports.open = async (client, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-	io.of("/dashboard/commands/tag-reaction").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-
-	// Admin console stats collection
-	app.get("/dashboard/:svrid/stats-points/stats-collection", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-stats-collection.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					commands: {
-						games: serverDocument.config.commands.games,
-						messages: serverDocument.config.commands.messages,
-						stats: serverDocument.config.commands.stats,
-					},
-				},
-				commandDescriptions: {
-					games: bot.getPublicCommandMetadata("games").description,
-					messages: bot.getPublicCommandMetadata("messages").description,
-					stats: bot.getPublicCommandMetadata("stats").description,
-				},
-				commandCategories: {
-					games: bot.getPublicCommandMetadata("games").category,
-					messages: bot.getPublicCommandMetadata("messages").category,
-					stats: bot.getPublicCommandMetadata("stats").category,
-				},
-			});
-		});
-	});
-	io.of("/dashboard/stats-points/stats-collection").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/stats-points/stats-collection", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			parseCommandOptions(svr, serverDocument, "stats", req.body);
-			parseCommandOptions(svr, serverDocument, "games", req.body);
-			parseCommandOptions(svr, serverDocument, "messages", req.body);
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
-	// Admin console ranks
-	app.get("/dashboard/:svrid/stats-points/ranks", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-ranks.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				roleData: getRoleData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					ranks_list: serverDocument.config.ranks_list.map(a => {
-						a.members = serverDocument.members.filter(memberDocument => memberDocument.rank === a._id).length;
-						return a;
-					}),
-				},
-			});
-		});
-	});
-	io.of("/dashboard/stats-points/ranks").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/stats-points/ranks", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-name"] && req.body["new-max_score"] && !serverDocument.config.ranks_list.id(req.body["new-name"])) {
-				serverDocument.config.ranks_list.push({
-					_id: req.body["new-name"],
-					max_score: req.body["new-max_score"],
-					role_id: req.body["new-role_id"] || null,
-				});
-			} else {
-				for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
-					if (req.body[`rank-${i}-removed`]) {
-						serverDocument.config.ranks_list[i] = null;
-					} else {
-						serverDocument.config.ranks_list[i].max_score = parseInt(req.body[`rank-${i}-max_score`]);
-						if (serverDocument.config.ranks_list[i].role_id || req.body[`rank-${i}-role_id`]) {
-							serverDocument.config.ranks_list[i].role_id = req.body[`rank-${i}-role_id`];
-						}
-					}
-				}
-				if (req.body["ranks_list-reset"]) {
-					for (let i = 0; i < serverDocument.members.length; i++) {
-						if (serverDocument.members[i].rank && serverDocument.members[i].rank !== serverDocument.config.ranks_list[0]._id) {
-							serverDocument.members[i].rank = serverDocument.config.ranks_list[0]._id;
-						}
-					}
-				}
-			}
-			serverDocument.config.ranks_list.spliceNullElements();
-			serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
 
 	// Admin console GAwesomePoints
 	app.get("/dashboard/:svrid/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-gawesome-points.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					commands: {
-						points: serverDocument.config.commands.points,
-						lottery: serverDocument.config.commands.lottery,
-					},
-				},
-				commandDescriptions: {
-					points: bot.getPublicCommandMetadata("points").description,
-					lottery: bot.getPublicCommandMetadata("lottery").description,
-				},
-				commandCategories: {
-					points: bot.getPublicCommandMetadata("points").category,
-					lottery: bot.getPublicCommandMetadata("lottery").category,
-				},
-			});
+
 		});
 	});
 	io.of("/dashboard/stats-points/gawesome-points").on("connection", socket => {
@@ -320,10 +187,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/stats-points/gawesome-points", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			parseCommandOptions(svr, serverDocument, "points", req.body);
-			parseCommandOptions(svr, serverDocument, "lottery", req.body);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 
@@ -347,7 +211,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-moderation.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -398,7 +262,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-blocked.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -464,7 +328,7 @@ exports.open = async (client, auth, configJS, winston) => {
 			mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
 			res.render("pages/admin-muted.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -539,7 +403,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-strikes.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -634,7 +498,7 @@ exports.open = async (client, auth, configJS, winston) => {
 			}
 			res.render("pages/admin-status-messages.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -725,7 +589,7 @@ exports.open = async (client, auth, configJS, winston) => {
 			}
 			res.render("pages/admin-filters.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -788,7 +652,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-message-of-the-day.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -827,7 +691,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-voicetext-channels.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -864,7 +728,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-roles.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -954,7 +818,7 @@ exports.open = async (client, auth, configJS, winston) => {
 
 				res.render("pages/admin-logs.ejs", {
 					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-					sudo: adminLvl !== 3,
+					sudo: req.isSudo,
 					serverData: {
 						name: svr.name,
 						id: svr.id,
@@ -978,7 +842,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-name-display.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1083,7 +947,7 @@ exports.open = async (client, auth, configJS, winston) => {
 
 			res.render("pages/admin-ongoing-activities.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1131,7 +995,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-public-data.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1181,7 +1045,7 @@ exports.open = async (client, auth, configJS, winston) => {
 			});
 			res.render("pages/admin-extensions.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,
@@ -1283,7 +1147,7 @@ exports.open = async (client, auth, configJS, winston) => {
 			}
 			res.render("pages/admin-extension-builder.ejs", {
 				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: adminLvl !== 3,
+        sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
 					id: svr.id,

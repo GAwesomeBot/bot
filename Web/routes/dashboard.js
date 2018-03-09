@@ -26,6 +26,11 @@ module.exports = router => {
 	setupDashboardPage(router, "/commands/api-keys", [], controllers.dashboard.commands.APIKeys);
 	setupDashboardPage(router, "/commands/tag-reaction", [], controllers.dashboard.commands.reaction);
 
+	// Stats and Points
+	setupDashboardPage(router, "/stats-points/stats-collection", [], controllers.dashboard.stats.collection);
+	setupDashboardPage(router, "/stats-points/ranks", [], controllers.dashboard.stats.ranks);
+	setupDashboardPage(router, "/stats-points/gawesome-points", [], controllers.dashboard.stats.points);
+
 	// Administration
 	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins);
 };
