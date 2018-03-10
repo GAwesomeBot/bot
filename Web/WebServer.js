@@ -176,13 +176,6 @@ exports.open = async (client, auth, configJS, winston) => {
 	/* eslint-disable */
 	/*
 
-	// Admin console export configs
-	app.get("/dashboard/:svrid/other/export", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.json(serverDocument.toObject().config);
-		});
-	});
-
 	// Admin console message history
 	app.get("/dashboard/:svrid/messages", (req, res) => {
 		checkAuth(req, res, () => {

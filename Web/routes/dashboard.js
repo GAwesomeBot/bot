@@ -48,4 +48,6 @@ module.exports = router => {
 	setupDashboardPage(router, "/other/name-display", [], controllers.dashboard.other.nameDisplay);
 	setupDashboardPage(router, "/other/ongoing-activities", [], controllers.dashboard.other.activities);
 	setupDashboardPage(router, "/other/public-data", [], controllers.dashboard.other.public);
+	setupDashboardPage(router, "/other/extensions", [], controllers.dashboard.other.extensions);
+	setupDashboardPage(router, "/other/export", [], controllers.dashboard.other.export);
 };

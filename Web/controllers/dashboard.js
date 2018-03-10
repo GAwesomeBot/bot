@@ -1658,3 +1658,11 @@ controllers.other.public.post = async (req, res) => {
 		save(req, res, true);
 	}
 };
+
+controllers.other.extensions = async (req, res) => {
+	res.render("pages/503.ejs", {});
+};
+
+controllers.other.export = async (req, res) => {
+	res.json(req.svr.document.toObject().config);
+};
