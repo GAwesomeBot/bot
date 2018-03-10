@@ -4,7 +4,7 @@
   "description": "Still the best Discord Bot!",
   "license": "SEE LICENSE IN LICENSE",
   "author": "Gilbert Gobbels",
-  "main": "bot.js",
+  "main": "master.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/GilbertGobbels/GAwesomeBot.git"

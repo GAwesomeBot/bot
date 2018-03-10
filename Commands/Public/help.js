@@ -43,12 +43,12 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 	const memberBotAdminLevel = client.getUserBotAdmin(msg.guild, serverDocument, msg.member);
 	let longest = 0;
 	for (const command of client.getPublicCommandList()) {
+		const cmdData = client.getPublicCommandMetadata(command);
+		if (!commands[cmdData.category]) {
+			commands[cmdData.category] = [];
+			commands[cmdData.category].temp = [];
+		}
 		if (serverDocument.config.commands[command] && serverDocument.config.commands[command].isEnabled && memberBotAdminLevel >= serverDocument.config.commands[command].admin_level) {
-			const cmdData = client.getPublicCommandMetadata(command);
-			if (!commands[cmdData.category]) {
-				commands[cmdData.category] = [];
-				commands[cmdData.category].temp = [];
-			}
 			let string = `${msg.guild.commandPrefix}${cmdData.command}`;
 			if (string.length > longest) longest = string.length;
 			commands[cmdData.category].temp.push([string, cmdData.usage || "No usage help provided."]);
@@ -67,8 +67,12 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 
 	for (const category of Object.keys(commands)) {
 		const temp = commands[category].temp;
-		for (const [cmdKey, usage] of temp) {
-			commands[category].push(`${cmdKey.padEnd(longest)} | ${usage}`);
+		if (temp.length) {
+			for (const [cmdKey, usage] of temp) {
+				commands[category].push(`${cmdKey.padEnd(longest)} | ${usage}`);
+			}
+		} else if (category !== "Extensions ⚙️") {
+			commands[category].push(`== No Commands Enabled Here ==`);
 		}
 		pages[CategoryEmojiMap[category]] = commands[category].sort((a, b) => a.replace(msg.guild.commandPrefix, "").split(" ")[0].localeCompare(b.replace(msg.guild.commandPrefix, "").split(" ")[0])).join("\n");
 	}
@@ -110,21 +114,21 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 				embed: {
 					color: Colors.LIGHT_GREEN,
 					title: `GAwesomeBot 🤖`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.gab]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.gab]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.fun]: {
 				embed: {
 					color: Colors.LIGHT_BLUE,
 					title: `Fun 🎪`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.fun]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.fun]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.mod]: {
 				embed: {
 					color: Colors.LIGHT_RED,
 					title: `Moderation ⚒`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.mod]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.mod]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.media]: {
@@ -132,35 +136,35 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 					// Don't ask
 					color: Colors.TRIVIA_START,
 					title: `Search & Media 🎬`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.media]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.media]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.nsfw]: {
 				embed: {
 					color: Colors.LIGHT_ORANGE,
 					title: `NSFW 👹`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.nsfw]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.nsfw]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.stats]: {
 				embed: {
 					color: Colors.YELLOW,
 					title: `Stats & Points ⭐️`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.stats]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.stats]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.util]: {
 				embed: {
 					color: Colors.BLUE,
 					title: `Utility 🔦`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.util]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.util]}\`\`\``,
 				},
 			},
 			[HelpMenuEmojis.extension]: {
 				embed: {
 					color: Colors.GREEN,
 					title: `Extensions ⚙️`,
-					description: `\`\`\`asciidoc\n${pages[HelpMenuEmojis.extension]}\`\`\``,
+					description: `\`\`\`css\n${pages[HelpMenuEmojis.extension]}\`\`\``,
 				},
 			},
 		},

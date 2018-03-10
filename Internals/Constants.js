@@ -134,7 +134,7 @@ exports.HelpMenuEmojis = {
 	nsfw: "👹",
 	stats: "⭐",
 	util: "🔦",
-	extension: "⚙️",
+	extension: "⚙",
 };
 
 /**
@@ -142,7 +142,7 @@ exports.HelpMenuEmojis = {
  * Sorry. -- Vlad
  */
 exports.CategoryEmojiMap = {
-	"Extensions ⚙️": "⚙️",
+	"Extensions ⚙️": "⚙",
 	"Fun 🎪": "🎪",
 	"GAwesomeBot 🤖": "🤖",
 	"Moderation ⚒": "⚒",
