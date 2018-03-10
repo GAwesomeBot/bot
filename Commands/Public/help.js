@@ -85,7 +85,7 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 			},
 			title: `This menu will show you all commands you can run!`,
 			description: [
-				`The prefix is shown in front of all commands, but in case you forgot, it is **${msg.guild.commandPrefix}**. You will see only commands that you are able to run!`,
+				`The prefix is shown in front of all commands, but in case you forgot, it is **${msg.guild.commandPrefix}**.`,
 				`For more information about any command, run \`${msg.guild.commandPrefix}help <command>\`, or head over to our [**wiki**](https://github.com/GilbertGobbels/GAwesomeBot/wiki/Commands).`,
 				`If you need support using GAwesomeBot or got any question, join our [**support server**](${configJS.discordLink})!`,
 				``,
