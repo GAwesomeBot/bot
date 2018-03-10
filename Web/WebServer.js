@@ -179,36 +179,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	// Admin console roles
 	app.get("/dashboard/:svrid/administration/roles", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-roles.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				roleData: getRoleData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					commands: {
-						perms: serverDocument.config.commands.perms,
-						role: serverDocument.config.commands.role,
-						roleinfo: serverDocument.config.commands.roleinfo,
-					},
-					custom_roles: serverDocument.config.custom_roles,
-				},
-				commandDescriptions: {
-					perms: bot.getPublicCommandMetadata("perms").description,
-					role: bot.getPublicCommandMetadata("role").description,
-					roleinfo: bot.getPublicCommandMetadata("roleinfo").description,
-				},
-				commandCategories: {
-					perms: bot.getPublicCommandMetadata("perms").category,
-					role: bot.getPublicCommandMetadata("role").category,
-					roleinfo: bot.getPublicCommandMetadata("roleinfo").category,
-				},
-			});
+
 		});
 	});
 	io.of("/dashboard/administration/roles").on("connection", socket => {
@@ -216,19 +187,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/administration/roles", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			parseCommandOptions(svr, serverDocument, "roleinfo", req.body);
-			parseCommandOptions(svr, serverDocument, "role", req.body);
-			serverDocument.config.custom_roles = [];
-			Object.values(svr.roles).forEach(role => {
-				if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
-					if (req.body[`custom_roles-${role.id}`] === "on") {
-						serverDocument.config.custom_roles.push(role.id);
-					}
-				}
-			});
-			parseCommandOptions(svr, serverDocument, "perms", req.body);
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

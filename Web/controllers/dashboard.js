@@ -1350,3 +1350,57 @@ controllers.administration.voicetext.post = async (req, res) => {
 
 	save(req, res, true);
 };
+
+controllers.administration.roles = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-roles.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		roleData: getRoleData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			commands: {
+				perms: serverDocument.config.commands.perms,
+				role: serverDocument.config.commands.role,
+				roleinfo: serverDocument.config.commands.roleinfo,
+			},
+			custom_roles: serverDocument.config.custom_roles,
+		},
+		commandDescriptions: {
+			perms: client.getPublicCommandMetadata("perms").description,
+			role: client.getPublicCommandMetadata("role").description,
+			roleinfo: client.getPublicCommandMetadata("roleinfo").description,
+		},
+		commandCategories: {
+			perms: client.getPublicCommandMetadata("perms").category,
+			role: client.getPublicCommandMetadata("role").category,
+			roleinfo: client.getPublicCommandMetadata("roleinfo").category,
+		},
+	});
+};
+controllers.administration.roles.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	parsers.commandOptions(req, "roleinfo", req.body);
+	parsers.commandOptions(req, "role", req.body);
+	serverDocument.config.custom_roles = [];
+	Object.values(req.svr.roles).forEach(role => {
+		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
+			if (req.body[`custom_roles-${role.id}`] === "on") {
+				serverDocument.config.custom_roles.push(role.id);
+			}
+		}
+	});
+	parsers.commandOptions(req, "perms", req.body);
+
+	save(req, res, true);
+};
