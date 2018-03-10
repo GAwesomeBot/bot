@@ -175,27 +175,10 @@ exports.open = async (client, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-
 	// Admin console name display
 	app.get("/dashboard/:svrid/other/name-display", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-name-display.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					name_display: serverDocument.config.name_display,
-				},
-				exampleUsername: consolemember.user.username,
-				exampleNickname: consolemember.nickname,
-				exampleDiscriminator: consolemember.user.discriminator,
-				currentExample: bot.getName(svr, serverDocument, consolemember),
-			});
+
 		});
 	});
 	io.of("/dashboard/administration/name-display").on("connection", socket => {
@@ -203,10 +186,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	});
 	app.post("/dashboard/:svrid/other/name-display", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			serverDocument.config.name_display.use_nick = req.body["name_display-use_nick"] === "on";
-			serverDocument.config.name_display.show_discriminator = req.body["name_display-show_discriminator"] === "on";
 
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
 		});
 	});
 

@@ -1463,3 +1463,37 @@ controllers.administration.logs = async (req, res) => {
 		renderError(res, "Failed to fetch all the trees and their logs.");
 	}
 };
+
+controllers.other = {};
+
+controllers.other.nameDisplay = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-name-display.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			name_display: serverDocument.config.name_display,
+		},
+		exampleUsername: req.consolemember.user.username,
+		exampleNickname: req.consolemember.nickname,
+		exampleDiscriminator: req.consolemember.user.discriminator,
+		currentExample: client.getName(svr, serverDocument, req.consolemember),
+	});
+};
+controllers.other.nameDisplay.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	serverDocument.config.name_display.use_nick = req.body["name_display-use_nick"] === "on";
+	serverDocument.config.name_display.show_discriminator = req.body["name_display-show_discriminator"] === "on";
+
+	save(req, res, true);
+};

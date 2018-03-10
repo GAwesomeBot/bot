@@ -43,4 +43,7 @@ module.exports = router => {
 	setupDashboardPage(router, "/administration/voicetext-channels", [], controllers.dashboard.administration.voicetext);
 	setupDashboardPage(router, "/administration/roles", [], controllers.dashboard.administration.roles);
 	setupDashboardPage(router, "/administration/logs", [], controllers.dashboard.administration.logs);
+
+	// Other
+	setupDashboardPage(router, "/other/name-display", [], controllers.dashboard.other.nameDisplay);
 };
