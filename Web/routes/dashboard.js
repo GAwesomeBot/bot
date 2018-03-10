@@ -46,4 +46,5 @@ module.exports = router => {
 
 	// Other
 	setupDashboardPage(router, "/other/name-display", [], controllers.dashboard.other.nameDisplay);
+	setupDashboardPage(router, "/other/ongoing-activities", [], controllers.dashboard.other.activities);
 };
