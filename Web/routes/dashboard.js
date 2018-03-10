@@ -42,4 +42,5 @@ module.exports = router => {
 	setupDashboardPage(router, "/administration/message-of-the-day", [], controllers.dashboard.administration.MOTD);
 	setupDashboardPage(router, "/administration/voicetext-channels", [], controllers.dashboard.administration.voicetext);
 	setupDashboardPage(router, "/administration/roles", [], controllers.dashboard.administration.roles);
+	setupDashboardPage(router, "/administration/logs", [], controllers.dashboard.administration.logs);
 };

@@ -1404,3 +1404,62 @@ controllers.administration.roles.post = async (req, res) => {
 
 	save(req, res, true);
 };
+
+controllers.administration.logs = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	try {
+		let serverLogs = serverDocument.logs.length > 200 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 200) : serverDocument.logs.toObject();
+		serverLogs = serverLogs.filter(serverLog => (!req.query.q || serverLog.content.toLowerCase().includes(req.query.q.toLowerCase())) && (!req.query.chid || serverLog.channelid === req.query.chid));
+		serverLogs.map(serverLog => {
+			const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
+			if (serverLog.channelid) serverLog.ch = ch ? ch.name : "invalid-channel";
+
+			const member = serverLog.userid ? svr.members[serverLog.userid] : null;
+			if (serverLog.userid) serverLog.usr = member ? `${member.user.username}#${member.user.discriminator}` : "invalid-user";
+
+			switch (serverLog.level) {
+				case "warn":
+					serverLog.level = "exclamation";
+					serverLog.levelColor = "#ffdd57";
+					break;
+				case "error":
+					serverLog.level = "times";
+					serverLog.levelColor = "#ff3860";
+					break;
+				case "save":
+					serverLog.level = "file-text";
+					serverLog.levelColor = "#ffae35";
+					break;
+				default:
+					serverLog.level = "info";
+					serverLog.levelColor = "#3273dc";
+					break;
+			}
+
+			serverLog.moment = moment(serverLog.timestamp).format(configJS.moment_date_format);
+
+			return serverLog;
+		});
+
+		res.render("pages/admin-logs.ejs", {
+			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+			sudo: req.isSudo,
+			serverData: {
+				name: svr.name,
+				id: svr.id,
+				icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+			},
+			channelData: getChannelData(svr),
+			currentPage: `${req.baseUrl}${req.path}`,
+			logData: serverLogs.reverse(),
+			searchQuery: req.query.q,
+			channelQuery: req.query.chid,
+		});
+	} catch (err) {
+		winston.warn(`Failed to fetch logs for server ${svr.name} (*-*)\n`, err);
+		renderError(res, "Failed to fetch all the trees and their logs.");
+	}
+};
