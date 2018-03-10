@@ -126,6 +126,21 @@ GAwesomeUtil.debugDump = () => {
 	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({tl: !!Turbolinks, io: !!io, form: !!submitForm, bulma: !!bulma, np: !!NProgress, fs: !!saveAs, md: !!md5})}`, "log", true);
 };
 
+GAwesomeUtil.setUserAutocomplete = svrid => {
+	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
+		new autoComplete({
+			selector: ".user-autocomplete",
+			minChars: 2,
+			source: function(query, res) {
+				query = query.toLowerCase();
+				res(data.filter(function(a) {
+					return a.toLowerCase().indexOf(query)>-1;
+				}));
+			}
+		});
+	});
+};
+
 GAwesomeUtil.updateHeader = () => {
 	const currentNavItem = $("#nav-" + window.location.pathname.split("/")[1]);
 	if(currentNavItem) {
@@ -777,20 +792,6 @@ const GAwesomeListeners = {};
 GAwesomeListeners.activityMQL = window.matchMedia("screen and (max-width: 768px)");
 GAwesomeListeners.activityMQL.addListener(GAwesomeUtil.activityViewPortUpdate);
 
-function setUserAutocomplete(svrid) {
-	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
-		new autoComplete({
-			selector: ".user-autocomplete",
-			minChars: 2,
-			source: function(query, res) {
-				query = query.toLowerCase();
-				res(data.filter(function(a) {
-					return a.toLowerCase().indexOf(query)>-1;
-				}));
-			}
-		});
-	});
-}
 
 $(window).scroll(function() {
 	if($("#form-buttons") && $("#form-buttons").is(":visible")) {

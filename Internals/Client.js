@@ -915,7 +915,7 @@ module.exports = class GABClient extends DJSClient {
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
 		if (!this.isMuted(channel, member) && channel.type === "text") {
 			try {
-				await channel.overwritePermissions(member.id, {
+				await channel.updateOverwrite(member.id, {
 					SEND_MESSAGES: false,
 				}, reason);
 			} catch (err) {
@@ -939,7 +939,7 @@ module.exports = class GABClient extends DJSClient {
 				const deniedPerms = overwrite.denied;
 				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
 					try {
-						await channel.overwritePermissions(member.id, {
+						await channel.updateOverwrite(member.id, {
 							SEND_MESSAGES: null,
 						}, reason);
 					} catch (err) {

@@ -1,7 +1,7 @@
 <div class="field">
 	<label class="checkbox">
 	<input name="<%= commandData.name %>-isEnabled" type="checkbox" onclick="$('.<%= commandData.name %>-options').toggleClass('is-hidden');" <%= commandData.isEnabled ? "checked" : "" %>>
-		<strong><%= commandData.name %></strong> <span class="tag is-small"><%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) %></span> <%- commandData.description %>
+		<strong><%= commandData.name %></strong> <span class="tag is-small<%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) === "NSFW" ? " is-danger" : "" %>"><%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) %></span> <%- commandData.description %>
 	</label>
 	<span class="<%= commandData.name %>-options <%= commandData.isEnabled ? '' : 'is-hidden' %>">
 		<a class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level==0 ? "E" : ("Admin level &ge;" + commandData.admin_level + ", e") %>nabled in <%= commandData.disabled_channel_ids.length==0 ? "all" : (channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((channelData.length - commandData.disabled_channel_ids.length)==1 && commandData.disabled_channel_ids.length>0) ? "" : "s" %></a>

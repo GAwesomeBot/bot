@@ -1,3 +1,16 @@
+const moment = require("moment");
+const xssFilters = require("xss-filters");
+const showdown = require("showdown");
+const md = new showdown.Converter({
+	tables: true,
+	simplifiedAutoLink: true,
+	strikethrough: true,
+	tasklists: true,
+	smoothLivePreview: true,
+	smartIndentationFix: true,
+});
+md.setFlavor("github");
+
 const getGuild = require("../../Modules").GetGuild;
 const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save, findQueryUser, renderError } = require("../helpers");
 const parsers = require("../parsers");
@@ -810,7 +823,6 @@ controllers.administration.admins = (req, res) => {
 		},
 	});
 };
-
 controllers.administration.admins.post = (req, res) => {
 	if (req.body["new-role_id"] && req.body["new-level"] && !req.svr.document.config.admins.id(req.body["new-role_id"])) {
 		let level = parseInt(req.body["new-level"]);
@@ -829,4 +841,439 @@ controllers.administration.admins.post = (req, res) => {
 	}
 
 	save(req, res);
+};
+
+controllers.administration.moderation = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-moderation.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		roleData: getRoleData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			moderation: {
+				isEnabled: serverDocument.config.moderation.isEnabled,
+				autokick_members: serverDocument.config.moderation.autokick_members,
+				new_member_roles: serverDocument.config.moderation.new_member_roles,
+			},
+			modlog: {
+				isEnabled: serverDocument.modlog.isEnabled,
+				channel_id: serverDocument.modlog.channel_id,
+			},
+		},
+	});
+};
+controllers.administration.moderation.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	serverDocument.config.moderation.isEnabled = req.body.isEnabled === "on";
+	serverDocument.config.moderation.autokick_members.isEnabled = req.body["autokick_members-isEnabled"] === "on";
+	serverDocument.config.moderation.autokick_members.max_inactivity = parseInt(req.body["autokick_members-max_inactivity"]);
+	serverDocument.config.moderation.new_member_roles = [];
+	Object.values(req.svr.roles).forEach(role => {
+		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
+			if (req.body[`new_member_roles-${role.id}`] === "on") {
+				serverDocument.config.moderation.new_member_roles.push(role.id);
+			}
+		}
+	});
+	serverDocument.modlog.isEnabled = req.body["modlog-isEnabled"] === "on";
+	serverDocument.modlog.channel_id = req.body["modlog-channel_id"];
+
+	save(req, res, true);
+};
+
+controllers.administration.blocked = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-blocked.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			blocked: Object.values(svr.members).filter(member => serverDocument.config.blocked.indexOf(member.id) > -1).map(member => ({
+				name: member.user.username,
+				id: member.id,
+				avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
+			}))
+				.concat(configJSON.userBlocklist.filter(usrid => svr.members.hasOwnProperty(usrid)).map(usrid => {
+					const member = svr.members[usrid];
+					return {
+						name: member.user.username,
+						id: member.id,
+						avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
+						isGlobal: true,
+					};
+				})),
+			moderation: {
+				isEnabled: serverDocument.config.moderation.isEnabled,
+			},
+		},
+	});
+};
+controllers.administration.blocked.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-member"]) {
+		const member = findQueryUser(req.body["new-member"], req.svr.members);
+		if (member && serverDocument.config.blocked.indexOf(member.id) === -1 && req.app.client.getUserBotAdmin(req.svr, serverDocument, member) === 0) {
+			serverDocument.config.blocked.push(member.id);
+		}
+	} else {
+		for (let i = 0; i < serverDocument.config.blocked.length; i++) {
+			if (req.body[`block-${i}-removed`] !== undefined) {
+				serverDocument.config.blocked[i] = null;
+			}
+		}
+		serverDocument.config.blocked.spliceNullElements();
+	}
+	save(req, res);
+};
+
+controllers.administration.muted = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	const mutedMembers = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.members.hasOwnProperty(memberDocument._id))
+		.map(memberDocument => {
+			const member = svr.members[memberDocument._id];
+			return {
+				name: member.user.username,
+				id: member.id,
+				avatar: client.getAvatarURL(member.id, member.user.avatar),
+				channels: memberDocument.muted.map(memberMutedDocument => memberMutedDocument._id),
+			};
+		});
+	mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
+	res.render("pages/admin-muted.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons"),
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			moderation: {
+				isEnabled: serverDocument.config.moderation.isEnabled,
+			},
+		},
+		muted: mutedMembers,
+	});
+};
+controllers.administration.muted.post = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-member"] && req.body["new-channel_id"]) {
+		const member = findQueryUser(req.body["new-member"], svr.members);
+		const ch = svr.channels[req.body["new-channel_id"]];
+
+		let memberDocument = serverDocument.members.id(member.id);
+		if (!memberDocument) {
+			serverDocument.members.push({ _id: member.id });
+			memberDocument = serverDocument.members.id(member.id);
+		}
+
+		if (member && client.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !memberDocument.muted.id(ch.id)) {
+			client.IPC.send("muteMember", { guild: svr.id, channel: ch.id, member: member.id });
+			memberDocument.muted.push({ _id: ch.id });
+		}
+	} else {
+		let memberDocuments = serverDocument.members;
+		Object.keys(req.body).forEach(key => {
+			const parameters = key.split("-");
+			if (parameters.length === 3 && parameters[0] === "muted" && svr.members.hasOwnProperty(parameters[1]) && memberDocuments.id(parameters[1])) {
+				const memberDocument = memberDocuments.id(parameters[1]);
+				if (parameters[2] === "removed") {
+					// Muted member removed
+					for (let memberMutedDocument of memberDocument.muted) {
+						client.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: parameters[1] });
+					}
+					memberDocument.muted = [];
+				} else if (svr.channels.hasOwnProperty(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
+					// Muted member new channels
+					client.IPC.send("muteMember", { guild: svr.id, channel: parameters[2], member: parameters[1] });
+					memberDocument.muted.push({ _id: parameters[2] });
+				}
+			}
+		});
+		// Muted members channels removed
+		memberDocuments = serverDocument.members.filter(member => member.muted && member.muted.length > 0 && svr.members.hasOwnProperty(member._id));
+		memberDocuments.forEach(memberDocument => {
+			memberDocument.muted.forEach(memberMutedDocument => {
+				if (!req.body[`muted-${memberDocument._id}-${memberMutedDocument._id}`]) {
+					client.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: memberDocument._id });
+					memberDocument.muted.pull(memberMutedDocument._id);
+				}
+			});
+		});
+	}
+	save(req, res, true);
+};
+
+controllers.administration.strikes = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-strikes.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			moderation: {
+				isEnabled: serverDocument.config.moderation.isEnabled,
+			},
+		},
+		strikes: serverDocument.members.filter(memberDocument => svr.members.hasOwnProperty(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
+			const member = svr.members[memberDocument._id];
+			return {
+				name: member.user.username,
+				id: member.id,
+				avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
+				strikes: memberDocument.strikes.map(strikeDocument => {
+					const creator = svr.members[strikeDocument._id] || {
+						id: "invalid-user",
+						user: {
+							username: "invalid-user",
+							avatarURL: "/static/img/discord-icon.png",
+						},
+					};
+					return {
+						creator: {
+							name: creator.user.username,
+							id: creator.id,
+							avatar: client.getAvatarURL(creator.id, creator.user.avatar) || "/static/img/discord-icon.png",
+						},
+						reason: md.makeHtml(xssFilters.inHTMLData(strikeDocument.reason)),
+						rawDate: moment(strikeDocument.timestamp).format(configJS.moment_date_format),
+						relativeDate: moment(strikeDocument.timestamp).fromNow(),
+					};
+				}),
+			};
+		}),
+	});
+};
+controllers.administration.strikes.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	if (req.body["new-member"] && req.body["new-reason"]) {
+		const member = findQueryUser(req.body["new-member"], req.svr.members);
+		if (member && req.app.client.getUserBotAdmin(req.svr, serverDocument, member) === 0) {
+			let memberDocument = serverDocument.members.id(member.id);
+			if (!memberDocument) {
+				serverDocument.members.push({ _id: member.id });
+				memberDocument = serverDocument.members.id(member.id);
+			}
+			memberDocument.strikes.push({
+				_id: req.consolemember.id,
+				reason: req.body["new-reason"],
+			});
+		}
+	} else {
+		for (const key in req.body) {
+			const args = key.split("-");
+			if (args[0] === "strikes" && !isNaN(args[1]) && args[2] === "removeall") {
+				const memberDocument = serverDocument.members.id(args[1]);
+				if (memberDocument) {
+					memberDocument.strikes = [];
+				}
+			} else if (args[0] === "removestrike" && !isNaN(args[1]) && !isNaN(args[2])) {
+				const memberDocument = serverDocument.members.id(args[1]);
+				if (memberDocument) {
+					memberDocument.strikes.splice(args[2], 1);
+				}
+			}
+		}
+	}
+
+	save(req, res, true);
+};
+
+controllers.administration.status = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
+	for (let i = 0; i < statusMessagesData.member_streaming_message.enabled_user_ids.length; i++) {
+		const member = svr.members[statusMessagesData.member_streaming_message.enabled_user_ids[i]] || { user: {} };
+		statusMessagesData.member_streaming_message.enabled_user_ids[i] = {
+			name: member.user.username,
+			id: member.id,
+			avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
+		};
+	}
+	res.render("pages/admin-status-messages.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			moderation: {
+				isEnabled: serverDocument.config.moderation.isEnabled,
+				status_messages: statusMessagesData,
+			},
+		},
+	});
+};
+controllers.administration.status.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	const args = Object.keys(req.body)[0].split("-");
+	if (Object.keys(req.body).length === 1 && args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
+		if (args[1] === "member_streaming_message") {
+			const member = findQueryUser(req.body[Object.keys(req.body)[0]], req.svr.members);
+			if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
+				serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
+			}
+		} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
+			serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
+		}
+	} else {
+		for (const status_message in serverDocument.toObject().config.moderation.status_messages) {
+			if (["new_member_pm", "member_removed_pm"].indexOf(status_message) === -1 && Object.keys(req.body).length > 1) {
+				serverDocument.config.moderation.status_messages[status_message].channel_id = "";
+			} else if (Object.keys(req.body).length > 1) {
+				serverDocument.config.moderation.status_messages[status_message].message_content = req.body[`${status_message}-message_content`];
+			}
+			if (Object.keys(req.body).length > 1) {
+				for (const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
+					switch (key) {
+						case "isEnabled":
+							serverDocument.config.moderation.status_messages[status_message][key] = req.body[`${status_message}-${key}`] === "on";
+							break;
+						case "enabled_channel_ids":
+							serverDocument.config.moderation.status_messages[status_message][key] = [];
+							Object.values(req.svr.channels).forEach(ch => {
+								if (ch.type === "text") {
+									if (req.body[`${status_message}-${key}-${ch.id}`]) {
+										serverDocument.config.moderation.status_messages[status_message][key].push(ch.id);
+									}
+								}
+							});
+							break;
+						case "channel_id":
+							if (["message_edited_message", "message_deleted_message"].indexOf(status_message) > -1 && req.body[`${status_message}-type`] === "msg") {
+								break;
+							}
+							// Fallthrough
+						case "type":
+							serverDocument.config.moderation.status_messages[status_message][key] = req.body[`${status_message}-${key}`];
+							break;
+					}
+				}
+			}
+			const key = status_message === "member_streaming_message" ? "enabled_user_ids" : "messages";
+			if (serverDocument.config.moderation.status_messages[status_message][key]) {
+				for (let i = 0; i < serverDocument.config.moderation.status_messages[status_message][key].length; i++) {
+					if (req.body[`${status_message}-${i}-removed`]) {
+						serverDocument.config.moderation.status_messages[status_message][key][i] = null;
+					}
+				}
+				serverDocument.config.moderation.status_messages[status_message][key].spliceNullElements();
+			}
+		}
+	}
+
+	save(req, res, true);
+};
+
+controllers.administration.filters = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	const filteredCommands = [];
+	for (const command in serverDocument.toObject().config.commands) {
+		const commandData = client.getPublicCommandMetadata(command);
+		if (commandData && commandData.defaults.isNSFWFiltered) {
+			filteredCommands.push(command);
+		}
+	}
+	res.render("pages/admin-filters.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		roleData: getRoleData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			moderation: {
+				isEnabled: serverDocument.config.moderation.isEnabled,
+				filters: serverDocument.toObject().config.moderation.filters,
+			},
+		},
+		config: {
+			filtered_commands: `<code>${filteredCommands.sort().join("</code>, <code>")}</code>`,
+		},
+	});
+};
+controllers.administration.filters.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	for (const filter in serverDocument.toObject().config.moderation.filters) {
+		for (const key in serverDocument.toObject().config.moderation.filters[filter]) {
+			switch (key) {
+				case "isEnabled":
+				case "delete_messages":
+				case "delete_message":
+					serverDocument.config.moderation.filters[filter][key] = req.body[`${filter}-${key}`] === "on";
+					break;
+				case "disabled_channel_ids":
+					serverDocument.config.moderation.filters[filter][key] = [];
+					Object.values(req.svr.channels).forEach(ch => {
+						if (ch.type === "text") {
+							if (req.body[`${filter}-${key}-${ch.id}`] !== "on") {
+								serverDocument.config.moderation.filters[filter][key].push(ch.id);
+							}
+						}
+					});
+					break;
+				case "keywords":
+					serverDocument.config.moderation.filters[filter][key] = req.body[`${filter}-${key}`].split(",");
+					break;
+				default:
+					serverDocument.config.moderation.filters[filter][key] = req.body[`${filter}-${key}`];
+					break;
+			}
+		}
+	}
+
+	save(req, res, true);
 };

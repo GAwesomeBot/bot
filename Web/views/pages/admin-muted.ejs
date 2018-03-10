@@ -37,7 +37,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();setUserAutocomplete('<%= serverData.id %>');">
+<body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -54,11 +54,11 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								Muted users <strong>cannot send text messages</strong> in a channel. Users may be automatically muted for filter violations and via the <code>mute</code> command. Please note that channel permissions can be overridden by anyone with the Manage Roles permission.
+								Muted users <strong>cannot send text messages</strong> in a channel. Users may be automatically muted for filter violations and via the <code>mute</code> command. Please note that channel permissions can be overridden by anyone with the Manage Roles permission. <strong>It is impossible to mute Bot Admins.</strong>
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="submitForm(); Turbolinks.visit(''); return false;">
 						<div class="field" style="overflow-x: scroll;">
 							<% if(muted.length>0) { %>
 							<table class="table is-fullwidth">
@@ -71,7 +71,7 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<muted.length; i++) { %>
+								<% for(var i = 0; i < muted.length; i++) { %>
 								<tr>
 									<td>
 										<img class="image is-24x24" src="<%= muted[i].avatar %>" alt="<%= muted[i].id %>">
@@ -90,7 +90,7 @@
 											<span>Channels</span>
 										</a>
 										<input type="checkbox" id="muted-<%= muted[i].id %>-removed" name="muted-<%= muted[i].id %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
+										<button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState();">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>
@@ -172,6 +172,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

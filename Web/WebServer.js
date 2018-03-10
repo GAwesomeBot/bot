@@ -175,483 +175,11 @@ exports.open = async (client, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-
-	// Admin console GAwesomePoints
-	app.get("/dashboard/:svrid/stats-points/gawesome-points", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
-	});
-	io.of("/dashboard/stats-points/gawesome-points").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/stats-points/gawesome-points", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
-	});
-
-	// Admin console admins
-	app.get("/dashboard/:svrid/administration/admins", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
-	});
-	io.of("/dashboard/administration/admins").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/admins", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-
-		});
-	});
-
-	// Admin console moderation
-	app.get("/dashboard/:svrid/administration/moderation", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-moderation.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				roleData: getRoleData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					moderation: {
-						isEnabled: serverDocument.config.moderation.isEnabled,
-						autokick_members: serverDocument.config.moderation.autokick_members,
-						new_member_roles: serverDocument.config.moderation.new_member_roles,
-					},
-					modlog: {
-						isEnabled: serverDocument.modlog.isEnabled,
-						channel_id: serverDocument.modlog.channel_id,
-					},
-				},
-			});
-		});
-	});
-	io.of("/dashboard/administration/moderation").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/moderation", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			serverDocument.config.moderation.isEnabled = req.body.isEnabled === "on";
-			serverDocument.config.moderation.autokick_members.isEnabled = req.body["autokick_members-isEnabled"] === "on";
-			serverDocument.config.moderation.autokick_members.max_inactivity = parseInt(req.body["autokick_members-max_inactivity"]);
-			serverDocument.config.moderation.new_member_roles = [];
-			Object.values(svr.roles).forEach(role => {
-				if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
-					if (req.body[`new_member_roles-${role.id}`] === "on") {
-						serverDocument.config.moderation.new_member_roles.push(role.id);
-					}
-				}
-			});
-			serverDocument.modlog.isEnabled = req.body["modlog-isEnabled"] === "on";
-			serverDocument.modlog.channel_id = req.body["modlog-channel_id"];
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
-	// Admin console blocked
-	app.get("/dashboard/:svrid/administration/blocked", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-blocked.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					blocked: Object.values(svr.members).filter(member => serverDocument.config.blocked.indexOf(member.id) > -1).map(member => ({
-						name: member.user.username,
-						id: member.id,
-						avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-					})).concat(configJSON.userBlocklist.filter(usrid => svr.members.hasOwnProperty(usrid)).map(usrid => {
-						const member = svr.members[usrid];
-						return {
-							name: member.user.username,
-							id: member.id,
-							avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-							isGlobal: true,
-						};
-					})),
-					moderation: {
-						isEnabled: serverDocument.config.moderation.isEnabled,
-					},
-				},
-			});
-		});
-	});
-	io.of("/dashboard/administration/blocked").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/blocked", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-member"]) {
-				const member = findQueryUser(req.body["new-member"], svr.members);
-				if (member && serverDocument.config.blocked.indexOf(member.id) === -1 && bot.getUserBotAdmin(svr, serverDocument, member) === 0) {
-					serverDocument.config.blocked.push(member.id);
-				}
-			} else {
-				for (let i = 0; i < serverDocument.config.blocked.length; i++) {
-					if (req.body[`block-${i}-removed`] !== undefined) {
-						serverDocument.config.blocked[i] = null;
-					}
-				}
-				serverDocument.config.blocked.spliceNullElements();
-			}
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res);
-		});
-	});
-
-	// Admin console muted
-	app.get("/dashboard/:svrid/administration/muted", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			const mutedMembers = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.members.hasOwnProperty(memberDocument._id))
-				.map(memberDocument => {
-					const member = svr.members[memberDocument._id];
-					return {
-						name: member.user.username,
-						id: member.id,
-						avatar: bot.getAvatarURL(member.id, member.user.avatar),
-						channels: memberDocument.muted.map(memberMutedDocument => memberMutedDocument._id),
-					}
-				});
-			mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
-			res.render("pages/admin-muted.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons"),
-				},
-				channelData: getChannelData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					moderation: {
-						isEnabled: serverDocument.config.moderation.isEnabled,
-					},
-				},
-				muted: mutedMembers,
-			});
-		});
-	});
-	io.of("/dashboard/administration/muted").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/muted", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-member"] && req.body["new-channel_id"]) {
-				const member = findQueryUser(req.body["new-member"], svr.members);
-				const ch = svr.channels[req.body["new-channel_id"]];
-
-				let memberDocument = serverDocument.members.id(member.id);
-				if (!memberDocument) {
-					serverDocument.members.push({ _id: member.id });
-					memberDocument = serverDocument.members.id(member.id);
-				}
-
-				if (member && bot.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !memberDocument.muted.id(ch.id)) {
-					bot.IPC.send("muteMember", { guild: svr.id, channel: ch.id, member: member.id });
-					memberDocument.muted.push({ _id: ch.id });
-				}
-			} else {
-				let memberDocuments = serverDocument.members;
-				Object.keys(req.body).forEach(key => {
-					const parameters = key.split("-");
-					if (parameters.length === 3 && parameters[0] === "muted" && svr.members.hasOwnProperty(parameters[1]) && memberDocuments.id(parameters[1])) {
-						const memberDocument = memberDocuments.id(parameters[1]);
-						if (parameters[2] === "removed") {
-							// Muted member removed
-							for (let memberMutedDocument of memberDocument.muted) {
-								bot.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: parameters[1] });
-							}
-							memberDocument.muted = [];
-						} else if (svr.channels.hasOwnProperty(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
-							// Muted member new channels
-							bot.IPC.send("muteMember", { guild: svr.id, channel: parameters[2], member: parameters[1] });
-							memberDocument.muted.push({ _id: parameters[2] });
-						}
-					}
-				});
-				// Muted members channels removed
-				memberDocuments = serverDocument.members.filter(member => member.muted && member.muted.length > 0 && svr.members.hasOwnProperty(member._id));
-				memberDocuments.forEach(memberDocument => {
-					memberDocument.muted.forEach(memberMutedDocument => {
-						if (!req.body[`muted-${memberDocument._id}-${memberMutedDocument._id}`]) {
-							bot.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: memberDocument._id });
-							memberDocument.muted.pull(memberMutedDocument._id);
-						}
-					});
-				});
-			}
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
-	// Admin console strikes
-	app.get("/dashboard/:svrid/administration/strikes", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			res.render("pages/admin-strikes.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					moderation: {
-						isEnabled: serverDocument.config.moderation.isEnabled,
-					},
-				},
-				strikes: serverDocument.members.filter(memberDocument => svr.members.hasOwnProperty(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
-					const member = svr.members[memberDocument._id];
-					return {
-						name: member.user.username,
-						id: member.id,
-						avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-						strikes: memberDocument.strikes.map(strikeDocument => {
-							const creator = svr.members[strikeDocument._id] || {
-								id: "invalid-user",
-								user: {
-									username: "invalid-user",
-									avatarURL: "/static/img/discord-icon.png",
-								},
-							};
-							return {
-								creator: {
-									name: creator.user.username,
-									id: creator.id,
-									avatar: bot.getAvatarURL(creator.id, creator.user.avatar) || "/static/img/discord-icon.png",
-								},
-								reason: md.makeHtml(xssFilters.inHTMLData(strikeDocument.reason)),
-								rawDate: moment(strikeDocument.timestamp).format(configJS.moment_date_format),
-								relativeDate: moment(strikeDocument.timestamp).fromNow(),
-							};
-						}),
-					};
-				}),
-			});
-		});
-	});
-	io.of("/dashboard/administration/strikes").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/strikes", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			if (req.body["new-member"] && req.body["new-reason"]) {
-				const member = findQueryUser(req.body["new-member"], svr.members);
-				if (member && bot.getUserBotAdmin(svr, serverDocument, member) === 0) {
-					let memberDocument = serverDocument.members.id(member.id);
-					if (!memberDocument) {
-						serverDocument.members.push({ _id: member.id });
-						memberDocument = serverDocument.members.id(member.id);
-					}
-					memberDocument.strikes.push({
-						_id: consolemember.id,
-						reason: req.body["new-reason"],
-					});
-				}
-			} else {
-				for (const key in req.body) {
-					const args = key.split("-");
-					if (args[0] === "strikes" && !isNaN(args[1]) && args[2] === "removeall") {
-						const memberDocument = serverDocument.members.id(args[1]);
-						if (memberDocument) {
-							memberDocument.strikes = [];
-						}
-					} else if (args[0] === "removestrike" && !isNaN(args[1]) && !isNaN(args[2])) {
-						const memberDocument = serverDocument.members.id(args[1]);
-						if (memberDocument) {
-							memberDocument.strikes.splice(args[2], 1);
-						}
-					}
-				}
-			}
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
-	// Admin console status messages
-	app.get("/dashboard/:svrid/administration/status-messages", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
-			for (let i = 0; i < statusMessagesData.member_streaming_message.enabled_user_ids.length; i++) {
-				const member = svr.members[statusMessagesData.member_streaming_message.enabled_user_ids[i]] || { user: {} };
-				statusMessagesData.member_streaming_message.enabled_user_ids[i] = {
-					name: member.user.username,
-					id: member.id,
-					avatar: bot.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-				};
-			}
-			res.render("pages/admin-status-messages.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					moderation: {
-						isEnabled: serverDocument.config.moderation.isEnabled,
-						status_messages: statusMessagesData,
-					},
-				},
-			});
-		});
-	});
-	io.of("/dashboard/administration/status-messages").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/status-messages", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			const args = Object.keys(req.body)[0].split("-");
-			if (Object.keys(req.body).length === 1 && args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
-				if (args[1] === "member_streaming_message") {
-					const member = findQueryUser(req.body[Object.keys(req.body)[0]], svr.members);
-					if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
-						serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
-					}
-				} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
-					serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
-				}
-			} else {
-				for (const status_message in serverDocument.toObject().config.moderation.status_messages) {
-					if (["new_member_pm", "member_removed_pm"].indexOf(status_message) === -1 && Object.keys(req.body).length > 1) {
-						serverDocument.config.moderation.status_messages[status_message].channel_id = "";
-					} else if (Object.keys(req.body).length > 1) {
-						serverDocument.config.moderation.status_messages[status_message].message_content = req.body[`${status_message}-message_content`];
-					}
-					if (Object.keys(req.body).length > 1) for (const key in serverDocument.toObject().config.moderation.status_messages[status_message]) {
-						switch (key) {
-							case "isEnabled":
-								serverDocument.config.moderation.status_messages[status_message][key] = req.body[`${status_message}-${key}`] === "on";
-								break;
-							case "enabled_channel_ids":
-								serverDocument.config.moderation.status_messages[status_message][key] = [];
-								Object.values(svr.channels).forEach(ch => {
-									if (ch.type === "text") {
-										if (req.body[`${status_message}-${key}-${ch.id}`]) {
-											serverDocument.config.moderation.status_messages[status_message][key].push(ch.id);
-										}
-									}
-								});
-								break;
-							case "channel_id":
-								if (["message_edited_message", "message_deleted_message"].indexOf(status_message) > -1 && req.body[`${status_message}-type`] === "msg") {
-									break;
-								}
-							case "type":
-								serverDocument.config.moderation.status_messages[status_message][key] = req.body[`${status_message}-${key}`];
-								break;
-						}
-					}
-					const key = status_message === "member_streaming_message" ? "enabled_user_ids" : "messages";
-					if (serverDocument.config.moderation.status_messages[status_message][key]) {
-						for (let i = 0; i < serverDocument.config.moderation.status_messages[status_message][key].length; i++) {
-							if (req.body[`${status_message}-${i}-removed`]) {
-								serverDocument.config.moderation.status_messages[status_message][key][i] = null;
-							}
-						}
-						serverDocument.config.moderation.status_messages[status_message][key].spliceNullElements();
-					}
-				}
-			}
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
-	// Admin console filters
-	app.get("/dashboard/:svrid/administration/filters", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			const filteredCommands = [];
-			for (const command in serverDocument.toObject().config.commands) {
-				const commandData = bot.getPublicCommandMetadata(command);
-				if (commandData && commandData.defaults.isNSFWFiltered) {
-					filteredCommands.push(command);
-				}
-			}
-			res.render("pages/admin-filters.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
-        sudo: req.isSudo,
-				serverData: {
-					name: svr.name,
-					id: svr.id,
-					icon: bot.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-				},
-				channelData: getChannelData(svr),
-				roleData: getRoleData(svr),
-				currentPage: `${req.baseUrl}${req.path}`,
-				configData: {
-					moderation: {
-						isEnabled: serverDocument.config.moderation.isEnabled,
-						filters: serverDocument.toObject().config.moderation.filters,
-					},
-				},
-				config: {
-					filtered_commands: `<code>${filteredCommands.sort().join("</code>, <code>")}</code>`,
-				},
-			});
-		});
-	});
-	io.of("/dashboard/administration/filters").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/:svrid/administration/filters", (req, res) => {
-		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
-			for (const filter in serverDocument.toObject().config.moderation.filters) {
-				for (const key in serverDocument.toObject().config.moderation.filters[filter]) {
-					switch (key) {
-						case "isEnabled":
-						case "delete_messages":
-						case "delete_message":
-							serverDocument.config.moderation.filters[filter][key] = req.body[`${filter}-${key}`] === "on";
-							break;
-						case "disabled_channel_ids":
-							serverDocument.config.moderation.filters[filter][key] = [];
-							Object.values(svr.channels).forEach(ch => {
-								if (ch.type === "text") {
-									if (req.body[`${filter}-${key}-${ch.id}`] !== "on") {
-										serverDocument.config.moderation.filters[filter][key].push(ch.id);
-									}
-								}
-							});
-							break;
-						case "keywords":
-							serverDocument.config.moderation.filters[filter][key] = req.body[`${filter}-${key}`].split(",");
-							break;
-						default:
-							serverDocument.config.moderation.filters[filter][key] = req.body[`${filter}-${key}`];
-							break;
-					}
-				}
-			}
-
-			saveAdminConsoleOptions(consolemember, svr, serverDocument, req, res, true);
-		});
-	});
-
 	// Admin console message of the day
 	app.get("/dashboard/:svrid/administration/message-of-the-day", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-message-of-the-day.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -690,7 +218,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/:svrid/administration/voicetext-channels", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-voicetext-channels.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -727,7 +255,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/:svrid/administration/roles", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-roles.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -817,7 +345,7 @@ exports.open = async (client, auth, configJS, winston) => {
 				});
 
 				res.render("pages/admin-logs.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 					sudo: req.isSudo,
 					serverData: {
 						name: svr.name,
@@ -841,7 +369,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/:svrid/other/name-display", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-name-display.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -946,7 +474,7 @@ exports.open = async (client, auth, configJS, winston) => {
 				.first();
 
 			res.render("pages/admin-ongoing-activities.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -994,7 +522,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/:svrid/other/public-data", (req, res) => {
 		checkAuth(req, res, (consolemember, svr, serverDocument, adminLvl) => {
 			res.render("pages/admin-public-data.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -1044,7 +572,7 @@ exports.open = async (client, auth, configJS, winston) => {
 				extensionDocument.store = sizeof(extensionDocument.store);
 			});
 			res.render("pages/admin-extensions.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -1146,7 +674,7 @@ exports.open = async (client, auth, configJS, winston) => {
 				}
 			}
 			res.render("pages/admin-extension-builder.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         sudo: req.isSudo,
 				serverData: {
 					name: svr.name,
@@ -1213,7 +741,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/:svrid/messages", (req, res) => {
 		checkAuth(req, res, () => {
 			res.render("pages/admin-messages.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null
 			});
 		});
 	});
@@ -1238,7 +766,7 @@ exports.open = async (client, auth, configJS, winston) => {
 				const trafficData = bot.traffic.data();
 				const version = await Updater.check();
 				res.render("pages/maintainer.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 					serverData: {
 						name: bot.user.username,
 						id: bot.user.id,
@@ -1271,7 +799,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, async consolemember => {
 			const renderPage = data => {
 				res.render("pages/maintainer-server-list.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
         	serverData: {
 						name: bot.user.username,
 						id: bot.user.id,
@@ -1340,7 +868,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/servers/big-message", (req, res) => {
 		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-big-message.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1371,7 +899,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/global-options/blocklist", (req, res) => {
 		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-blocklist.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1424,7 +952,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, async () => {
 			res.render("pages/maintainer-bot-user.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1464,7 +992,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/global-options/homepage", (req, res) => {
 		checkAuth(req, res, () => {
 			res.render("pages/maintainer-homepage.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1500,7 +1028,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/global-options/wiki-contributors", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-wiki-contributors.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1567,7 +1095,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/management/maintainers", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-maintainers.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1659,7 +1187,7 @@ exports.open = async (client, auth, configJS, winston) => {
 				branch: configJSON.branch,
 				latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
 				utd: version["up-to-date"],
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1697,7 +1225,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.get("/dashboard/maintainer/management/eval", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 			res.render("pages/maintainer-eval.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1733,7 +1261,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		checkAuth(req, res, async consolemember => {
 			let data = await bot.IPC.send("shardData", {});
 			res.render("pages/maintainer-shards.ejs", {
-				authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 				serverData: {
 					name: bot.user.username,
 					id: bot.user.id,
@@ -1789,7 +1317,7 @@ exports.open = async (client, auth, configJS, winston) => {
 					return log;
 				});
 				res.render("pages/maintainer-logs.ejs", {
-					authUser: req.isAuthenticated() ? getAuthUser(req.user) : null,
+					authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 					serverData: {
 						name: bot.user.username,
 						id: bot.user.id,
