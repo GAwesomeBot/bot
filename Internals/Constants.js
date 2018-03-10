@@ -113,6 +113,45 @@ exports.NumberEmojis = {
 	ten: "🔟",
 };
 
+/**
+ * Emojis that are used in the help menu, each representing:
+ * ℹ -- Main menu
+ * 🤖 -- GAB commands, like ping
+ * 🎪 -- Fun commands
+ * ⚒ -- ~~Communism~~ Moderation
+ * 🎬 -- Sarch and Media
+ * 👹 -- NSFW
+ * ⭐️ -- Stats and points (and starboard 👀)
+ * 🔦 -- Utility commands
+ * ⚙️ -- Extension Commands
+ */
+exports.HelpMenuEmojis = {
+	info: "ℹ",
+	gab: "🤖",
+	fun: "🎪",
+	mod: "⚒",
+	media: "🎬",
+	nsfw: "👹",
+	stats: "⭐",
+	util: "🔦",
+	extension: "⚙️",
+};
+
+/**
+ * I was super lazy to do if-checks so I did this instead.
+ * Sorry. -- Vlad
+ */
+exports.CategoryEmojiMap = {
+	"Extensions ⚙️": "⚙️",
+	"Fun 🎪": "🎪",
+	"GAwesomeBot 🤖": "🤖",
+	"Moderation ⚒": "⚒",
+	"NSFW 👹": "👹",
+	"Search & Media 🎬": "🎬",
+	"Stats & Points ⭐️": "⭐",
+	"Utility 🔦": "🔦",
+};
+
 exports.Templates = {
 	ReactionMenu: {
 		title: `Choose a number`,

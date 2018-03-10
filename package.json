@@ -61,7 +61,7 @@
     "uuid": "^3.2.1",
     "vm2": "^3.5.2",
     "wikijs": "^4.5.2",
-    "winston": "^2.4.0",
+    "winston": "^2.4.1",
     "winston-daily-rotate-file": "^1.7.2",
     "wolfram-node": "0.0.1",
     "write-file-atomic": "^2.3.0",

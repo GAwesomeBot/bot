@@ -270,40 +270,42 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	getPublicCommand (command) {
-		if (commandModules[command]) {
-			return commandModules[command];
-		} else if (command) {
-			for (const [key, value] of Object.entries(commands.public)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commandModules[key];
-			}
-		}
+		command = this.getPublicCommandName(command);
+		if (commandModules[command]) return commandModules[command];
+		return null;
 	}
 
 	getSharedCommand (command) {
-		if (sharedModules[command]) {
-			return sharedModules[command];
-		} else if (command) {
-			for (const [key, value] of Object.entries(commands.shared)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return sharedModules[key];
-			}
-		}
+		command = this.getSharedCommandName(command);
+		if (sharedModules[command]) return sharedModules[command];
+		return null;
 	}
 
 	getPMCommandMetadata (command) {
-		return commands.pm[command];
+		command = (typeof command === "string" && command.trim().toLowerCase()) || null;
+		if (commands.pm[command]) {
+			return {
+				command,
+				...commands.pm[command],
+			};
+		}
+		return null;
 	}
 
 	getPublicCommandMetadata (command) {
+		command = this.getPublicCommandName(command);
 		if (commands.public[command]) {
-			return commands.public[command];
-		} else {
-			for (const [key, value] of Object.entries(commands.public)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.public[key];
-			}
+			return {
+				command,
+				...commands.public[command],
+			};
 		}
+		return null;
 	}
 
 	getPublicCommandName (command) {
+		command = (typeof command === "string" && command.trim().toLowerCase()) || null;
+		if (!command) return null;
 		let cmds = Object.keys(commands.public);
 		if (cmds.includes(command)) return command;
 		cmds = Object.entries(commands.public);
@@ -313,16 +315,19 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	getSharedCommandMetadata (command) {
+		command = this.getSharedCommandName(command);
 		if (commands.shared[command]) {
-			return commands.shared[command];
-		} else {
-			for (const [key, value] of Object.entries(commands.shared)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.shared[key];
-			}
+			return {
+				command,
+				...commands.shared[command],
+			};
 		}
+		return null;
 	}
 
 	getSharedCommandName (command) {
+		command = (typeof command === "string" && command.trim().toLowerCase()) || null;
+		if (!command) return null;
 		let cmds = Object.keys(commands.shared);
 		if (cmds.includes(command)) return command;
 		cmds = Object.entries(commands.shared);
@@ -837,7 +842,7 @@ module.exports = class GABClient extends DJSClient {
 
 		let adminLevel = 0;
 		let roles = member.roles;
-		if (!(roles instanceof Array)) roles = roles.array();
+		if (!(roles instanceof Array)) roles = [...roles.keys()];
 		for (const role of roles) {
 			const adminDocument = serverDocument.config.admins.id(role.id || role);
 			if (adminDocument && adminDocument.level > adminLevel) {
