@@ -1615,3 +1615,46 @@ controllers.other.activities.post = async (req, res) => {
 		res.sendStatus(400);
 	}
 };
+
+controllers.other.public = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-public-data.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons"),
+		},
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			public_data: serverDocument.config.public_data,
+			isBanned: configJSON.activityBlocklist.includes(svr.id),
+			canUnban: configJSON.maintainers.includes(req.consolemember.id) || process.env.GAB_HOST === req.consolemember.id,
+		},
+	});
+};
+controllers.other.public.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	serverDocument.config.public_data.isShown = req.body.isShown === "on";
+	let createInvite = false;
+	if (!serverDocument.config.public_data.server_listing.isEnabled && req.body["server_listing-isEnabled"] === "on") {
+		createInvite = true;
+	}
+	serverDocument.config.public_data.server_listing.isEnabled = req.body["server_listing-isEnabled"] === "on";
+	serverDocument.config.public_data.server_listing.category = req.body["server_listing-category"];
+	serverDocument.config.public_data.server_listing.description = req.body["server_listing-description"];
+	if (createInvite) {
+		save(req, res, true);
+		req.app.client.IPC.send("createPublicInviteLink", { guild: req.svr.id });
+	} else if (!req.body["server_listing-isEnabled"] && serverDocument.config.public_data.server_listing.invite_link) {
+		save(req, res, true);
+		req.app.client.IPC.send("deletePublicInviteLink", { guild: req.svr.id });
+	} else {
+		save(req, res, true);
+	}
+};
