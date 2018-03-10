@@ -12,7 +12,7 @@ const md = new showdown.Converter({
 md.setFlavor("github");
 
 const getGuild = require("../../Modules").GetGuild;
-const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save, findQueryUser, renderError } = require("../helpers");
+const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save, findQueryUser, renderError, createMessageOfTheDay } = require("../helpers");
 const parsers = require("../parsers");
 
 const controllers = module.exports;
@@ -186,7 +186,8 @@ controllers.commands.options.post = async (req, res) => {
 	}
 
 	req.svr.document.config.command_cooldown = parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown);
-	req.svr.document.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? req.svr.document.config.command_fetch_properties.default_count : parseInt(req.body.default_count);
+	const defaultCount = req.svr.document.config.command_fetch_properties.default_count;
+	req.svr.document.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? defaultCount : parseInt(req.body.default_count);
 	req.svr.document.config.command_fetch_properties.max_count = isNaN(parseInt(req.body.max_count)) ? req.svr.document.config.command_fetch_properties.max_count : parseInt(req.body.max_count);
 
 	save(req, res, true);
@@ -1274,6 +1275,78 @@ controllers.administration.filters.post = async (req, res) => {
 			}
 		}
 	}
+
+	save(req, res, true);
+};
+
+controllers.administration.MOTD = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-message-of-the-day.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		channelData: getChannelData(svr),
+		roleData: getRoleData(svr),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			message_of_the_day: serverDocument.config.message_of_the_day,
+		},
+	});
+};
+controllers.administration.MOTD.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	const alreadyEnabled = serverDocument.config.message_of_the_day.isEnabled;
+	serverDocument.config.message_of_the_day.isEnabled = req.body.isEnabled === "on";
+	serverDocument.config.message_of_the_day.message_content = req.body.message_content;
+	serverDocument.config.message_of_the_day.channel_id = req.body.channel_id;
+	serverDocument.config.message_of_the_day.interval = parseInt(req.body.interval);
+
+	save(req, res, true);
+
+	if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
+		createMessageOfTheDay(req, req.svr.id);
+	}
+};
+
+controllers.administration.voicetext = async (req, res) => {
+	const client = req.app.client;
+	const svr = req.svr;
+	const serverDocument = req.svr.document;
+
+	res.render("pages/admin-voicetext-channels.ejs", {
+		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		sudo: req.isSudo,
+		serverData: {
+			name: svr.name,
+			id: svr.id,
+			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
+		},
+		voiceChannelData: getChannelData(svr, "voice"),
+		currentPage: `${req.baseUrl}${req.path}`,
+		configData: {
+			voicetext_channels: serverDocument.config.voicetext_channels,
+		},
+	});
+};
+controllers.administration.voicetext.post = async (req, res) => {
+	const serverDocument = req.svr.document;
+
+	serverDocument.config.voicetext_channels = [];
+	Object.values(req.svr.channels).forEach(ch => {
+		if (ch.type === "voice") {
+			if (req.body[`voicetext_channels-${ch.id}`] === "on") {
+				serverDocument.config.voicetext_channels.push(ch.id);
+			}
+		}
+	});
 
 	save(req, res, true);
 };

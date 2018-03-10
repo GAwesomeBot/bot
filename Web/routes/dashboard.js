@@ -39,4 +39,6 @@ module.exports = router => {
 	setupDashboardPage(router, "/administration/strikes", [], controllers.dashboard.administration.strikes);
 	setupDashboardPage(router, "/administration/status-messages", [], controllers.dashboard.administration.status);
 	setupDashboardPage(router, "/administration/filters", [], controllers.dashboard.administration.filters);
+	setupDashboardPage(router, "/administration/message-of-the-day", [], controllers.dashboard.administration.MOTD);
+	setupDashboardPage(router, "/administration/voicetext-channels", [], controllers.dashboard.administration.voicetext);
 };
