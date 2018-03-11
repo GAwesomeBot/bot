@@ -17,7 +17,7 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 					channel.send(StreamingTemplate(data));
 				}
 			}
-		} else {
+		} else if (!data) {
 			streamerDocument.live_state = false;
 		}
 
