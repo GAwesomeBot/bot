@@ -28,7 +28,7 @@
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete();">
+<body>
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -123,6 +123,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete();</script>
 	</section>
 
 	<% include ../partials/footer %>

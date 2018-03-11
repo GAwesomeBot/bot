@@ -1,7 +1,7 @@
 <h3 class="subtitle is-3">
     <%- data.title ? ("Edit <strong>" + data.title + "</strong>") : "Write a new post" %>
 </h3>
-<form id="form" action="/blog/compose?id=<%= data.id %>" method="post">
+<form id="form" action="/blog/<%= data.id ? data.id : "new" %>/compose" method="post">
     <div class="field">
         <label class="label">Title</label>
 	    <div class="control">

@@ -57,7 +57,7 @@
 							</div>
 						</div>
 						<script>
-						  $.getJSON("/serverlist", function(data) {
+						  $.getJSON("/api/list/servers", function(data) {
 							new autoComplete({
 							  selector: "#server-search",
 							  minChars: 2,

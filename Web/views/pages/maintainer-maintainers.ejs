@@ -33,7 +33,7 @@
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete(); saveFormState();">
+<body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -218,10 +218,10 @@
 									<dt>
 										Sudo Mode &nbsp;
 										<div class="select is-small">
-											<select name="perm-sudoMode"<%= (config.perms.sudoMode === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
-												<option value="maintainer"<%= config.perms.sudoMode === 1 ? " selected" : ""%>>All Maintainers</option>
-												<option value="sudo"<%= config.perms.sudoMode === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.sudoMode === 0 ? " selected" : ""%>>Only The Host</option>
+											<select name="perm-sudo"<%= (config.perms.sudo === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= config.perms.sudo === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= config.perms.sudo === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= config.perms.sudo === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>

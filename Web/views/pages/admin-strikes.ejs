@@ -69,7 +69,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();setUserAutocomplete('<%= serverData.id %>');">
+<body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -86,11 +86,11 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								Strikes are the best way for moderators to <strong>keep track of rule violations</strong> by members on your server. You can add strikes when a user does something wrong, and strikes are automatically added for filter violations.
+								Strikes are the best way for moderators to <strong>keep track of rule violations</strong> by members on your server. You can add strikes when a user does something wrong, and strikes are automatically added for filter violations. <strong>It is impossible to strike Bot Admins.</strong>
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="submitForm(); Turbolinks.visit(''); return false;">
 						<div class="field" style="overflow-x: scroll;">
 							<% if(strikes.length>0) { %>
 							<table class="table is-fullwidth">
@@ -134,7 +134,7 @@
 											</div>
 											<div class="control">
 											<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
-											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); Turbolinks.visit('');">
+											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState();">
 												<span>Remove All</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>
@@ -246,6 +246,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

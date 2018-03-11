@@ -54,7 +54,7 @@
 			}
     </script>
 </head>
-<body onload="saveFormState(); setUserAutocomplete('<%= serverData.id %>');">
+<body onload="saveFormState();">
 <% include ../partials/dashboard-header %>
 <% include ../partials/dashboard-socket-updates %>
 
@@ -726,6 +726,7 @@
             </div>
         </div>
     </div>
+    <script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 </section>
 
 <% include ../partials/footer %>

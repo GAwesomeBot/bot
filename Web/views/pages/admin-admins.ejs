@@ -39,7 +39,7 @@
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete('<%= serverData.id %>');">
+<body>
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -87,17 +87,17 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<configData.admins.length; i++) { %>
+								<% configData.admins.forEach(admin => { %>
 								<tr>
 									<td>
-										<%= configData.admins[i].name %>
+										<%= admin.name %>
 									</td>
 									<td>
-										<%= configData.admins[i].level %>
+										<%= admin.level %>
 									</td>
 									<td>
-										<input type="checkbox" id="admin-<%= i %>-removed" name="admin-<%= i %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="admin-<%= i %>-removed" onclick="hide_update_modal = true; $('#admin-<%= i %>-removed').attr('checked', true);">
+										<input type="checkbox" id="admin-<%= admin._id %>-removed" name="admin-<%= admin._id %>-removed" style="display: none;">
+										<button class="button is-small is-danger" name="admin-<%= admin._id %>-removed" onclick="saveFormState(); $('#admin-<%= admin._id %>-removed').attr('checked', true);">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>
@@ -105,7 +105,7 @@
 										</button>
 									</td>
 								</tr>
-								<% } %>
+								<% }) %>
 								</tbody>
 							</table>
 							<% } else { %>
@@ -158,6 +158,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

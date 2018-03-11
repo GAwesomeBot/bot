@@ -15,6 +15,7 @@ module.exports = client => {
 					i--;
 				}
 			}
+			return this;
 		},
 	});
 

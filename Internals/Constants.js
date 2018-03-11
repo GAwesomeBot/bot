@@ -66,6 +66,9 @@ exports.Colors = {
 	// A trivia game has started or ended
 	TRIVIA_START: 0x50FF60,
 	TRIVIA_END: 0x2B67FF,
+
+	TWITCH: 0x6441A5,
+	YOUTUBE: 0xFF0000,
 };
 
 // Should all be functions for consistency, even if the string is hardcoded.
@@ -73,6 +76,7 @@ exports.Text = {
 	COMMAND_ERR: () => "Something went wrong! 😱",
 	INVALID_USAGE: (commandData, prefix = null) => `🗯 Correct usage is: \`${prefix ? prefix : ""}${commandData.name} ${commandData.usage}\``,
 	MISSING_PERMS: serverName => `🔐 You don't have permission to use this command${serverName ? `on ${serverName}` : "."}`,
+	NSFW_INVALID: () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`,
 };
 
 // Hardcoded names for the child process manager
@@ -112,12 +116,68 @@ exports.NumberEmojis = {
 	ten: "🔟",
 };
 
+/**
+ * Emojis that are used in the help menu, each representing:
+ * ℹ -- Main menu
+ * 🤖 -- GAB commands, like ping
+ * 🎪 -- Fun commands
+ * ⚒ -- ~~Communism~~ Moderation
+ * 🎬 -- Sarch and Media
+ * 👹 -- NSFW
+ * ⭐️ -- Stats and points (and starboard 👀)
+ * 🔦 -- Utility commands
+ * ⚙️ -- Extension Commands
+ */
+exports.HelpMenuEmojis = {
+	info: "ℹ",
+	gab: "🤖",
+	fun: "🎪",
+	mod: "⚒",
+	media: "🎬",
+	nsfw: "👹",
+	stats: "⭐",
+	util: "🔦",
+	extension: "⚙",
+};
+
+/**
+ * I was super lazy to do if-checks so I did this instead.
+ * Sorry. -- Vlad
+ */
+exports.CategoryEmojiMap = {
+	"Extensions ⚙️": "⚙",
+	"Fun 🎪": "🎪",
+	"GAwesomeBot 🤖": "🤖",
+	"Moderation ⚒": "⚒",
+	"NSFW 👹": "👹",
+	"Search & Media 🎬": "🎬",
+	"Stats & Points ⭐️": "⭐",
+	"Utility 🔦": "🔦",
+};
+
 exports.Templates = {
 	ReactionMenu: {
 		title: `Choose a number`,
 		color: exports.Colors.BLUE,
 		description: `{list}`,
 		footer: `Page {current} out of {total}`,
+	},
+	StreamingTemplate: data => {
+		const color = exports.Colors[data.type.toUpperCase()] || exports.Colors.INFO;
+		return {
+			embed: {
+				color,
+				description: `${data.name} started streaming \`${data.game}\` on **${data.type}**\nWatch them by clicking [**here**](${data.url})\n\nHere is a preview of the stream:`,
+				author: {
+					name: data.name,
+					iconURL: data.streamerImage,
+					url: data.url,
+				},
+				image: {
+					url: data.preview,
+				},
+			},
+		};
 	},
 };
 
@@ -135,7 +195,7 @@ exports.EmptySpace = `\u200b`;
 
 exports.Perms = {
 	eval: "⚙ Evaluation (Can execute `eval`)",
-	sudoMode: "🛡 Sudo Mode (Can act as a Server Admin)",
+	sudo: "🛡 Sudo Mode (Can act as a Server Admin)",
 	management: "🔧 Management (Can access management)",
 	administration: "🗂 Administration (Can manage the Bot User)",
 	shutdown: "🌟 Shutdown (Can manage GAB Processes)",
@@ -181,8 +241,23 @@ exports.NSFWEmbed = {
 	},
 };
 
-// String for no suffixes for NSFW commands
-exports.NSFWInvalid = () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`;
+exports.APIResponses = {
+	servers: {
+		success: data => ({ err: null, data }),
+		notFound: () => ({ err: "Server not found", data: null }),
+	},
+	users: {
+		success: data => ({ err: null, data }),
+		badRequest: () => ({ err: "Request is invalid", data: null }),
+		notFound: () => ({ err: "User not found", data: null }),
+		internalError: () => ({ err: "Internal server error", data: null }),
+	},
+	extensions: {
+		success: data => ({ err: null, data }),
+		notFound: () => ({ err: "No extensions were found", data: null }),
+		internalError: () => ({ err: "Internal server error", data: null }),
+	},
+};
 
 // Categories for the fortune command
 exports.FortuneCategories = [

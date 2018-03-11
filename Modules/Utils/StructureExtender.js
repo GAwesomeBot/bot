@@ -176,9 +176,10 @@ module.exports = () => {
 				return { ...options, content };
 			}
 
-			static handleOptions (content, options) {
+			static handleOptions (content, options = {}) {
 				if (content instanceof MessageEmbed) options.embed = content;
 				else if (content instanceof MessageAttachment) options.files = [content];
+				else if (IsObject(content)) options = content;
 				else options = this.combineContentOptions(content, options);
 
 				if (options.split && typeof options.code !== "undefined" && (typeof options.code !== "boolean" || options.code === true)) {

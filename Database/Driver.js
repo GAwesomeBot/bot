@@ -56,7 +56,7 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 			addToGlobal("Servers", Servers);
 			addToGlobal("Users", Users);
 			addToGlobal("Gallery", Gallery);
-			addToGlobal("Blob", Blog);
+			addToGlobal("Blog", Blog);
 			addToGlobal("Wiki", Wiki);
 			addToGlobal("Raw", mongoose.connection);
 			addToGlobal("Database", {

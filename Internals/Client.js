@@ -270,40 +270,42 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	getPublicCommand (command) {
-		if (commandModules[command]) {
-			return commandModules[command];
-		} else if (command) {
-			for (const [key, value] of Object.entries(commands.public)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commandModules[key];
-			}
-		}
+		command = this.getPublicCommandName(command);
+		if (commandModules[command]) return commandModules[command];
+		return null;
 	}
 
 	getSharedCommand (command) {
-		if (sharedModules[command]) {
-			return sharedModules[command];
-		} else if (command) {
-			for (const [key, value] of Object.entries(commands.shared)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return sharedModules[key];
-			}
-		}
+		command = this.getSharedCommandName(command);
+		if (sharedModules[command]) return sharedModules[command];
+		return null;
 	}
 
 	getPMCommandMetadata (command) {
-		return commands.pm[command];
+		command = (typeof command === "string" && command.trim().toLowerCase()) || null;
+		if (commands.pm[command]) {
+			return {
+				command,
+				...commands.pm[command],
+			};
+		}
+		return null;
 	}
 
 	getPublicCommandMetadata (command) {
+		command = this.getPublicCommandName(command);
 		if (commands.public[command]) {
-			return commands.public[command];
-		} else {
-			for (const [key, value] of Object.entries(commands.public)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.public[key];
-			}
+			return {
+				command,
+				...commands.public[command],
+			};
 		}
+		return null;
 	}
 
 	getPublicCommandName (command) {
+		command = (typeof command === "string" && command.trim().toLowerCase()) || null;
+		if (!command) return null;
 		let cmds = Object.keys(commands.public);
 		if (cmds.includes(command)) return command;
 		cmds = Object.entries(commands.public);
@@ -313,16 +315,19 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	getSharedCommandMetadata (command) {
+		command = this.getSharedCommandName(command);
 		if (commands.shared[command]) {
-			return commands.shared[command];
-		} else {
-			for (const [key, value] of Object.entries(commands.shared)) {
-				if (value.aliases && value.aliases.length > 0 && value.aliases.includes(command.trim())) return commands.shared[key];
-			}
+			return {
+				command,
+				...commands.shared[command],
+			};
 		}
+		return null;
 	}
 
 	getSharedCommandName (command) {
+		command = (typeof command === "string" && command.trim().toLowerCase()) || null;
+		if (!command) return null;
 		let cmds = Object.keys(commands.shared);
 		if (cmds.includes(command)) return command;
 		cmds = Object.entries(commands.shared);
@@ -837,7 +842,7 @@ module.exports = class GABClient extends DJSClient {
 
 		let adminLevel = 0;
 		let roles = member.roles;
-		if (!(roles instanceof Array)) roles = roles.array();
+		if (!(roles instanceof Array)) roles = [...roles.keys()];
 		for (const role of roles) {
 			const adminDocument = serverDocument.config.admins.id(role.id || role);
 			if (adminDocument && adminDocument.level > adminLevel) {
@@ -915,7 +920,7 @@ module.exports = class GABClient extends DJSClient {
 	async muteMember (channel, member, reason = `Muted ${member.user.tag} in #${channel.name}`) {
 		if (!this.isMuted(channel, member) && channel.type === "text") {
 			try {
-				await channel.overwritePermissions(member.id, {
+				await channel.updateOverwrite(member.id, {
 					SEND_MESSAGES: false,
 				}, reason);
 			} catch (err) {
@@ -939,7 +944,7 @@ module.exports = class GABClient extends DJSClient {
 				const deniedPerms = overwrite.denied;
 				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
 					try {
-						await channel.overwritePermissions(member.id, {
+						await channel.updateOverwrite(member.id, {
 							SEND_MESSAGES: null,
 						}, reason);
 					} catch (err) {
@@ -1091,15 +1096,15 @@ module.exports = class GABClient extends DJSClient {
 
 	async init () {
 		if (auth.tokens.discordBotsOrg) {
-			const poster = new dbl(auth.tokens.discordBotsOrg);
-			poster.bind(this);
+			const poster = new dbl(auth.tokens.discordBotsOrg, this);
+			poster.bind();
 		}
 		await super.login(process.env.CLIENT_TOKEN);
 		await this.workerManager.startWorker();
 		return process.env.CLIENT_TOKEN;
 	}
 
-	sweepMessages (lifetime = this.options.messageCacheLifetime, responseLifetime = 1800) {
+	sweepMessages (lifetime = this.options.messageCacheLifetime, commandLifetime = 1800) {
 		if (typeof lifetime !== "number" || isNaN(lifetime)) throw new TypeError("The lifetime must be a number.");
 		if (lifetime <= 0) {
 			this.emit("debug", "Didn't sweep messages - lifetime is unlimited");
@@ -1107,7 +1112,7 @@ module.exports = class GABClient extends DJSClient {
 		}
 
 		const lifetimeMs = lifetime * 1000;
-		const responseLifetimeMs = responseLifetime * 1000;
+		const commandLifetimeMs = commandLifetime * 1000;
 		const now = Date.now();
 		let channels = 0;
 		let messages = 0;
@@ -1118,16 +1123,14 @@ module.exports = class GABClient extends DJSClient {
 			channels++;
 
 			for (const message of channel.messages.values()) {
-				if (message.command && now - (message.editedTimestamp || message.createdTimestamp) > responseLifetimeMs) {
-					channel.messages.delete(message.id);
-					commandMessages++;
-				} else if (!message.command && now - (message.editedTimestamp || message.createdTimestamp) > lifetimeMs) {
-					channel.messages.delete(message.id);
-					messages++;
-				}
+				if (message.command && now - (message.editedTimestamp || message.createdTimestamp) > commandLifetimeMs) commandMessages++;
+				else if (!message.command && now - (message.editedTimestamp || message.createdTimestamp) > lifetimeMs) messages++;
+				else continue;
+				channel.messages.delete(message.id);
 			}
 		}
-		this.emit("debug", `Swept ${messages} messages older than ${lifetime} seconds and ${commandMessages} command messages older than ${responseLifetime} seconds in ${channels} text-based channels`);
+
+		this.emit("debug", `Swept ${messages} messages older than ${lifetime} seconds and ${commandMessages} command messages older than ${commandLifetime} seconds in ${channels} text-based channels`);
 		return messages;
 	}
 };

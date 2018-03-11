@@ -19,7 +19,7 @@ const commands = {
 			usage: `<server> | <channel>`,
 		},
 		profile: {
-			usage: `["setup" or <field>] [|] ["." or <value>],`,
+			usage: `["setup" or <field>] [|] ["." or <value>]`,
 		},
 		remindme: {
 			usage: `[to] <reminder> <| or "in"> <time from now>`,

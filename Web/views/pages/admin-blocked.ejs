@@ -31,7 +31,7 @@
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete('<%= serverData.id %>');">
+<body>
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -48,7 +48,7 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								These users will <strong>not</strong> be permitted to use the bot at all on this server, including PM commands that reference this server. Filters will <strong>still apply</strong> to blocked members, however. You can't block members that have an admin level of 1 or higher.
+								These users will <strong>not</strong> be permitted to use the bot at all on this server, including PM commands that reference this server. Filters will <strong>still apply</strong> to blocked members, however. <strong>It is impossible to block Bot Admins.</strong>
 							</div>
 						</div>
 					</article>
@@ -130,6 +130,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

@@ -2,7 +2,7 @@ const { get } = require("snekfetch");
 const S = require("../../Modules/String");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, APIs } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	if (msg.channel.nsfw) {
 		if (msg.suffix) {
 			let m = await msg.channel.send({
@@ -84,7 +84,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, NSFWInvalid, Text, API
 			msg.send({
 				embed: {
 					color: Colors.INVALID,
-					title: NSFWInvalid(),
+					title: Text.NSFW_INVALID(),
 					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
 				},
 			});

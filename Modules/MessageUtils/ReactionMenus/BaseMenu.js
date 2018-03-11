@@ -9,7 +9,8 @@ class BaseReactionMenu extends EventEmitter {
 
 		this.allowedEmojis = allowedEmojis;
 
-		this.template = Object.assign(ReactionMenu, embedTemplate);
+		if (embedTemplate) this.template = Object.assign(ReactionMenu, embedTemplate);
+		else this.template = {};
 
 		this.currentPage = 0;
 		this.totalPages = 0;
