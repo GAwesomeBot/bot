@@ -36,7 +36,7 @@ const client = new GABClient({
 	messageCacheLifetime: 1800,
 	messageSweepInterval: 900,
 	messageCacheMaxSize: 1000,
-	restTimeOffset: 100,
+	restTimeOffset: 50,
 });
 
 ObjectDefines(client);
