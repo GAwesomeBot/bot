@@ -175,7 +175,6 @@ exports.open = async (client, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-
 	// Admin console message history
 	app.get("/dashboard/:svrid/messages", (req, res) => {
 		checkAuth(req, res, () => {

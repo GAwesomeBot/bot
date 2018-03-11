@@ -1595,16 +1595,16 @@ controllers.other.activities.post = async (req, res) => {
 	if (req.body["end-type"] && req.body["end-id"]) {
 		switch (req.body["end-type"]) {
 			case "trivia":
-				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "trivia", guild: svr.id, channel: req.body["end-id"] });
+				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "trivia", guild: req.svr.id, channel: req.body["end-id"] });
 				break;
 			case "poll":
-				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "poll", guild: svr.id, channel: req.body["end-id"] })
+				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "poll", guild: req.svr.id, channel: req.body["end-id"] });
 				break;
 			case "giveaway":
-				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "giveaway", guild: svr.id, channel: req.body["end-id"] });
+				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "giveaway", guild: req.svr.id, channel: req.body["end-id"] });
 				break;
 			case "lottery":
-				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "lottery", guild: svr.id, channel: req.body["end-id"] });
+				req.app.client.IPC.send("modifyActivity", { action: "end", activity: "lottery", guild: req.svr.id, channel: req.body["end-id"] });
 				break;
 		}
 		res.sendStatus(200);
