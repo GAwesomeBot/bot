@@ -330,9 +330,6 @@ controllers.commands.streamers = async (req, res) => {
 			streamers_data: serverDocument.config.streamers_data,
 			commands: {
 				streamers: serverDocument.config.commands.streamers,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
 			},
 		},
 		commandDescriptions: {

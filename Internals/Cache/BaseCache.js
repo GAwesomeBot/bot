@@ -18,4 +18,20 @@ module.exports = class BaseCache {
 	async update () {
 		throw new Error("NON_OVERWRITTEN", "update");
 	}
+
+	*keys () {
+		yield* this._cache.keys();
+	}
+
+	*values () {
+		yield* this._cache.values();
+	}
+
+	*entries () {
+		yield* this._cache.entries();
+	}
+
+	*[Symbol.iterator] () {
+		yield* this.values();
+	}
 };

@@ -66,6 +66,9 @@ exports.Colors = {
 	// A trivia game has started or ended
 	TRIVIA_START: 0x50FF60,
 	TRIVIA_END: 0x2B67FF,
+
+	TWITCH: 0x6441A5,
+	YOUTUBE: 0xFF0000,
 };
 
 // Should all be functions for consistency, even if the string is hardcoded.
@@ -158,6 +161,23 @@ exports.Templates = {
 		color: exports.Colors.BLUE,
 		description: `{list}`,
 		footer: `Page {current} out of {total}`,
+	},
+	StreamingTemplate: data => {
+		const color = exports.Colors[data.type.toUpperCase()] || exports.Colors.INFO;
+		return {
+			embed: {
+				color,
+				description: `${data.name} started streaming \`${data.game}\` on **${data.type}**\nWatch them by clicking [**here**](${data.url})\n\nHere is a preview of the stream:`,
+				author: {
+					name: data.name,
+					iconURL: data.streamerImage,
+					url: data.url,
+				},
+				image: {
+					url: data.preview,
+				},
+			},
+		};
 	},
 };
 

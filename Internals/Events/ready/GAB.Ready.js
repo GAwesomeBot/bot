@@ -132,13 +132,13 @@ class Ready extends BaseEvent {
 			Servers.update({}, { messages_today: 0 }, { multi: true }).exec();
 		};
 		this.client.setInterval(clearMessageCount, 86400000);
+		await Cache(this.client);
 		// TODO: Add to array this.startTimerExtensions()
 		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
 		await PostShardedData(this.client);
 		await winston.debug(`Reloading all commands.`);
 		this.client.reloadAllCommands();
-		await Cache(this.client);
 		this.showStartupMessage();
 	}
 
@@ -218,42 +218,23 @@ class Ready extends BaseEvent {
 	 * Totally not stalking 👀 - Vlad
 	 */
 	async checkStreamers () {
-		const serverDocuments = await Servers.find({
-			_id: {
-				$in: Array.from(this.client.guilds.keys()),
-			},
-		}).exec().catch(err => {
-			winston.warn(`Failed to get server documents for streamers (-_-*)`, err);
-		});
 		winston.debug("Checking for streamers in servers.");
-		if (serverDocuments) {
-			const checkStreamersForServer = async i => {
-				if (i < serverDocuments.length) {
-					const serverDocument = serverDocuments[i];
-					const server = this.client.guilds.get(serverDocument._id);
-					if (server) {
-						winston.verbose(`Checking for streamers in server ${server}`, { svrid: server.id });
-						const checkIfStreaming = async j => {
-							if (j < serverDocument.config.streamers_data.length) {
-								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
-									await checkIfStreaming(++j);
-								}).catch(err => {
-									winston.debug(`Failed to send streaming message to server ;.;\n`, err);
-								});
-							} else {
-								await checkStreamersForServer(++i);
-							}
-						};
-						await checkIfStreaming(0);
+		for (const serverDocument of this.client.cache) {
+			const guild = this.client.guilds.get(serverDocument._id);
+			if (guild) {
+				winston.verbose(`Checking for streamers in server ${guild}`, { svrid: guild.id });
+				if (serverDocument.config.streamers_data.length) {
+					for (const streamerData of serverDocument.config.streamers_data) {
+						try {
+							await sendStreamerMessage(guild, serverDocument, streamerData);
+						} catch (err) {
+							winston.warn(`Failed to send streaming message to server ;.;\n`, err);
+						}
 					}
-				} else {
-					this.client.setTimeout(async () => {
-						await this.checkStreamers();
-					}, 600000);
 				}
-			};
-			await checkStreamersForServer(0);
+			}
 		}
+		this.client.setTimeout(this.checkStreamers.bind(this), 600000);
 	}
 
 	/**
