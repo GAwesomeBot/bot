@@ -30,6 +30,7 @@ module.exports = async emojis => {
 		const frames = decodedGif.frames;
 
 		frames.forEach(frame => {
+			frame.interlaced = false;
 			let scaleFactor, height = frame.bitmap.height;
 			if (height >= 100) {
 				scaleFactor = 1;
