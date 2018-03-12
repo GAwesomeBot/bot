@@ -1,5 +1,7 @@
 const { get } = require("snekfetch");
-const { GifCodec } = require("gifwrap");
+const { GifCodec, BitmapImage, GifFrame } = require("gifwrap");
+const Jimp = require("jimp");
+const { AUTO } = Jimp;
 const DJSUtil = require("discord.js/src/util/Util");
 
 const codec = new GifCodec();
@@ -21,39 +23,29 @@ module.exports = async emojis => {
 		}
 	};
 
-	const results = (await Promise.all(split.map(getEmoji))).filter(a => Buffer.isBuffer(a));
+	const results = (await Promise.all(split.map(getEmoji))).filter(Buffer.isBuffer);
 
-	const decodedGifs = await Promise.all(results.map(r => codec.decodeGif(r)));
+	const decodedGifs = await Promise.all(results.map(frame => codec.decodeGif(frame)));
 	const finishedGifs = [];
 
 	for (let decodedGif of decodedGifs) {
 		const frames = decodedGif.frames;
 
-		frames.forEach(frame => {
-			frame.interlaced = false;
-			let scaleFactor, height = frame.bitmap.height;
-			if (height >= 100) {
-				scaleFactor = 1;
-			} else if (height >= 60) {
-				scaleFactor = 2;
-			} else if (height >= 30) {
-				scaleFactor = 4;
-			} else if (height >= 20) {
-				scaleFactor = 6;
-			} else if (height >= 14) {
-				scaleFactor = 8;
-			} else if (height >= 10) {
-				scaleFactor = 10;
-			} else {
-				/**
-				 * If your gif is this small, please. Learn to gif.
-				 */
-				scaleFactor = 12;
-			}
-			frame.scale(scaleFactor);
-		});
+		frames.map(frame => new Promise((resolve, reject) => {
+			// eslint-disable-next-line
+			const img = new Jimp(frame.bitmap.width, frame.bitmap.height, (error, image) => {
+				if (error) return reject(error);
+				let bImage = new BitmapImage(frame);
+				image.bitmap = bImage.bitmap;
+				image.resize(128, AUTO);
+				resolve(new GifFrame(bImage));
+			});
+		}));
 
-		const buffer = await codec.encodeGif(frames, decodedGif);
+		const buffer = await codec.encodeGif((await Promise.all(frames)).map(frame => {
+			frame.interlaced = false;
+			return frame;
+		}));
 		finishedGifs.push(buffer.buffer);
 		// TODO: If we'll do more than 1 gif per frame, remove this
 		break;
