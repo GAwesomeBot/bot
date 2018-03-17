@@ -1,7 +1,7 @@
 const { Error } = require("../Internals/Errors/");
 const { get } = require("snekfetch");
 
-const CAT = `https://random.cat/meow`;
+const CAT = `https://aws.random.cat/meow`;
 const DOG = `https://random.dog/woof`;
 
 module.exports = class RandomAnimals {
