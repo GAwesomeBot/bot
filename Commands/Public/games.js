@@ -2,7 +2,7 @@ const moment = require("moment");
 
 module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, commandData) => {
 	const sortedGames = serverDocument.games.sort((a, b) => b.time_played - a.time_played);
-	const totalTime = sortedGames.reduce((a, b) => ((a.time_played || a) + b) * 5);
+	const totalTime = sortedGames.reduce((a, b) => (a.time_played || a) + b.time_played) * 5;
 	const totalGames = sortedGames.length;
 	const description = sortedGames
 		.slice(0, 8)
