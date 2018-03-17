@@ -17,7 +17,7 @@ module.exports = async emojis => {
 	if (results.length === 1) {
 		if (results[0].type === "unicode") {
 			return {
-				buffer: Buffer.from((await get(results[0].url)).body),
+				buffer: (await get(results[0].url)).body,
 			};
 		}
 		if (results[0].url.endsWith(".gif")) {
