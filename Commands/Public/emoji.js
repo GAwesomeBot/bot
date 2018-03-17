@@ -1,132 +1,38 @@
 const { MessageAttachment } = require("discord.js");
-const Emoji = require("../../Modules/Emoji");
-const EmojiGIF = require("../../Modules/EmojiGIF");
-const DJSUtil = require("discord.js/src/util/Util");
-const { get } = require("snekfetch");
 
-const checkEmoji = async e => {
-	try {
-		const res = await get(`https://cdn.discordapp.com/emojis/${e}.gif`);
-		return res.status === 200;
-	} catch (_) {
-		return false;
-	}
-};
-
-module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, documents, msg, commandData) => {
 	if (msg.suffix) {
 		let m = await msg.channel.send({
 			embed: {
 				color: Colors.INFO,
-				description: `We're processing your input...`,
+				description: `We're processing your input.`,
 				footer: {
-					text: `Please ${Math.floor(Math.random() * 4) > 6 ? "a" : ""}wait`,
+					text: `This might take a while.`,
 				},
 			},
 		});
-		const suffixNoNewline = msg.suffix.replace(/[\r\n]/g, " ");
-		const animated = suffixNoNewline.trim().split(/\s+/).trimAll();
-		let every = true;
-		for (const param of animated) {
-			const parsed = DJSUtil.parseEmoji(param);
-			if (parsed && parsed.animated && parsed.id) {
-				const res = await checkEmoji(parsed.id);
-				if (!res) {
-					every = false;
-					break;
-				}
-			} else if (/\d{17,19}/.test(param)) {
-				const res = await checkEmoji(param);
-				if (!res) {
-					every = false;
-					break;
-				}
-			} else {
-				every = false;
-				break;
-			}
-		}
-		if (every) {
-			try {
-				const b = await EmojiGIF(animated);
-				if (b) {
-					await m.delete();
-					try {
-						await msg.channel.send({
-							embed: {
-								files: [new MessageAttachment(b, "jumbo.gif")],
-								image: {
-									url: `attachment://jumbo.gif`,
-								},
-								color: Colors.SUCCESS,
-							},
-						});
-					} catch (_) {
-						// TODO: Figure out a way to send the image, either via imgur or other means
-					}
-				} else {
-					m.edit({
-						embed: {
-							color: Colors.ERR,
-							description: `We couldn't create a gif based on your input...`,
-							footer: {
-								text: `Please verify it and try again! Make sure to have a space between each emoji!`,
-							},
-						},
-					});
-				}
-			} catch (_) {
-				m.edit({
-					embed: {
-						color: Colors.ERR,
-						description: `We couldn't create a gif based on your input...`,
-						footer: {
-							text: `Please verify it and try again! Make sure to have a space between each emoji!`,
-						},
-					},
-				});
-			}
-		} else {
-			try {
-				const b = await Emoji(suffixNoNewline);
-				if (b) {
-					await m.delete();
-					try {
-						await msg.channel.send({
-							embed: {
-								files: [new MessageAttachment(b, "jumbo.png")],
-								image: {
-									url: `attachment://jumbo.png`,
-								},
-								color: Colors.SUCCESS,
-							},
-						});
-					} catch (_) {
-						// TODO: Figure out a way to send the image, either via imgur or other means
-					}
-				} else {
-					m.edit({
-						embed: {
-							color: Colors.ERR,
-							description: `We couldn't create an image based on your input...`,
-							footer: {
-								text: `Please verify it and try again! Make sure to have a space between each emoji!`,
-							},
-						},
-					});
-				}
-			} catch (_) {
-				m.edit({
-					embed: {
-						color: Colors.ERR,
-						description: `We couldn't create an image based on your input...`,
-						footer: {
-							text: `Please verify it and try again! Make sure to have a space between each emoji!`,
-						},
-					},
-				});
-			}
-		}
+		const emojis = msg.suffix.replace(/[\r\n]/g, " ").split(/\s+/).trimAll();
+		const { buffer, animated } = await client.workerManager.getValueFromWorker(WorkerTypes.EMOJI, { data: emojis });
+		await m.delete();
+		await msg.channel.send({
+			embed: {
+				files: [new MessageAttachment(buffer, `jumbo.${animated ? "gif" : "png"}`)],
+				color: Colors.SUCCESS,
+				image: {
+					url: `attachment://jumbo.${animated ? "gif" : "png"}`,
+				},
+				description: animated ? [
+					`**Please note**`,
+					`This image was automatically generated. Thereby, it has some caveats:`,
+					`\t- It might show some emojis too fast / slow depending on their original framerate (we render them in 50fps)`,
+					`\t- Certain emojis might cut off.`,
+				].join("\n") : "",
+				footer: {
+					// Because he was such a good 🅱️oi
+					text: `Credit to TTtie for helping with this command`,
+				},
+			},
+		});
 	} else {
 		winston.verbose(`Emoji(s) not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.send({
