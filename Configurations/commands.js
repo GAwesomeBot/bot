@@ -244,8 +244,8 @@ const commands = {
 			category: `NSFW 👹`,
 		},
 		emoji: {
-			usage: `...<custom emoji> or ...<Twetmoji> or ...<animated emoji>`,
-			description: `Provides a larger variant of the chosen emoji(s) (maximum of 6 emojis) or a larger varian of maximum 3 animated emojis`,
+			usage: `...<emoji>`,
+			description: `Provides a larger variant of the chosen emoji(s) (maximum of 6 emojis)`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
