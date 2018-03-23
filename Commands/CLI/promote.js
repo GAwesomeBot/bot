@@ -5,13 +5,17 @@ const configJSON = require("../../Configurations/config.json");
 module.exports = async ({ cli }, cmdData, args) => {
 	args = args.trim();
 	const [action, ...ids] = args.split(" ");
+	if (action !== "add" || action !== "remove") {
+		winston.warn("Invalid action.");
+		return;
+	}
 	let isSudo = false;
 	if (ids[0].toLowerCase() === "sudo") {
 		isSudo = true;
 		ids.shift();
 	}
 
-	if (ids.length === 0) {
+	if (!ids.length) {
 		winston.warn(`I need the IDs of the maintainers.`);
 		return;
 	}
@@ -45,8 +49,8 @@ module.exports = async ({ cli }, cmdData, args) => {
 	await updateCfg;
 	try {
 		await UpdateConfig(cli, configJSON);
-		winston.info(`Promoted/demoted users to/from ${isSudo ? "Sudo" : ""} Maintainer`);
+		winston.info(`${action === "add" ? "Promoted" : "Demoted"} users to/from ${isSudo ? "Sudo" : ""} Maintainer`);
 	} catch (err) {
-		winston.warn(`Failed to promote/demoted users to/from ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
+		winston.warn(`Failed to ${action === "add" ? "promote" : "demote"} users to/from ${isSudo ? "Sudo" : ""} Maintainer *_* `, err);
 	}
 };

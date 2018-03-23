@@ -7,9 +7,9 @@ module.exports = async ({ cli }, cmdData, args) => {
 	} else {
 		shard = parseInt(shard);
 	}
+	if (!code.length) return winston.warn("Missing code.");
 	let s;
-	if (code.length === 0) return winston.error("Missing code.");
-	if (!cli.sharder.shards.get(shard)) {
+	if (!cli.sharder.shards.has(shard)) {
 		winston.warn("Invalid shard; sending to shard 0");
 		s = cli.sharder.shards.get(0);
 		shard = 0;
