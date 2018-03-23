@@ -4,8 +4,7 @@ const configJSON = require("../../Configurations/config.json");
 
 module.exports = async ({ cli }, cmdData, args) => {
 	args = args.trim();
-	let [action, ...ids] = args.split(" ");
-	action = action.toLowerCase();
+	const [action, ...ids] = args.toLowerCase().split(" ");
 	if (action !== "add" || action !== "remove") {
 		winston.warn("Invalid action.");
 		return;
