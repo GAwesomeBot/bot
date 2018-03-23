@@ -30,7 +30,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				});
 			}
 		} else {
-			msg.send({
+			await msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `⌛ Calculating...`,

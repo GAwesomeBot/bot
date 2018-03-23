@@ -16,6 +16,9 @@ class WorkerManager {
 			case WorkerTypes.MATH: {
 				return this._getMathJSResult(command, data);
 			}
+			case WorkerTypes.EMOJI: {
+				return this._jumboEmoji(data);
+			}
 			default: {
 				throw new Error("CHILD_PROCESS_TYPE_INVALID", workerType);
 			}
@@ -28,6 +31,14 @@ class WorkerManager {
 		const res = await this.safeSend(WorkerEvents.RUN_MATH, { command, info: requestedInfo });
 		if (res.error) throw res.error;
 		else return res.result;
+	}
+
+	async _jumboEmoji (input) {
+		const { buffer, animated } = await this.safeSend(WorkerEvents.JUMBO_EMOJI, { input });
+		return {
+			buffer: Buffer.from(buffer, "base64"),
+			animated,
+		};
 	}
 
 	async startWorker () {

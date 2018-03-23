@@ -1,7 +1,13 @@
 module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg, commandData) => {
 	if (msg.suffix) {
-		const args = msg.suffix.split(/\s+/);
+		let args = msg.suffix.split(/\s+/);
 		if (args.length === 4 && args[2].toLowerCase().trim() === "to") args.splice(2, 1);
+		else if (args.length === 3 && args[1].toLowerCase().trim() === "to") args.splice(1, 1);
+		if (args.length === 2) {
+			const match = /(\d*)(\w*)/.exec(args[0]);
+			let newArgs = [match[1], match[2], args[1]];
+			args = newArgs;
+		}
 		if (args.length === 3 && !isNaN(args[0]) && args[1] && args[2]) {
 			try {
 				let res = await client.conversionHandler.convert({ content: args[0], from: args[1], to: args[2] });

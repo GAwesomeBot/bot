@@ -89,7 +89,7 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 				`For more information about any command, run \`${msg.guild.commandPrefix}help <command>\`, or head over to our [**wiki**](https://github.com/GilbertGobbels/GAwesomeBot/wiki/Commands).`,
 				`If you need support using GAwesomeBot or got any question, join our [**support server**](${configJS.discordLink})!`,
 				``,
-				`Here is what each emoji represents:`,
+				`Click a button to see a list of all commands in that category. Here is what each emoji represents:`,
 				``,
 				`ℹ️ **--** This info page`,
 				`🤖 **--** GAwesomeBot Commands`,

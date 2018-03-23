@@ -1,9 +1,10 @@
-/* eslint-disable callback-return, spaced-comment */
+/* eslint-disable callback-return */
 
 const process = require("process");
 global.winston = new (require("../Modules/Console"))(`Worker -- Shard ${Number(process.env.SHARD_ID)}`);
 
 const { WorkerCommands: { MATHJS: MathJSCommands } } = require("./Constants");
+const Emoji = require("../Modules/Emoji/Emoji");
 
 const mathjs = require("mathjs");
 const safeEval = mathjs.eval;
@@ -20,7 +21,7 @@ mathjs.import({
 const Process = require("process-as-promised");
 const p = new Process();
 
-//#region Math
+// #region Math
 p.on("runMathCommand", (data, callback) => {
 	winston.silly(`Received data from master shard for calculating...`, data);
 	let retData = { error: null, result: null };
@@ -48,7 +49,14 @@ p.on("runMathCommand", (data, callback) => {
 	}
 	winston.silly(`Processed math equation and returned the results!`);
 });
-//#endregion Math
+// #endregion Math
+
+// #region Emoji
+p.on("jumboEmoji", async ({ input }, callback) => {
+	const { buffer, animated } = await Emoji(input);
+	callback({ buffer: buffer.toString("base64"), animated });
+});
+// #endregion Emoji
 
 (async () => {
 	await p.send("ready", { shard: process.env.SHARD_ID });
