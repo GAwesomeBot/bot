@@ -52,7 +52,7 @@ module.exports = class EmojiUtil {
 		const match = emoji.match(Text);
 		if (match && match.length > 0) {
 			const { body: emojis } = await get(`https://cdn.rawgit.com/omnidan/node-emoji/master/lib/emoji.json`);
-			const result = EmojiUtil.stripOut(emoji, emoji.match(SkinToneText), emoji.match(UnicodeSkinTone), emoji.exec(MobileSkinTone), emojis);
+			const result = EmojiUtil.stripOut(emoji, emoji.match(SkinToneText), emoji.match(UnicodeSkinTone), emoji.match(MobileSkinTone), emojis);
 			return {
 				type: "unicode",
 				url: `https://twemoji.maxcdn.com/2/72x72/${EmojiUtil.getUnicode(result)}.png`,
