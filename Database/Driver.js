@@ -3,7 +3,6 @@ mongoose.pluralize(null);
 mongoose.Promise = global.Promise;
 const serverSchema = require("./Schemas/serverSchema");
 const userSchema = require("./Schemas/userSchema");
-userSchema.plugin(require("mongoose-findorcreate"));
 const modulesSchema = require("./Schemas/modulesSchema.js");
 modulesSchema.index({
 	name: "text",
