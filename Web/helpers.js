@@ -29,6 +29,7 @@ module.exports = {
 		if (acceptSockets) {
 			router.app.io.of(route).on("connection", socket => {
 				socket.on("disconnect", () => undefined);
+				if (controller.socket) controller.socket(socket);
 			});
 		}
 	},
@@ -40,6 +41,18 @@ module.exports = {
 		router.routes.push(new (require("./routes/Route")).DashboardRoute(router, `/:svrid${route}`, middleware, middlewarePOST, controller, controller.post));
 		router.app.io.of(`/dashboard/:svrid${route}`).on("connection", socket => {
 			socket.on("disconnect", () => undefined);
+			if (controller.socket) controller.socket(socket);
+		});
+	},
+
+	setupConsolePage: (router, route, permission, middleware, controller, middlewarePOST = []) => {
+		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
+		middlewarePOST = [mw.checkUnavailableAPI, ...middlewarePOST];
+		controller.post = controller.post ? controller.post : (req, res) => res.sendStatus(405);
+		router.routes.push(new (require("./routes/Route")).ConsoleRoute(router, route, permission, middleware, middlewarePOST, controller, controller.post));
+		router.app.io.of(`/dashboard/maintainer${route}`).on("connection", socket => {
+			socket.on("disconnect", () => undefined);
+			if (controller.socket) controller.socket(socket);
 		});
 	},
 

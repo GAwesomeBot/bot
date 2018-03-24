@@ -28,7 +28,7 @@
             <% } %>
 		</li>
 	</ul>
-	<% if (serverData.accessAdmin) { %>
+	<% if (accessPrivileges.includes("administration")) { %>
 	<p class="menu-label">
         <span class="icon is-small">
             <i class="fa fa-cogs"></i>
@@ -59,7 +59,7 @@
             <% } %>
 		</li>
 	</ul>
-	<% } if (serverData.accessManagement) { %>
+	<% } if (accessPrivileges.includes("management")) { %>
 	<p class="menu-label">
         <span class="icon is-small">
             <i class="fa fa-wrench"></i>
@@ -85,7 +85,7 @@
             <% } %>
             <% if (currentPage === "/dashboard/maintainer/management/eval") { %>
 			<a class="is-active" href="#">Evaluate</a>
-            <% } else if (serverData.accessEval) { %>
+            <% } else if (accessPrivileges.includes("eval")) { %>
 			<a href="/dashboard/maintainer/management/eval">Evaluate</a>
             <% } %>
             <% if (currentPage === "/dashboard/maintainer/management/logs") { %>

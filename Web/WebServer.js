@@ -13,14 +13,9 @@ const passportSocketIo = require("passport.socketio");
 const discordStrategy = require("passport-discord").Strategy;
 const discordOAuthScopes = ["identify", "guilds", "email"];
 const toobusy = require("toobusy-js");
-const path = require("path");
-const fs = require("fs");
 const fsn = require("fs-nextra");
-const sizeof = require("object-sizeof");
-
 const reload = require("require-reload")(require);
 
-const Utils = require("../Modules").Utils;
 const middleware = require("./middleware");
 const app = express();
 
@@ -175,60 +170,11 @@ exports.open = async (client, auth, configJS, winston) => {
 	return { server, httpsServer };
 	/* eslint-disable */
 	/*
-	// Admin console message history
-	app.get("/dashboard/:svrid/messages", (req, res) => {
-		checkAuth(req, res, () => {
-			res.render("pages/admin-messages.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null
-			});
-		});
-	});
 
 	// Maintainer console overview
 	app.get("/dashboard/maintainer/maintainer", (req, res) => {
 		checkAuth(req, res, () => {
-			db.servers.aggregate([{
-				$group: {
-					_id: null,
-					total: {
-						$sum: {
-							$add: ["$messages_today"],
-						},
-					},
-				},
-			}], async (err, result) => {
-				let messageCount = 0;
-				if (!err && result) {
-					messageCount = result[0].total;
-				}
-				const trafficData = bot.traffic.data();
-				const version = await Updater.check();
-				res.render("pages/maintainer.ejs", {
-					authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-					serverData: {
-						name: bot.user.username,
-						id: bot.user.id,
-						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-						isMaintainer: true,
-						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-						accessManagement: checkPerms("/dashboard/management", req.user.id),
-						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-					},
-					currentPage: `${req.baseUrl}${req.path}`,
-					serverCount: await bot.guilds.totalCount,
-					userCount: await bot.users.totalCount,
-					totalMessageCount: messageCount,
-					roundedUptime: getRoundedUptime(process.uptime()),
-					shardCount: configJS.shardTotal,
-					version: configJSON.version,
-					utd: version["up-to-date"],
-					latestVersion: version.latest ? version.latest.version : null,
-					disabled: version === 404,
-					trafficData: await trafficData,
-					currentShard: bot.shardID,
-				});
-			});
+
 		});
 	});
 

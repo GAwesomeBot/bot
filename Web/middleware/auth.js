@@ -1,4 +1,4 @@
-const { renderError, checkSudoMode } = require("../helpers");
+const { renderError, checkSudoMode, canDo } = require("../helpers");
 const getGuild = require("../../Modules").GetGuild;
 
 module.exports = middleware => {
@@ -69,6 +69,28 @@ module.exports = middleware => {
 			} else {
 				if (req.isAPI) return res.sendStatus(500);
 				renderError(res, "Wait, do you exist?<br>We failed to fetch your user from Discord.");
+			}
+		} else {
+			if (req.isAPI) return res.sendStatus(401);
+			res.redirect("/login");
+		}
+	};
+
+	middleware.authorizeConsoleAccess = (req, res, next) => {
+		if (req.isAuthenticated()) {
+			if (configJSON.maintainers.includes(req.user.id)) {
+				const perm = req.perm;
+				if (perm === "maintainer" || canDo(perm, req.user.id)) {
+					req.isAuthorized = true;
+					req.level = process.env.GAB_HOST !== req.user.id ? configJSON.sudoMaintainers.includes(req.user.id) ? 2 : 1 : 0;
+					return next();
+				} else {
+					if (req.isAPI) return res.sendStatus(403);
+					res.redirect("/dashboard");
+				}
+			} else {
+				if (req.isAPI) return res.sendStatus(403);
+				res.redirect("/dashboard");
 			}
 		} else {
 			if (req.isAPI) return res.sendStatus(401);

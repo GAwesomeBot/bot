@@ -32,8 +32,8 @@ class DashboardRoute extends Route {
 		const mw = require("../middleware");
 
 		// Prepare Dashboard Middleware
-		middleware.push(mw.authorizeDashboardAccess);
-		middlewarePOST.push(mw.authorizeDashboardAccess);
+		middleware = [mw.authorizeDashboardAccess, ...middleware];
+		middlewarePOST = [mw.authorizeDashboardAccess, ...middlewarePOST];
 		super(router, route, middleware, controller, "get", "dashboard");
 
 		// Create final Middleware passed to the router, and cache it for hot reloading
@@ -44,12 +44,24 @@ class DashboardRoute extends Route {
 	}
 }
 
-class MaintainerDashboardRoute extends DashboardRoute {
+class ConsoleRoute extends Route {
+	constructor (router, route, permission, middleware, middlewarePOST, controller, controllerPOST) {
+		const mw = require("../middleware");
 
+		middleware = [mw.authorizeConsoleAccess, ...middleware];
+		middlewarePOST = [mw.authorizeConsoleAccess, ...middlewarePOST];
+		super(router, route, middleware, controller, "get", "console");
+		this.perm = permission;
+		this.advanced = true;
+
+		this.postMiddleware = [mw.populateRequest(this), ...middlewarePOST, controllerPOST];
+
+		router.post(route, this.postMiddleware);
+	}
 }
 
 module.exports = {
 	Route,
 	DashboardRoute,
-	MaintainerDashboardRoute,
+	ConsoleRoute,
 };

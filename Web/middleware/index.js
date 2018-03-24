@@ -1,11 +1,70 @@
+const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
+
+class GABResponse {
+	constructor (req, res, page) {
+		this.self = res;
+		this.template = {
+			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+			currentPage: `${req.baseUrl}${req.path}`,
+			isMaintainer: true,
+			isSudoMaintainer: req.level === 2,
+			isHost: req.level === 0,
+			accessPrivileges: fetchMaintainerPrivileges(req.user.id),
+		};
+
+		this.serverData = {
+			name: req.app.client.user.username,
+			id: req.app.client.user.id,
+			icon: req.app.client.user.avatarURL() || "/static/img/discord-icon.png",
+		};
+		this.configData = {};
+		this.pageData = {};
+
+		this._client = req.app.client;
+		this._page = page;
+		this.sendStatus = res.sendStatus;
+	}
+
+	setConfigData (key, data) {
+		if (!data && typeof key === "object") {
+			this.configData = key;
+		} else {
+			this.configData[key] = data;
+		}
+	}
+
+	setPageData (key, data) {
+		if (!data && typeof key === "object") {
+			this.pageData = key;
+		} else {
+			this.pageData[key] = data;
+		}
+	}
+
+	async render (page) {
+		if (!page) page = `pages/${this.pageData.page}`;
+		if (!page) return;
+		this.self.render(page, {
+			...this.template,
+			serverData: this.serverData,
+			configData: this.configData,
+			pageData: this.pageData,
+		});
+	}
+}
+
 const middleware = module.exports;
 
 middleware.populateRequest = route => (req, res, next) => {
 	// Request information
 	req.isAPI = route.isAPI;
 	req.isStatic = route.isStatic;
+	req.perm = route.perm;
 	req.isBusy = req.app.toobusy();
 	req.debugMode = req.app.get("debug mode");
+
+	// Response object
+	if (route.advanced) res.res = new GABResponse(req, res);
 	next();
 };
 
@@ -44,6 +103,11 @@ middleware.setHeaders = (req, res, next) => {
 
 middleware.logRequest = (req, res, next) => {
 	winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
+	next();
+};
+
+middleware.getConsoleSection = (req, res, next) => {
+	req.section = req.path.split("/")[1];
 	next();
 };
 
