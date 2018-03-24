@@ -10,7 +10,6 @@ const getCommandHelp = (name, type, usage, description) => [
 module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMenuEmojis } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		let description = [];
-		// Const pmCmd = client.getPMCommandMetadata(msg.suffix);
 		const [pmCmd, publicCmd, sharedCmd] = [client.getPMCommandMetadata(msg.suffix), client.getPublicCommandMetadata(msg.suffix), client.getSharedCommandMetadata(msg.suffix)];
 		pmCmd && description.push(getCommandHelp(pmCmd.command, "PM", pmCmd.usage, pmCmd.description));
 		publicCmd && description.push(getCommandHelp(publicCmd.command, "Public", publicCmd.usage, publicCmd.description));
