@@ -75,7 +75,7 @@ exports.Colors = {
 exports.Text = {
 	COMMAND_ERR: () => "Something went wrong! 😱",
 	INVALID_USAGE: (commandData, prefix = null) => `🗯 Correct usage is: \`${prefix ? prefix : ""}${commandData.name} ${commandData.usage}\``,
-	MISSING_PERMS: serverName => `🔐 You don't have permission to use this command${serverName ? `on ${serverName}` : "."}`,
+	MISSING_PERMS: serverName => `🔐 You don't have permission to use this command${serverName ? ` on ${serverName}` : "."}`,
 	NSFW_INVALID: () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`,
 };
 

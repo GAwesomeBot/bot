@@ -54,6 +54,20 @@ module.exports = {
 
 			if (ch && ch.type === "text") {
 				if (main.client.getUserBotAdmin(svr, serverDocument, member) > 0 || configJSON.maintainers.includes(usr.id)) {
+					if (!ch.permissionsFor(usr).has("VIEW_CHANNEL")) {
+						await initMsg.delete();
+						usr && usr.send && usr.send({
+							embed: {
+								color: Colors.MISSING_PERMS,
+								title: `Not today!`,
+								description: `You cannot see this channel, so I am unable to let you say something in there!`,
+								footer: {
+									text: `How did you even find that channel?!`,
+								},
+							},
+						});
+						return;
+					}
 					await initMsg.edit({
 						embed: {
 							color: Colors.PROMPT,
@@ -67,7 +81,16 @@ module.exports = {
 						return;
 					}
 					if (result.content) result = result.content;
-					ch.send(result);
+					ch.send({
+						embed: {
+							color: Colors.INFO,
+							author: {
+								name: `${usr.tag} wanted to tell you this!`,
+								iconURL: `${usr.displayAvatarURL()}`,
+							},
+							description: result,
+						},
+					});
 					usrch.send({
 						embed: {
 							color: Colors.SUCCESS,
@@ -75,7 +98,7 @@ module.exports = {
 						},
 					});
 				} else {
-					usrch.send({
+					initMsg.edit({
 						embed: {
 							color: Colors.MISSING_PERMS,
 							description: Text.MISSING_PERMS(svr.name),

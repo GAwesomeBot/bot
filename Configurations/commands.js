@@ -709,7 +709,7 @@ const commands = {
 			category: `NSFW 👹`,
 		},
 		say: {
-			usage: `["embed" or "text"] <something>`,
+			usage: `<text>`,
 			description: `Says something in the chat`,
 			defaults: {
 				isEnabled: true,
