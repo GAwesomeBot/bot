@@ -54,7 +54,7 @@ module.exports = {
 
 			if (ch && ch.type === "text") {
 				if (main.client.getUserBotAdmin(svr, serverDocument, member) > 0 || configJSON.maintainers.includes(usr.id)) {
-					if (!ch.permissionsFor(usr).has("VIEW_CHANNEL")) {
+					if (!ch.permissionsFor(usr).has(["VIEW_CHANNEL", "SEND_MESSAGES"])) {
 						await initMsg.delete();
 						usr && usr.send && usr.send({
 							embed: {
