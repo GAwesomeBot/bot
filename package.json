@@ -54,7 +54,7 @@
     "require-reload": "^0.2.2",
     "showdown": "^1.8.6",
     "snekfetch": "^3.6.4",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.1.0",
     "text-diff": "^1.0.1",
     "toobusy-js": "^0.5.1",
     "urban": "^0.3.1",
