@@ -82,7 +82,7 @@ exports.Text = {
 			color: exports.Colors.LIGHT_GREEN,
 			title: `Thanks for choosing me! 😊`,
 			description: [
-				`To add me, follow [this URL](${configJS.oauthLink.format({ id: client.id })})`,
+				`To add me, follow [this URL](${configJS.oauthLink.format({ id: client.user.id })})`,
 				"",
 				"The above link contains all permissions that are required to be able to run any of my commands.",
 				"We know that not all permissions are right for each server, so feel free to uncheck some boxes.",
