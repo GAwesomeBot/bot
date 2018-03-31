@@ -22,7 +22,7 @@ class GABResponse {
 
 		this._client = req.app.client;
 		this._page = page;
-		this.sendStatus = res.sendStatus;
+		this.sendStatus = res.sendStatus.bind(res);
 	}
 
 	setConfigData (key, data) {

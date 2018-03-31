@@ -210,7 +210,7 @@ GAwesomeUtil.activityUnbanGuild = svrid => {
 	$.post("/dashboard/maintainer/servers/server-list", { unbanFromActivity: svrid }).done(() => {
 		const cardContent = $(`#cardContent-${svrid}`);
 		cardContent.removeClass("has-text-centered");
-		cardContent.html(GAwesomeUtil.activity.guildData[svrid]);
+		cardContent.html(GAwesomeData.activity.guildData[svrid]);
 	});
 };
 

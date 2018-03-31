@@ -1,5 +1,6 @@
-const { getRoundedUptime } = require("../helpers");
+const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData } = require("../helpers");
 const Updater = require("../../Modules/Updater");
+const { GetGuild } = require("../../Modules").getGuild;
 
 const controllers = module.exports;
 
@@ -41,4 +42,59 @@ controllers.maintainer = async (req, { res }) => {
 	});
 
 	res.render();
+};
+
+controllers.servers = {};
+
+controllers.servers.list = async (req, { res }) => {
+	const renderPage = data => {
+		res.setPageData({
+			activeSearchQuery: req.query.q,
+			selectedServer: req.query.i || "0",
+			page: "maintainer-server-list.ejs",
+		});
+		if (data) res.setConfigData(data);
+		res.render();
+	};
+
+	if (req.query.q) {
+		const query = req.query.q.toLowerCase();
+		let data = await GetGuild.getAll(req.app.client, { parse: "noKeys", findFilter: query, fullResolveMaps: ["channels"] });
+		if (data) {
+			data = data.map(svr => ({
+				name: svr.name,
+				id: svr.id,
+				icon: req.app.client.getAvatarURL(svr.id, svr.icon, "icons"),
+				channelData: getChannelData(svr),
+			}));
+		}
+		if (data.length < parseInt(req.query.i) + 1) req.query.i = 0;
+
+		if (req.query.leave) {
+			req.app.client.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
+			renderPage();
+		} else if (req.query.block) {
+			req.app.client.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
+			configJSON.guildBlocklist.push(data[parseInt(req.query.i)].id);
+			save(req, res, true, true);
+			renderPage();
+		} else if (req.query.message) {
+			req.app.client.IPC.send("sendMessage", { guild: data[parseInt(req.query.i)].id, channel: req.query.chid, message: req.query.message });
+			res.sendStatus(200);
+		} else {
+			renderPage(data);
+		}
+	} else {
+		renderPage();
+	}
+};
+controllers.servers.list.post = async (req, res) => {
+	if (req.body.removeFromActivity) {
+		configJSON.activityBlocklist.push(req.body.removeFromActivity);
+	}
+	if (req.body.unbanFromActivity) {
+		const index = configJSON.activityBlocklist.indexOf(req.body.unbanFromActivity);
+		if (index > -1) configJSON.activityBlocklist.splice(index, 1);
+	}
+	save(req, res, true);
 };
