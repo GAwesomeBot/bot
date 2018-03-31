@@ -84,7 +84,7 @@ class GetGuild {
 	}
 
 	_send (settings) {
-		if (this.client.guilds.has(this.target)) return messageHandler(this.client.guilds.get(this.target, settings, res => res.result), settings, payload => payload.result);
+		if (this.client.guilds.has(this.target)) return messageHandler(this.client.guilds.get(this.target), settings, payload => payload.result);
 		return this.client.IPC.send("getGuild", { target: this.target, settings }).then(msg => {
 			if (msg.err && msg.err !== 404) throw msg.err;
 			if (msg.err && msg.err === 404) return null;
