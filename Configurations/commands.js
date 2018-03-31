@@ -719,7 +719,6 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		shorten: {
-			aliases: ["unshorten"],
 			usage: `<URL>`,
 			description: `Uses bit.ly to shorten an URL`,
 			defaults: {
