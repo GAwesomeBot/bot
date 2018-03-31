@@ -60,7 +60,7 @@ module.exports = {
 							embed: {
 								color: Colors.MISSING_PERMS,
 								title: `Not today!`,
-								description: `You cannot see this channel, so I am unable to let you say something in there!`,
+								description: `You cannot see or talk in that channel, so I am unable to let you say something in there!`,
 								footer: {
 									text: `How did you even find that channel?!`,
 								},
