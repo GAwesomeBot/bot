@@ -39,7 +39,7 @@
     "gifwrap": "^0.7.5",
     "jimp": "^0.2.28",
     "mathjs": "^4.0.1",
-    "moment": "^2.21.0",
+    "moment": "^2.22.0",
     "moment-timezone": "^0.5.14",
     "money": "^0.2.0",
     "mongoose": "^5.0.12",
@@ -54,7 +54,7 @@
     "require-reload": "^0.2.2",
     "showdown": "^1.8.6",
     "snekfetch": "^3.6.4",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.1.0",
     "text-diff": "^1.0.1",
     "toobusy-js": "^0.5.1",
     "urban": "^0.3.1",
@@ -70,6 +70,6 @@
   },
   "devDependencies": {
     "eslint": "^4.19.1",
-    "uglify-js": "^3.3.16"
+    "uglify-js": "^3.3.17"
   }
 }
