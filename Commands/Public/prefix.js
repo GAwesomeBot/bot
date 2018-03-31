@@ -1,25 +1,28 @@
 module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		if (msg.suffix.length > 12) {
+		let suffix = msg.suffix;
+		if (msg.suffix.startsWith(`"`) && msg.suffix.endsWith(`"`)) suffix = msg.suffix.slice(1, msg.suffix.length - 1);
+		if (suffix.length > 25) {
 			return msg.send({
 				embed: {
 					color: Colors.INVALID,
-					description: `That prefix is too long, dont't ya think? 🐳`,
+					description: `That prefix is too long, don't ya think? 🐳`,
 				},
 			});
 		}
-		serverDocument.config.command_prefix = msg.suffix;
+		serverDocument.config.command_prefix = suffix;
 		return msg.send({
 			embed: {
 				color: Colors.SUCCESS,
 				title: `Got it! 🐬`,
-				description: `The new prefix for this server is \`${msg.suffix}\``,
+				description: `The new prefix for this server is \`${suffix}\``,
 			},
 		});
 	}
 	return msg.send({
 		embed: {
 			color: Colors.INFO,
+			title: "I'm sure you already know this...",
 			description: `The command prefix in this server is \`${msg.guild.commandPrefix}\``,
 		},
 	});
