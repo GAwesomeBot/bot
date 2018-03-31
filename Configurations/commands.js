@@ -386,8 +386,9 @@ const commands = {
 			},
 			category: `Utility 🔦`,
 		},
-		join: {
+		invite: {
 			usage: ``,
+			aliases: ["join"],
 			description: `Provides the invite link to add the bot to another server`,
 			defaults: {
 				isEnabled: true,
