@@ -16,7 +16,7 @@ GAwesomeData.activity = { guildData: {} };
 GAwesomeData.blog = { editor: {} };
 GAwesomeData.wiki = { bookmarks: JSON.parse(localStorage.getItem("wiki-bookmarks")) || [], editor: {} };
 GAwesomeData.extensions = {};
-GAwesomeData.dashboard = {};
+GAwesomeData.dashboard = { servers: {} };
 GAwesomeUtil.dashboard = {};
 
 GAwesomeData.config = {
@@ -127,17 +127,23 @@ GAwesomeUtil.debugDump = () => {
 };
 
 GAwesomeUtil.setUserAutocomplete = svrid => {
-	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
-		new autoComplete({
-			selector: ".user-autocomplete",
-			minChars: 2,
-			source: function(query, res) {
-				query = query.toLowerCase();
-				res(data.filter(function(a) {
-					return a.toLowerCase().indexOf(query)>-1;
-				}));
-			}
-		});
+	const loadAutoComplete = data => new autoComplete({
+		selector: ".user-autocomplete",
+		minChars: 2,
+		source: function(query, res) {
+			query = query.toLowerCase();
+			res(data.filter(function(a) {
+				return a.toLowerCase().indexOf(query)>-1;
+			}));
+		}
+	});
+
+	const cachedData = GAwesomeUtil.dashboard.getCache(svrid, "userlist");
+	if (cachedData) return loadAutoComplete(cachedData);
+
+	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), data => {
+		loadAutoComplete(data);
+		GAwesomeUtil.dashboard.setCache(svrid, "userlist", data);
 	});
 };
 
@@ -595,6 +601,22 @@ GAwesomeUtil.dashboard.connect = () => {
 			$(".Terminal").animate({ scrollTop: $('.Terminal').prop("scrollHeight")}, 500);
 		});
 	});
+};
+
+GAwesomeUtil.dashboard.setCache = (svr, key, data, expire = 300) => {
+	if (!GAwesomeData.cache) GAwesomeData.cache = new Map();
+	if (!GAwesomeData.cache.has(svr)) GAwesomeData.cache.set(svr, new Map());
+	GAwesomeData.cache.get(svr).set(key, { data, expireAt: Math.floor(Date.now() / 1000) + expire });
+};
+
+GAwesomeUtil.dashboard.getCache = (svr, key) => {
+	if (!GAwesomeData.cache || !GAwesomeData.cache.has(svr) || !GAwesomeData.cache.get(svr).has(key)) return undefined;
+	const cache = GAwesomeData.cache.get(svr).get(key);
+	if (cache.expireAt < Math.floor(Date.now() / 1000)) {
+		GAwesomeData.cache.get(svr).delete(key);
+		return undefined;
+	}
+	return cache.data;
 };
 
 GAwesomePaths["landing"] = () => {

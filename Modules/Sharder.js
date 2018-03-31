@@ -34,7 +34,7 @@ class Shard {
 
 	getGuild (guildID, settings) {
 		return new Promise((resolve, reject) => {
-			this.send("getGuild", { guild: guildID, settings: settings }).then(msg => resolve(msg.result)).catch(err => {
+			this.send("getGuild", { target: guildID, settings: settings }).then(msg => resolve(msg.result)).catch(err => {
 				reject(err);
 			});
 		});
@@ -42,7 +42,7 @@ class Shard {
 
 	getGuilds (settings) {
 		return new Promise((resolve, reject) => {
-			this.send("getGuild", { guild: "*", settings: settings }).then(msg => resolve(msg.result)).catch(err => {
+			this.send("getGuild", { target: "*", settings: settings }).then(msg => resolve(msg.result)).catch(err => {
 				reject(err);
 			});
 		});

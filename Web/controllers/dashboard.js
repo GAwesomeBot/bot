@@ -11,7 +11,7 @@ const md = new showdown.Converter({
 });
 md.setFlavor("github");
 
-const getGuild = require("../../Modules").GetGuild;
+const { GetGuild } = require("../../Modules").getGuild;
 const { parseAuthUser, canDo, getChannelData, getRoleData, saveAdminConsoleOptions: save, findQueryUser, renderError, createMessageOfTheDay } = require("../helpers");
 const parsers = require("../parsers");
 
@@ -25,8 +25,10 @@ controllers.home = async (req, res) => {
 		const usr = await req.app.client.users.fetch(req.user.id, true);
 		const addServerData = async (i, callback) => {
 			if (req.user.guilds && i < req.user.guilds.length) {
-				const svr = await getGuild.get(req.app.client, req.user.guilds[i].id, { members: ["id", "roles"], convert: { id_only: true } });
-				if (!svr && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
+				if (!usr) return addServerData(++i, callback);
+				const svr = new GetGuild(req.app.client, req.user.guilds[i].id);
+				await svr.initialize(usr.id);
+				if (!svr.success && !((parseInt(req.user.guilds[i].permissions) >> 5) & 1)) {
 					addServerData(++i, callback);
 					return;
 				}
@@ -37,7 +39,7 @@ controllers.home = async (req, res) => {
 					botJoined: svr !== null,
 					isAdmin: false,
 				};
-				if (svr && usr) {
+				if (svr.success) {
 					const serverDocument = await Servers.findOne({ _id: req.user.guilds[i].id }).exec();
 					if (serverDocument) {
 						const member = svr.members[usr.id];
@@ -90,8 +92,8 @@ controllers.overview = async (req, res) => {
 		}
 
 		const topMemberID = req.svr.document.members.sort((a, b) => b.messages - a.messages)[0];
-		const topMember = req.svr.members[topMemberID ? topMemberID._id : null];
-		const memberIDs = Object.values(req.svr.members).map(a => a.id);
+		let topMember = topMemberID ? topMemberID._id : null;
+		const memberIDs = Object.keys(req.svr.members);
 
 		const userDocuments = await Users.find({
 			_id: {
@@ -104,8 +106,11 @@ controllers.overview = async (req, res) => {
 
 		let richestMember;
 		if (userDocuments && userDocuments.length > 0) {
-			richestMember = req.svr.members[userDocuments[0]._id];
+			richestMember = userDocuments[0]._id;
 		}
+		await req.svr.fetchMember([richestMember ? richestMember : undefined, topMember ? topMember : undefined]);
+		richestMember = req.svr.members[richestMember];
+		topMember = req.svr.members[topMember];
 		const topGame = req.svr.document.games.sort((a, b) => b.time_played - a.time_played)[0];
 		res.render("pages/admin-overview.ejs", {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -116,24 +121,24 @@ controllers.overview = async (req, res) => {
 				icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
 				owner: {
 					username: req.svr.members[req.svr.ownerID].user.username,
-					id: req.svr.members[req.svr.ownerID].id,
-					avatar: req.app.client.getAvatarURL(req.svr.members[req.svr.ownerID].id, req.svr.members[req.svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
+					id: req.svr.members[req.svr.ownerID].user.id,
+					avatar: req.app.client.getAvatarURL(req.svr.members[req.svr.ownerID].user.id, req.svr.members[req.svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
 				},
 			},
 			currentPage: `${req.baseUrl}${req.path}`,
 			messagesToday: req.svr.document.messages_today,
 			topCommand,
-			memberCount: Object.keys(req.svr.members).length,
+			memberCount: req.svr.memberCount,
 			topMember: topMember ? {
 				username: topMember.user.username,
-				id: topMember.id,
-				avatar: req.app.client.getAvatarURL(topMember.id, topMember.user.avatar) || "/static/img/discord-icon.png",
+				id: topMember.user.id,
+				avatar: req.app.client.getAvatarURL(topMember.user.id, topMember.user.avatar) || "/static/img/discord-icon.png",
 			} : null,
 			topGame: topGame ? topGame._id : null,
 			richestMember: richestMember ? {
 				username: richestMember.user.username,
-				id: richestMember.id,
-				avatar: req.app.client.getAvatarURL(richestMember.id, richestMember.user.avatar) || "/static/img/discord-icon.png",
+				id: richestMember.user.id,
+				avatar: req.app.client.getAvatarURL(richestMember.user.id, richestMember.user.avatar) || "/static/img/discord-icon.png",
 			} : null,
 		});
 	}
@@ -142,6 +147,7 @@ controllers.overview = async (req, res) => {
 controllers.commands = {};
 
 controllers.commands.options = async (req, res) => {
+	await req.svr.fetchCollection("channels");
 	res.render("pages/admin-command-options.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 		sudo: req.isSudo,
@@ -227,7 +233,7 @@ controllers.commands.list.post = async (req, res) => {
 
 	if (req.body["preset-applied"]) {
 		const disabled_channel_ids = [];
-		Object.values(req.svr.channels).forEach(ch => {
+		req.svr.channels.forEach(ch => {
 			if (ch.type === "text") {
 				if (!req.body[`preset-disabled_channel_ids-${ch.id}`]) {
 					disabled_channel_ids.push(ch.id);
@@ -296,7 +302,7 @@ controllers.commands.rss.post = async (req, res) => {
 			} else {
 				serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
 				serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
-				Object.values(req.svr.channels).forEach(ch => {
+				req.svr.channels.forEach(ch => {
 					if (ch.type === "text") {
 						if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
 							serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
@@ -395,7 +401,7 @@ controllers.commands.tags = async (req, res) => {
 		},
 	};
 
-	const cleanTag = content => {
+	const cleanTag = async content => {
 		let cleanContent = "";
 		while (content.indexOf("<") > -1) {
 			cleanContent += content.substring(0, content.indexOf("<"));
@@ -405,7 +411,7 @@ controllers.commands.tags = async (req, res) => {
 				const id = content.substring(1, content.indexOf(">"));
 				if (!isNaN(id)) {
 					if (type === "@") {
-						const usr = svr.members[id];
+						const usr = await req.app.client.users.fetch(id);
 						if (usr) {
 							cleanContent += `<b>@${usr.username}</b>`;
 							content = content.substring(content.indexOf(">") + 1);
@@ -428,7 +434,7 @@ controllers.commands.tags = async (req, res) => {
 	};
 
 	for (let i = 0; i < data.configData.tags.list.length; i++) {
-		data.configData.tags.list[i].content = cleanTag(data.configData.tags.list[i].content);
+		data.configData.tags.list[i].content = await cleanTag(data.configData.tags.list[i].content);
 		data.configData.tags.list[i].index = i;
 	}
 	data.configData.tags.list.sort((a, b) => a._id.localeCompare(b._id));
@@ -489,9 +495,9 @@ controllers.commands.translation = async (req, res) => {
 		},
 	};
 	for (let i = 0; i < data.configData.translated_messages.length; i++) {
-		const member = svr.members[data.configData.translated_messages[i]._id] || {};
-		data.configData.translated_messages[i].username = member.user.username;
-		data.configData.translated_messages[i].avatar = client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png";
+		const usr = await req.app.client.users.fetch(data.configData.translated_messages[i]._id);
+		data.configData.translated_messages[i].username = usr.username;
+		data.configData.translated_messages[i].avatar = client.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png";
 	}
 	res.render("pages/admin-auto-translation.ejs", data);
 };
@@ -499,10 +505,10 @@ controllers.commands.translation.post = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	if (req.body["new-member"] && req.body["new-source_language"]) {
-		const member = findQueryUser(req.body["new-member"], req.svr.members);
+		const member = await findQueryUser(req.body["new-member"], req.svr);
 		if (member && !serverDocument.config.translated_messages.id(member.id)) {
 			const enabled_channel_ids = [];
-			Object.values(req.svr.channels).forEach(ch => {
+			req.svr.channels.forEach(ch => {
 				if (ch.type === "text") {
 					if (req.body[`new-enabled_channel_ids-${ch.id}`] === "true") {
 						enabled_channel_ids.push(ch.id);
@@ -521,7 +527,7 @@ controllers.commands.translation.post = async (req, res) => {
 				serverDocument.config.translated_messages[i] = null;
 			} else {
 				serverDocument.config.translated_messages[i].enabled_channel_ids = [];
-				Object.values(req.svr.channels).forEach(ch => {
+				req.svr.channels.forEach(ch => {
 					if (ch.type === "text") {
 						if (req.body[`translated_messages-${i}-enabled_channel_ids-${ch.id}`] === "on") {
 							serverDocument.config.translated_messages[i].enabled_channel_ids.push(ch.id);
@@ -706,6 +712,7 @@ controllers.stats.ranks = async (req, res) => {
 	const client = req.app.client;
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
+	await svr.fetchCollection("roles");
 
 	res.render("pages/admin-ranks.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -800,7 +807,9 @@ controllers.stats.points.post = async (req, res) => {
 
 controllers.administration = {};
 
-controllers.administration.admins = (req, res) => {
+controllers.administration.admins = async (req, res) => {
+	const adminDocuments = req.svr.document.config.admins.filter(adminDocument => req.svr.roles.includes(adminDocument._id));
+	await req.svr.fetchCollection("roles");
 	res.render("pages/admin-admins.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 		sudo: req.isSudo,
@@ -813,8 +822,8 @@ controllers.administration.admins = (req, res) => {
 		roleData: getRoleData(req.svr).filter(role => req.svr.document.config.admins.id(role.id) === null),
 		currentPage: `${req.baseUrl}${req.path}`,
 		configData: {
-			admins: req.svr.document.config.admins.filter(adminDocument => req.svr.roles.hasOwnProperty(adminDocument._id)).map(adminDocument => {
-				adminDocument.name = req.svr.roles[adminDocument._id].name;
+			admins: adminDocuments.map(adminDocument => {
+				adminDocument.name = req.svr.roles.find(role => role.id === adminDocument._id).name;
 				return adminDocument;
 			}),
 			auto_add_admins: req.svr.document.config.auto_add_admins,
@@ -843,7 +852,7 @@ controllers.administration.admins.post = (req, res) => {
 
 controllers.administration.moderation = async (req, res) => {
 	const client = req.app.client;
-	const svr = req.svr;
+	const svr = await req.svr.fetchCollection("roles");
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-moderation.ejs", {
@@ -872,12 +881,13 @@ controllers.administration.moderation = async (req, res) => {
 };
 controllers.administration.moderation.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	await req.svr.fetchCollection("roles");
 
 	serverDocument.config.moderation.isEnabled = req.body.isEnabled === "on";
 	serverDocument.config.moderation.autokick_members.isEnabled = req.body["autokick_members-isEnabled"] === "on";
 	serverDocument.config.moderation.autokick_members.max_inactivity = parseInt(req.body["autokick_members-max_inactivity"]);
 	serverDocument.config.moderation.new_member_roles = [];
-	Object.values(req.svr.roles).forEach(role => {
+	req.svr.roles.forEach(role => {
 		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 			if (req.body[`new_member_roles-${role.id}`] === "on") {
 				serverDocument.config.moderation.new_member_roles.push(role.id);
@@ -895,6 +905,10 @@ controllers.administration.blocked = async (req, res) => {
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
 
+	const blockedMembers = svr.memberList.filter(member => serverDocument.config.blocked.includes(member))
+		.concat(configJSON.userBlocklist.filter(usrid => svr.memberList.includes(usrid)));
+	await svr.fetchMember(blockedMembers);
+
 	res.render("pages/admin-blocked.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 		sudo: req.isSudo,
@@ -905,20 +919,15 @@ controllers.administration.blocked = async (req, res) => {
 		},
 		currentPage: `${req.baseUrl}${req.path}`,
 		configData: {
-			blocked: Object.values(svr.members).filter(member => serverDocument.config.blocked.indexOf(member.id) > -1).map(member => ({
-				name: member.user.username,
-				id: member.id,
-				avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-			}))
-				.concat(configJSON.userBlocklist.filter(usrid => svr.members.hasOwnProperty(usrid)).map(usrid => {
-					const member = svr.members[usrid];
-					return {
-						name: member.user.username,
-						id: member.id,
-						avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-						isGlobal: true,
-					};
-				})),
+			blocked: blockedMembers.map(ID => {
+				const member = svr.members[ID];
+				return	{
+					name: member.user.username,
+					id: member.user.id,
+					avatar: client.getAvatarURL(member.user.id, member.user.avatar) || "/static/img/discord-icon.png",
+					isGlobal: !!configJSON.userBlocklist.includes(member.user.id),
+				};
+			}),
 			moderation: {
 				isEnabled: serverDocument.config.moderation.isEnabled,
 			},
@@ -929,9 +938,9 @@ controllers.administration.blocked.post = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	if (req.body["new-member"]) {
-		const member = findQueryUser(req.body["new-member"], req.svr.members);
-		if (member && serverDocument.config.blocked.indexOf(member.id) === -1 && req.app.client.getUserBotAdmin(req.svr, serverDocument, member) === 0) {
-			serverDocument.config.blocked.push(member.id);
+		const member = await findQueryUser(req.body["new-member"], req.svr);
+		if (member && !serverDocument.config.blocked.includes(member.user.id) && req.app.client.getUserBotAdmin(req.svr, serverDocument, member) === 0) {
+			serverDocument.config.blocked.push(member.user.id);
 		}
 	} else {
 		for (let i = 0; i < serverDocument.config.blocked.length; i++) {
@@ -949,16 +958,18 @@ controllers.administration.muted = async (req, res) => {
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
 
-	const mutedMembers = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.members.hasOwnProperty(memberDocument._id))
-		.map(memberDocument => {
-			const member = svr.members[memberDocument._id];
-			return {
-				name: member.user.username,
-				id: member.id,
-				avatar: client.getAvatarURL(member.id, member.user.avatar),
-				channels: memberDocument.muted.map(memberMutedDocument => memberMutedDocument._id),
-			};
-		});
+	const mutedMemberList = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.memberList.includes(memberDocument._id));
+	await svr.fetchMember(mutedMemberList.map(memberDocument => memberDocument._id));
+
+	const mutedMembers = mutedMemberList.map(memberDocument => {
+		const member = svr.members[memberDocument._id];
+		return {
+			name: member.user.username,
+			id: member.user.id,
+			avatar: client.getAvatarURL(member.user.id, member.user.avatar),
+			channels: memberDocument.muted.map(memberMutedDocument => memberMutedDocument._id),
+		};
+	});
 	mutedMembers.sort((a, b) => a.name.localeCompare(b.name));
 	res.render("pages/admin-muted.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -984,24 +995,24 @@ controllers.administration.muted.post = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	if (req.body["new-member"] && req.body["new-channel_id"]) {
-		const member = findQueryUser(req.body["new-member"], svr.members);
-		const ch = svr.channels[req.body["new-channel_id"]];
+		const member = await findQueryUser(req.body["new-member"], svr);
+		const ch = svr.channels.find(channel => channel.id === req.body["new-channel_id"]);
 
-		let memberDocument = serverDocument.members.id(member.id);
+		let memberDocument = serverDocument.members.id(member.user.id);
 		if (!memberDocument) {
 			serverDocument.members.push({ _id: member.id });
-			memberDocument = serverDocument.members.id(member.id);
+			memberDocument = serverDocument.members.id(member.user.id);
 		}
 
 		if (member && client.getUserBotAdmin(svr, serverDocument, member) === 0 && ch && !memberDocument.muted.id(ch.id)) {
-			client.IPC.send("muteMember", { guild: svr.id, channel: ch.id, member: member.id });
+			client.IPC.send("muteMember", { guild: svr.id, channel: ch.id, member: member.user.id });
 			memberDocument.muted.push({ _id: ch.id });
 		}
 	} else {
 		let memberDocuments = serverDocument.members;
 		Object.keys(req.body).forEach(key => {
 			const parameters = key.split("-");
-			if (parameters.length === 3 && parameters[0] === "muted" && svr.members.hasOwnProperty(parameters[1]) && memberDocuments.id(parameters[1])) {
+			if (parameters.length === 3 && parameters[0] === "muted" && svr.memberList.includes(parameters[1]) && memberDocuments.id(parameters[1])) {
 				const memberDocument = memberDocuments.id(parameters[1]);
 				if (parameters[2] === "removed") {
 					// Muted member removed
@@ -1009,7 +1020,7 @@ controllers.administration.muted.post = async (req, res) => {
 						client.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: parameters[1] });
 					}
 					memberDocument.muted = [];
-				} else if (svr.channels.hasOwnProperty(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
+				} else if (svr.channels.includes(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
 					// Muted member new channels
 					client.IPC.send("muteMember", { guild: svr.id, channel: parameters[2], member: parameters[1] });
 					memberDocument.muted.push({ _id: parameters[2] });
@@ -1017,7 +1028,7 @@ controllers.administration.muted.post = async (req, res) => {
 			}
 		});
 		// Muted members channels removed
-		memberDocuments = serverDocument.members.filter(member => member.muted && member.muted.length > 0 && svr.members.hasOwnProperty(member._id));
+		memberDocuments = serverDocument.members.filter(member => member.muted && member.muted.length > 0 && svr.memberList.includes(member._id));
 		memberDocuments.forEach(memberDocument => {
 			memberDocument.muted.forEach(memberMutedDocument => {
 				if (!req.body[`muted-${memberDocument._id}-${memberMutedDocument._id}`]) {
@@ -1035,6 +1046,13 @@ controllers.administration.strikes = async (req, res) => {
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
 
+
+	const memberDocuments = serverDocument.members.filter(memberDocument => svr.memberList.includes(memberDocument._id) && memberDocument.strikes.length > 0);
+	const allStrikeDocuments = memberDocuments.map(memberDocument => memberDocument.strikes);
+	const fetchList = [...memberDocuments.map(memberDocument => memberDocument._id)];
+	allStrikeDocuments.forEach(strikeDocument => fetchList.push(strikeDocument._id));
+	await svr.fetchMember(fetchList);
+
 	res.render("pages/admin-strikes.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 		sudo: req.isSudo,
@@ -1049,13 +1067,14 @@ controllers.administration.strikes = async (req, res) => {
 				isEnabled: serverDocument.config.moderation.isEnabled,
 			},
 		},
-		strikes: serverDocument.members.filter(memberDocument => svr.members.hasOwnProperty(memberDocument._id) && memberDocument.strikes.length > 0).map(memberDocument => {
+		strikes: await Promise.all(memberDocuments.map(async memberDocument => {
 			const member = svr.members[memberDocument._id];
+			const strikeDocuments = memberDocument.strikes;
 			return {
 				name: member.user.username,
-				id: member.id,
-				avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
-				strikes: memberDocument.strikes.map(strikeDocument => {
+				id: member.user.id,
+				avatar: client.getAvatarURL(member.user.id, member.user.avatar) || "/static/img/discord-icon.png",
+				strikes: strikeDocuments.map(strikeDocument => {
 					const creator = svr.members[strikeDocument._id] || {
 						id: "invalid-user",
 						user: {
@@ -1066,8 +1085,8 @@ controllers.administration.strikes = async (req, res) => {
 					return {
 						creator: {
 							name: creator.user.username,
-							id: creator.id,
-							avatar: client.getAvatarURL(creator.id, creator.user.avatar) || "/static/img/discord-icon.png",
+							id: creator.user.id,
+							avatar: client.getAvatarURL(creator.user.id, creator.user.avatar) || "/static/img/discord-icon.png",
 						},
 						reason: md.makeHtml(xssFilters.inHTMLData(strikeDocument.reason)),
 						rawDate: moment(strikeDocument.timestamp).format(configJS.moment_date_format),
@@ -1075,22 +1094,22 @@ controllers.administration.strikes = async (req, res) => {
 					};
 				}),
 			};
-		}),
+		})),
 	});
 };
 controllers.administration.strikes.post = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	if (req.body["new-member"] && req.body["new-reason"]) {
-		const member = findQueryUser(req.body["new-member"], req.svr.members);
+		const member = await findQueryUser(req.body["new-member"], req.svr);
 		if (member && req.app.client.getUserBotAdmin(req.svr, serverDocument, member) === 0) {
-			let memberDocument = serverDocument.members.id(member.id);
+			let memberDocument = serverDocument.members.id(member.user.id);
 			if (!memberDocument) {
-				serverDocument.members.push({ _id: member.id });
-				memberDocument = serverDocument.members.id(member.id);
+				serverDocument.members.push({ _id: member.user.id });
+				memberDocument = serverDocument.members.id(member.user.id);
 			}
 			memberDocument.strikes.push({
-				_id: req.consolemember.id,
+				_id: req.consolemember.user.id,
 				reason: req.body["new-reason"],
 			});
 		}
@@ -1120,11 +1139,12 @@ controllers.administration.status = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
+	await svr.fetchMember(statusMessagesData.member_streaming_message.enabled_user_ids);
 	for (let i = 0; i < statusMessagesData.member_streaming_message.enabled_user_ids.length; i++) {
 		const member = svr.members[statusMessagesData.member_streaming_message.enabled_user_ids[i]] || { user: {} };
 		statusMessagesData.member_streaming_message.enabled_user_ids[i] = {
 			name: member.user.username,
-			id: member.id,
+			id: member.user.id,
 			avatar: client.getAvatarURL(member.id, member.user.avatar) || "/static/img/discord-icon.png",
 		};
 	}
@@ -1152,9 +1172,9 @@ controllers.administration.status.post = async (req, res) => {
 	const args = Object.keys(req.body)[0].split("-");
 	if (Object.keys(req.body).length === 1 && args[0] === "new" && serverDocument.config.moderation.status_messages[args[1]] && args[2] === "message") {
 		if (args[1] === "member_streaming_message") {
-			const member = findQueryUser(req.body[Object.keys(req.body)[0]], req.svr.members);
-			if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.id) === -1) {
-				serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.id);
+			const member = await findQueryUser(req.body[Object.keys(req.body)[0]], req.svr);
+			if (member && serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.indexOf(member.user.id) === -1) {
+				serverDocument.config.moderation.status_messages[args[1]].enabled_user_ids.push(member.user.id);
 			}
 		} else if (serverDocument.config.moderation.status_messages[args[1]].messages) {
 			serverDocument.config.moderation.status_messages[args[1]].messages.push(req.body[Object.keys(req.body)[0]]);
@@ -1174,7 +1194,7 @@ controllers.administration.status.post = async (req, res) => {
 							break;
 						case "enabled_channel_ids":
 							serverDocument.config.moderation.status_messages[status_message][key] = [];
-							Object.values(req.svr.channels).forEach(ch => {
+							req.svr.channels.forEach(ch => {
 								if (ch.type === "text") {
 									if (req.body[`${status_message}-${key}-${ch.id}`]) {
 										serverDocument.config.moderation.status_messages[status_message][key].push(ch.id);
@@ -1212,6 +1232,7 @@ controllers.administration.filters = async (req, res) => {
 	const client = req.app.client;
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
+	await svr.fetchCollection("roles");
 
 	const filteredCommands = [];
 	for (const command in serverDocument.toObject().config.commands) {
@@ -1255,7 +1276,7 @@ controllers.administration.filters.post = async (req, res) => {
 					break;
 				case "disabled_channel_ids":
 					serverDocument.config.moderation.filters[filter][key] = [];
-					Object.values(req.svr.channels).forEach(ch => {
+					req.svr.channels.forEach(ch => {
 						if (ch.type === "text") {
 							if (req.body[`${filter}-${key}-${ch.id}`] !== "on") {
 								serverDocument.config.moderation.filters[filter][key].push(ch.id);
@@ -1280,6 +1301,7 @@ controllers.administration.MOTD = async (req, res) => {
 	const client = req.app.client;
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
+	await svr.fetchCollection("roles");
 
 	res.render("pages/admin-message-of-the-day.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -1337,7 +1359,7 @@ controllers.administration.voicetext.post = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	serverDocument.config.voicetext_channels = [];
-	Object.values(req.svr.channels).forEach(ch => {
+	req.svr.channels.forEach(ch => {
 		if (ch.type === "voice") {
 			if (req.body[`voicetext_channels-${ch.id}`] === "on") {
 				serverDocument.config.voicetext_channels.push(ch.id);
@@ -1352,6 +1374,7 @@ controllers.administration.roles = async (req, res) => {
 	const client = req.app.client;
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
+	await svr.fetchCollection("roles");
 
 	res.render("pages/admin-roles.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -1386,11 +1409,12 @@ controllers.administration.roles = async (req, res) => {
 };
 controllers.administration.roles.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	await req.svr.fetchCollection("roles");
 
 	parsers.commandOptions(req, "roleinfo", req.body);
 	parsers.commandOptions(req, "role", req.body);
 	serverDocument.config.custom_roles = [];
-	Object.values(req.svr.roles).forEach(role => {
+	req.svr.roles.forEach(role => {
 		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 			if (req.body[`custom_roles-${role.id}`] === "on") {
 				serverDocument.config.custom_roles.push(role.id);
@@ -1410,6 +1434,9 @@ controllers.administration.logs = async (req, res) => {
 	try {
 		let serverLogs = serverDocument.logs.length > 200 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 200) : serverDocument.logs.toObject();
 		serverLogs = serverLogs.filter(serverLog => (!req.query.q || serverLog.content.toLowerCase().includes(req.query.q.toLowerCase())) && (!req.query.chid || serverLog.channelid === req.query.chid));
+		const fetchList = [];
+		serverLogs.forEach(serverLog => svr.members[serverLog.userid] || fetchList.push(serverLog.userid));
+		await svr.fetchMember(fetchList);
 		serverLogs.map(serverLog => {
 			const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
 			if (serverLog.channelid) serverLog.ch = ch ? ch.name : "invalid-channel";
@@ -1504,6 +1531,15 @@ controllers.other.activities = async (req, res) => {
 	const ongoingPolls = [];
 	const ongoingGiveaways = [];
 	const ongoingLotteries = [];
+	const fetchList = [];
+
+	serverDocument.channels.forEach(channelDocument => {
+		if (channelDocument.poll.isOngoing) fetchList.push(channelDocument.poll.creator_id);
+		if (channelDocument.lottery.isOngoing) fetchList.push(channelDocument.lottery.creator_id);
+		if (channelDocument.giveaway.isOngoing) fetchList.push(channelDocument.giveaway.creator_id);
+	});
+	await svr.fetchMember(fetchList);
+
 	serverDocument.channels.forEach(channelDocument => {
 		const ch = svr.channels[channelDocument._id];
 		if (ch) {
@@ -1535,7 +1571,7 @@ controllers.other.activities = async (req, res) => {
 				});
 			}
 			if (channelDocument.giveaway.isOngoing) {
-				const creator = svr.members[channelDocument.giveaway.creator_id] || { user: "invalid-user" };
+				const creator = svr.members[channelDocument.giveaway.creator_id] || { user: { username: "invalid-user" } };
 				ongoingGiveaways.push({
 					title: channelDocument.giveaway.title,
 					channel: {
@@ -1564,12 +1600,12 @@ controllers.other.activities = async (req, res) => {
 
 	let defaultChannel;
 
-	let generalChannel = Object.values(svr.channels).find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
+	let generalChannel = svr.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
 
 	if (generalChannel) {
 		defaultChannel = generalChannel;
 	} else {
-		defaultChannel = Object.values(svr.channels).filter(c => c.type === "text")
+		defaultChannel = svr.channels.filter(c => c.type === "text")
 			.sort((a, b) => a.rawPosition - b.rawPosition)
 			.first();
 	}
@@ -1630,7 +1666,7 @@ controllers.other.public = async (req, res) => {
 		configData: {
 			public_data: serverDocument.config.public_data,
 			isBanned: configJSON.activityBlocklist.includes(svr.id),
-			canUnban: configJSON.maintainers.includes(req.consolemember.id) || process.env.GAB_HOST === req.consolemember.id,
+			canUnban: configJSON.maintainers.includes(req.consolemember.user.id) || process.env.GAB_HOST === req.consolemember.user.id,
 		},
 	});
 };

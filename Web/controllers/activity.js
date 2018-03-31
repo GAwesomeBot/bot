@@ -1,5 +1,6 @@
 const { parseAuthUser } = require("../helpers");
-const { GetGuild: getGuild, Utils } = require("../../Modules");
+const { getGuild, Utils } = require("../../Modules");
+const { GetGuild } = getGuild;
 const parsers = require("../parsers");
 
 module.exports = (req, res) => {
@@ -76,9 +77,9 @@ module.exports = (req, res) => {
 			};
 			if (req.query.q) {
 				const query = req.query.q.toLowerCase();
-				const servers = await getGuild.get(req.app.client, "*", { only: true, resolve: ["id", "name"] });
+				const servers = await GetGuild.getAll(req.app.client, { strict: true, resolve: "id", parse: "noKeys", findFilter: query });
 				matchCriteria._id = {
-					$in: Object.values(servers).filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query).map(svr => svr.id),
+					$in: servers,
 				};
 			} else {
 				matchCriteria._id = {

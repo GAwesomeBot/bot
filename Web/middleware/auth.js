@@ -1,5 +1,5 @@
 const { renderError, checkSudoMode, canDo } = require("../helpers");
-const getGuild = require("../../Modules").GetGuild;
+const { GetGuild } = require("../../Modules").getGuild;
 
 module.exports = middleware => {
 	// Middleware
@@ -16,15 +16,10 @@ module.exports = middleware => {
 				// Legacy URL support
 				if (!req.params.svrid && req.query.svrid) req.params.svrid = req.query.svrid;
 				// Get server data from shard that has said server cached
-				const svr = await getGuild.get(req.app.client, req.params.svrid, {
-					resolve: ["id", "ownerID", "name", "icon"],
-					members: ["id", "roles", "user", "nickname"],
-					channels: ["id", "type", "name", "position", "rawPosition"],
-					roles: ["name", "id", "position", "hexColor"],
-					convert: { id_only: true },
-				});
+				const svr = new GetGuild(req.app.client, req.params.svrid);
+				await svr.initialize([usr.id, "OWNER", req.app.client.user.id]);
 				// Confirm the svr and usr exist
-				if (svr) {
+				if (svr.success) {
 					// Get server data from Database
 					let serverDocument;
 					try {

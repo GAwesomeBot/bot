@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs-nextra");
 
 const parsers = require("../parsers");
-const getGuild = require("../../Modules").GetGuild;
+const { GetGuild } = require("../../Modules").getGuild;
 const { AllowedEvents, Colors } = require("../../Internals/Constants");
 const { renderError, parseAuthUser, dashboardUpdate, generateCodeID } = require("../helpers");
 
@@ -97,8 +97,10 @@ controllers.gallery = async (req, res) => {
 		const usr = await req.app.client.users.fetch(req.user.id, true);
 		const addServerData = async (i, callback) => {
 			if (req.user.guilds && i < req.user.guilds.length) {
-				const svr = await getGuild.get(req.app.client, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
-				if (svr && usr) {
+				if (!usr) return addServerData(++i, callback);
+				const svr = new GetGuild(req.app.client, req.user.guilds[i].id);
+				await svr.initialize(usr.id);
+				if (svr.success) {
 					try {
 						const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
 						if (serverDocument) {

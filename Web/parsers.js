@@ -10,14 +10,16 @@ const md = new showdown.Converter({
 	smartIndentationFix: true,
 });
 md.setFlavor("github");
-const getGuild = require("../Modules").GetGuild;
+const { GetGuild } = require("../Modules").getGuild;
 
 const parsers = module.exports;
 
 parsers.serverData = async (req, serverDocument, webp = false) => {
 	let data;
-	let svr = await getGuild.get(req.app.client, serverDocument._id, { resolve: ["icon", "createdAt", "ownerID", "id", "name"], members: ["nickname", "user"] });
-	if (svr) {
+	let svr = new GetGuild(req.app.client, serverDocument._id);
+	await svr.initialize("OWNER");
+	await svr.fetchProperty("createdAt");
+	if (svr.success) {
 		const owner = req.app.client.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
 		data = {
 			name: svr.name,
@@ -29,7 +31,7 @@ parsers.serverData = async (req, serverDocument, webp = false) => {
 				avatar: req.app.client.getAvatarURL(owner.id, owner.avatar, "avatars", webp),
 				name: owner.username,
 			},
-			members: Object.keys(svr.members).length,
+			members: svr.memberCount,
 			messages: serverDocument.messages_today,
 			rawCreated: moment(svr.createdAt).format(configJS.moment_date_format),
 			relativeCreated: Math.ceil((Date.now() - new Date(svr.createdAt)) / 86400000),
@@ -44,7 +46,7 @@ parsers.serverData = async (req, serverDocument, webp = false) => {
 
 
 parsers.userData = async (req, usr, userDocument) => {
-	const botServers = Object.values(await getGuild.get(req.app.client, "*", { resolve: ["name", "id", "icon", "ownerID"], mutual: usr.id }));
+	const botServers = await GetGuild.getAll(req.app.client, { mutualOnlyTo: usr.id, fullResolveMembers: ["OWNER"], parse: "noKeys" });
 	const mutualServers = botServers.sort((a, b) => a.name.localeCompare(b.name));
 	const userProfile = {
 		username: usr.username,
@@ -59,13 +61,13 @@ parsers.userData = async (req, usr, userDocument) => {
 		points: userDocument.points || 1,
 		lastSeen: userDocument.last_seen ? moment(userDocument.last_seen).fromNow() : null,
 		rawLastSeen: userDocument.last_seen ? moment(userDocument.last_seen).format(configJS.moment_date_format) : null,
-		mutualServerCount: Object.keys(mutualServers).length,
 		pastNameCount: (userDocument.past_names || {}).length || 0,
 		isAfk: userDocument.afk_message !== undefined && userDocument.afk_message !== "" && userDocument.afk_message !== null,
-		mutualServers: [],
 		isMaintainer: configJSON.maintainers.includes(usr.id) || configJSON.sudoMaintainers.includes(usr.id),
 		isContributor: configJSON.wikiContributors.includes(usr.id) || configJSON.maintainers.includes(usr.id) || configJSON.sudoMaintainers.includes(usr.id),
 		isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
+		mutualServers: [],
+		mutualServerCount: mutualServers.length,
 	};
 	switch (userProfile.status) {
 		case "online":
@@ -96,7 +98,7 @@ parsers.userData = async (req, usr, userDocument) => {
 		userProfile.pastNames = userDocument.past_names;
 		userProfile.afkMessage = userDocument.afk_message;
 		for (let svr of mutualServers) {
-			const owner = await req.app.client.users.fetch(svr.ownerID, true);
+			const owner = svr.members[svr.ownerID];
 			userProfile.mutualServers.push({
 				name: svr.name,
 				id: svr.id,

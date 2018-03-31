@@ -837,7 +837,7 @@ module.exports = class GABClient extends DJSClient {
 	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
 
-		if (server.ownerID === member.id) return 3;
+		if (server.ownerID === member.user.id) return 3;
 
 		let adminLevel = 0;
 		let roles = member.roles;

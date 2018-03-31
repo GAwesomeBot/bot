@@ -1,6 +1,7 @@
 const process = require("process");
 
-const { Console, Utils, GetGuild: GG, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
+const { Console, Utils, getGuild, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
+const { GetGuild, handler: getGuildMessageHandler } = getGuild;
 const { ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
@@ -81,24 +82,32 @@ process.on("uncaughtException", err => {
 });
 
 client.IPC.on("getGuild", async (msg, callback) => {
-	let payload = msg;
-	if (payload.guild === "*") {
+	if (msg.target === "*") {
 		let result = {};
-		let guilds = payload.settings.mutual ? client.guilds.filter(guild => guild.members.has(payload.settings.mutual)) : client.guilds;
-		let query = payload.settings.findFilter;
+		if (msg.settings.parse === "noKeys") result = [];
+		let guilds = msg.settings.mutualOnlyTo ? client.guilds.filter(guild => guild.members.has(msg.settings.mutualOnlyTo)) : client.guilds;
+
+		let query = msg.settings.findFilter;
 		if (query) guilds = guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || svr.members.get(svr.ownerID).user.username.toLowerCase().indexOf(query) > -1);
+
 		guilds.forEach((val, key) => {
-			result[key] = GG.generate(val, payload.settings);
+			try {
+				const res = getGuildMessageHandler(val, msg.settings, payload => payload.result);
+				if (msg.settings.parse === "noKeys") result.push(res);
+				else result[key] = res;
+			} catch (err) {
+				winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err });
+			}
 		});
 
-		return callback({ guild: "*", settings: payload.settings, result: result });
+		return callback({ target: "*", err: null, result });
 	} else {
-		let guild = client.guilds.get(payload.guild);
-		let val = GG.generate(guild, payload.settings);
 		try {
-			return callback({ guild: payload.guild, settings: payload.settings, result: JSON.stringify(val) });
+			const guild = client.guilds.get(msg.target);
+			if (guild) getGuildMessageHandler(guild, msg.settings, callback);
+			else return callback({ target: msg.target, err: 404, result: null });
 		} catch (err) {
-			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err, guildData: val });
+			winston.warn(`An error occurred while fetching guild data ()-()\n`, { err: err });
 		}
 	}
 });

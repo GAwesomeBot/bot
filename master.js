@@ -148,31 +148,29 @@ database.initialize(configJS.databaseURL).catch(err => {
 		// Shard requests guild data
 		sharder.IPC.on("getGuild", async (msg, callback) => {
 			try {
-				let payload = msg;
-				if (payload.guild !== "*") {
-					let shardid = sharder.guilds.get(payload.guild);
-					if (!shardid && shardid !== 0) {
-						callback({ err: 404, guild: payload.guild, settings: payload.settings });
-						return;
-					}
-					let result = await sharder.shards.get(shardid).getGuild(payload.guild, payload.settings);
-					return callback({ err: null, guild: payload.guild, settings: payload.settings, result: result });
+				if (msg.target !== "*") {
+					const shardId = sharder.guilds.get(msg.target);
+					if (!shardId && shardId !== 0) return callback({ target: msg.target, err: 404, result: null });
+
+					let result = await sharder.shards.get(shardId).getGuild(msg.target, msg.settings);
+					return callback({ target: msg.target, err: null, result });
 				} else {
-					let results = [];
-					sharder.shards.forEach(async shardd => {
-						results.push(shardd.getGuilds(payload.settings));
+					const promises = [];
+					sharder.shards.forEach(async shard => {
+						promises.push(shard.getGuilds(msg.settings));
 					});
-					let result = await Promise.all(results);
-					return callback({ err: null, guild: payload.guild, settings: payload.settings, result: result.reduce((prev, value) => Object.assign(prev, value), {}) });
+
+					const result = await Promise.all(promises);
+					const isArr = msg.settings.parse === "noKeys";
+					return callback({ target: msg.target, err: null, result: result.reduce((prev, value) => isArr ? prev.concat(value) : Object.assign(prev, value), isArr ? [] : {}) });
 				}
 			} catch (err) {
-				let payload = msg;
-				winston.warn("An error occured while fetching guild data from Discord l.l\n", err);
-				return callback({ err: err, guild: payload.guild, settings: payload.settings });
+				winston.warn("An error occurred while fetching internal guild data l.l\n", err);
+				return callback({ target: msg.target, err: err, result: null });
 			}
 		});
 
-		// Shard requests changes to gulid cache
+		// Shard requests changes to guild cache
 		sharder.IPC.on("guilds", async msg => {
 			let guilds = msg.latest;
 			if (!guilds) guilds = [];
