@@ -167,11 +167,10 @@ module.exports = class GABClient extends DJSClient {
 			}).split(/\s+/)
 				.splice(1)
 				.join(" ")
-				.format({ n: "\n", r: "\r", t: "\t" })
-				.trim();
+				.format({ n: "\n", r: "\r", t: "\t" });
 			commandObject = {
-				command: command,
-				suffix: suffix,
+				command,
+				suffix,
 			};
 		}
 		return Promise.resolve(commandObject);
