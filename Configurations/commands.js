@@ -721,7 +721,7 @@ const commands = {
 		shorten: {
 			aliases: ["unshorten"],
 			usage: `<URL>`,
-			description: `Uses goo.gl to shorten or unshorten an URL`,
+			description: `Uses bit.ly to shorten an URL`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
