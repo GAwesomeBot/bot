@@ -3,7 +3,7 @@
 <head>
 	<title><%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-	<% if (!utd && !disabled) { %>
+	<% if (!pageData.utd && !pageData.disabled) { %>
 	<link rel="stylesheet" href="/static/css/codemirror.css">
 	<link rel="stylesheet" href="/static/css/codemirror-monokai.css">
 	<script src="/static/js/codemirror.js"></script>
@@ -42,7 +42,7 @@
 							</div>
 						</div>
 					</article>
-          			<% if (!disabled && utd) { %>
+          			<% if (!pageData.disabled && pageData.utd) { %>
 						<section class="hero is-bold is-success" style="border-radius: 3px;">
 							<div class="hero-body has-text-centered">
 								<h1 class="title is-1">
@@ -50,13 +50,13 @@
 								</h1>
 								<br>
 								<h5 class="subtitle is-5">
-									You are running <strong><%= JSON.parse(latestVersion).config.name %></strong> on branch <strong><%= branch %></strong>.
+									You are running <strong><%= JSON.parse(pageData.latestVersion).config.name %></strong> on branch <strong><%= configData.branch %></strong>.
 									<br>
 									There are no updates available.
 								</h5>
 							</div>
 						</section>
-					<% } else if (disabled) { %>
+					<% } else if (pageData.disabled) { %>
             			<section class="hero is-bold is-dark" style="border-radius: 3px;">
 							<div class="hero-body has-text-centered">
 								<h1 class="title is-1">
@@ -64,12 +64,12 @@
 								</h1>
 								<br>
 								<h5 class="subtitle is-5">
-									Version <strong><%= version %></strong> was not found on branch <strong><%= branch %></strong>.<br>
+									Version <strong><%= configData.version %></strong> was not found on branch <strong><%= configData.branch %></strong>.<br>
 									Updating has been disabled.
 								</h5>
 							</div>
 						</section>
-					<% } else if (!utd) { %>
+					<% } else if (!pageData.utd) { %>
 						<section id="hero-container" class="hero is-bold is-info" style="border-radius: 3px;">
 							<div class="hero-body has-text-centered">
 								<div id="content-container">
@@ -78,7 +78,7 @@
 									</h1>
 									<br>
 									<h5 class="subtitle is-5">
-										New version <strong><%= JSON.parse(latestVersion).config.name %></strong> is available! Running on branch <strong><%= branch %></strong>.
+										New version <strong><%= JSON.parse(pageData.latestVersion).config.name %></strong> is available! Running on branch <strong><%= configData.branch %></strong>.
 									</h5>
 									<div id="new-version-info" class="has-text-centered" style="display: none;">
 										<div class="columns">
@@ -90,7 +90,7 @@
 													Version Name
 												</h6>
 												<h4 class="title is-4">
-													<strong><%= JSON.parse(latestVersion).config.name%></strong>
+													<strong><%= JSON.parse(pageData.latestVersion).config.name %></strong>
 												</h4>
 											</div>
 											<div class="column is-half">
@@ -101,7 +101,7 @@
 													Description
 												</h6>
 												<h4 class="title is-4">
-													<strong><%= JSON.parse(latestVersion).config.description%></strong>
+													<strong><%= JSON.parse(pageData.latestVersion).config.description %></strong>
 												</h4>
 											</div>
 										</div>
@@ -117,7 +117,7 @@
 										</div>
 										<div style="margin-right: 50px; margin-left: 50px;" class="box">
 											<div class="content has-text-left">
-												<%- JSON.parse(latestVersion).config.changelog %>
+												<%- JSON.parse(pageData.latestVersion).config.changelog %>
   											</div>
 										</div>
 									</div>

@@ -173,46 +173,10 @@ exports.open = async (client, auth, configJS, winston) => {
 
 	// Maintainer console bot version
 	app.get("/dashboard/maintainer/management/version", (req, res) => {
-		checkAuth(req, res, async () => {
-			let version = await Updater.check();
-			if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
-			res.render("pages/maintainer-version.ejs", {
-				disabled: version === 404,
-				version: configJSON.version,
-				branch: configJSON.branch,
-				latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
-				utd: version["up-to-date"],
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-					accessManagement: checkPerms("/dashboard/management", req.user.id),
-					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-			});
-		});
 	});
 	app.post("/dashboard/maintainer/management/version", (req, res) => {
 		checkAuth(req, res, () => {
-			io.of("/dashboard/management/version").on("connection", socket => {
-				socket.on("update", data => {
-					if (data === "start") {
-						socket.emit("update", "prepare");
-						Updater.update(bot, configJSON, socket, winston);
-					}
-				});
-				socket.on("disconnect", () => {
-					if (socket.isUpdateFinished) return;
-					winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
-					bot.IPC.send("shutdown", { err: true });
-				});
-			});
-			res.sendStatus(200);
+
 		});
 	});
 

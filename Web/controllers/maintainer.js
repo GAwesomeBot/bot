@@ -1,8 +1,18 @@
+const path = require("path");
+const showdown = require("showdown");
+const md = new showdown.Converter({
+	tables: true,
+	simplifiedAutoLink: true,
+	strikethrough: true,
+	tasklists: true,
+	smoothLivePreview: true,
+	smartIndentationFix: true,
+});
+md.setFlavor("github");
+
 const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData } = require("../helpers");
 const Updater = require("../../Modules/Updater");
 const { GetGuild } = require("../../Modules").getGuild;
-
-const path = require("path");
 
 const controllers = module.exports;
 
@@ -296,4 +306,37 @@ controllers.management.maintainers.post = async (req, res) => {
 
 	if (req.body["additional-perms"]) return save(req, res, true);
 	save(req, res);
+};
+
+controllers.management.version = async (req, { res }) => {
+	let version = await Updater.check();
+	if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
+
+	res.setPageData({
+		disabled: version === 404,
+		latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
+		utd: version["up-to-date"],
+		page: "maintainer-version.ejs",
+	})
+		.setConfigData({
+			version: configJSON.version,
+			branch: configJSON.branch,
+		})
+		.render();
+};
+controllers.management.version.post = async (req, res) => {
+	req.app.io.of("/dashboard/maintainer/management/version").on("connection", socket => {
+		socket.on("update", data => {
+			if (data === "start") {
+				socket.emit("update", "prepare");
+				Updater.update(req.app.client, configJSON, socket, winston);
+			}
+		});
+		socket.on("disconnect", () => {
+			if (socket.isUpdateFinished) return;
+			winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
+			req.app.client.IPC.send("shutdown", { err: true });
+		});
+	});
+	res.sendStatus(200);
 };

@@ -17,4 +17,5 @@ module.exports = router => {
 
 	// Management Settings
 	setupConsolePage(router, "/management/maintainers", "management", [], controllers.console.management.maintainers);
+	setupConsolePage(router, "/management/version", "management", [], controllers.console.management.version);
 };
