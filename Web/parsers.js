@@ -17,7 +17,7 @@ const parsers = module.exports;
 parsers.serverData = async (req, serverDocument, webp = false) => {
 	let data;
 	let svr = new GetGuild(req.app.client, serverDocument._id);
-	await svr.initialize("OWNER");
+	await svr.initialize(["OWNER", req.app.client.user.id]);
 	await svr.fetchProperty("createdAt");
 	if (svr.success) {
 		const owner = req.app.client.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
