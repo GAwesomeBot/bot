@@ -20,4 +20,5 @@ module.exports = router => {
 	setupConsolePage(router, "/management/shards", "management", [], controllers.console.management.shards);
 	setupConsolePage(router, "/management/version", "management", [], controllers.console.management.version);
 	setupConsolePage(router, "/management/eval", "eval", [], controllers.console.management.eval);
+	setupConsolePage(router, "/management/logs", "management", [], controllers.console.management.logs);
 };

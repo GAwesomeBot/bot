@@ -168,65 +168,6 @@ exports.open = async (client, auth, configJS, winston) => {
 
 	require("./routes")(app);
 	return { server, httpsServer };
-	/* eslint-disable */
-	/*
-
-	// Maintainer console evaluate code
-	app.get("/dashboard/maintainer/management/eval", (req, res) => {
-		checkAuth(req, res, async consolemember => {
-		});
-	});
-	app.post("/dashboard/maintainer/management/eval", (req, res) => {
-		checkAuth(req, res, async consolemember => {
-
-		});
-	});
-
-	// Maintainer console console logs
-	app.get("/dashboard/maintainer/management/logs", (req, res) => {
-		checkAuth(req, res, () => {
-			winston.transports.file.query({ limit: 10 }, (err, results) => {
-				results.reverse();
-				let logs = results.map(log => {
-					log.timestamp = moment(log.timestamp).format("DD-MM-YYYY HH:mm:ss");
-					return log;
-				});
-				res.render("pages/maintainer-logs.ejs", {
-					authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-					serverData: {
-						name: bot.user.username,
-						id: bot.user.id,
-						icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-						isMaintainer: true,
-						isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-						accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-						accessManagement: checkPerms("/dashboard/management", req.user.id),
-						accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-					},
-					currentPage: `${req.baseUrl}${req.path}`,
-					logs: JSON.stringify(logs),
-				});
-			});
-		});
-	});
-	io.of("/dashboard/management/logs").on("connection", async socket => {
-		const send = data => {
-			data.timestamp = moment(data.timestamp).format("DD-MM-YYYY HH:mm:ss");
-			socket.emit("logs", data);
-		};
-		// We have to use this cheat because winston's unsupported af and its stream method's start parameter does *not* work as documented.
-		// So keep your logs clean, people! You don't want this to go over thousands of lines. Luckily, the page is already rendered when we execute the query, it's just the WebSocket that's delayed.
-		let l = (await fsn.readFile("./logs/verbose.gawesomebot.log", "utf8")).split(/\n+/).length;
-		let stream = winston.transports.file.stream({ start: l - 2 }).on("log", send);
-		socket.on("disconnect", () => stream.destroy());
-	});
-
-	// Handle errors (redirect to error page)
-	app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
-		winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, error, { params: req.params, query: req.query });
-		renderError(res, "An unexpected and unknown error occurred!<br>Please contact your GAB maintainer for support.");
-	});
-	*/
 };
 
 exports.close = (servers) => {

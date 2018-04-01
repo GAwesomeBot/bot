@@ -21,7 +21,7 @@
                 <article class="message is-primary">
                     <div class="message-body">
                         <div class="content">
-                            These logs are streamed directly from GAB's console, detailing all events that your bot encounters. Verbosity is based on the <code>consoleLevel</code> value in config.js.
+                            These logs are streamed directly from GAB's log files, detailing all events that your bot encounters. Verbosity is based on the <code>fileLevel</code> value in config.js.
                         </div>
                     </div>
                 </article>
@@ -33,7 +33,7 @@
     </div>
 </section>
 <script>
-    GAwesomeData.dashboard.logs = [<%- logs %>][0];
+    GAwesomeData.dashboard.logs = [<%- pageData.logs %>][0];
 	GAwesomeData.dashboard.terminal = new Terminal();
     GAwesomeData.dashboard.terminal.setHeight("300px");
     GAwesomeData.dashboard.terminal.blinkingCursor(false);

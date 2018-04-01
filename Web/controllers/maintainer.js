@@ -9,8 +9,10 @@ const md = new showdown.Converter({
 	smartIndentationFix: true,
 });
 md.setFlavor("github");
+const moment = require("moment");
+const Tail = require("tail").Tail;
 
-const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo } = require("../helpers");
+const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo, renderError } = require("../helpers");
 const Updater = require("../../Modules/Updater");
 const { GetGuild } = require("../../Modules").getGuild;
 
@@ -394,4 +396,35 @@ controllers.management.eval.post = async (req, res) => {
 	} else {
 		res.sendStatus(400);
 	}
+};
+
+controllers.management.logs = async (req, { res }) => {
+	winston.transports.file.query({ limit: 10 }, (err, results) => {
+		if (err) return renderError(res, "An error occurred while fetching old logs");
+
+		results.reverse();
+		let logs = JSON.stringify(results.map(log => {
+			log.timestamp = moment(log.timestamp).format("DD-MM-YYYY HH:mm:ss");
+			return log;
+		}));
+
+		res.setPageData({
+			logs,
+			page: "maintainer-logs.ejs",
+		}).render();
+	});
+};
+controllers.management.logs.socket = async socket => {
+	const send = data => {
+		data = JSON.parse(data);
+		data.timestamp = moment(data.timestamp).format("DD-MM-YYYY HH:mm:ss");
+		socket.emit("logs", data);
+	};
+
+	const tail = new Tail(path.join(__dirname, "../../logs/verbose.gawesomebot.log"));
+
+	tail.on("line", send);
+	tail.watch();
+
+	socket.on("disconnect", () => tail.unwatch());
 };

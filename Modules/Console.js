@@ -58,7 +58,7 @@ module.exports = class Console {
 					filename: require("path").join(process.cwd(), `logs/%DATE%-gawesomebot.log`),
 				}),
 				new winston.transports.File({
-					level: config.consoleLevel,
+					level: config.fileLevel,
 					json: true,
 					colorize: false,
 					filename: require("path").join(process.cwd(), `logs/verbose.gawesomebot.log`),
