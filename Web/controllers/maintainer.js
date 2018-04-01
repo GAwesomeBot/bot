@@ -230,3 +230,70 @@ controllers.options.contributors.post = async (req, res) => {
 
 	save(req, res);
 };
+
+controllers.management = {};
+
+controllers.management.maintainers = async (req, { res }) => {
+	res.setConfigData({
+		maintainers: await Promise.all(configJSON.maintainers.map(async id => {
+			const usr = await req.app.client.users.fetch(id, true) || {
+				id: "invalid-user",
+				username: "invalid-user",
+			};
+			return {
+				name: usr.username,
+				id: usr.id,
+				avatar: usr.avatarURL ? usr.avatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
+				isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
+			};
+		})),
+		perms: configJSON.perms,
+	}).setPageData("page", "maintainer-maintainers.ejs").render();
+};
+controllers.management.maintainers.post = async (req, res) => {
+	if (req.level !== 2 && req.level !== 0) return res.sendStatus(403);
+	if (req.body["new-user"]) {
+		let usr = await Users.findOne({ username: req.body["new-user"] }).exec();
+		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
+		if (!usr.id) usr.id = usr._id;
+
+		if (usr && !configJSON.maintainers.includes(usr.id)) {
+			configJSON.maintainers.push(usr.id);
+		}
+		if (usr && req.body[`isSudo`] === "true" && !configJSON.sudoMaintainers.includes(usr.id)) {
+			configJSON.sudoMaintainers.push(usr.id);
+		}
+	} else {
+		if (req.body[`maintainer-removed`]) {
+			configJSON.maintainers[configJSON.maintainers.indexOf(req.body[`maintainer-removed`])] = null;
+			configJSON.sudoMaintainers[configJSON.sudoMaintainers.indexOf(req.body[`maintainer-removed`])] = null;
+		}
+		if (req.body[`maintainer-sudo`]) {
+			if (configJSON.sudoMaintainers.includes(req.body[`maintainer-sudo`])) configJSON.sudoMaintainers[configJSON.sudoMaintainers.indexOf(req.body[`maintainer-sudo`])] = null;
+			else configJSON.sudoMaintainers.push(req.body[`maintainer-sudo`]);
+		}
+
+		configJSON.maintainers.spliceNullElements();
+		configJSON.sudoMaintainers.spliceNullElements();
+
+		const perms = Object.keys(req.body).filter(param => param.startsWith("perm-"));
+		perms.forEach(perm => {
+			let value = req.body[perm];
+			perm = perm.split("-")[1];
+			if (configJSON.perms[perm] === 0 && process.env.GAB_HOST !== req.user.id) return;
+			switch (value) {
+				case "sudo":
+					configJSON.perms[perm] = 2;
+					break;
+				case "host":
+					configJSON.perms[perm] = 0;
+					break;
+				default:
+					configJSON.perms[perm] = 1;
+			}
+		});
+	}
+
+	if (req.body["additional-perms"]) return save(req, res, true);
+	save(req, res);
+};

@@ -78,6 +78,8 @@ module.exports = middleware => {
 				if (perm === "maintainer" || canDo(perm, req.user.id)) {
 					req.isAuthorized = true;
 					req.level = process.env.GAB_HOST !== req.user.id ? configJSON.sudoMaintainers.includes(req.user.id) ? 2 : 1 : 0;
+					res.res.template.isSudoMaintainer = req.level === 2;
+					res.res.template.isHost = req.level === 0;
 					return next();
 				} else {
 					if (req.isAPI) return res.sendStatus(403);
