@@ -1609,8 +1609,7 @@ controllers.other.activities = async (req, res) => {
 		defaultChannel = generalChannel;
 	} else {
 		defaultChannel = svr.channels.filter(c => c.type === "text")
-			.sort((a, b) => a.rawPosition - b.rawPosition)
-			.first();
+			.sort((a, b) => a.rawPosition - b.rawPosition)[0];
 	}
 
 	res.render("pages/admin-ongoing-activities.ejs", {
