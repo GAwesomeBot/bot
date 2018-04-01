@@ -171,59 +171,6 @@ exports.open = async (client, auth, configJS, winston) => {
 	/* eslint-disable */
 	/*
 
-	// Maintainer console blocklist
-	app.get("/dashboard/maintainer/global-options/blocklist", (req, res) => {
-		checkAuth(req, res, async () => {
-			res.render("pages/maintainer-blocklist.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-					accessManagement: checkPerms("/dashboard/management", req.user.id),
-					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				config: {
-					global_blocklist: await Promise.all(configJSON.userBlocklist.map(async a => {
-						const usr = await bot.users.fetch(a, true) || {};
-						return {
-							name: usr.username,
-							id: usr.id,
-							avatar: bot.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png",
-						};
-					})),
-				},
-			});
-		});
-	});
-	io.of("/dashboard/global-options/blocklist").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/maintainer/global-options/blocklist", (req, res) => {
-		checkAuth(req, res, async consolemember => {
-			if (req.body["new-user"]) {
-				let usr = await db.users.findOne({ username: req.body["new-user"]}).exec();
-				if (!usr) usr = await bot.users.fetch(req.body["new-user"], true);
-				if (usr && configJSON.userBlocklist.indexOf(usr.id ? usr.id : usr._id) === -1 && configJSON.maintainers.indexOf(usr.id ? usr.id : usr._id) === -1) {
-					configJSON.userBlocklist.push(usr.id ? usr.id : usr._id);
-				}
-			} else {
-				for (let i = 0; i < configJSON.userBlocklist.length; i++) {
-					if (req.body[`block-${i}-removed`] !== undefined) {
-						configJSON.userBlocklist[i] = null;
-					}
-				}
-				configJSON.userBlocklist.spliceNullElements();
-			}
-
-			saveMaintainerConsoleOptions(consolemember, req, res);
-		});
-	});
-
 	// Maintainer console bot user options
 	app.get("/dashboard/maintainer/global-options/bot-user", (req, res) => {
 		checkAuth(req, res, async () => {

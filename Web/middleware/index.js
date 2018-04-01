@@ -33,6 +33,7 @@ class GABResponse {
 		} else {
 			this.configData[key] = data;
 		}
+		return this;
 	}
 
 	setPageData (key, data) {
@@ -41,17 +42,19 @@ class GABResponse {
 		} else {
 			this.pageData[key] = data;
 		}
+		return this;
 	}
 
 	async render (page, template) {
 		if (!page) page = `pages/${this.pageData.page}`;
-		if (!this.pageData.page) this.sendStatus(500);
+		if (!this.pageData.page) return this.sendStatus(500);
 		this._render(page, template || {
 			...this.template,
 			serverData: this.serverData,
 			configData: this.configData,
 			pageData: this.pageData,
 		});
+		return this;
 	}
 }
 

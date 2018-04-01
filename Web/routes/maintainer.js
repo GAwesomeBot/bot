@@ -6,4 +6,5 @@ module.exports = router => {
 	setupConsolePage(router, "/maintainer", "maintainer", [], controllers.console.maintainer);
 	setupConsolePage(router, "/servers/server-list", "maintainer", [], controllers.console.servers.list);
 	setupConsolePage(router, "/servers/big-message", "maintainer", [], controllers.console.servers.bigmessage);
+	setupConsolePage(router, "/global-options/blocklist", "administration", [], controllers.console.options.blocklist);
 };

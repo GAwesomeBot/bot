@@ -103,8 +103,7 @@ controllers.servers.bigmessage = async (req, { res }) => {
 	res.setPageData({
 		serverCount: await req.app.client.guilds.totalCount,
 		page: "maintainer-big-message.ejs",
-	});
-	res.render();
+	}).render();
 };
 controllers.servers.bigmessage.post = async (req, res) => {
 	if (req.body.message) {
@@ -113,4 +112,38 @@ controllers.servers.bigmessage.post = async (req, res) => {
 	} else {
 		res.sendStatus(400);
 	}
+};
+
+controllers.options = {};
+
+controllers.options.blocklist = async (req, { res }) => {
+	res.setConfigData({
+		global_blocklist: await Promise.all(configJSON.userBlocklist.map(async a => {
+			const usr = await req.app.client.users.fetch(a, true) || {};
+			return {
+				name: usr.username,
+				id: usr.id,
+				avatar: req.app.client.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png",
+			};
+		})),
+	}).setPageData("page", "maintainer-blocklist.ejs").render();
+};
+controllers.options.blocklist.post = async (req, res) => {
+	if (req.body["new-user"]) {
+		let usr = await Users.findOne({ username: req.body["new-user"] }).exec();
+		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
+
+		if (usr && !configJSON.userBlocklist.includes(usr.id ? usr.id : usr._id) && !configJSON.maintainers.includes(usr.id ? usr.id : usr._id)) {
+			configJSON.userBlocklist.push(usr.id ? usr.id : usr._id);
+		}
+	} else {
+		for (let i = 0; i < configJSON.userBlocklist.length; i++) {
+			if (req.body[`block-${i}-removed`] !== undefined) {
+				configJSON.userBlocklist[i] = null;
+			}
+		}
+		configJSON.userBlocklist.spliceNullElements();
+	}
+
+	save(req, res);
 };
