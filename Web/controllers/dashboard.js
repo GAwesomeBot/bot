@@ -36,7 +36,7 @@ controllers.home = async (req, res) => {
 					name: req.user.guilds[i].name,
 					id: req.user.guilds[i].id,
 					icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
-					botJoined: svr !== null,
+					botJoined: svr.success,
 					isAdmin: false,
 				};
 				if (svr.success) {
