@@ -8,4 +8,5 @@ module.exports = router => {
 	setupConsolePage(router, "/servers/big-message", "maintainer", [], controllers.console.servers.bigmessage);
 	setupConsolePage(router, "/global-options/blocklist", "administration", [], controllers.console.options.blocklist);
 	setupConsolePage(router, "/global-options/bot-user", "administration", [], controllers.console.options.bot);
+	setupConsolePage(router, "/global-options/homepage", "administration", [], controllers.console.options.homepage);
 };

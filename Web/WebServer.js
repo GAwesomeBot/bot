@@ -171,42 +171,6 @@ exports.open = async (client, auth, configJS, winston) => {
 	/* eslint-disable */
 	/*
 
-	// Maintainer console homepage options
-	app.get("/dashboard/maintainer/global-options/homepage", (req, res) => {
-		checkAuth(req, res, () => {
-			res.render("pages/maintainer-homepage.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-					accessManagement: checkPerms("/dashboard/management", req.user.id),
-					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				config: {
-					header_image: configJSON.headerImage,
-					homepageMessageHTML: configJSON.homepageMessageHTML,
-				},
-				dirname: __dirname,
-			});
-		});
-	});
-	io.of("/dashboard/global-options/homepage").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/maintainer/global-options/homepage", (req, res) => {
-		checkAuth(req, res, consolemember => {
-			configJSON.homepageMessageHTML = req.body.homepageMessageHTML;
-			configJSON.headerImage = req.body.header_image;
-
-			saveMaintainerConsoleOptions(consolemember, req, res, true);
-		});
-	});
-
 	// Maintainer console wiki contributors
 	app.get("/dashboard/maintainer/global-options/wiki-contributors", (req, res) => {
 		checkAuth(req, res, async consolemember => {

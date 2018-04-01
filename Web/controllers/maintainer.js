@@ -2,6 +2,8 @@ const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData } =
 const Updater = require("../../Modules/Updater");
 const { GetGuild } = require("../../Modules").getGuild;
 
+const path = require("path");
+
 const controllers = module.exports;
 
 controllers.maintainer = async (req, { res }) => {
@@ -163,5 +165,21 @@ controllers.options.bot.post = async (req, res) => {
 		configJSON.activity.name = "default";
 	}
 	if (req.body.status) configJSON.status = req.body.status;
+	save(req, res, true);
+};
+
+controllers.options.homepage = async (req, { res }) => {
+	res.setConfigData({
+		headerImage: configJSON.headerImage,
+		homepageMessageHTML: configJSON.homepageMessageHTML,
+	}).setPageData({
+		dirname: path.join(__dirname, "/public/static/img/"),
+		page: "maintainer-homepage.ejs",
+	}).render();
+};
+controllers.options.homepage.post = async (req, res) => {
+	configJSON.homepageMessageHTML = req.body.homepageMessageHTML;
+	configJSON.headerImage = req.body.header_image;
+
 	save(req, res, true);
 };
