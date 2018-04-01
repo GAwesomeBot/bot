@@ -5,4 +5,5 @@ module.exports = router => {
 	setupRedirection(router, "/", "/maintainer");
 	setupConsolePage(router, "/maintainer", "maintainer", [], controllers.console.maintainer);
 	setupConsolePage(router, "/servers/server-list", "maintainer", [], controllers.console.servers.list);
+	setupConsolePage(router, "/servers/big-message", "maintainer", [], controllers.console.servers.bigmessage);
 };

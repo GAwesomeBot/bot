@@ -171,37 +171,6 @@ exports.open = async (client, auth, configJS, winston) => {
 	/* eslint-disable */
 	/*
 
-	// Maintainer console big message
-	app.get("/dashboard/maintainer/servers/big-message", (req, res) => {
-		checkAuth(req, res, async () => {
-			res.render("pages/maintainer-big-message.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-					accessManagement: checkPerms("/dashboard/management", req.user.id),
-					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				serverCount: await bot.guilds.totalCount,
-			});
-		});
-	});
-	app.post("/dashboard/maintainer/servers/big-message", (req, res) => {
-		checkAuth(req, res, () => {
-			if (req.body.message) {
-				bot.IPC.send("sendMessage", { guild: "*", message: req.body.message });
-				res.sendStatus(200);
-			} else {
-				res.sendStatus(400);
-			}
-		});
-	});
-
 	// Maintainer console blocklist
 	app.get("/dashboard/maintainer/global-options/blocklist", (req, res) => {
 		checkAuth(req, res, async () => {

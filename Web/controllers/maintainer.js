@@ -98,3 +98,19 @@ controllers.servers.list.post = async (req, res) => {
 	}
 	save(req, res, true);
 };
+
+controllers.servers.bigmessage = async (req, { res }) => {
+	res.setPageData({
+		serverCount: await req.app.client.guilds.totalCount,
+		page: "maintainer-big-message.ejs",
+	});
+	res.render();
+};
+controllers.servers.bigmessage.post = async (req, res) => {
+	if (req.body.message) {
+		req.app.client.IPC.send("sendMessage", { guild: "*", message: req.body.message });
+		res.sendStatus(200);
+	} else {
+		res.sendStatus(400);
+	}
+};

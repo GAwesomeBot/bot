@@ -2,7 +2,6 @@ const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
 
 class GABResponse {
 	constructor (req, res, page) {
-		this.self = res;
 		this.template = {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
@@ -23,6 +22,9 @@ class GABResponse {
 		this._client = req.app.client;
 		this._page = page;
 		this.sendStatus = res.sendStatus.bind(res);
+		this.status = res.status.bind(res);
+		this.redirect = res.redirect.bind(res);
+		this._render = res.render.bind(res);
 	}
 
 	setConfigData (key, data) {
@@ -41,10 +43,10 @@ class GABResponse {
 		}
 	}
 
-	async render (page) {
+	async render (page, template) {
 		if (!page) page = `pages/${this.pageData.page}`;
-		if (!page) return;
-		this.self.render(page, {
+		if (!this.pageData.page) this.sendStatus(500);
+		this._render(page, template || {
 			...this.template,
 			serverData: this.serverData,
 			configData: this.configData,
