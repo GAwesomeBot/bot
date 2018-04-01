@@ -171,46 +171,6 @@ exports.open = async (client, auth, configJS, winston) => {
 	/* eslint-disable */
 	/*
 
-	// Maintainer console bot user options
-	app.get("/dashboard/maintainer/global-options/bot-user", (req, res) => {
-		checkAuth(req, res, async () => {
-			res.render("pages/maintainer-bot-user.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(req.user.id),
-					accessAdmin: checkPerms("/dashboard/global-options", req.user.id),
-					accessManagement: checkPerms("/dashboard/management", req.user.id),
-					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				bot_user: {
-					status: configJSON.status,
-					game: configJSON.activity.name,
-					game_default: configJSON.activity.name === "default",
-					avatar: bot.user.avatarURL(),
-				},
-			});
-		});
-	});
-	io.of("/dashboard/global-options/bot-user").on("connection", socket => {
-		socket.on("disconnect", () => {});
-	});
-	app.post("/dashboard/maintainer/global-options/bot-user", (req, res) => {
-		checkAuth(req, res, consolemember => {
-			bot.IPC.send("updateBotUser", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
-			configJSON.activity.name = req.body.game;
-			if (req.body.game === "gawesomebot.com") {
-					configJSON.activity.name = "default";
-			}
-			if (req.body.status) configJSON.status = req.body.status;
-			saveMaintainerConsoleOptions(consolemember, req, res, true);
-		});
-	});
-
 	// Maintainer console homepage options
 	app.get("/dashboard/maintainer/global-options/homepage", (req, res) => {
 		checkAuth(req, res, () => {

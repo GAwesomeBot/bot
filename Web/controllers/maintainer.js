@@ -147,3 +147,21 @@ controllers.options.blocklist.post = async (req, res) => {
 
 	save(req, res);
 };
+
+controllers.options.bot = async (req, { res }) => {
+	res.setConfigData({
+		status: configJSON.status,
+		game: configJSON.activity.name,
+		game_default: configJSON.activity.name === "default",
+		avatar: req.app.client.user.avatarURL(),
+	}).setPageData("page", "maintainer-bot-user.ejs").render();
+};
+controllers.options.bot.post = async (req, res) => {
+	req.app.client.IPC.send("updateBotUser", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
+	configJSON.activity.name = req.body.game;
+	if (req.body.game === "gawesomebot.com") {
+		configJSON.activity.name = "default";
+	}
+	if (req.body.status) configJSON.status = req.body.status;
+	save(req, res, true);
+};

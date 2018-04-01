@@ -30,7 +30,7 @@
 						<div class="columns">
 							<div class="column is-one-third">
 								<div class="field">
-									<img src="<%= bot_user.avatar || 'http://placehold.it/400x400' %>" alt="<%= serverData.id %>" style="width: 100%;">
+									<img src="<%= configData.avatar || 'http://placehold.it/400x400' %>" alt="<%= serverData.id %>" style="width: 100%;">
 									<div class="control has-icons-left">
 										<input name="avatar" class="input" type="text" placeholder="New avatar URL">
 										<span class="icon">
@@ -56,10 +56,10 @@
 									<div class="control">
 										<span class="select">
 											<select name="status">
-												<option value="online"<%= bot_user.status=="online" ? " selected" : "" %>>Online</option>
-												<option value="idle"<%= bot_user.status=="idle" ? " selected" : "" %>>Idle</option>
-												<option value="dnd"<%= bot_user.status=="dnd" ? " selected" : ""%>>Do Not Disturb</option>
-												<option value="offline"<%= bot_user.status=="offline" ? " selected" : "" %>>Invisible</option>
+												<option value="online"<%= configData.status=="online" ? " selected" : "" %>>Online</option>
+												<option value="idle"<%= configData.status=="idle" ? " selected" : "" %>>Idle</option>
+												<option value="dnd"<%= configData.status=="dnd" ? " selected" : ""%>>Do Not Disturb</option>
+												<option value="offline"<%= configData.status=="offline" ? " selected" : "" %>>Invisible</option>
 											</select>
 										</span>
 										<span class="help">The availability status of the bot, shown in the colored bubble next to the avatar.</span>
@@ -69,11 +69,11 @@
 									<label class="label">Game</label>
 									<div class="field has-addons" style="margin-bottom: 0px;">
 										<div class="control has-icons-left is-expanded">
-											<input name="game" id="user-game" class="input" type="text" value="<%= bot_user.game === "default" ? "gawesomebot.com" : bot_user.game %>" style="width: 100%;">
+											<input name="game" id="user-game" class="input" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
 											<span class="icon"><i class="fa fa-gamepad"></i></span>
 										</div>
 										<div class="control">
-                                        	<% if(!bot_user.game_default) { %>
+                                        	<% if(!configData.game_default) { %>
 												<a name="game-default" class="button" onclick="$('#user-game').val('gawesomebot.com')">
 													Default
 												</a>
