@@ -183,3 +183,50 @@ controllers.options.homepage.post = async (req, res) => {
 
 	save(req, res, true);
 };
+
+controllers.options.contributors = async (req, { res }) => {
+	res.setConfigData({
+		wiki_contributors: await Promise.all(configJSON.maintainers.map(async a => {
+			const usr = await req.app.client.users.fetch(a, true) || {
+				id: "invalid-user",
+				username: "invalid-user",
+			};
+			return {
+				name: usr.username,
+				id: usr.id,
+				avatar: usr.avatarURL ? usr.avatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
+				isMaintainer: true,
+				isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
+			};
+		}).concat(configJSON.wikiContributors.map(async a => {
+			const usr = await req.app.client.users.fetch(a, true) || {
+				id: "invalid-user",
+				username: "invalid-user",
+			};
+			return {
+				name: usr.username,
+				id: usr.id,
+				avatar: usr.avatarURL ? usr.avatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
+			};
+		}))),
+	}).setPageData({
+		showRemove: configJSON.maintainers.includes(req.user.id),
+		page: "maintainer-wiki-contributors.ejs",
+	}).render();
+};
+controllers.options.contributors.post = async (req, res) => {
+	if (req.body["new-user"]) {
+		let usr = await Users.findOne({ username: req.body["new-user"] }).exec();
+		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
+		if (!usr.id) usr.id = usr._id;
+		if (usr && configJSON.wikiContributors.indexOf(usr.id) === -1) {
+			configJSON.wikiContributors.push(usr.id);
+		}
+	} else if (configJSON.maintainers.includes(req.user.id)) {
+		let i = configJSON.wikiContributors.indexOf(req.body["contributor-removed"]);
+		configJSON.wikiContributors[i] = null;
+		configJSON.wikiContributors.spliceNullElements();
+	}
+
+	save(req, res);
+};
