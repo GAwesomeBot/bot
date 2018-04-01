@@ -171,56 +171,12 @@ exports.open = async (client, auth, configJS, winston) => {
 	/* eslint-disable */
 	/*
 
-	// Maintainer console bot version
-	app.get("/dashboard/maintainer/management/version", (req, res) => {
-	});
-	app.post("/dashboard/maintainer/management/version", (req, res) => {
-		checkAuth(req, res, () => {
-
-		});
-	});
-
 	// Maintainer console evaluate code
 	app.get("/dashboard/maintainer/management/eval", (req, res) => {
 		checkAuth(req, res, async consolemember => {
-			res.render("pages/maintainer-eval.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
-					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
-					accessManagement: checkPerms("/dashboard/management", consolemember.id),
-					accessEval: checkPerms("/dashboard/management/eval", req.user.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				config: {
-					shardTotal: Number(process.env.SHARD_COUNT),
-				},
-			});
 		});
 	});
 	app.post("/dashboard/maintainer/management/eval", (req, res) => {
-		checkAuth(req, res, async consolemember => {
-			if (req.body.code && req.body.target) {
-				bot.IPC.send("evaluate", { code: req.body.code, target: req.body.target }).then(result => {
-					res.send(JSON.stringify(result));
-				});
-				winston.info(`Maintainer ${consolemember.username} executed JavaScript from the Maintainer Console!`, { maintainer: consolemember.id, code: req.body.code, target: req.body.target });
-			} else {
-				res.sendStatus(400);
-			}
-		});
-	});
-
-	// Maintainer console shard data
-	app.get("/dashboard/maintainer/management/shards", (req, res) => {
-		checkAuth(req, res, async consolemember => {
-		});
-	});
-	app.post("/dashboard/maintainer/management/shards", (req, res) => {
 		checkAuth(req, res, async consolemember => {
 
 		});

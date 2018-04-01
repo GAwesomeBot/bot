@@ -109,7 +109,7 @@
                                         <select id="targetSelect">
                                             <option value="select">Select Shard...</option>
                                             <option value="master">Master</option>
-                                            <% for (let i = 0; i < config.shardTotal; i++) { %>
+                                            <% for (let i = 0; i < configData.shardTotal; i++) { %>
                                             <option value="<%= i %>"><%= `Shard ${i}` %></option>
                                             <% } %>
                                             <option value="all">All Shards</option>

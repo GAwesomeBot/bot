@@ -379,3 +379,19 @@ controllers.management.version.post = async (req, res) => {
 	});
 	res.sendStatus(200);
 };
+
+controllers.management.eval = async (req, { res }) => {
+	res.setConfigData("shardTotal", Number(process.env.SHARD_COUNT))
+		.setPageData("page", "maintainer-eval.ejs")
+		.render();
+};
+controllers.management.eval.post = async (req, res) => {
+	if (req.body.code && req.body.target) {
+		req.app.client.IPC.send("evaluate", { code: req.body.code, target: req.body.target }).then(result => {
+			res.send(JSON.stringify(result));
+		});
+		winston.info(`Maintainer ${req.user.username} executed JavaScript from the Maintainer Console!`, { maintainer: req.user.id, code: req.body.code, target: req.body.target });
+	} else {
+		res.sendStatus(400);
+	}
+};
