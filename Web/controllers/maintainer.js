@@ -10,7 +10,7 @@ const md = new showdown.Converter({
 });
 md.setFlavor("github");
 
-const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData } = require("../helpers");
+const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo } = require("../helpers");
 const Updater = require("../../Modules/Updater");
 const { GetGuild } = require("../../Modules").getGuild;
 
@@ -306,6 +306,45 @@ controllers.management.maintainers.post = async (req, res) => {
 
 	if (req.body["additional-perms"]) return save(req, res, true);
 	save(req, res);
+};
+
+controllers.management.shards = async (req, { res }) => {
+	let data = await req.app.client.IPC.send("shardData", {});
+	res.setConfigData({
+		shardTotal: Number(process.env.SHARD_COUNT),
+		data,
+	})
+		.setPageData({
+			currentShard: req.app.client.shardID,
+			page: "maintainer-shards.ejs",
+		})
+		.render();
+};
+controllers.management.shards.post = async (req, res) => {
+	const bot = req.app.client;
+
+	if (!canDo("shutdown", req.user.id)) return res.sendStatus(403);
+
+	if (req.body.dismiss) {
+		await bot.IPC.send("dismissWarning", { warning: req.body.dismiss });
+	}
+	if (req.body["freeze-shard"]) {
+		await bot.IPC.send("freezeShard", { shard: req.body["freeze-shard"] });
+	}
+	if (req.body["reset-shard"]) {
+		await bot.IPC.send("restartShard", { shard: req.body["reset-shard"], soft: true });
+	}
+	if (req.body["restart-shard"]) {
+		await bot.IPC.send("restartShard", { shard: req.body["restart-shard"], soft: false });
+	}
+	res.sendStatus(200);
+
+	if (req.body.restart === "master") {
+		bot.IPC.send("shutdown", { err: false, soft: true });
+	}
+	if (req.body.shutdown === "master") {
+		bot.IPC.send("shutdown", { err: false });
+	}
 };
 
 controllers.management.version = async (req, { res }) => {

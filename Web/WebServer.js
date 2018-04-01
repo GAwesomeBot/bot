@@ -218,51 +218,11 @@ exports.open = async (client, auth, configJS, winston) => {
 	// Maintainer console shard data
 	app.get("/dashboard/maintainer/management/shards", (req, res) => {
 		checkAuth(req, res, async consolemember => {
-			let data = await bot.IPC.send("shardData", {});
-			res.render("pages/maintainer-shards.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData: {
-					name: bot.user.username,
-					id: bot.user.id,
-					icon: bot.user.avatarURL() || "/static/img/discord-icon.png",
-					isMaintainer: true,
-					isSudoMaintainer: configJSON.sudoMaintainers.includes(consolemember.id),
-					accessAdmin: checkPerms("/dashboard/global-options", consolemember.id),
-					accessManagement: checkPerms("/dashboard/management", consolemember.id),
-					accessEval: checkPerms("/dashboard/management/eval", consolemember.id),
-					accessShutdown: checkPerms("shutdown", consolemember.id),
-				},
-				currentPage: `${req.baseUrl}${req.path}`,
-				config: {
-					shardTotal: Number(process.env.SHARD_COUNT),
-					currentShard: bot.shardID,
-					data,
-				},
-			});
 		});
 	});
 	app.post("/dashboard/maintainer/management/shards", (req, res) => {
 		checkAuth(req, res, async consolemember => {
-			if (!checkPerms("shutdown", consolemember.id)) return res.sendStatus(403);
-			if (req.body["dismiss"]) {
-				await bot.IPC.send("dismissWarning", { warning: req.body["dismiss"] });
-			}
-			if (req.body["freeze-shard"]) {
-				await bot.IPC.send("freezeShard", { shard: req.body["freeze-shard"] });
-			}
-			if (req.body["reset-shard"]) {
-				await bot.IPC.send("restartShard", { shard: req.body["reset-shard"], soft: true });
-			}
-			if (req.body["restart-shard"]) {
-				await bot.IPC.send("restartShard", { shard: req.body["restart-shard"], soft: false });
-			}
-			res.sendStatus(200);
-			if (req.body["restart"] === "master") {
-				bot.IPC.send("shutdown", { err: false, soft: true });
-			}
-			if (req.body["shutdown"] === "master") {
-				bot.IPC.send("shutdown", { err: false });
-			}
+
 		});
 	});
 
