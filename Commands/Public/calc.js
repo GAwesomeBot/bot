@@ -44,7 +44,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 						color: Colors.RESPONSE,
 						title: `Here is your result!`,
 						author: {
-							name: `Results provided by MathJS`,
+							name: `Results provided with MathJS`,
 							url: `http://mathjs.org/`,
 						},
 						description: `\`\`\`css\n${res}\`\`\``,
