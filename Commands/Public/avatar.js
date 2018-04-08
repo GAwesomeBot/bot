@@ -7,7 +7,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, m
 				title: `I don't know who that is!`,
 				description: `You can admire my beautiful face instead! 💖`,
 				image: {
-					url: client.user.displayAvatarURL(),
+					url: client.user.displayAvatarURL({ size: 512 }),
 				},
 			},
 		});
@@ -19,7 +19,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, m
 				title: `@__${isUserOnly ? m.tag : client.getName(msg.guild, serverDocument, m)}__'s Avatar`,
 				color: Colors.BLUE,
 				image: {
-					url: isUserOnly ? m.displayAvatarURL() : m.user.displayAvatarURL(),
+					url: isUserOnly ? m.displayAvatarURL({ size: 512 }) : m.user.displayAvatarURL({ size: 512 }),
 				},
 			},
 		});
