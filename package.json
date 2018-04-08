@@ -42,7 +42,7 @@
     "moment": "^2.22.0",
     "moment-timezone": "^0.5.14",
     "money": "^0.2.0",
-    "mongoose": "^5.0.12",
+    "mongoose": "^5.0.13",
     "mstranslator": "^3.0.0",
     "object-sizeof": "^1.2.0",
     "parse-duration": "^0.1.1",
@@ -71,6 +71,6 @@
   },
   "devDependencies": {
     "eslint": "^4.19.1",
-    "uglify-js": "^3.3.18"
+    "uglify-js": "^3.3.20"
   }
 }
