@@ -1,6 +1,8 @@
 exports.ModLogEntries = {
 	ADD_ROLE: "Add Role",
 	REMOVE_ROLE: "Remove Role",
+	DELETE_ROLE: "Delete Role",
+	MODIFY_ROLE: "Modify Role",
 
 	KICK: "Kick",
 	BAN: "Ban",
