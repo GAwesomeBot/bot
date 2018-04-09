@@ -16,7 +16,7 @@ module.exports = class ModLog {
 			`🔨 **Case ${modlogID}:** ${type}`,
 		];
 		affectedUserString && info.push(`👤 **User:** ${affectedUserString}`);
-		creatorString && info.push(`🐬 **Moderator:** ${creatorString}`);
+		creatorString && info.push(`🐬 **${affectedUserString ? "Moderator" : "Creator"}:** ${creatorString}`);
 		reason && info.push(`❓ **Reason:** ${reason}`);
 
 		return info.join("\n");
@@ -41,9 +41,9 @@ module.exports = class ModLog {
 					m = await ch.send({
 						embed: {
 							description,
-							color: Colors.YELLOW,
+							color: Colors.INFO,
 							footer: {
-								text: `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason.`,
+								text: member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason.` : "",
 							},
 						},
 					});
