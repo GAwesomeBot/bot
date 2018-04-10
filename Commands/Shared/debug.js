@@ -79,7 +79,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 					name: "Master Process Information",
 					value: `💎 Process is running **${process.release.name} ${process.version}** (located at **${process.execPath}**) with Process ID **${masterData.master.PID}**, node is running from **${process.cwd()}**
 								\n💾 Using a Resident set of **${Math.ceil(masterData.master.rss)}MB**
-								\n🗄 GAwesomeBot's MongoDB has **${masterData.master.users} users**, and **${masterData.master.guilds} guilds** registered. The query took **${masterData.master.ping}ms** to finish
+								\n🗄 GAwesomeBot's MongoDB has **${masterData.master.users} users**, and **${masterData.master.guilds} guilds** registered. The query took **${masterData.master.ping}** to finish
 								\n⏲ Process has been running for **${masterData.master.uptime} hours**`,
 				});
 			}
