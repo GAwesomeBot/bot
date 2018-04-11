@@ -77,7 +77,7 @@ module.exports = (req, res) => {
 			};
 			if (req.query.q) {
 				const query = req.query.q.toLowerCase();
-				const servers = await GetGuild.getAll(req.app.client, { strict: true, resolve: "id", parse: "noKeys", findFilter: query });
+				const servers = (await GetGuild.getAll(req.app.client, { strict: true, resolve: "id", parse: "noKeys", findFilter: query })).filter(svrid => !configJSON.activityBlocklist.includes(svrid));
 				matchCriteria._id = {
 					$in: servers,
 				};
