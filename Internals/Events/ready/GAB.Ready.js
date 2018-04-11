@@ -134,23 +134,12 @@ class Ready extends BaseEvent {
 		this.client.setInterval(clearMessageCount, 86400000);
 		await Cache(this.client);
 		// TODO: Add to array this.startTimerExtensions()
-		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
+		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
 		await PostShardedData(this.client);
 		await winston.debug(`Reloading all commands.`);
 		this.client.reloadAllCommands();
 		this.showStartupMessage();
-	}
-
-	// Send over guild cache for master
-	async sendGuilds () {
-		try {
-			winston.debug("Sending list of guild IDs to Master.");
-			let guilds = Array.from(this.client.guilds.keys());
-			this.client.IPC.send("guilds", { latest: guilds, shard: this.client.shardID });
-		} catch (err) {
-			throw err;
-		}
 	}
 
 	// Report to master that we're ok to go
