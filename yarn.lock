@@ -648,8 +648,8 @@ diff@~1.0.8:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid e84575803702576669eb02c647474430ac0295b8
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/e84575803702576669eb02c647474430ac0295b8"
+  uid cb69102e5e2fda47172c306f76fcaa16093f0b11
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/cb69102e5e2fda47172c306f76fcaa16093f0b11"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
@@ -1817,9 +1817,9 @@ mongoose-legacy-pluralize@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz#3ba9f91fa507b5186d399fb40854bff18fb563e4"
 
-mongoose@^5.0.13:
-  version "5.0.13"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.0.13.tgz#07c1ce9ecf9c758939891b5f180f448eda44f11d"
+mongoose@^5.0.14:
+  version "5.0.14"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.0.14.tgz#b2157eaa00eacded6e849b4fe36f58eeeda41119"
   dependencies:
     async "2.1.4"
     bson "~1.0.4"
@@ -1827,15 +1827,15 @@ mongoose@^5.0.13:
     lodash.get "4.4.2"
     mongodb "3.0.4"
     mongoose-legacy-pluralize "1.0.2"
-    mpath "0.3.0"
+    mpath "0.4.1"
     mquery "3.0.0"
     ms "2.0.0"
     regexp-clone "0.0.1"
     sliced "1.0.1"
 
-mpath@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/mpath/-/mpath-0.3.0.tgz#7a58f789e9b5fd3c94520634157960f26bd5ef44"
+mpath@0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/mpath/-/mpath-0.4.1.tgz#ed10388430380bf7bbb5be1391e5d6969cb08e89"
 
 mquery@3.0.0:
   version "3.0.0"
