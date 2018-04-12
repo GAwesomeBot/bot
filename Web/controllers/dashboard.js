@@ -204,12 +204,12 @@ controllers.commands.list = async (req, res) => {
 	const svr = req.svr;
 	const serverDocument = req.svr.document;
 
-	const commandDescriptions = {};
 	const commandCategories = {};
 	client.getPublicCommandList().forEach(command => {
 		const commandData = client.getPublicCommandMetadata(command);
-		commandDescriptions[command] = commandData.description;
-		commandCategories[command] = commandData.category;
+		const data = { description: commandData.description, category: commandData.category, name: command };
+		if (!commandCategories[commandData.category]) commandCategories[commandData.category] = [];
+		commandCategories[commandData.category].push(data);
 	});
 	res.render("pages/admin-command-list.ejs", {
 		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
@@ -224,7 +224,6 @@ controllers.commands.list = async (req, res) => {
 		configData: {
 			commands: serverDocument.toObject().config.commands,
 		},
-		commandDescriptions,
 		commandCategories,
 	});
 };

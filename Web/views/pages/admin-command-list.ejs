@@ -98,10 +98,13 @@
 							</div>
 							<a class="modal-close"></a>
 						</div>
-							<% for(var command in commandCategories) { %>
-								<% if(command!="stats") { %>
-									<% var commandData = configData.commands[command];commandData.name = command;commandData.description = commandDescriptions[command];commandData.category = commandCategories[command]; %>
-									<% include ../partials/admin-command-item %>
+							<% for (var category in commandCategories) { %>
+								<div class="is-divider" data-content="<%= category %>"></div>
+								<% for (let command of commandCategories[category]) { %>
+									<% if (command.name !== "stats") { %>
+										<% var commandData = configData.commands[command.name];commandData.name = command.name;commandData.description = command.description;commandData.category = command.category; %>
+										<% include ../partials/admin-command-item %>
+									<% } %>
 								<% } %>
 							<% } %>
 							<br>
