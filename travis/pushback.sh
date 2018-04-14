@@ -8,4 +8,4 @@ git add -A
 git commit --message ":rocket: Build: $TRAVIS_BUILD_NUMBER"
 
 git remote add origin-target https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} > /dev/null 2>&1
-git push --quiet --set-upstream origin-target $TRAVIS_BRANCH
+git push --set-upstream origin-target $TRAVIS_BRANCH

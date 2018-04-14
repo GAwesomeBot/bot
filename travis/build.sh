@@ -12,7 +12,7 @@ write_head_file() {
 
 remove_old_file() {
     local file_name=${1##*/}
-    find ../Web/public -name ${file_name/HASH/"-*"} -delete
+    find Web/public -name ${file_name/HASH/"-*"} -delete
 }
 
 minify_file() {
