@@ -1,13 +1,13 @@
 #!/bin/bash
 
-declare -a files=("../Web/public/css/custom.css" "../Web/public/js/app.js")
-declare -a minified_files=("../Web/public/css/customHASH.min.css" "../Web/public/js/appHASH.min.js")
+declare -a files=("Web/public/css/custom.css" "Web/public/js/app.js")
+declare -a minified_files=("Web/public/css/customHASH.min.css" "Web/public/js/appHASH.min.js")
 declare js_tag="<script src='/static/js/FILENAME'></script>"
 declare css_tag="<link rel='stylesheet' href='/static/css/FILENAME'>"
 head_draft=""
 
 write_head_file() {
-    echo -e $head_draft > ../Web/views/partials/head-build.ejs
+    echo -e $head_draft > Web/views/partials/head-build.ejs
 }
 
 remove_old_file() {
@@ -50,4 +50,4 @@ done
 
 write_head_file
 
-bash ./pushback.sh
+bash travis/pushback.sh
