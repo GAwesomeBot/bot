@@ -43,8 +43,9 @@ module.exports = class ModLog {
 							description,
 							color: Colors.INFO,
 							footer: {
-								text: member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason.` : "",
+								text: `${member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason. | ` : ""}Entry created`,
 							},
+							timestamp: new Date,
 						},
 					});
 				} catch (err) {
@@ -58,6 +59,7 @@ module.exports = class ModLog {
 						creator: creatorStr,
 						message_id: m.id,
 						reason,
+						canEdit: !!member,
 					});
 					return serverDocument.save().then(() => serverDocument.modlog.current_id);
 				}
