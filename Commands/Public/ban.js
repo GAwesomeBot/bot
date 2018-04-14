@@ -3,28 +3,32 @@ const ArgParser = require("../../Modules/MessageUtils/Parser");
 
 module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		const args = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
-		let member = args.shift().trim();
-		let isGuildMember = false;
-		let reason = (args.length && args.join(" ").trim()) || "Unspecified reason...";
-		const isJustUserID = /^\d+$/.test(member);
-		try {
-			member = await client.memberSearch(member, msg.guild);
-			isGuildMember = true;
-		} catch (_) {
-			if (isJustUserID) {
-				if (msg.guild.members.get(member)) {
-					member = msg.guild.members.get(member);
-					isGuildMember = true;
-				} else {
-					member = await client.users.fetch(member, true);
+		let [inputMember, ...reason] = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
+		const isJustUserID = /^\d+$/.test(inputMember);
+		let isGuildMember = false, hasReason = true, member = null;
+		if (isJustUserID) {
+			if (msg.guild.members.has(inputMember)) {
+				member = msg.guild.member(inputMember);
+				isGuildMember = true;
+			} else {
+				member = await client.users.fetch(inputMember, true);
+			}
+		} else {
+			member = await client.memberSearch(inputMember, msg.guild).catch(() => null);
+			if (!member) {
+				member = await client.memberSearch(`${inputMember} ${reason.join(" ")}`.trim(), msg.guild).catch(() => null);
+				hasReason = false;
+				if (!member) {
+					member = null;
 					isGuildMember = false;
+				} else {
+					isGuildMember = true;
 				}
 			} else {
-				member = null;
-				isGuildMember = false;
+				isGuildMember = true;
 			}
 		}
+		reason = (hasReason && reason.length && reason.join(" ")) || "Unspecified reason...";
 		const { canClientBan, memberAboveAffected } = await client.canDoActionOnMember(msg.guild, msg.member, (isGuildMember && member) || null, "ban");
 		if (!canClientBan) {
 			return msg.send({
