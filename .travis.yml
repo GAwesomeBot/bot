@@ -6,7 +6,7 @@ cache:
     - node_modules
 before_install:
   - npm i -g npm
-install: npm ci
+install: npm install
 jobs:
   include:
     - stage: test
@@ -14,8 +14,6 @@ jobs:
     - stage: build
       if: type = push
       script: bash ./travis/build.sh
-    - stage: deploy
-      if: type = push
       script: bash ./travis/pushback.sh
 dist: trusty
 sudo: true

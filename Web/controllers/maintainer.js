@@ -272,7 +272,7 @@ controllers.management.maintainers.post = async (req, res) => {
 		if (usr && !configJSON.maintainers.includes(usr.id)) {
 			configJSON.maintainers.push(usr.id);
 		}
-		if (usr && req.body[`isSudo`] === "true" && !configJSON.sudoMaintainers.includes(usr.id)) {
+		if (usr && req.body.isSudo === "true" && !configJSON.sudoMaintainers.includes(usr.id)) {
 			configJSON.sudoMaintainers.push(usr.id);
 		}
 	} else {
