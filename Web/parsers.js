@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const moment = require("moment");
 const xssFilters = require("xss-filters");
 const showdown = require("showdown");

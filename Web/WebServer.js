@@ -170,7 +170,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	return { server, httpsServer };
 };
 
-exports.close = (servers) => {
+exports.close = servers => {
 	if (typeof servers.forEach !== "function") servers = Object.values(servers);
 	winston.info("Closing Web Interface...");
 	servers.forEach(server => server.close());

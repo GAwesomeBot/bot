@@ -6,6 +6,7 @@ const { GetGuild } = require("../../Modules").getGuild;
 const { AllowedEvents, Colors } = require("../../Internals/Constants");
 const { renderError, parseAuthUser, dashboardUpdate, generateCodeID } = require("../helpers");
 
+// eslint-disable-next-line max-len
 const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
 const writeExtensionData = (extensionDocument, data) => {
 	extensionDocument.name = data.name;
@@ -114,14 +115,16 @@ controllers.gallery = async (req, res) => {
 								});
 							}
 						}
-					} catch (_) {}
+					} catch (_) {
+						// Meh
+					}
 					addServerData(++i, callback);
 				} else {
 					addServerData(++i, callback);
 				}
 			} else {
 				try {
-					callback();
+					return callback();
 				} catch (err) {
 					renderError(res, "An error occurred while fetching user data.");
 				}
@@ -294,7 +297,7 @@ controllers.download = async (req, res) => {
 	if (extensionDocument && extensionDocument.state !== "saved") {
 		try {
 			res.set({
-				"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext` + "'",
+				"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext${"'"}`,
 				"Content-Type": "text/javascript",
 			});
 			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${extensionDocument.code_id}.gabext`));

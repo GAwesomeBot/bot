@@ -177,8 +177,8 @@ module.exports = (req, res) => {
 				req.query.q = "";
 			}
 			if (req.query.q) {
-				Users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err, userDocument) => {
-					if (!err && userDocument) {
+				Users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err2, userDocument) => {
+					if (!err2 && userDocument) {
 						const usr = await req.app.client.users.fetch(userDocument._id, true);
 						const userProfile = await parsers.userData(req, usr, userDocument);
 						renderPage({
