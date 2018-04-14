@@ -28,10 +28,12 @@
 						</div>
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="command-items">
 						<% var commandData = configData.commands.roleinfo;commandData.name = "roleinfo";commandData.description = commandDescriptions.roleinfo;commandData.category = commandCategories.roleinfo; %>
 						<% include ../partials/admin-command-item %>
 						<% var commandData = configData.commands.role;commandData.name = "role";commandData.description = commandDescriptions.role;commandData.category = commandCategories.role; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 						<div class="role-options <%= commandData.isEnabled ? '' : 'is-hidden' %>">
 							<div class="field">
 								Allow users to join these roles with the <code>role</code> command:
@@ -47,8 +49,10 @@
 							</div>
 								<br>
 						</div>
+						<div class="command-items">
 						<% var commandData = configData.commands.perms;commandData.name = "perms";commandData.description = commandDescriptions.perms;commandData.category = commandCategories.perms; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 						<br>
 						<% var formButtonsUnsaved = false; %>
 						<% include ../partials/form-buttons %>

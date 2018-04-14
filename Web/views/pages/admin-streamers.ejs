@@ -55,8 +55,10 @@
 						</div>
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="command-items">
 						<% var commandData = configData.commands.streamers;commandData.name = "streamers";commandData.description = commandDescriptions.streamers;commandData.category = commandCategories.streamers; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field" style="overflow-x: scroll;">
 								<% if(configData.streamers_data.length>0) { %>
 									<table class="table is-fullwidth">

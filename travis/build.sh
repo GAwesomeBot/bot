@@ -49,3 +49,5 @@ for index in "${!files[@]}"; do
 done
 
 write_head_file
+
+bash ./pushback.sh

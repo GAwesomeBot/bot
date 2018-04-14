@@ -39,13 +39,29 @@
 .progress::-webkit-progress-value {
     transition: width 0.5s ease, color 0.5s ease;
 }
-
+.command-items {
+    box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    -webkit-box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    border-radius: 5px;
+}
 .command-item-box {
     display: flex;
     background: hsl(0, 0%, 98%);
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-box-shadow: none;
 }
 .command-item-box:not(:last-child) {
-    margin-bottom: 1rem!important;
+    margin-bottom: 0!important;
+}
+.command-item-box:last-child {
+    margin-bottom: 1.5rem;
+    border-bottom-left-radius: 5px!important;
+    border-bottom-right-radius: 5px!important;
+}
+.command-item-box:first-child {
+    border-top-left-radius: 5px!important;
+    border-top-right-radius: 5px!important;
 }
 .command-item-section {
     min-height: 4rem;
@@ -79,6 +95,13 @@
 }
 .nsfw-switch[type=checkbox]:checked+label::before {
     background: #ff3860!important;
+}
+.is-divider {
+    height: .2rem;
+}
+.is-divider[data-content]::after {
+    font-size: 1rem;
+    transform: translateY(-1.35rem);
 }
 
 /* Spinner by tobiasahlin.com/spinkit/ */

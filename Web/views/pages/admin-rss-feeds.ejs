@@ -77,8 +77,10 @@
 						</div>
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="command-items">
 						<% var commandData = configData.commands.rss;commandData.name = "rss";commandData.description = commandDescriptions.rss;commandData.category = commandCategories.rss; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field" style="overflow-x: scroll;">
 								<% if(configData.rss_feeds.length>0) { %>
 									<table class="table is-fullwidth">

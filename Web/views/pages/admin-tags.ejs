@@ -64,8 +64,10 @@
 						<h4 class="subtitle is-4">
 							General
 						</h4>
+						<div class="command-items">
 						<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
 								<div class="field">
 									List all tags:

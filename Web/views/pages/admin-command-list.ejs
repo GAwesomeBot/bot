@@ -100,12 +100,14 @@
 						</div>
 							<% for (var category in commandCategories) { %>
 								<div class="is-divider" data-content="<%= category %>"></div>
-								<% for (let command of commandCategories[category]) { %>
-									<% if (command.name !== "stats") { %>
-										<% var commandData = configData.commands[command.name];commandData.name = command.name;commandData.description = command.description;commandData.category = command.category; %>
-										<% include ../partials/admin-command-item %>
+								<div class="command-items">
+									<% for (let command of commandCategories[category]) { %>
+										<% if (command.name !== "stats") { %>
+											<% var commandData = configData.commands[command.name];commandData.name = command.name;commandData.description = command.description;commandData.category = command.category; %>
+											<% include ../partials/admin-command-item %>
+										<% } %>
 									<% } %>
-								<% } %>
+								</div>
 							<% } %>
 							<br>
 							<% var formButtonsUnsaved = false; %>
