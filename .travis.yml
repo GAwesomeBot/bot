@@ -4,7 +4,9 @@ node_js:
 cache:
   directories:
     - node_modules
-install: npm install --only=dev
+before_install:
+    - npm i -g npm
+install: npm ci
 jobs:
   include:
     - stage: test
