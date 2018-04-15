@@ -51,7 +51,7 @@ GAwesomeData.extensions.html = {
 				<div class="field">
 					<label class="label">Permissions</label>
 					<div class="control">
-						<span class="select">
+						<span class="select is-primary">
 							<select name="installer-adminLevel">
 								<option value="0" selected>@everyone</option>
 								<option value="1">Admin level &ge;1</option>
@@ -679,7 +679,7 @@ GAwesomePaths["blog"] = () => {
 	setTimeout(function() {
 		saveFormState();
 	}, 0);
-	if (!window.location.toString().endsWith("/compose")) return;
+	if (!window.location.toString().endsWith("/compose") && !window.location.toString().endsWith("/new")) return;
 	const converter = new showdown.Converter({
 		tables: true,
 		simplifiedAutoLink: true,
@@ -707,7 +707,7 @@ GAwesomePaths["wiki"] = () => {
 	}, 0);
 	GAwesomeData.wiki.bookmarks = JSON.parse(localStorage.getItem("wiki-bookmarks")) || [];
 	GAwesomeUtil.populateWikiBookmarks();
-	if (!window.location.toString().endsWith("/edit")) return;
+	if (!window.location.toString().endsWith("/edit") && !window.location.toString().endsWith("/new")) return;
 	const converter = new showdown.Converter({
 		tables: true,
 		simplifiedAutoLink: true,

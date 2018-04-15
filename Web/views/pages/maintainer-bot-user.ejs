@@ -32,7 +32,7 @@
 								<div class="field">
 									<img src="<%= configData.avatar || 'http://placehold.it/400x400' %>" alt="<%= serverData.id %>" style="width: 100%;">
 									<div class="control has-icons-left">
-										<input name="avatar" class="input" type="text" placeholder="New avatar URL">
+										<input name="avatar" class="input is-primary" type="text" placeholder="New avatar URL">
 										<span class="icon">
 											<i class="fa fa-file-image-o"></i>
 										</span>
@@ -44,7 +44,7 @@
 								<div class="field">
 									<label class="label">Username</label>
 									<div class="control has-icons-left">
-										<input name="username" class="input" type="text" value="<%= serverData.name %>" minlength="1">
+										<input name="username" class="input is-primary" type="text" value="<%= serverData.name %>" minlength="1">
 										<span class="icon">
 											<i class="fa fa-user"></i>
 										</span>
@@ -54,7 +54,7 @@
 								<div class="field">
 									<label class="label">Status</label>
 									<div class="control">
-										<span class="select">
+										<span class="select is-primary">
 											<select name="status">
 												<option value="online"<%= configData.status=="online" ? " selected" : "" %>>Online</option>
 												<option value="idle"<%= configData.status=="idle" ? " selected" : "" %>>Idle</option>
@@ -69,7 +69,7 @@
 									<label class="label">Game</label>
 									<div class="field has-addons" style="margin-bottom: 0px;">
 										<div class="control has-icons-left is-expanded">
-											<input name="game" id="user-game" class="input" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
+											<input name="game" id="user-game" class="input is-primary" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
 											<span class="icon"><i class="fa fa-gamepad"></i></span>
 										</div>
 										<div class="control">

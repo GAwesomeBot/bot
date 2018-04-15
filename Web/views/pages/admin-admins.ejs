@@ -130,7 +130,7 @@
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control">
-											<span class="select">
+											<span class="select is-primary">
 												<select id="new-admin-role_id">
 													<% for(var i=0; i<roleData.length; i++) { %>
 														<option value="<%= roleData[i].id %>"><%= roleData[i].name %></option>
@@ -139,7 +139,7 @@
 											</span>
 										</div>
 										<div class="control">
-											<input id="new-admin-level" class="input" type="number" value="1" min="1" max="3" title="Admin permission level" onkeypress="return event.keyCode != 13;">
+											<input id="new-admin-level" class="input is-primary" type="number" value="1" min="1" max="3" title="Admin permission level" onkeypress="return event.keyCode != 13;">
 										</div>
 										<div class="control">
 											<a class="button is-primary" onclick="newAdmin(); return false;">

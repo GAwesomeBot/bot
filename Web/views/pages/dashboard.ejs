@@ -53,11 +53,11 @@
 					<div class="column is-half is-offset-one-quarter">
 						<% for(var i=0; i<serverData.length; i++) { %>
 							<% if(!serverData[i].botJoined) { %>
-								<a class="media modal-button" data-target="#post-add-modal" target="_blank" href="<%= rawJoinLink + '&guild_id=' + serverData[i].id %>">
+								<a class="media modal-button arrow-link" data-target="#post-add-modal" target="_blank" href="<%= rawJoinLink + '&guild_id=' + serverData[i].id %>">
 							<% } else if(!serverData[i].isAdmin) { %>
-								<a class="media modal-button" data-target="#not-admin-modal">
+								<a class="media modal-button arrow-link" data-target="#not-admin-modal">
 							<% } else { %>
-								<a class="media" href="/dashboard/<%= serverData[i].id %>/<%= serverData[i].id === "maintainer" ? "maintainer" : "overview"%>">
+								<a class="media arrow-link" href="/dashboard/<%= serverData[i].id %>/<%= serverData[i].id === "maintainer" ? "maintainer" : "overview"%>">
 							<% } %>
 								<figure class="media-left">
 									<p class="image server-icon is-48x48">

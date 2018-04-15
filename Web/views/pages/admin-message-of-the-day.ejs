@@ -39,12 +39,12 @@
 						<div id="message_of_the_day-options" class="<%= configData.message_of_the_day.isEnabled ? '' : 'is-hidden' %>">
 							<div class="field">
 								<p class="control">
-									<textarea name="message_content" class="textarea" maxlength="2000" placeholder="Message to send, in markdown"><%= configData.message_of_the_day.message_content %></textarea>
+									<textarea name="message_content" class="textarea is-primary" maxlength="2000" placeholder="Message to send, in markdown"><%= configData.message_of_the_day.message_content %></textarea>
 								</p>
 							</div>
 							<div class="field is-grouped">
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="channel_id">
 											<% for(var i=0; i<channelData.length; i++) { %>
 											<option value="<%= channelData[i].id %>" <%= configData.message_of_the_day.channel_id==channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -53,7 +53,7 @@
 									</span>
 								</p>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="interval">
 											<option value="300000" <%= configData.message_of_the_day.interval==300000 ? "selected" : "" %>>5 minutes</option>
 											<option value="600000" <%= configData.message_of_the_day.interval==600000 ? "selected" : "" %>>10 minutes</option>

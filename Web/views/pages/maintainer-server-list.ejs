@@ -45,7 +45,7 @@
 						<input type="hidden" name="svrid" value="maintainer" />
 						<div class="field has-addons">
 							<div class="control is-expanded">
-								<input id="server-search" name="q" class="input is-expanded" type="text" placeholder="Server name" value="<%= pageData.activeSearchQuery %>">
+								<input id="server-search" name="q" class="input is-primary is-expanded" type="text" placeholder="Server name" value="<%= pageData.activeSearchQuery %>">
 							</div>
 							<div class="control">
 								<button class="button is-primary">
@@ -73,7 +73,7 @@
 						<% if (configData && configData.length > 0) { %>
 							<div class="field is-grouped">
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="i" onchange="$('#form').submit()">
 											<% for (var i = 0; i < configData.length; i++) { %>
 											<option value="<%= i %>"<%= pageData.selectedServer==i ? " selected": "" %>><%= configData[i].name %></option>
@@ -83,7 +83,7 @@
 								</p>
 								<% if (pageData.selectedServer) { %>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="chid">
 											<% for(var i = 0; i < configData[pageData.selectedServer].channelData.length; i++) { %>
 											<option value="<%= configData[pageData.selectedServer].channelData[i].id %>"><%= configData[pageData.selectedServer].channelData[i].name %></option>
@@ -127,7 +127,7 @@
 							</div>
 						<% if (pageData.selectedServer) { %>
 						<p class="control">
-							<textarea id="server-message" name="message" class="textarea" placeholder="Message to send, in markdown" minlength="1" maxlength="2000"></textarea>
+							<textarea id="server-message" name="message" class="textarea is-primary" placeholder="Message to send, in markdown" minlength="1" maxlength="2000"></textarea>
 						</p>
 						<% } %>
 						<% } %>

@@ -93,7 +93,7 @@
 										<label class="checkbox" >
 											<input name="modlog-isEnabled" type="checkbox" onclick="$('.modlog-options').toggleClass('is-hidden');" <%= configData.modlog.isEnabled ? "checked" : "" %>>
 											Enable GAwesomeBot moderation logging&nbsp;
-											<div class="select is-small modlog-options <%= configData.modlog.isEnabled ? '' : 'is-hidden' %>">
+											<div class="select is-primary is-small modlog-options <%= configData.modlog.isEnabled ? '' : 'is-hidden' %>">
 												<select name="modlog-channel_id">
 													<% for(var i=0; i<channelData.length; i++) { %>
 														<option value="<%= channelData[i].id %>" <%= configData.modlog.channel_id==channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>

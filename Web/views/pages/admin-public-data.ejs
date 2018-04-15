@@ -70,7 +70,7 @@
 								<div class="field">
 									<label class="label">Category</label>
 									<p class="control">
-										<span class="select">
+										<span class="select is-primary">
 											<select name="server_listing-category">
 												<option value="Gaming" <%= configData.public_data.server_listing.category=="Gaming" ? "selected" : "" %>>Gaming</option>
 												<option value="Tech" <%= configData.public_data.server_listing.category=="Tech" ? "selected" : "" %>>Tech</option>
@@ -85,7 +85,7 @@
 								<div class="field">
 									<label class="label">Description</label>
 									<p class="control">
-										<textarea name="server_listing-description" class="textarea" placeholder="Description of server, in markdown"><%= configData.public_data.server_listing.description %></textarea>
+										<textarea name="server_listing-description" class="textarea is-primary" placeholder="Description of server, in markdown"><%= configData.public_data.server_listing.description %></textarea>
 									</p>
 								</div>
 							</div>

@@ -14,7 +14,7 @@ GAwesomeUtil.showActivitySelections = () => {
 <nav class="level">
 	<div class="level-left">
 		<div class="level-item">
-			<span class="select">
+			<span class="select is-primary">
 				<select id="category-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=' + this.value + '&publiconly=<%= data.isPublicOnly %>');">
 					<option value="All">All Categories</option>
 					<option>Gaming</option>
@@ -27,7 +27,7 @@ GAwesomeUtil.showActivitySelections = () => {
 			</span>
 		</div>
 		<div class="level-item">
-			<span class="select">
+			<span class="select is-primary">
 				<select id="public-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=' + this.value);">
 					<option value="false">Show All Servers</option>
 					<option value="true">Public Listings Only</option>
@@ -37,7 +37,7 @@ GAwesomeUtil.showActivitySelections = () => {
 	</div>
 	<div class="level-right">
 		<div class="level-item">
-			<span class="select">
+			<span class="select is-primary">
 				<select id="sort-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=' + this.value + '&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>');">
 					<option value="messages-asc">Messages Today (ascending)</option>
 					<option value="messages-des">Messages Today (descending)</option>
@@ -67,7 +67,7 @@ GAwesomeUtil.showActivitySelections = () => {
 			</div>
 		</div>
 		<div class="level-item">
-			<span class="select">
+			<span class="select is-primary">
 				<select id="count-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=' + this.value + '&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>');">
 					<option value="0">All Items</option>
 					<option value="8">8 items/page</option>

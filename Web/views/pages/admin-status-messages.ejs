@@ -89,7 +89,7 @@
                         </label>
                         &nbsp;
                         <span id="server_name_updated_message-options"
-                              class="select is-small<%= configData.moderation.status_messages.server_name_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small<%= configData.moderation.status_messages.server_name_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="server_name_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.server_name_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -105,7 +105,7 @@
                         </label>
                         &nbsp;
                         <span id="server_icon_updated_message-options"
-                              class="select is-small<%= configData.moderation.status_messages.server_icon_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small<%= configData.moderation.status_messages.server_icon_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="server_icon_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.server_icon_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -121,7 +121,7 @@
                         </label>
                         &nbsp;
                         <span id="server_region_updated_message-options"
-                              class="select is-small<%= configData.moderation.status_messages.server_region_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small<%= configData.moderation.status_messages.server_region_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="server_region_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.server_region_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -141,7 +141,7 @@
                                 <strong>New member</strong> joined server
                             </label>
                             &nbsp;
-                            <span class="select is-small new_member_message-options<%= configData.moderation.status_messages.new_member_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small new_member_message-options<%= configData.moderation.status_messages.new_member_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="new_member_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.new_member_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -167,7 +167,7 @@
                                         <div class="field is-grouped">
                                             &nbsp;&nbsp;
                                             <div class="control">
-                                                <input id="new-new_member_message-message" class="input is-small"
+                                                <input id="new-new_member_message-message" class="input is-primary is-small"
                                                        type="text" maxlength="2000" placeholder="New message"
                                                        onkeypress="return event.keyCode != 13">
                                                 <span class="help"><code>@mention</code> to mention new member. <code>@user</code> for username.</span>
@@ -196,7 +196,7 @@
                         </label>
                         <span id="new_member_pm-options"
                               class="<%= configData.moderation.status_messages.new_member_pm.isEnabled ? '' : ' is-hidden' %>">
-									<textarea name="new_member_pm-message_content" class="textarea"
+									<textarea name="new_member_pm-message_content" class="textarea is-primary"
                                               placeholder="Message to send, in markdown"
                                               maxlength="2000"><%- configData.moderation.status_messages.new_member_pm.message_content %></textarea>
 									<br>
@@ -210,7 +210,7 @@
                                 Member came <strong>online</strong>
                             </label>
                             &nbsp;
-                            <span class="select is-small member_online_message-options<%= configData.moderation.status_messages.member_online_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small member_online_message-options<%= configData.moderation.status_messages.member_online_message.isEnabled ? '' : ' is-hidden' %>">
 						    			<select name="member_online_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_online_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -236,7 +236,7 @@
                                         <div class="field is-grouped">
                                             &nbsp;&nbsp;
                                             <div class="control">
-                                                <input id="new-member_online_message-message" class="input is-small"
+                                                <input id="new-member_online_message-message" class="input is-primary is-small"
                                                        type="text" maxlength="2000" placeholder="New message"
                                                        onkeypress="return event.keyCode != 13">
                                                 <span class="help"><code>@mention</code> to mention member. <code>@user</code> for username.</span>
@@ -265,7 +265,7 @@
                                 Member went <strong>offline</strong>
                             </label>
                             &nbsp;
-                            <span class="select is-small member_offline_message-options<%= configData.moderation.status_messages.member_offline_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small member_offline_message-options<%= configData.moderation.status_messages.member_offline_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_offline_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_offline_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -292,7 +292,7 @@
                                         <div class="field is-grouped">
                                             &nbsp;&nbsp;
                                             <div class="control">
-                                                <input id="new-member_offline_message-message" class="input is-small"
+                                                <input id="new-member_offline_message-message" class="input is-primary is-small"
                                                        type="text" maxlength="2000" placeholder="New message"
                                                        onkeypress="return event.keyCode != 13">
                                                 <span class="help"><code>@mention</code> to mention member. <code>@user</code> for username.</span>
@@ -320,7 +320,7 @@
                             Member changed their <strong>username</strong>
                         </label>
                         &nbsp;
-                        <span class="select is-small member_username_updated_message-options<%= configData.moderation.status_messages.member_username_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                        <span class="select is-primary is-small member_username_updated_message-options<%= configData.moderation.status_messages.member_username_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_username_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_username_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -335,7 +335,7 @@
                             Member updated their <strong>nickname</strong>
                         </label>
                         &nbsp;
-                        <span class="select is-small member_nick_updated_message-options<%= configData.moderation.status_messages.member_nick_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                        <span class="select is-primary is-small member_nick_updated_message-options<%= configData.moderation.status_messages.member_nick_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_nick_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_nick_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -350,7 +350,7 @@
                             Member changed their <strong>avatar</strong>
                         </label>
                         &nbsp;
-                        <span class="select is-small member_avatar_updated_message-options<%= configData.moderation.status_messages.member_avatar_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                        <span class="select is-primary is-small member_avatar_updated_message-options<%= configData.moderation.status_messages.member_avatar_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_avatar_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_avatar_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -365,7 +365,7 @@
                             Member started playing a <strong>game</strong>
                         </label>
                         &nbsp;
-                        <span class="select is-small member_game_updated_message-options<%= configData.moderation.status_messages.member_game_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                        <span class="select is-primary is-small member_game_updated_message-options<%= configData.moderation.status_messages.member_game_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_game_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_game_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -381,7 +381,7 @@
                                 Member <strong>streaming</strong> (Twitch or YT Gaming)
                             </label>
                             &nbsp;
-                            <span class="select is-small member_streaming_message-options<%= configData.moderation.status_messages.member_streaming_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small member_streaming_message-options<%= configData.moderation.status_messages.member_streaming_message.isEnabled ? '' : ' is-hidden' %>">
 						    			<select name="member_streaming_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_streaming_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -413,7 +413,7 @@
                                             &nbsp;&nbsp;
                                             <div class="control">
                                                 <input id="new-member_streaming_message-message"
-                                                       class="input is-small user-autocomplete" type="text"
+                                                       class="input is-primary is-small user-autocomplete" type="text"
                                                        maxlength="2000" placeholder="Username"
                                                        onkeypress="return event.keyCode != 13">
                                             </div>
@@ -440,7 +440,7 @@
                             Member leveled up a <strong>rank</strong>
                         </label>
                         &nbsp;
-                        <span class="select is-small member_rank_updated_message-options<%= configData.moderation.status_messages.member_rank_updated_message.isEnabled ? '' : ' is-hidden' %>">
+                        <span class="select is-primary is-small member_rank_updated_message-options<%= configData.moderation.status_messages.member_rank_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select id="member_rank_updated_message-type"
                                             name="member_rank_updated_message-type"
                                             onchange="$('.member_rank_updated_message-type-options').toggleClass('is-hidden')">
@@ -449,7 +449,7 @@
 									</select>
 								</span>
                         &nbsp;
-                        <span class="select is-small member_rank_updated_message-type-options<%= (configData.moderation.status_messages.member_rank_updated_message.isEnabled && configData.moderation.status_messages.member_rank_updated_message.type == "message") ? '' : ' is-hidden' %>">
+                        <span class="select is-primary is-small member_rank_updated_message-type-options<%= (configData.moderation.status_messages.member_rank_updated_message.isEnabled && configData.moderation.status_messages.member_rank_updated_message.type == "message") ? '' : ' is-hidden' %>">
 									<select name="member_rank_updated_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_rank_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -465,7 +465,7 @@
                                 Member <strong>left</strong> server (or got kicked)
                             </label>
                             &nbsp;
-                            <span class="select is-small member_removed_message-options<%= configData.moderation.status_messages.member_removed_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small member_removed_message-options<%= configData.moderation.status_messages.member_removed_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_removed_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_removed_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -492,7 +492,7 @@
                                         <div class="field is-grouped">
                                             &nbsp;&nbsp;
                                             <div class="control">
-                                                <input id="new-member_removed_message-message" class="input is-small"
+                                                <input id="new-member_removed_message-message" class="input is-primary is-small"
                                                        type="text" maxlength="2000" placeholder="New message"
                                                        onkeypress="return event.keyCode != 13">
                                                 <span class="help"><code>@mention</code> to mention member. <code>@user</code> for username.</span>
@@ -521,7 +521,7 @@
                         </label>
                         <span id="member_removed_pm-options"
                               class="<%= configData.moderation.status_messages.member_removed_pm.isEnabled ? '' : ' is-hidden' %>">
-									<textarea name="member_removed_pm-message_content" class="textarea"
+									<textarea name="member_removed_pm-message_content" class="textarea is-primary"
                                               placeholder="Message to send, in markdown"
                                               maxlength="2000"><%- configData.moderation.status_messages.member_removed_pm.message_content %></textarea>
 									<br>
@@ -535,7 +535,7 @@
                                 User <strong>banned</strong> from server
                             </label>
                             &nbsp;
-                            <span class="select is-small member_banned_message-options<%= configData.moderation.status_messages.member_banned_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small member_banned_message-options<%= configData.moderation.status_messages.member_banned_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_banned_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_banned_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -561,7 +561,7 @@
                                         <div class="field is-grouped">
                                             &nbsp;&nbsp;
                                             <div class="control">
-                                                <input id="new-member_banned_message-message" class="input is-small"
+                                                <input id="new-member_banned_message-message" class="input is-primary is-small"
                                                        type="text" maxlength="2000" placeholder="New message"
                                                        onkeypress="return event.keyCode != 13">
                                                 <span class="help"><code>@user</code> for username.</span>
@@ -590,7 +590,7 @@
                                 User <strong>unbanned</strong> from server
                             </label>
                             &nbsp;
-                            <span class="select is-small member_unbanned_message-options<%= configData.moderation.status_messages.member_unbanned_message.isEnabled ? '' : ' is-hidden' %>">
+                            <span class="select is-primary is-small member_unbanned_message-options<%= configData.moderation.status_messages.member_unbanned_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_unbanned_message-channel_id">
                                             <% for(var i = 0; i < channelData.length; i++) { %>
                                             <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_unbanned_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -617,7 +617,7 @@
                                         <div class="field is-grouped">
                                             &nbsp;&nbsp;
                                             <div class="control">
-                                                <input id="new-member_unbanned_message-message" class="input is-small"
+                                                <input id="new-member_unbanned_message-message" class="input is-primary is-small"
                                                        type="text" maxlength="2000" placeholder="New message"
                                                        onkeypress="return event.keyCode != 13">
                                                 <span class="help"><code>@user</code> for username.</span>
@@ -650,7 +650,7 @@
                         </label>
                         &nbsp;
                         <span id="message_edited_message-type-options"
-                              class="select is-small<%= configData.moderation.status_messages.message_edited_message.isEnabled ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small<%= configData.moderation.status_messages.message_edited_message.isEnabled ? '' : ' is-hidden' %>">
 									<select id="message_edited_message-type" name="message_edited_message-type"
                                             onchange="$('.message_edited_message-options').toggleClass('is-hidden')">
 										<option value="msg" <%= configData.moderation.status_messages.message_edited_message.type == "msg" ? "selected" : "" %>>Channel of message</option>
@@ -659,7 +659,7 @@
 								</span>
                         &nbsp;
                         <span id="message_edited_message-channel_id-options"
-                              class="select is-small message_edited_message-options<%= (configData.moderation.status_messages.message_edited_message.isEnabled && configData.moderation.status_messages.message_edited_message.channel_id) ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small message_edited_message-options<%= (configData.moderation.status_messages.message_edited_message.isEnabled && configData.moderation.status_messages.message_edited_message.channel_id) ? '' : ' is-hidden' %>">
 									<select name="message_edited_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.message_edited_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
@@ -688,7 +688,7 @@
                         </label>
                         &nbsp;
                         <span id="message_deleted_message-type-options"
-                              class="select is-small<%= configData.moderation.status_messages.message_deleted_message.isEnabled ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small<%= configData.moderation.status_messages.message_deleted_message.isEnabled ? '' : ' is-hidden' %>">
 									<select id="message_deleted_message-type" name="message_deleted_message-type"
                                             onchange="$('.message_deleted_message-options').toggleClass('is-hidden')">
 										<option value="msg" <%= configData.moderation.status_messages.message_deleted_message.type == "msg" ? "selected" : "" %>>Channel of message</option>
@@ -697,7 +697,7 @@
 								</span>
                         &nbsp;
                         <span id="message_deleted_message-channel_id-options"
-                              class="select is-small message_deleted_message-options<%= (configData.moderation.status_messages.message_deleted_message.isEnabled && configData.moderation.status_messages.message_deleted_message.channel_id) ? '' : ' is-hidden' %>">
+                              class="select is-primary is-small message_deleted_message-options<%= (configData.moderation.status_messages.message_deleted_message.isEnabled && configData.moderation.status_messages.message_deleted_message.channel_id) ? '' : ' is-hidden' %>">
 									<select name="message_deleted_message-channel_id">
                                         <% for(var i = 0; i < channelData.length; i++) { %>
                                         <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.message_deleted_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
