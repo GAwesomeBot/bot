@@ -18,9 +18,8 @@ const {
 	},
 	WorkerManager,
 	ShardUtil,
-	ConversionHandler,
 } = require("./");
-const { ModLog } = require("../Modules/index");
+const { ModLog, ConversionHandler } = require("../Modules/index");
 const {	RankScoreCalculator: computeRankScores } = require("../Modules/Utils/index");
 
 const privateCommandModules = {};

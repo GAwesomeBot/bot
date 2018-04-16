@@ -1,6 +1,6 @@
 const process = require("process");
 
-const { Console, Utils, getGuild, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
+const { Encryption, Utils, getGuild, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
 const { handler: getGuildMessageHandler } = getGuild;
 const { ObjectDefines, MessageOfTheDay, StructureExtender } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
@@ -8,8 +8,8 @@ const {
 	Cache: {
 		ServerDocumentCache,
 	},
-	Encryption,
 	EventHandler,
+	Console,
 } = require("./Internals/index");
 
 StructureExtender();

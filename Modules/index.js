@@ -1,7 +1,7 @@
 module.exports = {
-	Boot: require("./Boot.js"),
 	Cache: require("./Cache.js"),
-	Console: require("./Console.js"),
+	ConversionHandler: require("./ConversionHandler.js"),
+	Encryption: require("./Encryption"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
 	getGuild: require("./GetGuild.js"),
 	Giphy: require("./Giphy"),
@@ -17,8 +17,6 @@ module.exports = {
 	PostShardedData: require("./PostShardedData.js"),
 	PostTotalData: require("./PostTotalData.js"),
 	RandomAnimals: require("./RandomAnimals.js"),
-	Sharder: require("./Sharder.js"),
-	SharderIPC: require("./IPC.js"),
 	StringJS: require("./String"),
 	Traffic: require("./Traffic.js"),
 	Trivia: require("./Trivia.js"),
