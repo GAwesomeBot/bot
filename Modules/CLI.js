@@ -19,7 +19,7 @@ class CLI {
 	 * @returns {CLI}
 	 */
 	setup () {
-		this.stdin.on("data", this.listener.bind(this));
+		if (this.stdin) this.stdin.on("data", this.listener.bind(this));
 		return this;
 	}
 
