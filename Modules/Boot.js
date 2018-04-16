@@ -6,54 +6,54 @@ const build = () => {
 
 const migrate = () => require("./Migration.js")();
 
-const db = configJS => {
-	if (!process.argv[process.argv.indexOf("--db") + 1]) {
+const db = (val, configJS) => {
+	if (typeof val !== "string") {
 		winston.warn(`Argument --db requires a parameter.`);
 		return;
 	}
-	configJS.databaseURL = process.argv[process.argv.indexOf("--db") + 1];
+	configJS.databaseURL = val;
 };
 
-const token = (configJS, configJSON, auth) => {
-	if (!process.argv[process.argv.indexOf("--token") + 1]) {
+const token = (val, configJS, configJSON, auth) => {
+	if (typeof val !== "string" || typeof val !== "number") {
 		winston.warn(`Argument --token requires a parameter.`);
 		return;
 	}
-	auth.discord.clientToken = process.argv[process.argv.indexOf("--token") + 1];
+	auth.discord.clientToken = val;
 };
 
-const sudo = (configJS, configJSON, auth, user) => {
+const sudo = (val, configJS, configJSON) => {
 	const { writeJSONAtomic } = require("fs-nextra");
-	if (!process.argv[process.argv.indexOf("--sudo") + 1] || process.argv[process.argv.indexOf("--sudo") + 1].startsWith("-")) {
+	if (typeof val !== "string" || typeof val !== "number") {
 		winston.warn(`Argument --sudo requires a parameter.`);
 		return;
 	}
-	if (configJSON.sudoMaintainers.includes(user ? user : process.argv[process.argv.indexOf("--sudo") + 1])) return;
-	configJSON.sudoMaintainers.push(user ? user : process.argv[process.argv.indexOf("--sudo") + 1]);
-	configJSON.maintainers.push(user ? user : process.argv[process.argv.indexOf("--sudo") + 1]);
+	if (configJSON.sudoMaintainers.includes(val)) return;
+	configJSON.sudoMaintainers.push(val);
+	configJSON.maintainers.push(val);
 	writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
-		.then(() => winston.info(`Promoted user with ID ${user ? user : process.argv[process.argv.indexOf("--sudo") + 1]} to Sudo Maintainer`))
-		.catch(err => winston.warn(`Failed to promote user with ID ${user ? user : process.argv[process.argv.indexOf("--sudo") + 1]} to Sudo Maintainer *_* `, err));
+		.then(() => winston.info(`Promoted user with ID ${val} to Sudo Maintainer`))
+		.catch(err => winston.warn(`Failed to promote user with ID ${val} to Sudo Maintainer *_* `, { err }));
 };
 
-const host = (configJS, configJSON, auth, user) => {
-	if (!process.argv[process.argv.indexOf("--host") + 1] || process.argv[process.argv.indexOf("--host") + 1].startsWith("-")) {
+const host = (val, configJS, configJSON) => {
+	if (typeof val !== "string" || typeof val !== "number") {
 		winston.warn(`Argument --host requires a parameter.`);
 		return;
 	}
 
-	process.env.GAB_HOST = user ? user : process.argv[process.argv.indexOf("--host") + 1];
-	sudo(configJS, configJSON, auth, user ? user : process.argv[process.argv.indexOf("--host") + 1]);
-	winston.info(`User with Discord ID ${user ? user : process.argv[process.argv.indexOf("--host") + 1]} is The Host for the current GAB session.`);
+	process.env.GAB_HOST = val;
+	sudo(val, configJS, configJSON);
+	winston.info(`User with Discord ID ${val} is The Host for the current GAB session.`);
 };
 
-bootArgs.set("--build", build);
-bootArgs.set("-b", "--build");
-bootArgs.set("--migrate", migrate);
-bootArgs.set("-m", "--migrate");
-bootArgs.set("--db", db);
-bootArgs.set("--token", token);
-bootArgs.set("--sudo", sudo);
-bootArgs.set("--host", host);
+bootArgs.set("build", build);
+bootArgs.set("b", "build");
+bootArgs.set("migrate", migrate);
+bootArgs.set("m", "migrate");
+bootArgs.set("db", db);
+bootArgs.set("token", token);
+bootArgs.set("sudo", sudo);
+bootArgs.set("host", host);
 
 module.exports = bootArgs;

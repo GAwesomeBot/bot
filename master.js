@@ -23,11 +23,13 @@ winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawe
 
 process.setMaxListeners(0);
 
-process.argv.forEach(arg => {
+const parsedArgs = require("gar")(process.argv.slice(2));
+
+Object.keys(parsedArgs).forEach(arg => {
 	let func;
 	if (Boot.has(arg)) func = Boot.get(arg);
 	if (typeof func === "string") func = Boot.get(func);
-	if (func) func(configJS, configJSON, auth);
+	if (func) func(parsedArgs[arg], configJS, configJSON, auth);
 });
 
 if (process.argv.includes("--migrate") || process.argv.includes("-m")) return;
