@@ -387,6 +387,20 @@ circular-json@^0.5.3:
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/circular-json/-/circular-json-0.5.3.tgz#eb1b783333bb125784647d1a76377caf1499efb1"
 
+clean-css-cli@^4.1.11:
+  version "4.1.11"
+  resolved "https://registry.yarnpkg.com/clean-css-cli/-/clean-css-cli-4.1.11.tgz#01c5689f05bc512a23285f1defdbde00bc11d86c"
+  dependencies:
+    clean-css "^4.1.9"
+    commander "2.x"
+    glob "7.x"
+
+clean-css@^4.1.9:
+  version "4.1.11"
+  resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.1.11.tgz#2ecdf145aba38f54740f26cefd0ff3e03e125d6a"
+  dependencies:
+    source-map "0.5.x"
+
 cli-cursor@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-2.1.0.tgz#b35dac376479facc3e94747d41d0d0f5238ffcb5"
@@ -437,9 +451,13 @@ combined-stream@1.0.6, combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@>=0.3.0, commander@~2.15.0:
+commander@2.x, commander@>=0.3.0:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
+
+commander@~2.13.0:
+  version "2.13.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
 
 complex.js@2.0.4:
   version "2.0.4"
@@ -1127,7 +1145,7 @@ gifwrap@^0.7.5:
     image-q "^1.1.1"
     omggif "^1.0.9"
 
-glob@^7.0.3, glob@^7.0.5, glob@^7.1.2:
+glob@7.x, glob@^7.0.3, glob@^7.0.5, glob@^7.1.2:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.2.tgz#c19c9df9a028702d678612384a6552404c636d15"
   dependencies:
@@ -1773,13 +1791,9 @@ moment-timezone@^0.5.14:
   dependencies:
     moment ">= 2.9.0"
 
-"moment@>= 2.9.0", moment@^2.11.2:
-  version "2.21.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.21.0.tgz#2a114b51d2a6ec9e6d83cf803f838a878d8a023a"
-
-moment@^2.22.0:
-  version "2.22.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.0.tgz#7921ade01017dd45186e7fee5f424f0b8663a730"
+"moment@>= 2.9.0", moment@^2.11.2, moment@^2.22.1:
+  version "2.22.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.1.tgz#529a2e9bf973f259c9643d237fda84de3a26e8ad"
 
 money@^0.2.0:
   version "0.2.0"
@@ -2579,6 +2593,10 @@ socket.io@^2.1.0:
     socket.io-client "2.1.0"
     socket.io-parser "~3.2.0"
 
+source-map@0.5.x:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
+
 source-map@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
@@ -2793,11 +2811,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^3.3.21:
-  version "3.3.21"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.21.tgz#851a34cbb31840ecb881968ed07dd3a61e7264a0"
+uglify-es@^3.3.9:
+  version "3.3.9"
+  resolved "https://registry.yarnpkg.com/uglify-es/-/uglify-es-3.3.9.tgz#0c1c4f0700bed8dbc124cdb304d2592ca203e677"
   dependencies:
-    commander "~2.15.0"
+    commander "~2.13.0"
     source-map "~0.6.1"
 
 uid-number@^0.0.6:
