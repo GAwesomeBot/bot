@@ -29,13 +29,29 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="field">
-							<label class="label">Enabled in these channel(s):</label>
-							<% for(var i=0; i<voiceChannelData.length; i++) { %>
-								<label class="checkbox">
-								<input name="voicetext_channels-<%= voiceChannelData[i].id %>" type="checkbox" <%= configData.voicetext_channels.indexOf(voiceChannelData[i].id)>-1 ? "checked" : "" %>>
-									<%= voiceChannelData[i].name %>
-								</label>
-								<br>
+							<% if (voiceChannelData.length) { %>
+								<label class="label">Enabled in these channel(s):</label>
+								<% for (let i = 0; i < voiceChannelData.length; i++) { %>
+									<label class="checkbox">
+										<input name="voicetext_channels-<%= voiceChannelData[i].id %>" type="checkbox" <%= configData.voicetext_channels.indexOf(voiceChannelData[i].id)>-1 ? "checked" : "" %>>
+										<%= voiceChannelData[i].name %>
+									</label>
+									<br>
+								<% } %>
+							<% } else { %>
+								<article class="message" style="margin-bottom: 0px;">
+									<div class="message-header">
+										<p>
+											<span class="icon">
+												<i class="fa fa-meh-o"></i>
+											</span>
+											Nothing to see here
+										</p>
+									</div>
+									<div class="message-body">
+										There aren't any voice channels on this server. Create one in Discord to get started with Voicetext.
+									</div>
+								</article>
 							<% } %>
 						</div>
 						<br>

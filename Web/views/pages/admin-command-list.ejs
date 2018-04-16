@@ -54,7 +54,7 @@
 										<div class="field">
 											<label class="label">Permissions</label>
 											<p class="control">
-												<span class="select">
+												<span class="select is-primary">
 													<select name="preset-admin_level">
 														<option value="0">@everyone</option>
 														<option value="1">Admin level &ge;1</option>
@@ -98,11 +98,16 @@
 							</div>
 							<a class="modal-close"></a>
 						</div>
-							<% for(var command in commandCategories) { %>
-								<% if(command!="stats") { %>
-									<% var commandData = configData.commands[command];commandData.name = command;commandData.description = commandDescriptions[command];commandData.category = commandCategories[command]; %>
-									<% include ../partials/admin-command-item %>
-								<% } %>
+							<% for (var category in commandCategories) { %>
+								<div class="is-divider" data-content="<%= category %>"></div>
+								<div class="command-items">
+									<% for (let command of commandCategories[category]) { %>
+										<% if (command.name !== "stats") { %>
+											<% var commandData = configData.commands[command.name];commandData.name = command.name;commandData.description = command.description;commandData.category = command.category; %>
+											<% include ../partials/admin-command-item %>
+										<% } %>
+									<% } %>
+								</div>
 							<% } %>
 							<br>
 							<% var formButtonsUnsaved = false; %>

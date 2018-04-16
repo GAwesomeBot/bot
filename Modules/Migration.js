@@ -3,7 +3,7 @@
  */
 const Driver = require("../Database/Driver");
 const { databaseURL } = require("../Configurations/config");
-const winston = new (require("./Console"))("MIGRATION");
+const winston = new (require("../Internals").Console)("MIGRATION");
 const { public } = require("../Configurations/commands");
 
 module.exports = () => {

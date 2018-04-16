@@ -1,7 +1,7 @@
 /* eslint-disable callback-return */
 
 const process = require("process");
-global.winston = new (require("../Modules/Console"))(`Worker -- Shard ${Number(process.env.SHARD_ID)}`);
+global.winston = new (require("../Internals/Console"))(`Worker -- Shard ${Number(process.env.SHARD_ID)}`);
 
 const { WorkerCommands: { MATHJS: MathJSCommands } } = require("./Constants");
 const Emoji = require("../Modules/Emoji/Emoji");

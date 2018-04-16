@@ -10,6 +10,7 @@ controllers.blog = require("./blog");
 controllers.donate = require("./donate");
 
 controllers.dashboard = require("./dashboard");
+controllers.console = require("./maintainer");
 
 controllers.auth = require("./auth");
 controllers.api = require("./api");

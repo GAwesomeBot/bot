@@ -13,7 +13,7 @@ This issue tracker is only for bug reports and enhancement suggestions. You won'
 **Further details:**
 
 - [ ] The problem happens on the official GAwesomeBot
-  - [ ] The problem occurs on a self-host
+- [ ] The problem occurs on a self-host
 - Node.JS version (If applicable):
 - Operating System (If applicable):
 - GAwesomeBot version AND branch:

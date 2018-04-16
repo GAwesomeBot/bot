@@ -4,10 +4,15 @@ node_js:
 cache:
   directories:
     - node_modules
+before_install:
+  - npm i -g npm
 install: npm install
 jobs:
   include:
     - stage: test
       script: bash ./travis/test.sh
+    - stage: build
+      if: type = push
+      script: bash ./travis/build.sh
 dist: trusty
-sudo: false
+sudo: true

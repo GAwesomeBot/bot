@@ -17,7 +17,7 @@
     "branch": "development",
     "perms": {
         "eval": 0,
-        "sudoMode": 2,
+        "sudo": 2,
         "management": 2,
         "administration": 1,
         "shutdown": 2

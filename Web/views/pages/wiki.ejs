@@ -35,7 +35,7 @@
 					<div id="menu" class="column is-one-quarter">
 						<div class="field has-addons has-addons-centered">
 							<div class="control is-expanded">
-								<input id="search-input" class="input" type="text" placeholder="I'm looking for..." onkeydown="if(event.keyCode==13) {GAwesomeUtil.searchWiki(this.value);}" value="<%= data.activeSearchQuery %>">
+								<input id="search-input" class="input is-primary" type="text" placeholder="I'm looking for..." onkeydown="if(event.keyCode==13) {GAwesomeUtil.searchWiki(this.value);}" value="<%= data.activeSearchQuery %>">
 							</div>
 							<div class="control">
 							<a id="search-button" class="button" href="javascript:GAwesomeUtil.searchWiki(document.getElementById('search-input').value);">

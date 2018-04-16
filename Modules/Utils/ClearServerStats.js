@@ -19,6 +19,8 @@ module.exports = async (client, server, serverDocument) => {
 			memberDocument.messages = 0;
 			memberDocument.voice = 0;
 		} else {
+			if (!memberDocument._id && member) memberDocument._id = member.id;
+			else if (!memberDocument._id) memberDocument._id = "UNKNOWN USER";
 			memberDocument.remove();
 		}
 	}));

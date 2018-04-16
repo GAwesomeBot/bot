@@ -8,8 +8,9 @@ const ascii = `
  \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 			`;
 
-const { Console, Sharder, Traffic, Boot, CLI, Updater } = require("./Modules/");
-const { Stopwatch } = require("./Modules/Utils/");
+const { Traffic, Updater, CLI } = require("./Modules");
+const { Boot, Console, Sharder } = require("./Internals");
+const { Stopwatch } = require("./Modules/Utils");
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
 
@@ -23,11 +24,13 @@ winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawe
 
 process.setMaxListeners(0);
 
-process.argv.forEach(arg => {
+const parsedArgs = require("gar")(process.argv.slice(2));
+
+Object.keys(parsedArgs).forEach(arg => {
 	let func;
 	if (Boot.has(arg)) func = Boot.get(arg);
 	if (typeof func === "string") func = Boot.get(func);
-	if (func) func(configJS, configJSON, auth);
+	if (func) func(parsedArgs[arg], configJS, configJSON, auth);
 });
 
 if (process.argv.includes("--migrate") || process.argv.includes("-m")) return;
@@ -152,47 +155,26 @@ database.initialize(configJS.databaseURL).catch(err => {
 		// Shard requests guild data
 		sharder.IPC.on("getGuild", async (msg, callback) => {
 			try {
-				let payload = msg;
-				if (payload.guild !== "*") {
-					let shardid = sharder.guilds.get(payload.guild);
-					if (!shardid && shardid !== 0) {
-						callback({ err: 404, guild: payload.guild, settings: payload.settings });
-						return;
-					}
-					let result = await sharder.shards.get(shardid).getGuild(payload.guild, payload.settings);
-					return callback({ err: null, guild: payload.guild, settings: payload.settings, result: result });
+				if (msg.target !== "*") {
+					const shardId = sharder.IPC.shard(msg.target);
+					if (!shardId && shardId !== 0) return callback({ target: msg.target, err: 404, result: null });
+
+					let result = await sharder.shards.get(shardId).getGuild(msg.target, msg.settings);
+					return callback({ target: msg.target, err: null, result });
 				} else {
-					let results = [];
-					sharder.shards.forEach(async shardd => {
-						results.push(shardd.getGuilds(payload.settings));
+					const promises = [];
+					sharder.shards.forEach(async shard => {
+						promises.push(shard.getGuilds(msg.settings));
 					});
-					let result = await Promise.all(results);
-					return callback({ err: null, guild: payload.guild, settings: payload.settings, result: result.reduce((prev, value) => Object.assign(prev, value), {}) });
+
+					const result = await Promise.all(promises);
+					const isArr = msg.settings.parse === "noKeys";
+					return callback({ target: msg.target, err: null, result: result.reduce((prev, value) => isArr ? prev.concat(value) : Object.assign(prev, value), isArr ? [] : {}) });
 				}
 			} catch (err) {
-				let payload = msg;
-				winston.warn("An error occured while fetching guild data from Discord l.l\n", err);
-				return callback({ err: err, guild: payload.guild, settings: payload.settings });
+				winston.warn("An error occurred while fetching internal guild data l.l\n", err);
+				return callback({ target: msg.target, err: err, result: null });
 			}
-		});
-
-		// Shard requests changes to gulid cache
-		sharder.IPC.on("guilds", async msg => {
-			let guilds = msg.latest;
-			if (!guilds) guilds = [];
-			for (let guild of guilds) {
-				sharder.guilds.set(guild, parseInt(msg.shard));
-			}
-			if (msg.remove) {
-				for (let guild of msg.remove) {
-					sharder.guilds.delete(guild);
-				}
-			}
-		});
-
-		sharder.IPC.on("validateGuild", async (guildid, callback) => {
-			if (sharder.guilds.has(guildid)) return callback(true);
-			else return callback(false);
 		});
 
 		// Shard has modified Console data
@@ -202,35 +184,23 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 
 		// Shard requests a user to be muted
-		sharder.IPC.on("muteMember", async msg => {
-			const shardid = sharder.guilds.get(msg.guild);
-			if (sharder.shards.has(shardid)) sharder.IPC.send("muteMember", msg, shardid);
-		});
+		sharder.IPC.forward("muteMember");
 
 		// Shard requests a user to be unmuted
-		sharder.IPC.on("unmuteMember", async msg => {
-			const shardid = sharder.guilds.get(msg.guild);
-			if (sharder.shards.has(shardid)) sharder.IPC.send("unmuteMember", msg, shardid);
-		});
+		sharder.IPC.forward("unmuteMember");
 
 		// Shard requests a new Message Of The Day to be created
-		sharder.IPC.on("createMOTD", async msg => {
-			const shardid = sharder.guilds.get(msg.guild);
-			if (sharder.shards.has(shardid)) sharder.IPC.send("createMOTD", msg, shardid);
-		});
+		sharder.IPC.forward("createMOTD");
 
 		// Shard requests an update to the serverDocument cache
-		sharder.IPC.on("cacheUpdate", async msg => {
-			const shardid = sharder.guilds.get(msg.guild);
-			if (sharder.shards.has(shardid)) sharder.IPC.send("cacheUpdate", msg, shardid);
-		});
+		sharder.IPC.forward("cacheUpdate");
 
 		// Shard requests bot stats to be posted
 		sharder.IPC.on("sendAllGuilds", () => sharder.IPC.send("postAllData", {}, 0));
 
 		// Shard requests a guild's public Invite Link to be created/destroyed
-		sharder.IPC.on("createPublicInviteLink", msg => sharder.IPC.send("createPublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
-		sharder.IPC.on("deletePublicInviteLink", msg => sharder.IPC.send("deletePublicInviteLink", { guild: msg.guild }, sharder.guilds.get(msg.guild)));
+		sharder.IPC.forward("createPublicInviteLink");
+		sharder.IPC.forward("deletePublicInviteLink");
 
 		// Shard requests JavaScript code to be executed
 		sharder.IPC.on("eval", async (msg, callback) => {
@@ -266,17 +236,13 @@ database.initialize(configJS.databaseURL).catch(err => {
 		});
 
 		// Shard requests leaving a guild
-		sharder.IPC.on("leaveGuild", async msg => {
-			const shardid = sharder.guilds.get(msg);
-			if (sharder.shards.has(shardid)) sharder.IPC.send("leaveGuild", msg, shardid);
-			sharder.guilds.delete(msg);
-		});
+		sharder.IPC.forward("leaveGuild", "this");
 
 		// Shard requests a message to be sent to a guild
 		sharder.IPC.on("sendMessage", async msg => {
-			const shardid = sharder.guilds.get(msg.guild);
+			if (msg.guild === "*") return sharder.IPC.send("sendMessage", msg, "*");
+			const shardid = sharder.IPC.shard(msg.guild);
 			if (sharder.shards.has(shardid)) sharder.IPC.send("sendMessage", msg, shardid);
-			else if (msg.guild === "*") sharder.IPC.send("sendMessage", msg, "*");
 		});
 
 		// Shard requests the bot user to be updated
@@ -334,10 +300,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			callback();
 		});
 
-		sharder.IPC.on("modifyActivity", async msg => {
-			const shardid = sharder.guilds.get(msg.guild);
-			if (sharder.shards.has(shardid)) sharder.IPC.send("modifyActivity", msg, shardid);
-		});
+		sharder.IPC.forward("modifyActivity");
 
 		sharder.IPC.on("relay", async (msg, reply) => {
 			const findResults = await sharder.IPC.send("relay", { command: msg.command, params: msg.findParams, action: "find" }, "*");
@@ -348,7 +311,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 
 			if (!msg.execParams) msg.execParams = {};
 			const guildID = findResults.find(result => result !== false);
-			const shardID = sharder.guilds.get(guildID);
+			const shardID = sharder.IPC.shard(guildID);
 			msg.execParams.guildid = guildID;
 
 			sharder.IPC.send("relay", { command: msg.command, params: msg.execParams, action: "run" }, shardID);

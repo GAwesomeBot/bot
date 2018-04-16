@@ -29,19 +29,19 @@
 									<span class="icon is-small">
 										<i class="fa fa-server"></i>
 									</span>
-									Server<%= serverCount==1 ? "" : "s" %>
+									Server<%= pageData.serverCount==1 ? "" : "s" %>
 								</div>
 								<div class="title">
-                                    <%= serverCount %>
+                                    <%= pageData.serverCount %>
 								</div>
 								<div class="heading">
 									<span class="icon is-small">
 										<i class="fa fa-user"></i>
 									</span>
-									User<%= serverCount==1 ? "" : "s" %>
+									User<%= pageData.userCount==1 ? "" : "s" %>
 								</div>
 								<div class="title">
-                                    <%= userCount %>
+                                    <%= pageData.userCount %>
 								</div>
 							</a>
 						</div>
@@ -51,19 +51,19 @@
 									<span class="icon is-small">
 										<i class="fa fa-comments-o"></i>
 									</span>
-									Message<%= totalMessageCount==1 ? "" : "s" %> today
+									Message<%= pageData.totalMessageCount==1 ? "" : "s" %> today
 								</div>
 								<div class="title">
-                                    <%= totalMessageCount %>
+                                    <%= pageData.totalMessageCount %>
 								</div>
 								<div class="heading">
 									<span class="icon is-small">
 										<i class="fa fa-file"></i>
 									</span>
-									View<%= trafficData.hour==1 ? "" : "s" %> the past hour
+									View<%= pageData.trafficData.hour==1 ? "" : "s" %> the past hour
 								</div>
 								<div class="title">
-                                    <%= trafficData.hour %>
+                                    <%= pageData.trafficData.hour %>
 								</div>
 							</a>
 						</div>
@@ -76,7 +76,7 @@
 									Current Shard
 								</div>
 								<div class="title">
-                                    <%= parseInt(currentShard) + 1 %>/<%= shardCount %>
+                                    <%= parseInt(pageData.currentShard) + 1 %>/<%= configData.shardCount %>
 								</div>
 								<div class="heading">
 									<span class="icon is-small">
@@ -85,12 +85,12 @@
 									Shard uptime
 								</div>
 								<div class="title">
-                                    <%= roundedUptime %>
+                                    <%= pageData.roundedUptime %>
 								</div>
 							</a>
 						</div>
 						<div class="column">
-							<a class="box notification <% if (disabled) { %>is-dark<% } else if (!utd) { %>is-info<% } else { %>is-white<% } %>"<% if (serverData.accessManagement) { %> href="/dashboard/maintainer/management/version"<% } %>>
+							<a class="box notification <% if (configData.disabled) { %>is-dark<% } else if (!configData.utd) { %>is-info<% } else { %>is-white<% } %>"<% if (accessPrivileges.includes("management")) { %> href="/dashboard/maintainer/management/version"<% } %>>
 								<div class="heading">
 									<span class="icon is-small">
 										<i class="fa fa-code-fork"></i>
@@ -98,7 +98,7 @@
 									Bot Version
 								</div>
 								<div class="title">
-                                    <%= version %>
+                                    <%= configData.version %>
 								</div>
 								<div class="heading">
 									<span class="icon is-small">
@@ -107,7 +107,7 @@
 									Latest Version
 								</div>
 								<div class="title">
-                                    <%if (disabled) { %> <%= version %> <% } else { %> <%= latestVersion %> <% } %>
+                                    <%if (configData.disabled) { %> <%= configData.version %> <% } else { %> <%= configData.latestVersion %> <% } %>
 								</div>
 							</a>
 						</div>
@@ -141,7 +141,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-month",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= Object.values(trafficData.days) %>],
+		data: [<%= Object.values(pageData.trafficData.days) %>],
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
@@ -150,17 +150,17 @@
 	  new Morris.Line({
 		element: "traffic-chart-week",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= trafficData.week %>],
+		data: [<%= pageData.trafficData.week %>],
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
 		dateFormat: parseDate,
 	  });
-	  <% if (trafficData.day.length === 0) trafficData.day[0] = "{_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}" %>
+	  <% if (pageData.trafficData.day.length === 0) pageData.trafficData.day[0] = "{_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}" %>
 	  new Morris.Line({
 		element: "traffic-chart-day",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= trafficData.day %>],
+		data: [<%= pageData.trafficData.day %>],
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],

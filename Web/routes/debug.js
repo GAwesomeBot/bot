@@ -1,4 +1,4 @@
-const { setupPage } = require('../helpers');
+const { setupPage } = require("../helpers");
 const controllers = require("../controllers");
 
 module.exports = router => {

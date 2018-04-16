@@ -1,7 +1,7 @@
 const dgr = require("async-dl-github-repo");
 const fs = require("fs-nextra");
 const snekfetch = require("snekfetch");
-const Console = require("./Console");
+const Console = require("../Internals").Console;
 // TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {

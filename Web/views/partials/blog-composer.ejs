@@ -5,7 +5,7 @@
     <div class="field">
         <label class="label">Title</label>
 	    <div class="control">
-		    <input id="composer-title" name="title" class="input" type="text" value="<%= data.title %>" minlength="10" maxlength="100" required>
+		    <input id="composer-title" name="title" class="input is-primary" type="text" value="<%= data.title %>" minlength="10" maxlength="100" required>
 		    <span class="help">Name of the post. Be concise and informative.</span>
 	    </div>
     </div>
@@ -13,7 +13,7 @@
     <div class="field">
         <label class="label">Category</label>
         <div class="control">
-            <span class="select">
+            <span class="select is-primary">
                 <select name="category">
                     <option <%= data.category=="Development" ? "selected" : "" %>>Development</option>
                     <option <%= data.category=="Announcement" ? "selected" : "" %>>Announcement</option>
@@ -28,7 +28,7 @@
     <div class="field">
         <label class="label">Content</label>
         <div class="control">
-        <textarea name="content" id="composer-content" class="textarea" placeholder="Post content, in markdown" required><%= data.content %></textarea>
+        <textarea name="content" id="composer-content" class="textarea is-primary" placeholder="Post content, in markdown" required><%= data.content %></textarea>
         <script>
         </script>
         </div>

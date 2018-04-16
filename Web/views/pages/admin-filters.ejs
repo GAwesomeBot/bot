@@ -53,7 +53,7 @@
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<div class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="spam_filter-action">
 											<option value="none" <%= configData.moderation.filters.spam_filter.action=="none" ? "selected" : "" %>>Nothing</option>
 											<option value="block" <%= configData.moderation.filters.spam_filter.action=="block" ? "selected" : "" %>>Block</option>
@@ -67,7 +67,7 @@
 							<div class="field">
 								<label class="label">Spam filter sensitivity</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="spam_filter-message_sensitivity">
 											<option value="10" <%= configData.moderation.filters.spam_filter.message_sensitivity==10 ? "selected" : "" %>>Low: requires a lot of spam to filter</option>
 											<option value="5" <%= configData.moderation.filters.spam_filter.message_sensitivity==5 ? "selected" : "" %>>Medium: should work for most servers</option>
@@ -87,7 +87,7 @@
 							<div class="field">
 								<label class="label">Role assigned to violators</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="spam_filter-violator_role_id">
 											<option value="">None</option>
 											<% for(var i=0; i<roleData.length; i++) { %>
@@ -125,7 +125,7 @@
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="mention_filter-action">
 											<option value="none" <%= configData.moderation.filters.mention_filter.action=="none" ? "selected" : "" %>>Nothing</option>
 											<option value="block" <%= configData.moderation.filters.mention_filter.action=="block" ? "selected" : "" %>>Block</option>
@@ -139,7 +139,7 @@
 							<div class="field">
 								<label class="label">Mention sensitivity</label>
 								<p class="control">
-									<input name="mention_filter-mention_sensitivity" class="input" type="number" min="1" max="25" value="<%= configData.moderation.filters.mention_filter.mention_sensitivity %>">
+									<input name="mention_filter-mention_sensitivity" class="input is-primary" type="number" min="1" max="25" value="<%= configData.moderation.filters.mention_filter.mention_sensitivity %>">
 									<span class="help">Messages with <strong>more than</strong> this number of member and role mentions combined will be filtered.</span>
 								</p>
 							</div>
@@ -162,7 +162,7 @@
 							<div class="field">
 								<label class="label">Role assigned to violators</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="mention_filter-violator_role_id">
 											<option value="">None</option>
 											<% for(var i=0; i<roleData.length; i++) { %>
@@ -200,7 +200,7 @@
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="nsfw_filter-action">
 											<option value="none" <%= configData.moderation.filters.nsfw_filter.action=="none" ? "selected" : "" %>>Nothing</option>
 											<option value="block" <%= configData.moderation.filters.nsfw_filter.action=="block" ? "selected" : "" %>>Block</option>
@@ -222,7 +222,7 @@
 							<div class="field">
 								<label class="label">Role assigned to violators</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="nsfw_filter-violator_role_id">
 											<option value="">None</option>
 											<% for(var i=0; i<roleData.length; i++) { %>
@@ -250,7 +250,7 @@
 							<div class="field">
 								<label class="label">Filter keywords (comma-separated)</label>
 								<p class="control">
-									<textarea name="custom_filter-keywords" class="textarea" placeholder="The filter will not work without defining keywords"><%= configData.moderation.filters.custom_filter.keywords.join(", ") %></textarea>
+									<textarea name="custom_filter-keywords" class="textarea is-primary" placeholder="The filter will not work without defining keywords"><%= configData.moderation.filters.custom_filter.keywords.join(", ") %></textarea>
 								</p>
 							</div>
 							<div class="field">
@@ -266,7 +266,7 @@
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="custom_filter-action">
 											<option value="none" <%= configData.moderation.filters.custom_filter.action=="none" ? "selected" : "" %>>Nothing</option>
 											<option value="block" <%= configData.moderation.filters.custom_filter.action=="block" ? "selected" : "" %>>Block</option>
@@ -288,7 +288,7 @@
 							<div class="field">
 								<label class="label">Role assigned to violators</label>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="custom_filter-violator_role_id">
 											<option value="">None</option>
 											<% for(var i=0; i<roleData.length; i++) { %>

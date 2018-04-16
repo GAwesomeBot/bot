@@ -18,9 +18,8 @@ const {
 	},
 	WorkerManager,
 	ShardUtil,
-	ConversionHandler,
 } = require("./");
-const { ModLog } = require("../Modules/index");
+const { ModLog, ConversionHandler } = require("../Modules/index");
 const {	RankScoreCalculator: computeRankScores } = require("../Modules/Utils/index");
 
 const privateCommandModules = {};
@@ -167,11 +166,10 @@ module.exports = class GABClient extends DJSClient {
 			}).split(/\s+/)
 				.splice(1)
 				.join(" ")
-				.format({ n: "\n", r: "\r", t: "\t" })
-				.trim();
+				.format({ n: "\n", r: "\r", t: "\t" });
 			commandObject = {
-				command: command,
-				suffix: suffix,
+				command,
+				suffix,
 			};
 		}
 		return Promise.resolve(commandObject);
@@ -838,7 +836,7 @@ module.exports = class GABClient extends DJSClient {
 	getUserBotAdmin (server, serverDocument, member) {
 		if (!server || !serverDocument || !member) return -1;
 
-		if (server.ownerID === member.id) return 3;
+		if (server.ownerID === member.user.id) return 3;
 
 		let adminLevel = 0;
 		let roles = member.roles;

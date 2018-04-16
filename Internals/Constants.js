@@ -1,6 +1,8 @@
 exports.ModLogEntries = {
 	ADD_ROLE: "Add Role",
 	REMOVE_ROLE: "Remove Role",
+	DELETE_ROLE: "Delete Role",
+	MODIFY_ROLE: "Modify Role",
 
 	KICK: "Kick",
 	BAN: "Ban",
@@ -75,8 +77,24 @@ exports.Colors = {
 exports.Text = {
 	COMMAND_ERR: () => "Something went wrong! 😱",
 	INVALID_USAGE: (commandData, prefix = null) => `🗯 Correct usage is: \`${prefix ? prefix : ""}${commandData.name} ${commandData.usage}\``,
-	MISSING_PERMS: serverName => `🔐 You don't have permission to use this command${serverName ? `on ${serverName}` : "."}`,
+	MISSING_PERMS: serverName => `🔐 You don't have permission to use this command${serverName ? ` on ${serverName}` : "."}`,
 	NSFW_INVALID: () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`,
+	INVITE: client => ({
+		embed: {
+			color: exports.Colors.LIGHT_GREEN,
+			title: `Thanks for choosing me! 😊`,
+			description: [
+				`To add me, follow [this URL](${configJS.oauthLink.format({ id: client.user.id })})`,
+				"",
+				"The above link contains all permissions that are required to be able to run any of my commands.",
+				"We know that not all permissions are right for each server, so feel free to uncheck some boxes.",
+				"We'll let you know if we're missing any permissions for running certain commands!",
+				"",
+				// eslint-disable-next-line max-len
+				"For the best experience with me, please make sure I have at least `Send Messages`, `Embed Links`, `Add Reactions` and `Manage Messages`! That way you'll be able to use most of my features right away!",
+			].join("\n"),
+		},
+	}),
 };
 
 // Hardcoded names for the child process manager

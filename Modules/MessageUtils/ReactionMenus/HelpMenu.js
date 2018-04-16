@@ -39,24 +39,22 @@ module.exports = class extends BaseMenu {
 		this.msg = await this.msg.edit(this.defaultPage);
 	}
 
-	async _handleEnd (_, reason) {
-		if (reason && reason === "manual") {
-			try {
-				await this.msg.reactions.removeAll();
-			} catch (err) {
-				winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
-				this.msg.reactions.forEach(r => r.users.remove());
-			}
-		} else {
-			await this.msg.delete();
-			this.msg = null;
-			this.originalMsg.channel.send({
-				embed: {
-					color: Colors.LIGHT_ORANGE,
-					description: `You've exited the help menu or it expired.`,
-				},
-			});
+	async _handleEnd () {
+		try {
+			await this.msg.reactions.removeAll();
+		} catch (err) {
+			winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
+			this.msg.reactions.forEach(r => r.users.remove());
 		}
+		this.msg.edit({
+			embed: {
+				color: Colors.LIGHT_ORANGE,
+				description: `You've exited the help menu or it expired.`,
+			},
+		});
+		// Bye message!! 👋
+		this.msg = null;
+
 		// Null out the collector
 		this.collector = null;
 	}

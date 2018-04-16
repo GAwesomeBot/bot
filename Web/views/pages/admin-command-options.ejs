@@ -30,7 +30,7 @@
 						<div class="field">
 							<label class="label">Command prefix</label>
 							<p class="control">
-								<input name="command_prefix" class="input" type="text" value="<%= configData.command_prefix %>" minlength="1" maxlength="10">
+								<input name="command_prefix" class="input is-primary" type="text" value="<%= configData.command_prefix %>" minlength="1" maxlength="10">
 								<span class="help">Plaintext prefix used to activate commands. Type <code>@mention</code> in the box above to use a Discord mention of GAwesomeBot.</span>
 							</p>
 						</div>
@@ -47,7 +47,7 @@
 						<div class="field">
 							<label class="label">Cooldown period</label>
 							<p class="control">
-								<span class="select">
+								<span class="select is-primary">
 									<select name="command_cooldown">
 										<option value="0" <%= !configData.command_cooldown ? "selected" : "" %>>None</option>
 										<option value="2000" <%= configData.command_cooldown==2000 ? "selected" : "" %>>2 seconds</option>
@@ -94,13 +94,13 @@
 						<div class="field">
 							<label class="label">Default number of results to show</label>
 							<p class="control">
-								<input name="default_count" class="input" type="number" value="<%= configData.command_fetch_properties.default_count %>" min="1" max="10">
+								<input name="default_count" class="input is-primary" type="number" value="<%= configData.command_fetch_properties.default_count %>" min="1" max="10">
 							</p>
 						</div>
 						<div class="field">
 							<label class="label">Maximum number of items to fetch</label>
 							<p class="control">
-								<input name="max_count" class="input" type="number" value="<%= configData.command_fetch_properties.max_count %>" min="5" max="25">
+								<input name="max_count" class="input is-primary" type="number" value="<%= configData.command_fetch_properties.max_count %>" min="5" max="25">
 							</p>
 						</div>
 						<br>
@@ -114,7 +114,7 @@
 									<label class="label">Ban Image</label>
 									<div id="ban_gif_field" class="field<% if (configData.ban_gif !== "https://imgur.com/3QPLumg.gif") { %> has-addons<% } %>">
 										<div class="control has-icons-left">
-											<input id="ban_gif" name="ban_gif" class="input" type="text" value="<%= configData.ban_gif === "https://imgur.com/3QPLumg.gif" ? "Default" : configData.ban_gif %>">
+											<input id="ban_gif" name="ban_gif" class="input is-primary" type="text" value="<%= configData.ban_gif === "https://imgur.com/3QPLumg.gif" ? "Default" : configData.ban_gif %>">
 											<span class="icon is-small is-left">
 												<i class="fa fa-globe"></i>
 											</span>

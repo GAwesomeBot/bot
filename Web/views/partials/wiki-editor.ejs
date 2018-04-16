@@ -2,7 +2,7 @@
 	<div class="field">
     	<label class="label">Title</label>
 		<p class="control">
-			<input id="composer-title" name="title" class="input" type="text" value="<%= data.title %>" minlength="3" maxlength="100" required<%- data.title ? ` disabled` : ""%>>
+			<input id="composer-title" name="title" class="input is-primary" type="text" value="<%= data.title %>" minlength="3" maxlength="100" required<%- data.title ? ` disabled` : ""%>>
 			<span class="help"><%- data.title ? "Wiki Articles can't be renamed. Download this Article's content, and upload it to a new Article if you wish to switch names." : "Name of the page. Make it short and avoid special characters."%></span>
 		</p>
 	</div>
@@ -13,7 +13,7 @@
     	</label>
     	<span class="help" style="float: right;margin-right: 15px; margin-top: 10px;">Editor by <strong>SimpleMDE</strong></span>
     	<p class="control">
-			<textarea name="content" id="composer-content" class="textarea" placeholder="Post content, in markdown" required><%= data.content %></textarea>
+			<textarea name="content" id="composer-content" class="textarea is-primary" placeholder="Post content, in markdown" required><%= data.content %></textarea>
     	</p>
 	</div>
 	<br>

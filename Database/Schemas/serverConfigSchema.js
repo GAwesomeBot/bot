@@ -66,7 +66,7 @@ module.exports = {
 	command_prefix: {
 		type: String,
 		default: "@mention",
-		maxlength: 10,
+		maxlength: 25,
 		minlength: 1,
 	},
 	commands: getCommands(),

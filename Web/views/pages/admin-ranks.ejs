@@ -80,12 +80,12 @@
 									</td>
 									<td>
 										<p class="control is-narrow">
-											<input name="rank-<%= i %>-max_score" class="input is-small" type="number" value="<%= configData.ranks_list[i].max_score %>" min="1" placeholder="Max. activity score">
+											<input name="rank-<%= i %>-max_score" class="input is-primary is-small" type="number" value="<%= configData.ranks_list[i].max_score %>" min="1" placeholder="Max. activity score">
 										</p>
 									</td>
 									<td>
 										<p class="control">
-											<span class="select is-small">
+											<span class="select is-primary is-small">
 												<select name="rank-<%= i %>-role_id">
 													<option value="">None</option>
 													<% for(var j=0; j<roleData.length; j++) { %>
@@ -138,17 +138,17 @@
 						</div>
 						<div class="field">
 							<div class="control is-expanded">
-								<input id="new-rank-name" class="input" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+								<input id="new-rank-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
 							</div>
 						</div>
 						<div class="field is-horizontal">
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-rank-max_score" class="input" type="number" min="1" placeholder="Max. activity score" onkeypress="return event.keyCode != 13;">
+										<input id="new-rank-max_score" class="input is-primary" type="number" min="1" placeholder="Max. activity score" onkeypress="return event.keyCode != 13;">
 									</div>
 									<div class="control">
-										<span class="select">
+										<span class="select is-primary">
 											<select id="new-rank-role_id">
 												<option value="">No Role</option>
 												<% for(var i=0; i<roleData.length; i++) { %>

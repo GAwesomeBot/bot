@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const fs = require("fs-nextra");
 
 const mw = require("./middleware");
@@ -10,7 +11,7 @@ module.exports = {
 
 	renderError: (res, text, line, code = 500) => res.status(code).render("pages/error.ejs", { error_text: text, error_line: line || configJS.errorLines[Math.floor(Math.random() * configJS.errorLines.length)] }),
 
-	checkSudoMode: id => configJSON.perms.sudo === 0 ? process.env.GAB_HOST === id : (configJSON.perms.sudo === 2 ? configJSON.sudoMaintainers.includes(id) : configJSON.maintainers.includes(id)),
+	checkSudoMode: id => configJSON.perms.sudo === 0 ? process.env.GAB_HOST === id : configJSON.perms.sudo === 2 ? configJSON.sudoMaintainers.includes(id) : configJSON.maintainers.includes(id),
 
 	fetchMaintainerPrivileges: id => {
 		let permLevel;
@@ -29,6 +30,7 @@ module.exports = {
 		if (acceptSockets) {
 			router.app.io.of(route).on("connection", socket => {
 				socket.on("disconnect", () => undefined);
+				if (controller.socket) controller.socket(socket);
 			});
 		}
 	},
@@ -40,13 +42,25 @@ module.exports = {
 		router.routes.push(new (require("./routes/Route")).DashboardRoute(router, `/:svrid${route}`, middleware, middlewarePOST, controller, controller.post));
 		router.app.io.of(`/dashboard/:svrid${route}`).on("connection", socket => {
 			socket.on("disconnect", () => undefined);
+			if (controller.socket) controller.socket(socket);
+		});
+	},
+
+	setupConsolePage: (router, route, permission, middleware, controller, middlewarePOST = []) => {
+		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
+		middlewarePOST = [mw.checkUnavailableAPI, ...middlewarePOST];
+		controller.post = controller.post ? controller.post : (req, res) => res.sendStatus(405);
+		router.routes.push(new (require("./routes/Route")).ConsoleRoute(router, route, permission, middleware, middlewarePOST, controller, controller.post));
+		router.app.io.of(`/dashboard/maintainer${route}`).on("connection", socket => {
+			socket.on("disconnect", () => undefined);
+			if (controller.socket) controller.socket(socket);
 		});
 	},
 
 	saveAdminConsoleOptions: async (req, res, isAPI) => {
 		if (req.svr.document.validateSync()) return module.exports.renderError(res, "Your request is malformed.", null, 400);
 		try {
-			req.app.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path.replace(`/${req.svr.id}`, "")}.`, null, req.consolemember.id);
+			req.app.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path.replace(`/${req.svr.id}`, "")}.`, null, req.consolemember.user.id);
 			module.exports.dashboardUpdate(req, `/dashboard${req.path}`, req.svr.id);
 			await req.svr.document.save();
 			req.app.client.IPC.send("cacheUpdate", { guild: req.svr.document._id });
@@ -56,7 +70,7 @@ module.exports = {
 				res.redirect(`${req.originalUrl}`);
 			}
 		} catch (err) {
-			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: req.svr.id, usrid: req.consolemember.id }, err);
+			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: req.svr.id, usrid: req.consolemember.user.id }, err);
 			module.exports.renderError(res, "An internal error occurred!");
 		}
 	},
@@ -72,7 +86,7 @@ module.exports = {
 				}
 			})
 			.catch(err => {
-				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember.id }, err);
+				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember.user.id }, err);
 				module.exports.renderError(res, "An internal error occurred!");
 			});
 	},
@@ -103,38 +117,25 @@ module.exports = {
 
 	dashboardUpdate: (req, namespace, location) => req.app.client.IPC.send("dashboardUpdate", { namespace: namespace, location: location }),
 
-	getRoleData: svr => Object.values(svr.roles).filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
+	getRoleData: svr => svr.roles.filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
 		name: role.name,
 		id: role.id,
-		color: role.hexColor.substring(1),
-		position: role.position,
+		color: role.color.toString(16).padStart(6, "0"),
+		position: role.rawPosition,
 	}))
 		.sort((a, b) => b.position - a.position),
 
-	getChannelData: (svr, type) => Object.values(svr.channels).filter(ch => ch.type === (type || "text")).map(ch => ({
+	getChannelData: (svr, type) => svr.channels.filter(ch => ch.type === (type || "text")).map(ch => ({
 		name: ch.name,
 		id: ch.id,
-		position: ch.position,
+		position: ch.rawPosition,
 		rawPosition: ch.rawPosition,
 	}))
 		.sort((a, b) => a.rawPosition - b.rawPosition),
 
 	getUserList: list => list.filter(usr => usr.bot !== true).map(usr => `${usr.username}#${usr.discriminator}`).sort(),
 
-	findQueryUser: (query, list) => {
-		let usr = list[query];
-		if (!usr) {
-			const usernameQuery = query.substring(0, query.lastIndexOf("#") > -1 ? query.lastIndexOf("#") : query.length);
-			const discriminatorQuery = query.indexOf("#") > -1 ? query.substring(query.lastIndexOf("#") + 1) : "";
-			const usrs = Object.values(list).filter(a => (a.user || a).username === usernameQuery);
-			if (discriminatorQuery) {
-				usr = usrs.find(a => (a.user || a).discriminator === discriminatorQuery);
-			} else if (usrs.length > 0) {
-				usr = usrs[0];
-			}
-		}
-		return usr;
-	},
+	findQueryUser: (query, guild) => guild.fetchMember(query, true),
 
 	generateCodeID: code => require("crypto")
 		.createHash("md5")

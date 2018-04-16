@@ -1,5 +1,5 @@
 const { APIResponses } = require("../../Internals/Constants");
-const getGuild = require("../../Modules").GetGuild;
+const { GetGuild } = require("../../Modules").getGuild;
 const parsers = require("../parsers");
 const { getUserList } = require("../helpers");
 
@@ -35,7 +35,7 @@ controllers.servers = async (req, res) => {
 controllers.servers.channels = async (req, res) => res.json(req.svr.channels);
 
 controllers.servers.list = async (req, res) => {
-	const servers = Object.values(await getGuild.get(req.app.client, "*", { only: true, resolve: ["name"] })).map(val => val.name);
+	const servers = await GetGuild.getAll(req.app.client, { resolve: "name", strict: true, parse: "noKeys" });
 	servers.sort();
 	res.json(servers);
 };
@@ -63,7 +63,8 @@ controllers.users = async (req, res) => {
 
 controllers.users.list = async (req, res) => {
 	if (req.isAuthorized) {
-		res.json(getUserList(Object.keys(req.svr.members).map(member => req.svr.members[member].user)));
+		await req.svr.fetchMember(req.svr.memberList);
+		res.json(getUserList(Object.values(req.svr.members).map(member => member.user)));
 	} else {
 		Users.aggregate([{
 			$project: {

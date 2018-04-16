@@ -64,12 +64,14 @@
 						<h4 class="subtitle is-4">
 							General
 						</h4>
+						<div class="command-items">
 						<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
 								<div class="field">
 									List all tags:
-									<div class="select is-small">
+									<div class="select is-primary is-small">
 										<select name="listIsAdminOnly">
 											<option value="false" <%= configData.tags.listIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.listIsAdminOnly ? "selected" : "" %>>Admin-only</option>
@@ -78,7 +80,7 @@
 								</div>
 								<div class="field">
 									Add tags:
-									<div class="select is-small">
+									<div class="select is-primary is-small">
 										<select name="addingIsAdminOnly">
 											<option value="false" <%= configData.tags.addingIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.addingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
@@ -87,7 +89,7 @@
 								</div>
 								<div class="field">
 									Add tag commands:
-									<span class="select is-small">
+									<span class="select is-primary is-small">
 										<select name="addingCommandIsAdminOnly">
 											<option value="false" <%= configData.tags.addingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.addingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
@@ -96,7 +98,7 @@
 								</div>
 								<div class="field">
 									Remove tags:
-									<span class="select is-small">
+									<span class="select is-primary is-small">
 										<select name="removingIsAdminOnly">
 											<option value="false" <%= configData.tags.removingIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.removingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
@@ -105,7 +107,7 @@
 								</div>
 								<div class="field">
 									Remove tag commands:
-									<span class="select is-small">
+									<span class="select is-primary is-small">
 										<select name="removingCommandIsAdminOnly">
 											<option value="false" <%= configData.tags.removingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
 											<option value="true" <%= configData.tags.removingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
@@ -140,7 +142,7 @@
 													</td>
 													<td>
 														<p class="control">
-															<span class="select is-small">
+															<span class="select is-primary is-small">
 																<select name="tag-<%= configData.tags.list[i].index %>-isCommand">
 																	<option value="text" <%= configData.tags.list[i].isCommand ? "" : "selected" %>>Text</option>
 																	<option value="command" <%= configData.tags.list[i].isCommand ? "selected" : "" %>>Command</option>
@@ -189,10 +191,10 @@
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-tag-name" class="input" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+											<input id="new-tag-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
 										</div>
 										<div class="control">
-											<span class="select">
+											<span class="select is-primary">
 												<select id="new-tag-type">
 													<option value="text">Text</option>
 													<option value="command">Command</option>
@@ -212,7 +214,7 @@
 							</div>
 						<div class="field">
 							<div class="control is-expanded">
-								<textarea id="new-tag-content" class="input" type="textarea" minlength="1" maxlength="2000" placeholder="Tag content" style="resize: vertical;"></textarea>
+								<textarea id="new-tag-content" class="input is-primary" type="textarea" minlength="1" maxlength="2000" placeholder="Tag content" style="resize: vertical;"></textarea>
 							</div>
 						</div>
 						<br>

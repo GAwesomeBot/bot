@@ -1,4 +1,4 @@
-/* eslint-disable max-len, max-depth */
+/* eslint-disable max-len, max-depth, no-console */
 const BaseEvent = require("../BaseEvent.js");
 const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/index");
 const {
@@ -416,7 +416,7 @@ class MessageCreate extends BaseEvent {
 								shouldRunChatterbot = false;
 							}
 							// Check if it's a chatterbot prompt
-							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.client.user.id}>`) || msg.content.startsWith(`<@!${this.client.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.bot.getSharedCommand(msg.command)) {
+							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.client.user.id}>`) || msg.content.startsWith(`<@!${this.client.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.client.getSharedCommand(msg.command)) {
 								await this.setCooldown(serverDocument, channelDocument);
 								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 								this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
@@ -448,7 +448,7 @@ class MessageCreate extends BaseEvent {
 										},
 									});
 								}
-							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.client.user.id) && serverDocument.config.tag_reaction.isEnabled) {
+							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.client.user.id) && serverDocument.config.tag_reaction.isEnabled && !this.client.getSharedCommand(msg.command)) {
 								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.client.getName(msg.guild, serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
 								if (random) {
 									msg.send({

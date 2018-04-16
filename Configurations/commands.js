@@ -386,8 +386,9 @@ const commands = {
 			},
 			category: `Utility 🔦`,
 		},
-		join: {
+		invite: {
 			usage: ``,
+			aliases: ["join"],
 			description: `Provides the invite link to add the bot to another server`,
 			defaults: {
 				isEnabled: true,
@@ -639,7 +640,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		role: {
-			usage: `[<name>] [|"." or <hex color> or "hoist" or <user> or <new role name>]`,
+			aliases: ["roles"],
+			usage: `[<name> or "me"] [|] ["." or <hex color> or "reset color" or "hoist" or "joinable" or <user> or <new role name>]`,
 			description: `Adds members to roles, modifies roles or sets colors`,
 			defaults: {
 				isEnabled: true,
@@ -709,7 +711,7 @@ const commands = {
 			category: `NSFW 👹`,
 		},
 		say: {
-			usage: `["embed" or "text"] <something>`,
+			usage: `<text>`,
 			description: `Says something in the chat`,
 			defaults: {
 				isEnabled: true,
@@ -719,9 +721,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		shorten: {
-			aliases: ["unshorten"],
 			usage: `<URL>`,
-			description: `Uses goo.gl to shorten or unshorten an URL`,
+			description: `Uses bit.ly to shorten an URL`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,

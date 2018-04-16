@@ -16,7 +16,7 @@ GAwesomeData.activity = { guildData: {} };
 GAwesomeData.blog = { editor: {} };
 GAwesomeData.wiki = { bookmarks: JSON.parse(localStorage.getItem("wiki-bookmarks")) || [], editor: {} };
 GAwesomeData.extensions = {};
-GAwesomeData.dashboard = {};
+GAwesomeData.dashboard = { servers: {} };
 GAwesomeUtil.dashboard = {};
 
 GAwesomeData.config = {
@@ -51,7 +51,7 @@ GAwesomeData.extensions.html = {
 				<div class="field">
 					<label class="label">Permissions</label>
 					<div class="control">
-						<span class="select">
+						<span class="select is-primary">
 							<select name="installer-adminLevel">
 								<option value="0" selected>@everyone</option>
 								<option value="1">Admin level &ge;1</option>
@@ -127,17 +127,23 @@ GAwesomeUtil.debugDump = () => {
 };
 
 GAwesomeUtil.setUserAutocomplete = svrid => {
-	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
-		new autoComplete({
-			selector: ".user-autocomplete",
-			minChars: 2,
-			source: function(query, res) {
-				query = query.toLowerCase();
-				res(data.filter(function(a) {
-					return a.toLowerCase().indexOf(query)>-1;
-				}));
-			}
-		});
+	const loadAutoComplete = data => new autoComplete({
+		selector: ".user-autocomplete",
+		minChars: 2,
+		source: function(query, res) {
+			query = query.toLowerCase();
+			res(data.filter(function(a) {
+				return a.toLowerCase().indexOf(query)>-1;
+			}));
+		}
+	});
+
+	const cachedData = GAwesomeUtil.dashboard.getCache(svrid, "userlist");
+	if (cachedData) return loadAutoComplete(cachedData);
+
+	$.getJSON("/api/list/users" + (svrid ? ("?svrid=" + svrid) : ""), data => {
+		loadAutoComplete(data);
+		GAwesomeUtil.dashboard.setCache(svrid, "userlist", data);
 	});
 };
 
@@ -204,7 +210,7 @@ GAwesomeUtil.activityUnbanGuild = svrid => {
 	$.post("/dashboard/maintainer/servers/server-list", { unbanFromActivity: svrid }).done(() => {
 		const cardContent = $(`#cardContent-${svrid}`);
 		cardContent.removeClass("has-text-centered");
-		cardContent.html(GAwesomeUtil.activity.guildData[svrid]);
+		cardContent.html(GAwesomeData.activity.guildData[svrid]);
 	});
 };
 
@@ -597,6 +603,22 @@ GAwesomeUtil.dashboard.connect = () => {
 	});
 };
 
+GAwesomeUtil.dashboard.setCache = (svr, key, data, expire = 300) => {
+	if (!GAwesomeData.cache) GAwesomeData.cache = new Map();
+	if (!GAwesomeData.cache.has(svr)) GAwesomeData.cache.set(svr, new Map());
+	GAwesomeData.cache.get(svr).set(key, { data, expireAt: Math.floor(Date.now() / 1000) + expire });
+};
+
+GAwesomeUtil.dashboard.getCache = (svr, key) => {
+	if (!GAwesomeData.cache || !GAwesomeData.cache.has(svr) || !GAwesomeData.cache.get(svr).has(key)) return undefined;
+	const cache = GAwesomeData.cache.get(svr).get(key);
+	if (cache.expireAt < Math.floor(Date.now() / 1000)) {
+		GAwesomeData.cache.get(svr).delete(key);
+		return undefined;
+	}
+	return cache.data;
+};
+
 GAwesomePaths["landing"] = () => {
 	$(".section-shortcut-link").click(function() {
 		$("html, body").animate({
@@ -657,7 +679,7 @@ GAwesomePaths["blog"] = () => {
 	setTimeout(function() {
 		saveFormState();
 	}, 0);
-	if (!window.location.toString().endsWith("/compose")) return;
+	if (!window.location.toString().endsWith("/compose") && !window.location.toString().endsWith("/new")) return;
 	const converter = new showdown.Converter({
 		tables: true,
 		simplifiedAutoLink: true,
@@ -685,7 +707,7 @@ GAwesomePaths["wiki"] = () => {
 	}, 0);
 	GAwesomeData.wiki.bookmarks = JSON.parse(localStorage.getItem("wiki-bookmarks")) || [];
 	GAwesomeUtil.populateWikiBookmarks();
-	if (!window.location.toString().endsWith("/edit")) return;
+	if (!window.location.toString().endsWith("/edit") && !window.location.toString().endsWith("/new")) return;
 	const converter = new showdown.Converter({
 		tables: true,
 		simplifiedAutoLink: true,

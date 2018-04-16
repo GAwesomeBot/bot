@@ -16,7 +16,7 @@
 			newMaintainerUser.addClass("is-danger");
 		}
 
-		if(newMaintainerUser.val() && <%= serverData.isSudoMaintainer %>) {
+		if(newMaintainerUser.val() && <%= isSudoMaintainer %>) {
 			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
@@ -91,7 +91,7 @@
 					</article>
 					<form id="form1" action="<%= currentPage %>" method="post">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(config.maintainers.length>0) { %>
+							<% if (configData.maintainers.length > 0) { %>
 							<table class="table is-fullwidth">
 								<thead>
 								<tr>
@@ -102,7 +102,7 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% config.maintainers.forEach(maintainer => { %>
+								<% configData.maintainers.forEach(maintainer => { %>
 								<tr>
 									<td>
 										<img class="image is-24x24" src="<%= maintainer.avatar %>" alt="<%= maintainer.id %>">
@@ -120,7 +120,7 @@
 									<td>
 										<div class="field is-grouped">
 											<div class="control">
-												<button class="button is-small is-danger" name="maintainer-removed" value="<%= maintainer.id %>" onclick="hide_update_modal = true;"<% if(!serverData.isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
+												<button class="button is-small is-danger" name="maintainer-removed" value="<%= maintainer.id %>" onclick="hide_update_modal = true;"<% if (!isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
 													<span>Remove</span>
 													<span class="icon is-small">
 														<i class="fa fa-times"></i>
@@ -129,7 +129,8 @@
 											</div>
 											<div class="control">
 												<button class="button is-small <% if (maintainer.isSudoMaintainer) { %>is-warning<% } else { %>is-primary<% } %>" name="maintainer-sudo" value="<%= maintainer.id %>"
-														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers? Sudo Maintainers can access all bot data and configuration; be careful!<% } %>');"<% if(!serverData.isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
+														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers? Sudo Maintainers can access all bot data and configuration; be careful!<% } %>');"<% if(!
+																isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
 													<% if (maintainer.isSudoMaintainer) { %>
 														<span>Revoke Sudo</span>
 													<% } else { %>
@@ -163,15 +164,15 @@
 							<br>
 							<% } %>
 						</div>
-						<% if (serverData.isSudoMaintainer) { %>
+						<% if (isSudoMaintainer) { %>
 						<div class="field is-horizontal">
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-maintainer-user" class="input user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode != 13;">
+										<input id="new-maintainer-user" class="input is-primary user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode != 13;">
 									</div>
 									<div class="control">
-										<div class="select">
+										<div class="select is-primary">
 											<select id="role-select">
 												<option value="standard">Standard Maintainer</option>
 												<option value="sudo">Sudo Maintainer</option>
@@ -202,11 +203,11 @@
 								<div class="field">
 									<dt>
 										Eval &nbsp;
-										<div class="select is-small">
-											<select name="perm-eval"<%= (config.perms.eval === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
-												<option value="maintainer"<%= config.perms.eval === 1 ? " selected" : ""%>>All Maintainers</option>
-												<option value="sudo"<%= config.perms.eval === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.eval === 0 ? " selected" : ""%>>Only The Host</option>
+										<div class="select is-primary is-small">
+											<select name="perm-eval"<%= (configData.perms.eval === 0 && !isHost)  || !isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= configData.perms.eval === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= configData.perms.eval === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= configData.perms.eval === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -217,11 +218,11 @@
 								<div class="field">
 									<dt>
 										Sudo Mode &nbsp;
-										<div class="select is-small">
-											<select name="perm-sudo"<%= (config.perms.sudo === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
-												<option value="maintainer"<%= config.perms.sudo === 1 ? " selected" : ""%>>All Maintainers</option>
-												<option value="sudo"<%= config.perms.sudo === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.sudo === 0 ? " selected" : ""%>>Only The Host</option>
+										<div class="select is-primary is-small">
+											<select name="perm-sudo"<%= (configData.perms.sudo === 0 && !isHost)  || !isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= configData.perms.sudo === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= configData.perms.sudo === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= configData.perms.sudo === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -230,11 +231,11 @@
 								<div class="field">
 									<dt>
 										Management &nbsp;
-										<div class="select is-small">
-											<select name="perm-management"<%= (config.perms.management === 0 && !serverData.isHost)  || !serverData.isSudoMaintainer ? " disabled" : ""%>>
-												<option value="maintainer"<%= config.perms.management === 1 ? " selected" : ""%>>All Maintainers</option>
-												<option value="sudo"<%= config.perms.management === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.management === 0 ? " selected" : ""%>>Only The Host</option>
+										<div class="select is-primary is-small">
+											<select name="perm-management"<%= (configData.perms.management === 0 && !isHost)  || !isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= configData.perms.management === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= configData.perms.management === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= configData.perms.management === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -243,11 +244,11 @@
 								<div class="field">
 									<dt>
 										Administration &nbsp;
-										<div class="select is-small">
-											<select name="perm-administration"<%= (config.perms.administration === 0 && !serverData.isHost) || !serverData.isSudoMaintainer ? " disabled" : ""%>>
-												<option value="maintainer"<%= config.perms.administration === 1 ? " selected" : ""%>>All Maintainers</option>
-												<option value="sudo"<%= config.perms.administration === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.administration === 0 ? " selected" : ""%>>Only The Host</option>
+										<div class="select is-primary is-small">
+											<select name="perm-administration"<%= (configData.perms.administration === 0 && !isHost) || !isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= configData.perms.administration === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= configData.perms.administration === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= configData.perms.administration === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -258,11 +259,11 @@
 								<div class="field">
 									<dt>
 										Shutdown &nbsp;
-										<div class="select is-small">
-											<select name="perm-shutdown"<%= (config.perms.shutdown === 0 && !serverData.isHost) || !serverData.isSudoMaintainer ? " disabled" : ""%>>
-												<option value="maintainer"<%= config.perms.shutdown === 1 ? " selected" : ""%>>All Maintainers</option>
-												<option value="sudo"<%= config.perms.shutdown === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
-												<option value="host"<%= config.perms.shutdown === 0 ? " selected" : ""%>>Only The Host</option>
+										<div class="select is-primary is-small">
+											<select name="perm-shutdown"<%= (configData.perms.shutdown === 0 && !isHost) || !isSudoMaintainer ? " disabled" : ""%>>
+												<option value="maintainer"<%= configData.perms.shutdown === 1 ? " selected" : ""%>>All Maintainers</option>
+												<option value="sudo"<%= configData.perms.shutdown === 2 ? " selected" : ""%>>Only Sudo Maintainers</option>
+												<option value="host"<%= configData.perms.shutdown === 0 ? " selected" : ""%>>Only The Host</option>
 											</select>
 										</div>
 									</dt>
@@ -279,6 +280,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete();</script>
 	</section>
 
 	<% include ../partials/footer %>

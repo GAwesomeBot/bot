@@ -1,5 +1,6 @@
 const { parseAuthUser } = require("../helpers");
-const { GetGuild: getGuild, Utils } = require("../../Modules");
+const { getGuild, Utils } = require("../../Modules");
+const { GetGuild } = getGuild;
 const parsers = require("../parsers");
 
 module.exports = (req, res) => {
@@ -76,9 +77,9 @@ module.exports = (req, res) => {
 			};
 			if (req.query.q) {
 				const query = req.query.q.toLowerCase();
-				const servers = await getGuild.get(req.app.client, "*", { only: true, resolve: ["id", "name"] });
+				const servers = (await GetGuild.getAll(req.app.client, { strict: true, resolve: "id", parse: "noKeys", findFilter: query })).filter(svrid => !configJSON.activityBlocklist.includes(svrid));
 				matchCriteria._id = {
-					$in: Object.values(servers).filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query).map(svr => svr.id),
+					$in: servers,
 				};
 			} else {
 				matchCriteria._id = {
@@ -176,8 +177,8 @@ module.exports = (req, res) => {
 				req.query.q = "";
 			}
 			if (req.query.q) {
-				Users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err, userDocument) => {
-					if (!err && userDocument) {
+				Users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] }, async (err2, userDocument) => {
+					if (!err2 && userDocument) {
 						const usr = await req.app.client.users.fetch(userDocument._id, true);
 						const userProfile = await parsers.userData(req, usr, userDocument);
 						renderPage({

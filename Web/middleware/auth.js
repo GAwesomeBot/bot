@@ -1,5 +1,5 @@
-const { renderError, checkSudoMode } = require("../helpers");
-const getGuild = require("../../Modules").GetGuild;
+const { renderError, checkSudoMode, canDo } = require("../helpers");
+const { GetGuild } = require("../../Modules").getGuild;
 
 module.exports = middleware => {
 	// Middleware
@@ -16,15 +16,10 @@ module.exports = middleware => {
 				// Legacy URL support
 				if (!req.params.svrid && req.query.svrid) req.params.svrid = req.query.svrid;
 				// Get server data from shard that has said server cached
-				const svr = await getGuild.get(req.app.client, req.params.svrid, {
-					resolve: ["id", "ownerID", "name", "icon"],
-					members: ["id", "roles", "user", "nickname"],
-					channels: ["id", "type", "name", "position", "rawPosition"],
-					roles: ["name", "id", "position", "hexColor"],
-					convert: { id_only: true },
-				});
+				const svr = new GetGuild(req.app.client, req.params.svrid);
+				await svr.initialize([usr.id, "OWNER", req.app.client.user.id]);
 				// Confirm the svr and usr exist
-				if (svr) {
+				if (svr.success) {
 					// Get server data from Database
 					let serverDocument;
 					try {
@@ -69,6 +64,30 @@ module.exports = middleware => {
 			} else {
 				if (req.isAPI) return res.sendStatus(500);
 				renderError(res, "Wait, do you exist?<br>We failed to fetch your user from Discord.");
+			}
+		} else {
+			if (req.isAPI) return res.sendStatus(401);
+			res.redirect("/login");
+		}
+	};
+
+	middleware.authorizeConsoleAccess = (req, res, next) => {
+		if (req.isAuthenticated()) {
+			if (configJSON.maintainers.includes(req.user.id)) {
+				const perm = req.perm;
+				if (perm === "maintainer" || canDo(perm, req.user.id)) {
+					req.isAuthorized = true;
+					req.level = process.env.GAB_HOST !== req.user.id ? configJSON.sudoMaintainers.includes(req.user.id) ? 2 : 1 : 0;
+					res.res.template.isSudoMaintainer = req.level === 2;
+					res.res.template.isHost = req.level === 0;
+					return next();
+				} else {
+					if (req.isAPI) return res.sendStatus(403);
+					res.redirect("/dashboard");
+				}
+			} else {
+				if (req.isAPI) return res.sendStatus(403);
+				res.redirect("/dashboard");
 			}
 		} else {
 			if (req.isAPI) return res.sendStatus(401);

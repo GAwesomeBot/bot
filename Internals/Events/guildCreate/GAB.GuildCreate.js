@@ -8,7 +8,6 @@ class GuildCreate extends BaseEvent {
 			winston.info(`Left "${guild}" due to it being blocklisted!`, { guild: guild.id });
 			guild.leave();
 		} else {
-			this.client.IPC.send("guilds", { latest: [guild.id], shard: this.client.shardID });
 			this.client.IPC.send("sendAllGuilds", {});
 			await Promise.all([guild.members.fetch(), PostShardedData(this.client)]);
 			let serverDocument, shouldMakeDocument = false;

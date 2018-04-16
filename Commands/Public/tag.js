@@ -39,6 +39,7 @@ class TagCommand {
 			});
 			return;
 		}
+		await this.client.api.channels(this.channel.id).typing.post();
 		const gistUploader = new Gist(this.client);
 		const info = this.serverDocument.config.tags.list.map(async tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
@@ -52,7 +53,7 @@ class TagCommand {
 			}
 			return [
 				`» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «`,
-				`\t${URL ? `The tags content was too large. Please go [here](${URL}) to see it` : `${content}`}`,
+				`\t${URL ? `This tag's content was too large. Please go [here](${URL}) to view it.` : `${content}`}`,
 			].join("\n");
 		});
 		if (info.length) {

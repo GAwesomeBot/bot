@@ -29,6 +29,23 @@ class SharderIPC {
 	once (event, callback) {
 		this.onceEvents.set(event, callback);
 	}
+
+	forward (event, prop = "guild") {
+		this.onEvents.set(event, async (msg, callback) => {
+			const target = prop === "this" ? msg : msg[prop];
+			const ID = target === "*" ? target : this.sharder.IPC.shard(target);
+			if (this.sharder.shards.has(ID)) return callback(await this.send(event, msg, ID));
+			return callback({});
+		});
+	}
+
+	shard (guildID) {
+		try {
+			return Math.abs((guildID >> 22) % this.sharder.count);
+		} catch (_) {
+			return undefined;
+		}
+	}
 }
 
 module.exports = SharderIPC;

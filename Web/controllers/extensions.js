@@ -2,10 +2,11 @@ const path = require("path");
 const fs = require("fs-nextra");
 
 const parsers = require("../parsers");
-const getGuild = require("../../Modules").GetGuild;
+const { GetGuild } = require("../../Modules").getGuild;
 const { AllowedEvents, Colors } = require("../../Internals/Constants");
 const { renderError, parseAuthUser, dashboardUpdate, generateCodeID } = require("../helpers");
 
+// eslint-disable-next-line max-len
 const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
 const writeExtensionData = (extensionDocument, data) => {
 	extensionDocument.name = data.name;
@@ -97,8 +98,10 @@ controllers.gallery = async (req, res) => {
 		const usr = await req.app.client.users.fetch(req.user.id, true);
 		const addServerData = async (i, callback) => {
 			if (req.user.guilds && i < req.user.guilds.length) {
-				const svr = await getGuild.get(req.app.client, req.user.guilds[i].id, { resolve: ["id"], members: ["id", "roles"], convert: { id_only: true } });
-				if (svr && usr) {
+				if (!usr) return addServerData(++i, callback);
+				const svr = new GetGuild(req.app.client, req.user.guilds[i].id);
+				await svr.initialize(usr.id);
+				if (svr.success) {
 					try {
 						const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
 						if (serverDocument) {
@@ -112,14 +115,16 @@ controllers.gallery = async (req, res) => {
 								});
 							}
 						}
-					} catch (_) {}
+					} catch (_) {
+						// Meh
+					}
 					addServerData(++i, callback);
 				} else {
 					addServerData(++i, callback);
 				}
 			} else {
 				try {
-					callback();
+					return callback();
 				} catch (err) {
 					renderError(res, "An error occurred while fetching user data.");
 				}
@@ -292,7 +297,7 @@ controllers.download = async (req, res) => {
 	if (extensionDocument && extensionDocument.state !== "saved") {
 		try {
 			res.set({
-				"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext` + "'",
+				"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext${"'"}`,
 				"Content-Type": "text/javascript",
 			});
 			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${extensionDocument.code_id}.gabext`));

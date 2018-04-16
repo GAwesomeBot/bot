@@ -24,12 +24,14 @@ class PaginatedEmbed {
 
 	async init (timeout = 300000) {
 		await this.sendInitialMessage();
-		this.collector = this.msg.createReactionCollector(
-			(reaction, user) => user.id === this.originalMsg.author.id && this.pageEmojiArray.includes(reaction.emoji.name),
-			{ time: timeout }
-		);
-		await this.prepareReactions();
-		this.handle();
+		if (this.descriptions.length !== 1) {
+			this.collector = this.msg.createReactionCollector(
+				(reaction, user) => user.id === this.originalMsg.author.id && this.pageEmojiArray.includes(reaction.emoji.name),
+				{ time: timeout }
+			);
+			await this.prepareReactions();
+			this.handle();
+		}
 	}
 
 	async sendInitialMessage () {

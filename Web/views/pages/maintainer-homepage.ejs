@@ -45,7 +45,7 @@
 								</h4>
 								<div class="field">
 									<div class="control">
-										<textarea id="message-html" name="homepageMessageHTML" class="textarea" placeholder="HTML for homepage message" onchange="updatePreview(this.value);" onkeyup="updatePreview(this.value);"><%- config.homepageMessageHTML %></textarea>
+										<textarea id="message-html" name="homepageMessageHTML" class="textarea is-primary" placeholder="HTML for homepage message" onchange="updatePreview(this.value);" onkeyup="updatePreview(this.value);"><%- configData.homepageMessageHTML %></textarea>
 									</div>
 								</div>
 							</div>
@@ -66,8 +66,8 @@
 						<div class="field">
 							<label class="label">Filename</label>
 							<div class="control">
-								<input name="header_image" class="input" type="text" value="<%= config.header_image %>">
-								<span class="help">File must be located in <code><%= dirname %>/public/static/img/</code></span>
+								<input name="header_image" class="input is-primary" type="text" value="<%= configData.headerImage %>">
+								<span class="help">File must be located in <code><%= pageData.dirname %></code></span>
 							</div>
 						</div>
 						<% var formButtonsUnsaved = false; %>

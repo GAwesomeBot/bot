@@ -35,6 +35,7 @@ module.exports = (req, res) => {
 					if (contentMatch) {
 						const startIndex = contentMatch < 300 ? 0 : contentMatch - 300;
 						const endIndex = contentMatch > content.length - 300 ? content.length : contentMatch + 300;
+						// eslint-disable-next-line max-len
 						matchText = `${content.substring(startIndex, contentMatch)}<strong>${content.substring(contentMatch, contentMatch + req.query.q.length)}</strong>${content.substring(contentMatch + req.query.q.length, endIndex)}`;
 						if (startIndex > 0) {
 							matchText = `...${matchText}`;
@@ -139,7 +140,7 @@ module.exports.edit = async (req, res) => {
 module.exports.edit.post = async (req, res) => {
 	if (req.params.id) {
 		try {
-			const wikiDocument = await Wiki.findOne({_id: req.params.id}).exec();
+			const wikiDocument = await Wiki.findOne({ _id: req.params.id }).exec();
 			if (!wikiDocument) return renderError(res, "That article does not exist!");
 			wikiDocument.updates.push({
 				_id: req.user.id,

@@ -27,8 +27,8 @@
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="field">
 							<div class="control">
-								<textarea name="message" class="textarea" maxlength="2000" placeholder="Message to send, in markdown"></textarea>
-								<span class="help">This message will be sent to <strong>all <%= serverCount %> server<%= serverCount==1 ? "" : "s" %></strong>, so make sure it's important!</span>
+								<textarea name="message" class="textarea is-primary" maxlength="2000" placeholder="Message to send, in markdown"></textarea>
+								<span class="help">This message will be sent to <strong>all <%= pageData.serverCount %> server<%= pageData.serverCount === 1 ? "" : "s" %></strong>, so make sure it's important!</span>
 							</div>
 						</div>
 						<br>

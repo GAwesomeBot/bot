@@ -36,13 +36,17 @@ module.exports = {
 				"Strike",
 				"Temp Ban",
 				"Temp Mute",
+				"Delete Role",
+				"Modify Role",
 			],
 			required: true,
 		},
 		affected_user: {
 			// User Id of the affected user
 			type: String,
-			required: true,
+			// We're getting modlogs without affected_user (role deletion is an example)
+			// So, /shrug
+			// required: true,
 		},
 		creator: {
 			// User ID of the issuer

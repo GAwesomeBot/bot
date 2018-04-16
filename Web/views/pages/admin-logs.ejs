@@ -27,7 +27,7 @@
 					<form id="search-form" action="<%= currentPage %>" method="get">
 						<div class="field has-addons has-addons-centered">
 							<div class="control">
-								<span class="select">
+								<span class="select is-primary">
 									<select name="chid" onchange="$('#search-form').submit();">
 										<option value="">All Channels</option>
 										<% for(var i=0; i<channelData.length; i++) { %>
@@ -37,7 +37,7 @@
 								</span>
 							</div>
 							<div class="control is-expanded">
-								<input name="q" class="input" type="text" placeholder="I'm looking for..." value="<%= searchQuery %>">
+								<input name="q" class="input is-primary" type="text" placeholder="I'm looking for..." value="<%= searchQuery %>">
 							</div>
 							<div class="control">
 								<button type="submit" class="button">

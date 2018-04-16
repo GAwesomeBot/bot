@@ -26,10 +26,12 @@
 						</div>
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
+						<div class="command-items">
 						<% var commandData = configData.commands.points;commandData.name = "points";commandData.description = commandDescriptions.points;commandData.category = commandCategories.points; %>
 						<% include ../partials/admin-command-item %>
 						<% var commandData = configData.commands.lottery;commandData.name = "lottery";commandData.description = commandDescriptions.lottery;commandData.category = commandCategories.lottery; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 						<br>
 						<% var formButtonsUnsaved = false; %>
 						<% include ../partials/form-buttons %>
