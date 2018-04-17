@@ -45,11 +45,11 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 		inlnie: true,
 	});
 	const numbersText = [
-		`👥 Members: **${guild.memberCount}** (of which ${onlineMembers} ${onlineMembers === 1 ? "is" : "are"} online)`,
-		`🏷 Roles: ${guild.roles.size - 1}`,
-		`👌 Custom Emojis: ${guild.emojis.size}`,
-		`💬 Messages Today: ${serverDocument.messages_today}`,
-		`🔧 Commands used this week: ${commandUses}`,
+		`👥 Members: **${guild.memberCount}** (of which **${onlineMembers}** ${onlineMembers === 1 ? "is" : "are"} online)`,
+		`🏷 Roles: **${guild.roles.size - 1}**`,
+		`👌 Custom Emojis: **${guild.emojis.size}**`,
+		`💬 Messages Today: **${serverDocument.messages_today}**`,
+		`🔧 Commands used this week: **${commandUses}**`,
 	];
 	fields.push({
 		name: "Crunchy Numbers 🔢",
