@@ -1,95 +1,40 @@
-const moment = require("moment");
+const moment = require("moment-timezone");
 
-const getFlagForRegion = region => {
-	if (!region) {
-		return ":x:";
-	}
-	if (region.startsWith("vip-")) {
-		region = region.substring(4);
-	}
-	switch (region) {
-		case "amsterdam":
-			return ":flag_nl:";
-		case "brazil":
-			return ":flag_br:";
-		case "frankfurt":
-			return ":flag_de:";
-		case "hongkong":
-			return ":flag_hk:";
-		case "japan":
-			return ":flag_jp:";
-		case "london":
-			return ":flag_gb:";
-		case "russia":
-			return ":flag_ru:";
-		case "singapore":
-			return ":flag_sg:";
-		case "sydney":
-			return ":flag_au:";
-	}
-	if (region.startsWith("eu-")) {
-		return ":flag_eu:";
-	}
-	if (region.startsWith("us-")) {
-		return ":flag_us:";
-	}
-	return ":interrobang:";
-};
-const getDescriptionForVerificationLevel = level => {
-	switch (level) {
-		case 0:
-			return "None";
-		case 1:
-			return "Low - must have verified email on account";
-		case 2:
-			return "Medium - must be registered on Discord for longer than 5 minutes";
-		case 3:
-			return "High - (╯°□°）╯︵ ┻━┻ - must be a member of the server for longer than 10 minutes";
-		case 4:
-			return "Very High - ┻━┻ミヽ(ಠ益ಠ)ﾉ彡┻━┻ - must have a verified phone number";
-	}
-};
-
-module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, msg, commandData) => {
-	let commandUses = 0;
-	for (const k in serverDocument.command_usage) {
-		commandUses += serverDocument.command_usage[k];
-	}
+module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagForRegion } }, { serverDocument }, msg, commandData) => {
+	let commandUses = Object.values(serverDocument.command_usage).reduce((a, b) => a + b, 0);
 	const guild = msg.guild;
-	const created = moment(guild.createdTimestamp);
+	const created = moment(guild.createdTimestamp).tz("Europe/London");
 	const onlineMembers = guild.members.filter(m => m.presence.status === "online").size;
 	const region = guild.region;
 	const regionInfo = (await guild.fetchVoiceRegions()).get(region);
 	const publicData = serverDocument.config.public_data;
 
-	const embedFields = [];
+	const fields = [];
 	const generalText = [
-		`**»** Guild ID: ${guild.id}`,
-		`**»** Owner: ${guild.owner}`,
-		`**»** Created: ${created.format("DD-MM-YYYY HH:mm:ss")} (${created.fromNow()})`,
-		`**»** Voice region: ${regionInfo ? regionInfo.name : region || "Unknown"} ${getFlagForRegion(region)}${regionInfo && regionInfo.deprecated ? " (DEPRECATED)" : ""}`,
-		`**»** Verification level: ${getDescriptionForVerificationLevel(guild.verificationLevel)}`,
+		`**»** Created: ${created.format("DD-MM-YYYY [at] HH:mm:ss")} (${created.fromNow()})`,
+		`**»** Voice region: ${regionInfo ? regionInfo.name : region || "Unknown"} ${GetFlagForRegion(region)}${regionInfo && regionInfo.deprecated ? " (DEPRECATED)" : ""}`,
+		`**»** Verification level: ${Text.GUILD_VERIFICATION_LEVEL(guild.verificationLevel)}`,
 	];
 	if (!configJSON.activityBlocklist.includes(guild.id) && publicData.isShown) {
 		generalText.push(`**»** This server is shown on the activity page using the category '${publicData.server_listing.category}'${publicData.server_listing.isEnabled ? ". Everyone can join it from there" : ""}`);
 	}
-	embedFields.push({
-		name: "General Info :pencil:",
+	fields.push({
+		name: "General Info 📝",
 		value: generalText.join("\n"),
-		inlinee: false,
+		inline: false,
 	});
 	const numbersText = [
 		`**»** Members: ${guild.memberCount} (of which ${onlineMembers} ${onlineMembers === 1 ? "is" : "are"} online)`,
 		`**»** Text channels: ${guild.channels.filter(c => c.type === "text").size}`,
 		`**»** Voice channels: ${guild.channels.filter(c => c.type === "voice").size}`,
-		`**»** Channel Categories: ${guild.channels.filter(c => c.type === "category").size}`,
+		`**»** Channel categories: ${guild.channels.filter(c => c.type === "category").size}`,
 		`**»** Roles: ${guild.roles.size - 1}`,
-		`**»** Custom emoji: ${guild.emojis.size}`,
+		`**»** Custom emoji${guild.emojis.size === 1 ? "" : "s"}: ${guild.emojis.size}`,
 		`**»** Messages today: ${serverDocument.messages_today}`,
 		`**»** Commands used this week: ${commandUses}`,
 	];
-	embedFields.push({
-		name: "Crunchy Numbers :1234:",
+	fields.push({
+		name: "Crunchy Numbers 🔢",
 		value: numbersText.join("\n"),
 		inline: false,
 	});
@@ -117,8 +62,8 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, m
 		specialText.push(`**»** This server can use a **custom vanity URL**!${customInvite ? ` It is currently set to https://discord.gg/${customInvite}` : ""}`);
 	}
 	if (specialText.length) {
-		embedFields.push({
-			name: "Special Features :star:",
+		fields.push({
+			name: "Special Features ⭐",
 			value: specialText.join("\n"),
 			inline: false,
 		});
@@ -126,9 +71,13 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, m
 
 	msg.send({
 		embed: {
-			color: Colors.LIGHT_GREEN,
-			title: `Information for ${guild.name}`,
-			fields: embedFields,
+			author: {
+				name: `Owned by ${guild.owner.user.tag}`,
+				iconURL: guild.owner.user.displayAvatarURL(),
+			},
+			color: Colors.INFO,
+			title: `Information for ${guild.name} :: ${guild.id}`,
+			fields,
 			thumbnail: {
 				url: guild.iconURL(),
 			},

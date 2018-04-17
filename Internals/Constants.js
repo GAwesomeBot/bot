@@ -95,7 +95,16 @@ exports.Text = {
 			].join("\n"),
 		},
 	}),
+	GUILD_VERIFICATION_LEVEL: level => exports.GUILD_VERIFICATION_LEVELS[level],
 };
+
+exports.GUILD_VERIFICATION_LEVELS = [
+	"None",
+	"Low - must have verified email on account",
+	"Medium - must be registered on Discord for longer than 5 minutes",
+	"High - (╯°□°）╯︵ ┻━┻ - must be a member of the server for longer than 10 minutes",
+	"Very High - ┻━┻ミヽ(ಠ益ಠ)ﾉ彡┻━┻ - must have a verified phone number",
+];
 
 // Hardcoded names for the child process manager
 exports.WorkerTypes = {
