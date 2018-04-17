@@ -387,6 +387,20 @@ circular-json@^0.5.3:
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/circular-json/-/circular-json-0.5.3.tgz#eb1b783333bb125784647d1a76377caf1499efb1"
 
+clean-css-cli@^4.1.11:
+  version "4.1.11"
+  resolved "https://registry.yarnpkg.com/clean-css-cli/-/clean-css-cli-4.1.11.tgz#01c5689f05bc512a23285f1defdbde00bc11d86c"
+  dependencies:
+    clean-css "^4.1.9"
+    commander "2.x"
+    glob "7.x"
+
+clean-css@^4.1.9:
+  version "4.1.11"
+  resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.1.11.tgz#2ecdf145aba38f54740f26cefd0ff3e03e125d6a"
+  dependencies:
+    source-map "0.5.x"
+
 cli-cursor@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-2.1.0.tgz#b35dac376479facc3e94747d41d0d0f5238ffcb5"
@@ -437,9 +451,13 @@ combined-stream@1.0.6, combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@>=0.3.0, commander@~2.15.0:
+commander@2.x, commander@>=0.3.0:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
+
+commander@~2.13.0:
+  version "2.13.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
 
 complex.js@2.0.4:
   version "2.0.4"
@@ -1093,6 +1111,10 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
+gar@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/gar/-/gar-1.0.3.tgz#cd6e954dff11821697a9ed5852c7ac5f18df02ce"
+
 gauge@~2.7.3:
   version "2.7.4"
   resolved "https://registry.yarnpkg.com/gauge/-/gauge-2.7.4.tgz#2c03405c7538c39d7eb37b317022e325fb018bf7"
@@ -1127,7 +1149,7 @@ gifwrap@^0.7.5:
     image-q "^1.1.1"
     omggif "^1.0.9"
 
-glob@^7.0.3, glob@^7.0.5, glob@^7.1.2:
+glob@7.x, glob@^7.0.3, glob@^7.0.5, glob@^7.1.2:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.2.tgz#c19c9df9a028702d678612384a6552404c636d15"
   dependencies:
@@ -1792,18 +1814,18 @@ mongodb-core@2.1.19:
     bson "~1.0.4"
     require_optional "~1.0.0"
 
-mongodb-core@3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.0.4.tgz#a3fdf466e697a2f1df87e458e5e2df1c26cc654b"
+mongodb-core@3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.0.6.tgz#c1bf0ab868ece5b1d90917b58d7a8855cd8ba6ff"
   dependencies:
     bson "~1.0.4"
     require_optional "^1.0.1"
 
-mongodb@3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.0.4.tgz#ee0c0f7bc565edc5f40ee2d23170e522a8ad2286"
+mongodb@3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.0.6.tgz#72d2444b14f9784869e0c33436c49c8dca5083e4"
   dependencies:
-    mongodb-core "3.0.4"
+    mongodb-core "3.0.6"
 
 mongodb@^2.0.36:
   version "2.2.35"
@@ -1817,15 +1839,15 @@ mongoose-legacy-pluralize@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz#3ba9f91fa507b5186d399fb40854bff18fb563e4"
 
-mongoose@^5.0.14:
-  version "5.0.14"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.0.14.tgz#b2157eaa00eacded6e849b4fe36f58eeeda41119"
+mongoose@^5.0.15:
+  version "5.0.15"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.0.15.tgz#5260a65e5777224ae6a24f5dc8b8d39b548c826c"
   dependencies:
     async "2.1.4"
     bson "~1.0.4"
     kareem "2.0.6"
     lodash.get "4.4.2"
-    mongodb "3.0.4"
+    mongodb "3.0.6"
     mongoose-legacy-pluralize "1.0.2"
     mpath "0.4.1"
     mquery "3.0.0"
@@ -2579,6 +2601,10 @@ socket.io@^2.1.0:
     socket.io-client "2.1.0"
     socket.io-parser "~3.2.0"
 
+source-map@0.5.x:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
+
 source-map@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
@@ -2793,11 +2819,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^3.3.21:
-  version "3.3.21"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.3.21.tgz#851a34cbb31840ecb881968ed07dd3a61e7264a0"
+uglify-es@^3.3.9:
+  version "3.3.9"
+  resolved "https://registry.yarnpkg.com/uglify-es/-/uglify-es-3.3.9.tgz#0c1c4f0700bed8dbc124cdb304d2592ca203e677"
   dependencies:
-    commander "~2.15.0"
+    commander "~2.13.0"
     source-map "~0.6.1"
 
 uid-number@^0.0.6:
