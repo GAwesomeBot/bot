@@ -15,7 +15,7 @@ const db = (val, configJS) => {
 };
 
 const token = (val, configJS, configJSON, auth) => {
-	if (typeof val !== "string" || typeof val !== "number") {
+	if (typeof val !== "string" && typeof val !== "number") {
 		winston.warn(`Argument --token requires a parameter.`);
 		return;
 	}
@@ -24,7 +24,7 @@ const token = (val, configJS, configJSON, auth) => {
 
 const sudo = (val, configJS, configJSON) => {
 	const { writeJSONAtomic } = require("fs-nextra");
-	if (typeof val !== "string" || typeof val !== "number") {
+	if (typeof val !== "string" && typeof val !== "number") {
 		winston.warn(`Argument --sudo requires a parameter.`);
 		return;
 	}
@@ -37,7 +37,7 @@ const sudo = (val, configJS, configJSON) => {
 };
 
 const host = (val, configJS, configJSON) => {
-	if (typeof val !== "string" || typeof val !== "number") {
+	if (typeof val !== "string" && typeof val !== "number") {
 		winston.warn(`Argument --host requires a parameter.`);
 		return;
 	}
