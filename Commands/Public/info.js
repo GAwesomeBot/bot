@@ -15,28 +15,46 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 		`**»** Voice region: ${regionInfo ? regionInfo.name : region || "Unknown"} ${GetFlagForRegion(region)}${regionInfo && regionInfo.deprecated ? " (DEPRECATED)" : ""}`,
 		`**»** Verification level: ${Text.GUILD_VERIFICATION_LEVEL(guild.verificationLevel)}`,
 	];
-	if (!configJSON.activityBlocklist.includes(guild.id) && publicData.isShown) {
-		generalText.push(`**»** This server is shown on the activity page using the category '${publicData.server_listing.category}'${publicData.server_listing.isEnabled ? ". Everyone can join it from there" : ""}`);
-	}
 	fields.push({
 		name: "General Info 📝",
 		value: generalText.join("\n"),
-		inline: false,
+		inline: true,
+	});
+	const serverConfigs = [
+		`🛠 Command Prefix: **${serverDocument.config.command_prefix}**`,
+		`👀 Bot Admins: **${serverDocument.config.admins.length}**`,
+		`🗃 Server Category: **${publicData.server_listing.category}**`,
+	];
+	if (!configJSON.activityBlocklist.includes(guild.id) && publicData.isShown && publicData.server_listing.isEnabled) {
+		serverConfigs.push(`🌎 Everyone can join the server from the activity page`);
+		serverConfigs.push(`ℹ You can join by using [**this invite URL**](${publicData.server_listing.invite_link})`);
+	}
+	fields.push({
+		name: `Server Configs ⚙️`,
+		value: serverConfigs.join("\n"),
+		inline: true,
+	});
+	const channelsText = [
+		`⌨️ Text: **${guild.channels.filter(c => c.type === "text").size}**`,
+		`🔉 Voice: **${guild.channels.filter(c => c.type === "voice").size}**`,
+		`📁 Categories: **${guild.channels.filter(c => c.type === "category").size}**`,
+	];
+	fields.push({
+		name: `Channel Info [${guild.channels.size}]:`,
+		value: channelsText.join("\n"),
+		inlnie: true,
 	});
 	const numbersText = [
-		`**»** Members: ${guild.memberCount} (of which ${onlineMembers} ${onlineMembers === 1 ? "is" : "are"} online)`,
-		`**»** Text channels: ${guild.channels.filter(c => c.type === "text").size}`,
-		`**»** Voice channels: ${guild.channels.filter(c => c.type === "voice").size}`,
-		`**»** Channel categories: ${guild.channels.filter(c => c.type === "category").size}`,
-		`**»** Roles: ${guild.roles.size - 1}`,
-		`**»** Custom emoji${guild.emojis.size === 1 ? "" : "s"}: ${guild.emojis.size}`,
-		`**»** Messages today: ${serverDocument.messages_today}`,
-		`**»** Commands used this week: ${commandUses}`,
+		`👥 Members: **${guild.memberCount}** (of which ${onlineMembers} ${onlineMembers === 1 ? "is" : "are"} online)`,
+		`🏷 Roles: ${guild.roles.size - 1}`,
+		`👌 Custom Emojis: ${guild.emojis.size}`,
+		`💬 Messages Today: ${serverDocument.messages_today}`,
+		`🔧 Commands used this week: ${commandUses}`,
 	];
 	fields.push({
 		name: "Crunchy Numbers 🔢",
 		value: numbersText.join("\n"),
-		inline: false,
+		inline: true,
 	});
 	const specialText = [];
 	if (guild.mfaLevel > 0) {
@@ -77,6 +95,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 			},
 			color: Colors.INFO,
 			title: `Information for ${guild.name} :: ${guild.id}`,
+			url: `${configJS.hostingURL}activity/servers?q=${encodeURIComponent(guild.name)}`,
 			fields,
 			thumbnail: {
 				url: guild.iconURL(),
