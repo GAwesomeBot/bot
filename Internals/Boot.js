@@ -28,6 +28,7 @@ const sudo = (val, configJS, configJSON) => {
 		winston.warn(`Argument --sudo requires a parameter.`);
 		return;
 	}
+	if (typeof val !== "string") val = val.toString();
 	if (configJSON.sudoMaintainers.includes(val)) return;
 	configJSON.sudoMaintainers.push(val);
 	configJSON.maintainers.push(val);
@@ -41,6 +42,7 @@ const host = (val, configJS, configJSON) => {
 		winston.warn(`Argument --host requires a parameter.`);
 		return;
 	}
+	if (typeof val !== "string") val = val.toString();
 
 	process.env.GAB_HOST = val;
 	sudo(val, configJS, configJSON);
