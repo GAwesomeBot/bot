@@ -11,7 +11,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 
 	const fields = [];
 	const generalText = [
-		`**»** Created: ${created.format("DD-MM-YYYY [at] HH:mm:ss")} (${created.fromNow()})`,
+		`**»** Created: ${created.format("DD.MM.YYYY [at] HH:mm:ss")}`,
 		`**»** Voice region: ${regionInfo ? regionInfo.name : region || "Unknown"} ${GetFlagForRegion(region)}${regionInfo && regionInfo.deprecated ? " (DEPRECATED)" : ""}`,
 		`**»** Verification level: ${Text.GUILD_VERIFICATION_LEVEL(guild.verificationLevel)}`,
 	];
@@ -42,7 +42,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 	fields.push({
 		name: `Channel Info [${guild.channels.size}]:`,
 		value: channelsText.join("\n"),
-		inlnie: true,
+		inline: true,
 	});
 	const numbersText = [
 		`👥 Members: **${guild.memberCount}** (of which **${onlineMembers}** ${onlineMembers === 1 ? "is" : "are"} online)`,
@@ -64,7 +64,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 		specialText.push("**»** This server is **verified**!");
 	}
 	if (guild.features.includes("MORE_EMOJI")) {
-		specialText.push("**»** This server can use **more than 50 custom emoji**!");
+		specialText.push("**»** This server can have **more than 50 custom emoji**!");
 	}
 	if (guild.features.includes("VIP_REGIONS")) {
 		specialText.push("**»** This server can use **VIP voice regions**!");
