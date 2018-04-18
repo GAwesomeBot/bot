@@ -378,6 +378,7 @@ const commands = {
 		},
 		info: {
 			usage: ``,
+			aliases: ["serverinfo"],
 			description: `Lists basic stats about this server`,
 			defaults: {
 				isEnabled: true,
