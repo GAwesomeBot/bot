@@ -4,7 +4,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 	let commandUses = Object.values(serverDocument.command_usage).reduce((a, b) => a + b, 0);
 	const guild = msg.guild;
 	const created = moment(guild.createdTimestamp).tz("Europe/London");
-	const onlineMembers = guild.members.filter(m => m.presence.status === "online").size;
+	const onlineMembers = guild.members.filter(m => m.presence.status !== "offline").size;
 	const region = guild.region;
 	const regionInfo = (await guild.fetchVoiceRegions()).get(region);
 	const publicData = serverDocument.config.public_data;
