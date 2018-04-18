@@ -66,21 +66,49 @@
 									</div>
 								</div>
 								<div class="field">
-									<label class="label">Game</label>
-									<div class="field has-addons" style="margin-bottom: 0px;">
-										<div class="control has-icons-left is-expanded">
-											<input name="game" id="user-game" class="input is-primary" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
-											<span class="icon"><i class="fa fa-gamepad"></i></span>
+									<div class="columns">
+										<div class="column is-one-third">
+											<label class="label">Type</label>
+											<div class="control">
+												<span class="select is-primary">
+													<select id="user-type" name="type" onchange="if(this.value==='STREAMING') $('#twitch-url-container').removeClass('is-hidden'); else $('#twitch-url-container').addClass('is-hidden');">
+														<option value="PLAYING"<%= configData.type=="PLAYING" ? " selected" : "" %>>Playing</option>
+														<option value="STREAMING"<%= configData.type=="STREAMING" ? " selected" : "" %>>Streaming</option>
+														<option value="LISTENING"<%= configData.type=="LISTENING" ? " selected" : ""%>>Listening to</option>
+														<option value="WATCHING"<%= configData.type=="WATCHING" ? " selected" : "" %>>Watching</option>
+													</select>
+												</span>
+												<span class="help">Appears in front of the game's name.</span>
+											</div>
 										</div>
-										<div class="control">
-                                        	<% if(!configData.game_default) { %>
-												<a name="game-default" class="button" onclick="$('#user-game').val('gawesomebot.com')">
-													Default
-												</a>
-											<% } %>
+	 									<div class="column">
+											<label class="label">Game</label>
+											<div class="field<%= !configData.game_default ? " has-addons" : ""%>" style="margin-bottom: 0px;">
+												<div class="control has-icons-left is-expanded">
+													<input name="game" id="user-game" class="input is-primary" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
+													<span class="icon"><i class="fa fa-gamepad"></i></span>
+												</div>
+												<div class="control">
+        		                                	<% if(!configData.game_default) { %>
+														<a name="game-default" class="button" onclick="$('#user-game').val('gawesomebot.com');$('#user-type').val('PLAYING')">
+															Default
+														</a>
+													<% } %>
+												</div>
+											</div>
+											<span class="help">The game the bot appears to be playing, shown under the username.</span>
 										</div>
 									</div>
-									<span class="help">The game the bot appears to be playing, shown under the username.</span>
+								</div>
+								<div id="twitch-url-container" class="field<%= configData.type!=="STREAMING" ? " is-hidden" : "" %>">
+									<label class="label">Twitch URL</label>
+									<div class="field" style="margin-bottom: 0px;">
+										<div class="control has-icons-left is-expanded">
+											<input name="twitch" id="user-twitch" class="input is-primary" type="text" value="<%= configData.twitchURL %>" style="width: 100%;">
+											<span class="icon"><i class="fa fa-twitch"></i></span>
+										</div>
+									</div>
+									<span class="help">The URL to a twitch channel that will be linked on the bot's profile. Required to set the bot's status to "Streaming".</span>
 								</div>
 							</div>
 						</div>

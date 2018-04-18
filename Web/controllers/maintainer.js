@@ -165,14 +165,25 @@ controllers.options.blocklist.post = async (req, res) => {
 controllers.options.bot = async (req, { res }) => {
 	res.setConfigData({
 		status: configJSON.status,
+		type: configJSON.activity.type,
 		game: configJSON.activity.name,
 		game_default: configJSON.activity.name === "default",
-		avatar: req.app.client.user.avatarURL(),
+		twitchURL: configJSON.activity.twitchURL,
+		avatar: req.app.client.user.avatarURL({ type: "png", size: 512 }),
 	}).setPageData("page", "maintainer-bot-user.ejs").render();
 };
 controllers.options.bot.post = async (req, res) => {
-	req.app.client.IPC.send("updateBotUser", { avatar: req.body.avatar, username: req.body.username, game: req.body.game, status: req.body.status });
+	req.app.client.IPC.send("updateBotUser", {
+		avatar: req.body.avatar,
+		username: req.body.username,
+		game: req.body.game,
+		status: req.body.status,
+		type: req.body.type,
+		twitchURL: req.body.twitch,
+	});
 	configJSON.activity.name = req.body.game;
+	configJSON.activity.type = req.body.type;
+	configJSON.activity.twitchURL = req.body.twitch;
 	if (req.body.game === "gawesomebot.com") {
 		configJSON.activity.name = "default";
 	}
