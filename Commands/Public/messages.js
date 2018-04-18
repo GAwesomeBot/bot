@@ -1,26 +1,26 @@
 const moment = require("moment");
 
 module.exports = async ({ client, Constants: { Colors } }, { serverDocument, memberDocument }, msg, commandData) => {
-	if (msg.suffix === "me") {
-		return msg.send({
-			embed: {
-				author: {
-					name: client.getName(serverDocument, msg.author),
-					iconURL: msg.author.displayAvatarURL({ size: 32 }),
-				},
-				color: Colors.INFO,
-				description: `You sent ${memberDocument.messages} message${memberDocument.messages === 1 ? "" : "s"} this week.`,
-			},
-		});
-	}
 	if (msg.suffix) {
+		if (msg.suffix.toLowerCase() === "me") {
+			return msg.send({
+				embed: {
+					author: {
+						name: client.getName(serverDocument, msg.author),
+						iconURL: msg.author.displayAvatarURL({ size: 32 }),
+					},
+					color: Colors.INFO,
+					description: `You sent ${memberDocument.messages} message${memberDocument.messages === 1 ? "" : "s"} this week. 💬`,
+				},
+			});
+		}
 		try {
 			const member = await client.memberSearch(msg.suffix, msg.guild);
 			if (member.user.bot) {
 				return msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
-						description: "I do not spy on my fellow robots 🤖",
+						description: "I don't keep tabs on my brethren! 🤖",
 					},
 				});
 			}
@@ -32,14 +32,14 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 						iconURL: member.user.displayAvatarURL({ size: 32 }),
 					},
 					color: Colors.INFO,
-					description: `${client.getName(serverDocument, member)} sent ${mDoc.messages} message${mDoc.messages === 1 ? "" : "s"} this week.`,
+					description: `${client.getName(serverDocument, member)} sent ${mDoc.messages} message${mDoc.messages === 1 ? "" : "s"} this week. 💬`,
 				},
 			});
 		} catch (e) {
 			return msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: "I could not find any member with that name 😢",
+					description: "Who's that? I'd like to meet them. 🤝",
 				},
 			});
 		}
