@@ -4,7 +4,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 		return targetMemberDocument && targetMemberDocument.rank === rank;
 	}).sort((memberA, memberB) => serverDocument.members.id(memberB.id).rank_score - serverDocument.members.id(memberA.id).rank_score)
 		.first(amount ? amount : 10)
-		.map(member => `@${client.getName(msg.guild, serverDocument, member)}`)
+		.map(member => `@${client.getName(serverDocument, member)}`)
 		.join("\n");
 	if (msg.suffix) {
 		const rankDocument = serverDocument.config.ranks_list.id(msg.suffix);
@@ -57,14 +57,14 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 						msg.send({
 							embed: {
 								color: Colors.INFO,
-								description: `**@${client.getName(msg.guild, serverDocument, member)}** has the rank \`${targetMemberDocument.rank}\` 🎖`,
+								description: `**@${client.getName(serverDocument, member)}** has the rank \`${targetMemberDocument.rank}\` 🎖`,
 							},
 						});
 					} else {
 						msg.send({
 							embed: {
 								color: Colors.INFO,
-								description: `**@${client.getName(msg.channel.guild, serverDocument, member)}** doesn't have a rank yet 😟`,
+								description: `**@${client.getName(serverDocument, member)}** doesn't have a rank yet 😟`,
 							},
 						});
 					}

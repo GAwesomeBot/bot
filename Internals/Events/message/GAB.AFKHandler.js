@@ -36,7 +36,7 @@ class AFKHandler extends BaseEvent {
 									url: member.user.displayAvatarURL(),
 								},
 								color: Colors.INFO,
-								title: `@__${this.client.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
+								title: `@__${this.client.getName(this.serverDocument, member)}__ is currently AFK.`,
 								description: `${targetMemberDocument.afk_message}`,
 							},
 						});
@@ -52,7 +52,7 @@ class AFKHandler extends BaseEvent {
 										url: member.user.displayAvatarURL(),
 									},
 									color: Colors.INFO,
-									title: `@__${this.client.getName(msg.guild, this.serverDocument, member)}__ is currently AFK.`,
+									title: `@__${this.client.getName(this.serverDocument, member)}__ is currently AFK.`,
 									description: `${targetUserDocument.afk_message}`,
 								},
 							});

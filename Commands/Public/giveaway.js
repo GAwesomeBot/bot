@@ -47,7 +47,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, cha
 					title: `${channelDocument.giveaway.title} 🎁	`,
 					fields: [{
 						name: "Started by",
-						value: `@${creator ? client.getName(msg.channel.guild, serverDocument, creator) : "invalid-user"}`,
+						value: `@${creator ? client.getName(serverDocument, creator) : "invalid-user"}`,
 						inline: true,
 					}, {
 						name: "Total joined",

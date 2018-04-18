@@ -177,12 +177,11 @@ module.exports = class GABClient extends DJSClient {
 
 	/**
 	 * Gets the name of a user on a server in accordance with config
-	 * @param {Discord.Guild} server The guild that contains the member
 	 * @param {Document} serverDocument The database server document
 	 * @param {Discord.GuildMember} member The guild member to get the name from
 	 * @param {Boolean} [ignoreNick=false] If it should ignore nicknames
 	 */
-	getName (server, serverDocument, member, ignoreNick = false) {
+	getName (serverDocument, member, ignoreNick = false) {
 		// Cleans a string (strip markdown, prevent @everyone or @here)
 		const cleanName = str => {
 			str = removeMd(str).replace(/_/g, "\\_")

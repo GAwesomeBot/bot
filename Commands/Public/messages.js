@@ -5,7 +5,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 		return msg.send({
 			embed: {
 				author: {
-					name: client.getName(msg.guild, serverDocument, msg.author),
+					name: client.getName(serverDocument, msg.author),
 					iconURL: msg.author.displayAvatarURL({ size: 32 }),
 				},
 				color: Colors.INFO,
@@ -28,11 +28,11 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 			return msg.send({
 				embed: {
 					author: {
-						name: client.getName(msg.guild, serverDocument, member),
+						name: client.getName(serverDocument, member),
 						iconURL: member.user.displayAvatarURL({ size: 32 }),
 					},
 					color: Colors.INFO,
-					description: `${client.getName(msg.guild, serverDocument, member)} sent ${mDoc.messages} message${mDoc.messages === 1 ? "" : "s"} this week.`,
+					description: `${client.getName(serverDocument, member)} sent ${mDoc.messages} message${mDoc.messages === 1 ? "" : "s"} this week.`,
 				},
 			});
 		} catch (e) {
@@ -52,7 +52,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 		.map(mDoc => {
 			const member = msg.guild.members.get(mDoc.id);
 			return [
-				`» **${client.getName(msg.guild, serverDocument, member)}** «`,
+				`» **${client.getName(serverDocument, member)}** «`,
 				`\t**${mDoc.messages}** messages`,
 			].join("\n");
 		});
