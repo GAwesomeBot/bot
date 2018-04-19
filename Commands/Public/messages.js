@@ -6,7 +6,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 			return msg.send({
 				embed: {
 					author: {
-						name: client.getName(serverDocument, msg.author),
+						name: client.getName(serverDocument, msg.member),
 						iconURL: msg.author.displayAvatarURL({ size: 32 }),
 					},
 					color: Colors.INFO,
