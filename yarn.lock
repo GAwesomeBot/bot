@@ -2930,9 +2930,9 @@ winston-compat@^0.1.0:
     cycle "~1.0.3"
     vows "^0.8.1"
 
-winston-daily-rotate-file@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/winston-daily-rotate-file/-/winston-daily-rotate-file-3.0.2.tgz#37c94cd9df30bf3d79f5de2077f3528075920b14"
+winston-daily-rotate-file@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/winston-daily-rotate-file/-/winston-daily-rotate-file-3.1.2.tgz#3aae6bb71b8f7c8aa3911c564dc485263f592a2a"
   dependencies:
     file-stream-rotator "^0.2.1"
     semver "^5.5.0"
