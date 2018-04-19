@@ -1,4 +1,5 @@
 const winston = require("winston");
+const circularJson = require("circular-json");
 const chalk = require("chalk");
 const moment = require("moment");
 require("winston-daily-rotate-file");
@@ -60,6 +61,7 @@ module.exports = class Console {
 				new winston.transports.File({
 					level: config.fileLevel,
 					json: true,
+					stringify: circularJson.stringify,
 					colorize: false,
 					filename: require("path").join(process.cwd(), `logs/verbose.gawesomebot.log`),
 				}),
