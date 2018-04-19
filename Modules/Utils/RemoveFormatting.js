@@ -5,9 +5,7 @@ module.exports = str => {
 		.replace(/_/g, "\\_")
 		.replace(/\*/g, "\\*")
 		.replace(/`/g, "\\`")
-		.replace(/@everyone/g, "@\u200beveryone")
-		.replace(/@here/g, "@\u200bhere")
-		.replace(/<@/g, "<@\u200b");
+		.replace(/@(everyone|here|\d{17,18}>)/g, "@\u200b$1");
 	if (str.startsWith("everyone") || str.startsWith("here")) {
 		str = `\u200b${str}`;
 	}
