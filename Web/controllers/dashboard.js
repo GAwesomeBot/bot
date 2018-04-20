@@ -1439,8 +1439,12 @@ controllers.administration.logs = async (req, res) => {
 		const fetchList = [];
 		serverLogs.forEach(serverLog => svr.members[serverLog.userid] || fetchList.push(serverLog.userid));
 		await svr.fetchMember(fetchList);
+		const channels = {};
+		svr.channels.forEach(ch => {
+			channels[ch.id] = ch;
+		});
 		serverLogs.map(serverLog => {
-			const ch = serverLog.channelid ? svr.channels[serverLog.channelid] : null;
+			const ch = serverLog.channelid ? channels[serverLog.channelid] : null;
 			if (serverLog.channelid) serverLog.ch = ch ? ch.name : "invalid-channel";
 
 			const member = serverLog.userid ? svr.members[serverLog.userid] : null;
