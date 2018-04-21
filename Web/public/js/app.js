@@ -586,10 +586,13 @@ GAwesomeUtil.dashboardWrapper = func => {
 GAwesomeUtil.dashboard.connect = () => {
 	return GAwesomeUtil.dashboardWrapper(() => {
 		if (GAwesomeData.dashboard.socket) {
+			GAwesomeUtil.log("Closing stale Dashboard socket");
 			GAwesomeData.dashboard.socket.close();
 		}
+		GAwesomeUtil.log("Opening new Dashboard socket");
 		GAwesomeData.dashboard.socket = io(window.location.pathname, { transports: ["websocket"] });
 		GAwesomeData.dashboard.socket.on("update", function(data) {
+			GAwesomeUtil.log(`Received Socket data: ${data}`);
 			if (!hide_update_modal && GAwesomeData.dashboard.svrid === data && localStorage.getItem("dashboardUpdates") !== "none") {
 				$("html").addClass("is-clipped");
 				$("#update-modal").addClass("is-active");
@@ -617,6 +620,26 @@ GAwesomeUtil.dashboard.getCache = (svr, key) => {
 		return undefined;
 	}
 	return cache.data;
+};
+
+GAwesomeUtil.dashboard.removeElement = elem => {
+	return GAwesomeUtil.dashboardWrapper(() => {
+		const button = $(elem);
+		button.addClass("is-loading");
+
+		const tableRow = button.parents("tr");
+		const isLastTableRow = tableRow.is(":last-child")
+		const buttonName = button.attr("name");
+
+		const afterDelete = () => {
+			tableRow.fadeOut(400, () => tableRow.remove());
+		};
+
+		$.ajax({
+			url: `${window.location.pathname}/${buttonName}`,
+			method: "DELETE",
+		}).always(afterDelete);
+	});
 };
 
 GAwesomePaths["landing"] = () => {
@@ -777,6 +800,7 @@ GAwesomePaths["dashboard"] = () => {
 
 document.addEventListener("turbolinks:load", () => {
 	try {
+		GAwesomeUtil.log("Start load page JS");
 		// Update active navbar item
 		GAwesomeUtil.updateHeader();
 
@@ -789,6 +813,7 @@ document.addEventListener("turbolinks:load", () => {
 
 		// Close old dashboard socket if still open
 		if (GAwesomeData.dashboard.socket) {
+			GAwesomeUtil.log("Closing stale Dashboard socket");
 			GAwesomeData.dashboard.socket.close();
 			delete GAwesomeData.dashboard.socket;
 		}
@@ -801,6 +826,7 @@ document.addEventListener("turbolinks:load", () => {
 		// Execute page function and finish loading bar when done
 		if (func) func();
 		NProgress.done();
+		GAwesomeUtil.log(`Finished loading page using ${GAwesomeData.section !== "" ? GAwesomeData.section : "landing"} section handler`);
 	} catch (err) {
 		NProgress.done();
 		NProgress.remove();
