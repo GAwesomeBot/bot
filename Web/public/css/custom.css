@@ -25,6 +25,10 @@
     color: #fff;
 }
 
+.is-hidden {
+    display: none;
+}
+
 .navbar {
     box-shadow: none;
 }
