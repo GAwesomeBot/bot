@@ -1,6 +1,7 @@
 module.exports = {
 	ClearServerStats: require("./ClearServerStats.js"),
 	FilterChecker: require("./FilterChecker.js"),
+	Gag: require("./Gag.js"),
 	GetFlagForRegion: require("./GetFlagForRegion.js"),
 	GetValue: require("./GetValue.js"),
 	Gist: require("./GitHubGist.js"),
