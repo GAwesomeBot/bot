@@ -35,7 +35,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 				},
 				{
 					name: "Votes",
-					value: `👍 ${d.thumbs_up} / ${d.thumbs_down} 👎`,
+					value: `\\👍 ${d.thumbs_up} / ${d.thumbs_down} \\👎`,
 					inline: true,
 				},
 				{
