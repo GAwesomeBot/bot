@@ -4,6 +4,7 @@ const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/ind
 const {
 	Gist,
 	FilterChecker: checkFiltered,
+	Gag,
 } = Utils;
 const {
 	Errors: {
@@ -366,7 +367,7 @@ class MessageCreate extends BaseEvent {
 										} catch (err) {
 											winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 											this.client.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
-											const description = !require("gar")(process.argv.slice(2)).owo ? `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\`` : "OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!";
+											const description = !Gag(process.argv.slice(2)).owo ? `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\`` : "OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!";
 											msg.send({
 												embed: {
 													color: Colors.ERROR,
