@@ -47,7 +47,7 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 			commands[cmdData.category] = [];
 			commands[cmdData.category].temp = [];
 		}
-		if (serverDocument.config.commands[command] && serverDocument.config.commands[command].isEnabled && memberBotAdminLevel >= serverDocument.config.commands[command].admin_level) {
+		if (serverDocument.config.commands[command] && serverDocument.config.commands[command].isEnabled && memberBotAdminLevel >= serverDocument.config.commands[command].admin_level && !serverDocument.config.commands[command].disabled_channel_ids.includes(msg.channel.id)) {
 			let string = `${msg.guild.commandPrefix}${cmdData.command}`;
 			if (string.length > longest) longest = string.length;
 			commands[cmdData.category].temp.push([string, cmdData.usage || "No usage help provided."]);
