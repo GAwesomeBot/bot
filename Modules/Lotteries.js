@@ -50,7 +50,7 @@ module.exports = {
 						content: `${winner},`,
 						embed: {
 							color: Colors.INFO,
-							title: `Congratulations @__${client.getName(svr, serverDocument, winner)}__! 🎊`,
+							title: `Congratulations @__${client.getName(serverDocument, winner)}__! 🎊`,
 							description: `You won the lottery for **${prize}** GAwesomePoint${prize === 1 ? "" : "s"} out of ${participantTotal} participant${participantTotal === 1 ? "" : "s"}.`,
 							footer: {
 								text: "Enjoy the cash! 💰",

@@ -54,7 +54,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					url: serverDocument.config.ban_gif,
 				},
 				color: Colors.SUCCESS,
-				description: `Bye-Bye **@${isGuildMember ? client.getName(msg.guild, serverDocument, member) : `${member.tag}`}** 🔨`,
+				description: `Bye-Bye **@${isGuildMember ? client.getName(serverDocument, member) : `${member.tag}`}** 🔨`,
 			},
 		});
 		const dmBanned = async id => {
@@ -90,8 +90,8 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			msg.send({
 				embed: {
 					color: Colors.INPUT,
-					title: `Waiting on @__${client.getName(msg.guild, serverDocument, msg.member)}__'s input..`,
-					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? `${client.getName(msg.guild, serverDocument, member)} (${member})` : member.tag}**?` : `Are you sure you want to ban **@${client.getName(msg.guild, serverDocument, member)} (${member})**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
+					title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input..`,
+					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? `${client.getName(serverDocument, member)} (${member})` : member.tag}**?` : `Are you sure you want to ban **@${client.getName(serverDocument, member)} (${member})**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
 					footer: {
 						text: `They won't be able to join again until they get unbanned!`,
 					},

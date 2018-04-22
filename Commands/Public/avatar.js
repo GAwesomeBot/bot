@@ -16,7 +16,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, m
 	const sendAvatarImage = (m, isUserOnly) => {
 		msg.send({
 			embed: {
-				title: `@__${isUserOnly ? m.tag : client.getName(msg.guild, serverDocument, m)}__'s Avatar`,
+				title: `@__${isUserOnly ? m.tag : client.getName(serverDocument, m)}__'s Avatar`,
 				color: Colors.BLUE,
 				image: {
 					url: isUserOnly ? m.displayAvatarURL({ size: 512 }) : m.user.displayAvatarURL({ size: 512 }),

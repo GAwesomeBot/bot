@@ -221,7 +221,7 @@ module.exports = class Trivia {
 				}
 
 				if (member && topResponders[0].score) {
-					info += `\n@**${client.getName(svr, serverDocument, member)}** correctly answered the most questions! ⭐️`;
+					info += `\n@**${client.getName(serverDocument, member)}** correctly answered the most questions! ⭐️`;
 				}
 			}
 

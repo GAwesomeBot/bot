@@ -23,7 +23,7 @@ controllers.nameDisplay = async (req, res) => {
 		exampleUsername: req.consolemember.user.username,
 		exampleNickname: req.consolemember.nickname,
 		exampleDiscriminator: req.consolemember.user.discriminator,
-		currentExample: client.getName(svr, serverDocument, req.consolemember),
+		currentExample: client.getName(serverDocument, req.consolemember),
 	});
 };
 controllers.nameDisplay.post = async (req, res) => {

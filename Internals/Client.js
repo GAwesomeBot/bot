@@ -1,6 +1,5 @@
 const { Client: DJSClient, Collection } = require("discord.js");
 const ProcessAsPromised = require("process-as-promised");
-const removeMd = require("remove-markdown");
 const reload = require("require-reload")(require);
 const dbl = require("dblposter");
 const { readdir } = require("fs-nextra");
@@ -9,6 +8,7 @@ const { join } = require("path");
 const commands = require("../Configurations/commands.js");
 const auth = require("../Configurations/auth.js");
 const Timeouts = require("../Modules/Timeouts/index");
+const { RemoveFormatting } = require("../Modules/Utils/index");
 const {
 	Constants: {
 		LoggingLevels,
@@ -177,24 +177,15 @@ module.exports = class GABClient extends DJSClient {
 
 	/**
 	 * Gets the name of a user on a server in accordance with config
-	 * @param {Discord.Guild} server The guild that contains the member
 	 * @param {Document} serverDocument The database server document
 	 * @param {Discord.GuildMember} member The guild member to get the name from
 	 * @param {Boolean} [ignoreNick=false] If it should ignore nicknames
 	 */
-	getName (server, serverDocument, member, ignoreNick = false) {
-		// Cleans a string (strip markdown, prevent @everyone or @here)
-		const cleanName = str => {
-			str = removeMd(str).replace(/_/g, "\\_")
-				.replace(/\*/g, "\\*")
-				.replace(/`/g, "\\`");
-			return (str.startsWith("everyone") || str.startsWith("here") ? `\u200b${str}` : str)
-				.replace(/@everyone/g, "@\u200beveryone")
-				.replace(/@here/g, "@\u200bhere")
-				.replace(/<@/g, "<@\u200b");
-		};
-		// eslint-disable-next-line max-len
-		return cleanName((serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) + (serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : ""));
+	getName (serverDocument, member, ignoreNick = false) {
+		return RemoveFormatting(
+			(serverDocument.config.name_display.use_nick && !ignoreNick ? member.nickname ? member.nickname : member.user.username : member.user.username) +
+			(serverDocument.config.name_display.show_discriminator ? `#${member.user.discriminator}` : "")
+		);
 	}
 
 	// Bot Command Handlers

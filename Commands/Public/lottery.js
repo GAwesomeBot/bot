@@ -234,7 +234,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 		msg.send({
 			embed: {
 				color: Colors.INFO,
-				title: `GAwesomePoint lottery started by "@__${creator ? client.getName(msg.guild, serverDocument, creator) : "invalid-user"}__" 💸`,
+				title: `GAwesomePoint lottery started by "@__${creator ? client.getName(serverDocument, creator) : "invalid-user"}__" 💸`,
 				fields: [
 					{
 						name: "Current Ticket Price",
