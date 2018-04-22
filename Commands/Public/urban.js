@@ -52,7 +52,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 		}, [], fields);
 		await menu.init();
 	} else {
-		winston.verbose(`Failed to fetch Urban Dictionary results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
+		winston.debug(`Failed to fetch Urban Dictionary results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
