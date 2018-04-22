@@ -295,9 +295,10 @@ class MessageCreate extends BaseEvent {
 							cmd = this.client.getPublicCommandName(msg.command);
 							if (!cmd) cmd = msg.command;
 						}
-						if (msg.command !== null && cmd !== null && this.client.getPublicCommandMetadata(cmd) &&
+						const metadata = this.client.getPublicCommandMetadata(cmd);
+						if (msg.command !== null && cmd !== null && metadata &&
 								serverDocument.config.commands[cmd].isEnabled &&
-								(this.client.getPublicCommandMetadata(cmd).adminExempt || memberBotAdminLevel >= serverDocument.config.commands[cmd].admin_level) &&
+								(metadata.adminExempt || memberBotAdminLevel >= serverDocument.config.commands[cmd].admin_level) &&
 								!serverDocument.config.commands[cmd].disabled_channel_ids.includes(msg.channel.id)) {
 							// Increment command usage count
 							this.incrementCommandUsage(serverDocument, cmd);
@@ -305,7 +306,7 @@ class MessageCreate extends BaseEvent {
 							const userDocument = await Users.findOne({ _id: msg.author.id });
 							if (userDocument) {
 								// NSFW filter for command suffix
-								if (memberBotAdminLevel < 1 && this.client.getPublicCommandMetadata(cmd).defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
+								if (memberBotAdminLevel < 1 && metadata.defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
 									// Delete offending message if necessary
 									if (serverDocument.config.moderation.filters.nsfw_filter.delete_message) {
 										try {
@@ -326,39 +327,57 @@ class MessageCreate extends BaseEvent {
 									winston.verbose(`Treating "${msg.cleanContent}" as a command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 									this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a command`, msg.channel.id, msg.author.id);
 									this.deleteCommandMessage(serverDocument, channelDocument, msg);
-									try {
-										const botObject = {
-											client: this.client,
-											configJS: this.configJS,
-											utils: Utils,
-											Utils,
-											Constants,
-										};
-										const documents = {
-											serverDocument,
-											channelDocument,
-											memberDocument,
-											userDocument,
-										};
-										const commandData = {
-											name: this.client.getPublicCommandName(msg.command),
-											usage: this.client.getPublicCommandMetadata(cmd).usage,
-											description: this.client.getPublicCommandMetadata(cmd).description,
-										};
-										await this.client.getPublicCommand(cmd)(botObject, documents, msg, commandData);
-									} catch (err) {
-										winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-										this.client.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
+									const commandFunction = this.client.getPublicCommand(cmd);
+									if (!commandFunction) {
+										const commandList = this.client.getPublicCommandList()
+											.filter(c => this.client.getPublicCommand(c))
+											.join(", ");
 										msg.send({
 											embed: {
-												color: Colors.ERROR,
-												title: `Something went wrong! 😱`,
-												description: `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
+												color: Colors.SOFT_ERR,
+												title: `Hold on! ✋`,
+												description: `The command \`${cmd}\` is not implemented yet!\nThis version of GAwesomeBot is still in heavy development and many commands do not work yet. 🚧\nHere are all the commands that are supported right now:\n\`\`\`${commandList}\`\`\``,
 												footer: {
-													text: `Contact your GAB maintainer for more support.`,
+													text: `Over time more and more commands will be added. Contact your GAB maintainer for more support.`,
 												},
 											},
 										});
+									} else {
+										try {
+											const botObject = {
+												client: this.client,
+												configJS: this.configJS,
+												utils: Utils,
+												Utils,
+												Constants,
+											};
+											const documents = {
+												serverDocument,
+												channelDocument,
+												memberDocument,
+												userDocument,
+											};
+											const commandData = {
+												name: cmd,
+												usage: metadata.usage,
+												description: metadata.description,
+											};
+											await commandFunction(botObject, documents, msg, commandData);
+										} catch (err) {
+											winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+											this.client.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
+											const description = !require("gar")(process.argv.slice(2)).owo ? `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\`` : "OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!";
+											msg.send({
+												embed: {
+													color: Colors.ERROR,
+													title: `Something went wrong! 😱`,
+													description,
+													footer: {
+														text: `Contact your GAB maintainer for more support.`,
+													},
+												},
+											});
+										}
 									}
 									await this.setCooldown(serverDocument, channelDocument);
 								}
