@@ -120,72 +120,55 @@
 								Tag List
 							</h4>
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.tags.list.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
+								<%- include("../partials/no-results", { isHidden: configData.tags.list.length, isSearchQuery: false, description: "You haven't added any tags yet. Save a snippet by filling out the form below." }) %>
+								<table class="table is-fullwidth<%= configData.tags.list.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Text</th>
+											<th>Type</th>
+											<th>Locked?</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										<% for(var i=0; i<configData.tags.list.length; i++) { %>
 											<tr>
-												<th>Name</th>
-												<th>Text</th>
-												<th>Type</th>
-												<th>Locked?</th>
-												<th></th>
+												<td>
+													<%= configData.tags.list[i]._id %>
+												</td>
+												<td>
+													<%- configData.tags.list[i].content %>
+												</td>
+												<td>
+													<p class="control">
+														<span class="select is-primary is-small">
+															<select name="tag-<%= configData.tags.list[i]._id %>-isCommand">
+																<option value="text" <%= configData.tags.list[i].isCommand ? "" : "selected" %>>Text</option>
+																<option value="command" <%= configData.tags.list[i].isCommand ? "selected" : "" %>>Command</option>
+															</select>
+														</span>
+													</p>
+												</td>
+												<td>
+													<p class="control">
+														<label class="checkbox">
+															<input name="tag-<%= configData.tags.list[i]._id %>-isLocked" type="checkbox" <%= configData.tags.list[i].isLocked ? "checked" : "" %>>
+														</label>
+													</p>
+												</td>
+												<td>
+													<button class="button is-small is-danger" name="<%= configData.tags.list[i]._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+														<span>Remove</span>
+														<span class="icon is-small">
+															<i class="fa fa-times"></i>
+														</span>
+													</button>
+												</td>
 											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.tags.list.length; i++) { %>
-												<tr>
-													<td>
-														<%= configData.tags.list[i]._id %>
-													</td>
-													<td>
-														<%- configData.tags.list[i].content %>
-													</td>
-													<td>
-														<p class="control">
-															<span class="select is-primary is-small">
-																<select name="tag-<%= configData.tags.list[i].index %>-isCommand">
-																	<option value="text" <%= configData.tags.list[i].isCommand ? "" : "selected" %>>Text</option>
-																	<option value="command" <%= configData.tags.list[i].isCommand ? "selected" : "" %>>Command</option>
-																</select>
-															</span>
-														</p>
-													</td>
-													<td>
-														<p class="control">
-															<label class="checkbox">
-															<input name="tag-<%= configData.tags.list[i].index %>-isLocked" type="checkbox" <%= configData.tags.list[i].isLocked ? "checked" : "" %>>
-															</label>
-														</p>
-													</td>
-													<td>
-														<input type="checkbox" id="tag-<%= configData.tags.list[i].index %>-removed" name="tag-<%= configData.tags.list[i].index %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="tag-<%= configData.tags.list[i].index %>-removed" onclick="$('#tag-<%= configData.tags.list[i].index %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't added any tags yet. Save a snippet by filling out the form below.
-										</div>
-									</article>
-									<br>
-								<% } %>
+										<% } %>
+									</tbody>
+								</table>
 							</div>
 							<div class="field is-horizontal">
 								<div class="field-body">

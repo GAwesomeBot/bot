@@ -305,15 +305,10 @@ controllers.tags.post = async (req, res) => {
 		serverDocument.config.tags.addingCommandIsAdminOnly = req.body.addingCommandIsAdminOnly === "true";
 		serverDocument.config.tags.removingIsAdminOnly = req.body.removingIsAdminOnly === "true";
 		serverDocument.config.tags.removingCommandIsAdminOnly = req.body.removingCommandIsAdminOnly === "true";
-		for (let i = 0; i < serverDocument.config.tags.list.length; i++) {
-			if (req.body[`tag-${i}-removed`]) {
-				serverDocument.config.tags.list[i] = null;
-			} else {
-				serverDocument.config.tags.list[i].isCommand = req.body[`tag-${i}-isCommand`] === "command";
-				serverDocument.config.tags.list[i].isLocked = req.body[`tag-${i}-isLocked`] === "on";
-			}
-		}
-		serverDocument.config.tags.list.spliceNullElements();
+		serverDocument.config.tags.list.forEach(tag => {
+			tag.isCommand = req.body[`tag-${tag._id}-isCommand`] === "command";
+			tag.isLocked = req.body[`tag-${tag._id}-isLocked`] === "on";
+		});
 	}
 
 	save(req, res, true);

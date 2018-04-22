@@ -639,6 +639,7 @@ GAwesomeUtil.dashboard.removeElement = elem => {
 					table.addClass("is-hidden");
 					$(".no-elements-message").removeClass("is-hidden");
 				}
+				saveFormState();
 			});
 		};
 
