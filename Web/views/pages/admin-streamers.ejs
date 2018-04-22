@@ -60,19 +60,7 @@
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field" style="overflow-x: scroll;">
-								<article class="message no-elements-message<%= configData.streamers_data.length ? " is-hidden" : "" %>">
-									<div class="message-header">
-										<p>
-												<span class="icon">
-													<i class="fa fa-meh-o fa-lg"></i>
-												</span>
-											Nothing to see here
-										</p>
-									</div>
-									<div class="message-body">
-										You haven't added any streamers yet. Enter a username and platform below to add one.
-									</div>
-								</article>
+								<%- include("../partials/no-results", { isHidden: configData.streamers_data.length, isSearchQuery: false, description: "You haven't added any streamers yet. Enter a username and platform below to add one." }) %>
 								<table class="table is-fullwidth<%= configData.streamers_data.length ? "" : " is-hidden" %>">
 									<thead>
 										<tr>

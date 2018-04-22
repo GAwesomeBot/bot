@@ -82,19 +82,7 @@
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field" style="overflow-x: scroll;">
-								<article class="message no-elements-message<%= configData.rss_feeds.length ? " is-hidden" : "" %>">
-									<div class="message-header">
-										<p>
-											<span class="icon">
-												<i class="fa fa-meh-o fa-lg"></i>
-											</span>
-											Nothing to see here
-										</p>
-									</div>
-									<div class="message-body">
-										You haven't added any RSS feeds yet. Fill out the form below to get started.
-									</div>
-								</article>
+                                <%- include("../partials/no-results", { isHidden: configData.rss_feeds.length, isSearchQuery: false, description: "You haven't added any RSS feeds yet. Fill out the form below to get started." }) %>
 								<table class="table is-fullwidth<%= configData.rss_feeds.length ? "" : " is-hidden" %>">
 									<thead>
 										<tr>
