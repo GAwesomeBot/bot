@@ -145,7 +145,7 @@ controllers.rss = async (req, res) => {
 controllers.rss.post = async (req, res) => {
 	const serverDocument = req.svr.document;
 
-	if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"])) {
+	if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"].replace(/\s/g, ""))) {
 		serverDocument.config.rss_feeds.push({
 			_id: req.body["new-name"],
 			url: req.body["new-url"],
@@ -153,21 +153,16 @@ controllers.rss.post = async (req, res) => {
 	} else {
 		parsers.commandOptions(req, "rss", req.body);
 		for (let i = 0; i < serverDocument.config.rss_feeds.length; i++) {
-			if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-removed`]) {
-				serverDocument.config.rss_feeds[i] = null;
-			} else {
-				serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
-				serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
-				req.svr.channels.forEach(ch => {
-					if (ch.type === "text") {
-						if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
-							serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
-						}
+			serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
+			serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
+			req.svr.channels.forEach(ch => {
+				if (ch.type === "text") {
+					if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
+						serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
 					}
-				});
-			}
+				}
+			});
 		}
-		serverDocument.config.rss_feeds.spliceNullElements();
 	}
 
 	save(req, res, true);
@@ -216,13 +211,8 @@ controllers.streamers.post = async (req, res) => {
 	} else {
 		parsers.commandOptions(req, "streamers", req.body);
 		for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
-			if (req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-removed`]) {
-				serverDocument.config.streamers_data[i] = null;
-			} else {
-				serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
-			}
+			serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
 		}
-		serverDocument.config.streamers_data.spliceNullElements();
 	}
 
 	save(req, res, true);

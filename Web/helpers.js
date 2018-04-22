@@ -35,11 +35,11 @@ module.exports = {
 		}
 	},
 
-	setupDashboardPage: (router, route, middleware, controller, middlewarePOST = []) => {
+	setupDashboardPage: (router, route, middleware, controller, pullEndpointKey, middlewarePOST = []) => {
 		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
 		middlewarePOST = [mw.checkUnavailableAPI, ...middlewarePOST];
 		controller.post = controller.post ? controller.post : (req, res) => res.sendStatus(405);
-		router.routes.push(new (require("./routes/Route")).DashboardRoute(router, `/:svrid${route}`, middleware, middlewarePOST, controller, controller.post));
+		router.routes.push(new (require("./routes/Route")).DashboardRoute(router, `/:svrid${route}`, middleware, middlewarePOST, controller, controller.post, pullEndpointKey));
 		router.app.io.of(`/dashboard/:svrid${route}`).on("connection", socket => {
 			socket.on("disconnect", () => undefined);
 			if (controller.socket) controller.socket(socket);

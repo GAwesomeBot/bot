@@ -60,72 +60,67 @@
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.streamers_data.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>Post updates in...</th>
-												<th>Status</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.streamers_data.length; i++) { %>
-												<tr>
-													<td class="is-icon">
-														<% if(configData.streamers_data[i].type=="twitch") { %>
-															<i class="fa fa-twitch"></i>
-														<% } else if(configData.streamers_data[i].type=="ytg") { %>
-															<i class="fa fa-youtube"></i>
-														<% } %>
-													</td>
-													<td>
-														<%= configData.streamers_data[i]._id %>
-													</td>
-													<td>
-														<span class="select is-primary is-small">
-															<select name="streamer-<%= configData.streamers_data[i]._id %>-channel_id">
-																<option value="">None</option>
-																<% for(var j=0; j<channelData.length; j++) { %>
-																	<option value="<%= channelData[j].id %>" <%= configData.streamers_data[i].channel_id==channelData[j].id ? "selected" : "" %>>#<%= channelData[j].name %></option>
-																<% } %>
-															</select>
-														</span>
-													</td>
-													<td>
-														<%= configData.streamers_data[i].live_state ? "Live!" : "Offline" %>
-													</td>
-													<td>
-														<input type="checkbox" id="streamer-<%= configData.streamers_data[i]._id %>-removed" name="streamer-<%= configData.streamers_data[i]._id %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="streamer-<%= i %>-removed" onclick="$('#streamer-<%= configData.streamers_data[i]._id %>-removed').attr('checked', true); submitForm(); $(this).parent().parent().remove(); saveFormState(); return false;">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
+								<article class="message no-elements-message<%= configData.streamers_data.length ? " is-hidden" : "" %>">
+									<div class="message-header">
+										<p>
 												<span class="icon">
 													<i class="fa fa-meh-o fa-lg"></i>
 												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't added any streamers yet. Enter a username and platform below to add one.
-										</div>
-									</article>
-									<br>
-								<% } %>
+											Nothing to see here
+										</p>
+									</div>
+									<div class="message-body">
+										You haven't added any streamers yet. Enter a username and platform below to add one.
+									</div>
+								</article>
+								<table class="table is-fullwidth<%= configData.streamers_data.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th></th>
+											<th>Username</th>
+											<th>Post updates in...</th>
+											<th>Status</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+									<% for(var i=0; i<configData.streamers_data.length; i++) { %>
+										<tr>
+											<td class="is-icon">
+												<% if(configData.streamers_data[i].type=="twitch") { %>
+													<i class="fa fa-twitch"></i>
+												<% } else if(configData.streamers_data[i].type=="ytg") { %>
+													<i class="fa fa-youtube"></i>
+												<% } %>
+											</td>
+											<td>
+												<%= configData.streamers_data[i]._id %>
+											</td>
+											<td>
+												<span class="select is-primary is-small">
+													<select name="streamer-<%= configData.streamers_data[i]._id %>-channel_id">
+														<option value="">None</option>
+														<% for(var j=0; j<channelData.length; j++) { %>
+															<option value="<%= channelData[j].id %>" <%= configData.streamers_data[i].channel_id==channelData[j].id ? "selected" : "" %>>#<%= channelData[j].name %></option>
+														<% } %>
+													</select>
+												</span>
+											</td>
+											<td>
+												<%= configData.streamers_data[i].live_state ? "Live!" : "Offline" %>
+											</td>
+											<td>
+												<button class="button is-small is-danger" name="<%= configData.streamers_data[i]._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+													<span>Remove</span>
+													<span class="icon is-small">
+														<i class="fa fa-times"></i>
+													</span>
+												</button>
+											</td>
+										</tr>
+									<% } %>
+									</tbody>
+								</table>
 							</div>
 							<div class="field is-horizontal">
 								<div class="field-body">

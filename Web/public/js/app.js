@@ -628,15 +628,18 @@ GAwesomeUtil.dashboard.removeElement = elem => {
 		button.addClass("is-loading");
 
 		const tableRow = button.parents("tr");
+		const table = tableRow.parents("table");
 		const isLastTableRow = tableRow.is(":only-child")
 		const buttonName = button.attr("name");
 
 		const afterDelete = () => {
-			tableRow.fadeOut(400, () => tableRow.remove());
-			if (isLastTableRow) {
-				tableRow.parents("table").addClass("is-hidden");
-				$(".no-elements-message").removeClass("is-hidden");
-			}
+			tableRow.fadeOut(400, () => {
+				tableRow.remove();
+				if (isLastTableRow) {
+					table.addClass("is-hidden");
+					$(".no-elements-message").removeClass("is-hidden");
+				}
+			});
 		};
 
 		$.ajax({

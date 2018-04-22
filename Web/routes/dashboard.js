@@ -18,8 +18,8 @@ module.exports = router => {
 	// Commands
 	setupDashboardPage(router, "/commands/command-options", [], controllers.dashboard.commands.options);
 	setupDashboardPage(router, "/commands/command-list", [], controllers.dashboard.commands.list);
-	setupDashboardPage(router, "/commands/rss-feeds", [], controllers.dashboard.commands.rss);
-	setupDashboardPage(router, "/commands/streamers", [], controllers.dashboard.commands.streamers);
+	setupDashboardPage(router, "/commands/rss-feeds", [], controllers.dashboard.commands.rss, "rss_feeds");
+	setupDashboardPage(router, "/commands/streamers", [], controllers.dashboard.commands.streamers, "streamers_data");
 	setupDashboardPage(router, "/commands/tags", [], controllers.dashboard.commands.tags);
 	setupDashboardPage(router, "/commands/auto-translation", [], controllers.dashboard.commands.translation);
 	setupDashboardPage(router, "/commands/trivia-sets", [], controllers.dashboard.commands.trivia);
@@ -32,7 +32,7 @@ module.exports = router => {
 	setupDashboardPage(router, "/stats-points/gawesome-points", [], controllers.dashboard.stats.points);
 
 	// Administration
-	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins);
+	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins, "admins");
 	setupDashboardPage(router, "/administration/moderation", [], controllers.dashboard.administration.moderation);
 	setupDashboardPage(router, "/administration/blocked", [], controllers.dashboard.administration.blocked);
 	setupDashboardPage(router, "/administration/muted", [], controllers.dashboard.administration.muted);
