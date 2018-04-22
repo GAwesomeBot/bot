@@ -1,5 +1,5 @@
 class Route {
-	constructor (router, route, middleware, controller, method, type) {
+	constructor (router, route, middleware, controller, method, type, parent) {
 		const mw = require("../middleware");
 
 		// Set parameters
@@ -9,6 +9,7 @@ class Route {
 		this.isAPI = type === "api";
 		this.isStatic = type === "static";
 		this.state = "open";
+		this.parentRoute = parent;
 
 		// Create wrapper for error handling
 		this.wrapper = async (req, res, next) => {
@@ -37,14 +38,14 @@ class DashboardRoute extends Route {
 		this.postMiddleware = middlewarePOST = [mw.authorizeDashboardAccess, ...middlewarePOST];
 
 		// Register middleware to route in router
-		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "dashboard");
+		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "dashboard", this);
 
 		if (pullEndpointKey) {
 			this.deleteRoute = new Route(router, `${route}/:id`, this.postMiddleware, (req, res) => {
 				if (pullEndpointKey === "tags") req.svr.document.config.tags.list.pull(req.params.id);
 				else req.svr.document.config[pullEndpointKey].pull(req.params.id);
 				require("../helpers").saveAdminConsoleOptions(req, res, true);
-			}, "delete", "dashboard");
+			}, "delete", "dashboard", this);
 		}
 	}
 }
@@ -59,7 +60,9 @@ class ConsoleRoute extends Route {
 		this.perm = permission;
 		this.advanced = true;
 
-		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "console");
+		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "console", this);
+		this.postRoute.perm = permission;
+		this.postRoute.advanced = true;
 	}
 }
 
