@@ -387,7 +387,7 @@ controllers.trivia = async (req, res) => {
 	const serverDocument = req.svr.document;
 
 	if (req.query.i) {
-		const triviaSetDocument = serverDocument.config.trivia_sets[req.query.i];
+		const triviaSetDocument = serverDocument.config.trivia_sets.id(req.query.i);
 		if (triviaSetDocument) {
 			res.json(triviaSetDocument.items);
 		} else {
@@ -427,13 +427,6 @@ controllers.trivia.post = async (req, res) => {
 			renderError(res, "That doesn't look like valid JSON to me!", null, 400);
 			return;
 		}
-	} else {
-		for (let i = 0; i < serverDocument.config.trivia_sets.length; i++) {
-			if (req.body[`trivia_set-${i}-removed`]) {
-				serverDocument.config.trivia_sets[i] = null;
-			}
-		}
-		serverDocument.config.trivia_sets.spliceNullElements();
 	}
 
 	save(req, res, true);

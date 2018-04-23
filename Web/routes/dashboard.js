@@ -22,7 +22,7 @@ module.exports = router => {
 	setupDashboardPage(router, "/commands/streamers", [], controllers.dashboard.commands.streamers, "streamers_data");
 	setupDashboardPage(router, "/commands/tags", [], controllers.dashboard.commands.tags, "tags");
 	setupDashboardPage(router, "/commands/auto-translation", [], controllers.dashboard.commands.translation, "translated_messages");
-	setupDashboardPage(router, "/commands/trivia-sets", [], controllers.dashboard.commands.trivia);
+	setupDashboardPage(router, "/commands/trivia-sets", [], controllers.dashboard.commands.trivia, "trivia_sets");
 	setupDashboardPage(router, "/commands/api-keys", [], controllers.dashboard.commands.APIKeys);
 	setupDashboardPage(router, "/commands/tag-reaction", [], controllers.dashboard.commands.reaction);
 
