@@ -350,7 +350,7 @@ controllers.translation.post = async (req, res) => {
 
 	if (req.body["new-member"] && req.body["new-source_language"]) {
 		const member = await findQueryUser(req.body["new-member"], req.svr);
-		if (member && !serverDocument.config.translated_messages.id(member.id)) {
+		if (member && !serverDocument.config.translated_messages.id(member.userID)) {
 			const enabled_channel_ids = [];
 			req.svr.channels.forEach(ch => {
 				if (ch.type === "text") {
@@ -367,21 +367,16 @@ controllers.translation.post = async (req, res) => {
 			});
 		}
 	} else {
-		for (let i = 0; i < serverDocument.config.translated_messages.length; i++) {
-			if (req.body[`translated_messages-${i}-removed`]) {
-				serverDocument.config.translated_messages[i] = null;
-			} else {
-				serverDocument.config.translated_messages[i].enabled_channel_ids = [];
-				req.svr.channels.forEach(ch => {
-					if (ch.type === "text") {
-						if (req.body[`translated_messages-${i}-enabled_channel_ids-${ch.id}`] === "on") {
-							serverDocument.config.translated_messages[i].enabled_channel_ids.push(ch.id);
-						}
+		serverDocument.config.translated_messages.forEach(autoTranslateDocument => {
+			autoTranslateDocument.enabled_channel_ids = [];
+			req.svr.channels.forEach(ch => {
+				if (ch.type === "text") {
+					if (req.body[`translated_messages-${autoTranslateDocument._id}-enabled_channel_ids-${ch.id}`] === "on") {
+						autoTranslateDocument.enabled_channel_ids.push(ch.id);
 					}
-				});
-			}
-		}
-		serverDocument.config.translated_messages.spliceNullElements();
+				}
+			});
+		});
 	}
 	save(req, res, true);
 };
