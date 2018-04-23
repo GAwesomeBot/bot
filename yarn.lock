@@ -451,7 +451,7 @@ combined-stream@1.0.6, combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@2.x, commander@>=0.3.0:
+commander@2.x:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
@@ -666,8 +666,8 @@ diff@~1.0.8:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid "8d065fa043c3e855c3f6a296dc76d7da0846db18"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/8d065fa043c3e855c3f6a296dc76d7da0846db18"
+  uid b186472785db6bbe7de37e1a75104d79dd0cc44f
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/b186472785db6bbe7de37e1a75104d79dd0cc44f"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
@@ -2843,12 +2843,6 @@ underscore@1.x.x:
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
-
-urban@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/urban/-/urban-0.3.1.tgz#993e46e8b30d73ad2d809248dc8ec44eb4ccad8a"
-  dependencies:
-    commander ">=0.3.0"
 
 url-regex@^3.0.0:
   version "3.2.0"
