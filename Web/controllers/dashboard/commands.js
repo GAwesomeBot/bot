@@ -359,8 +359,9 @@ controllers.translation.post = async (req, res) => {
 					}
 				}
 			});
+
 			serverDocument.config.translated_messages.push({
-				_id: member.id,
+				_id: member.userID,
 				source_language: req.body["new-source_language"],
 				enabled_channel_ids: enabled_channel_ids,
 			});
