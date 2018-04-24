@@ -1075,9 +1075,9 @@ fresh@0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
 
-fs-nextra@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/fs-nextra/-/fs-nextra-0.3.2.tgz#a19baecc56e0c74b5740d311fc6f70b012bc4b14"
+fs-nextra@^0.3.2, fs-nextra@^0.3.3:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/fs-nextra/-/fs-nextra-0.3.3.tgz#b4744adb646a25cb744561a973cff132bf95263d"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
