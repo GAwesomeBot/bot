@@ -92,7 +92,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 		winston.debug(`Failed to fetch reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
 		msg.send({
 			embed: {
-				color: Colors.SOFT_ERR,
+				color: Colors.ERROR,
 				title: Text.COMMAND_ERR(),
 				description: `I was unable to fetch results from reddit!`,
 			},
