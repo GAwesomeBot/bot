@@ -217,6 +217,7 @@ exports.APIs = {
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
 	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${category ? category : ""}`,
 	GIPHY: (token, query, nsfw) => `http://api.giphy.com/v1/gifs/random?api_key=${token}&rating=${nsfw}&format=json&limit=1&tag=${encodeURIComponent(query)}`,
+	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 };

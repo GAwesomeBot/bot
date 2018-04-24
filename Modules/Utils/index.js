@@ -5,17 +5,7 @@ module.exports = {
 	GetValue: require("./GetValue.js"),
 	Gist: require("./GitHubGist.js"),
 	GlobalDefines: require("./GlobalDefines.js"),
-	IsURL: url => {
-		const pattern = [
-			`^(https?:\\/\\/)`,
-			`((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|`,
-			`((\\d{1,3}\\.){3}\\d{1,3}))`,
-			`(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*`,
-			`(\\?[;&a-z\\d%_.~+=-]*)?`,
-			`(\\#[-a-z\\d_]*)?$`,
-		].join("");
-		return new RegExp(pattern, "i").test(url);
-	},
+	IsURL: require("./IsURL.js"),
 	MessageOfTheDay: require("./MessageOfTheDay.js"),
 	ObjectDefines: require("./ObjectDefines.js"),
 	PromiseWait: waitFor => new Promise(resolve => setTimeout(resolve, waitFor)),
