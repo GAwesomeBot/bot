@@ -80,25 +80,18 @@ controllers.ranks.post = async (req, res) => {
 			role_id: req.body["new-role_id"] || null,
 		});
 	} else {
-		for (let i = 0; i < serverDocument.config.ranks_list.length; i++) {
-			if (req.body[`rank-${i}-removed`]) {
-				serverDocument.config.ranks_list[i] = null;
-			} else {
-				serverDocument.config.ranks_list[i].max_score = parseInt(req.body[`rank-${i}-max_score`]);
-				if (serverDocument.config.ranks_list[i].role_id || req.body[`rank-${i}-role_id`]) {
-					serverDocument.config.ranks_list[i].role_id = req.body[`rank-${i}-role_id`];
-				}
+		serverDocument.config.ranks_list.forEach(rankDocument => {
+			rankDocument.max_score = parseInt(req.body[`rank-${rankDocument._id}-max_score`]);
+			if (rankDocument.role_id || req.body[`rank-${rankDocument._id}-role_id`]) {
+				rankDocument.role_id = req.body[`rank-${rankDocument._id}-role_id`];
 			}
-		}
+		});
 		if (req.body["ranks_list-reset"]) {
-			for (let i = 0; i < serverDocument.members.length; i++) {
-				if (serverDocument.members[i].rank && serverDocument.members[i].rank !== serverDocument.config.ranks_list[0]._id) {
-					serverDocument.members[i].rank = serverDocument.config.ranks_list[0]._id;
-				}
-			}
+			serverDocument.members.forEach(member => {
+				member.rank = "No Rank";
+			});
 		}
 	}
-	serverDocument.config.ranks_list.spliceNullElements();
 	serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
 
 	save(req, res, true);

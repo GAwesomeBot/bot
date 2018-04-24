@@ -6,10 +6,15 @@ const GAwesomePaths = {};
 
 function saveFormState() {
 	try {
+		// Save builder code if it exists
 		$("#builder-code-box").val(cm.getDoc().getValue());
 	} catch (err) {}
+	// Set form state to current serialized form
 	initial_form_state = $('#form').serialize();
-	$("#form-submit span:nth-child(2)").html("Save")
+	// Reset save button
+	$("#form-submit span:nth-child(2)").html("Save");
+	// Update Turbolinks snapshots
+	GAwesomeUtil.snapshot("body");
 }
 
 GAwesomeData.activity = { guildData: {} };
@@ -104,6 +109,13 @@ GAwesomeData.extensions.html = {
 
 GAwesomeUtil.reload = () => window.location.reload(true);
 GAwesomeUtil.refresh = () => Turbolinks.visit("");
+GAwesomeUtil.snapshot = tagName => {
+	const tag = document.getElementsByTagName(tagName)[0];
+	if (!Turbolinks || !Turbolinks.controller) return;
+	const cache = Turbolinks.controller.cache.snapshots;
+	if (tag && cache && cache[window.location.href]) cache[window.location.href][tagName] = tag.cloneNode(true);
+	return cache[window.location.href];
+};
 
 GAwesomeUtil.log = (msg, level, force) => {
 	if (!GAwesomeData.config.debug && !force) return;

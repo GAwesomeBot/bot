@@ -28,7 +28,7 @@ module.exports = router => {
 
 	// Stats and Points
 	setupDashboardPage(router, "/stats-points/stats-collection", [], controllers.dashboard.stats.collection);
-	setupDashboardPage(router, "/stats-points/ranks", [], controllers.dashboard.stats.ranks);
+	setupDashboardPage(router, "/stats-points/ranks", [], controllers.dashboard.stats.ranks, "ranks_list");
 	setupDashboardPage(router, "/stats-points/gawesome-points", [], controllers.dashboard.stats.points);
 
 	// Administration
