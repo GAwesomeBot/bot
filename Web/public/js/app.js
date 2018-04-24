@@ -662,6 +662,18 @@ GAwesomeUtil.dashboard.removeElement = elem => {
 	});
 };
 
+GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
+	const generateStr = (adminLevel, channelCount, totalChannelCount) => `${adminLevel === 0 ? "E" : ("Admin level &ge;" + adminLevel + ", e")}nabled in ${channelCount - totalChannelCount === 0 ? "all" : channelCount} channel${(channelCount - totalChannelCount === 0 || channelCount !== 1) ? "s" : ""}`;
+
+	const inputs = modal.find(":input");
+	const data = inputs.serializeArray();
+	const channelCount = data.filter(input => input.name.match(/.*-disabled_channel_ids-.*/)).length;
+	const totalChannelCount = inputs.filter((i, input) => $(input).attr("name").match(/.*-disabled_channel_ids-.*/)).length;
+	const adminLevel = Number(data.filter(input => input.name.endsWith("-adminLevel"))[0].value);
+	const overview = generateStr(adminLevel, channelCount, totalChannelCount);
+	settingsBox.html(overview);
+};
+
 GAwesomePaths["landing"] = () => {
 	$(".section-shortcut-link").click(function() {
 		$("html, body").animate({

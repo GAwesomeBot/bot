@@ -9,9 +9,9 @@
 		<strong><%= commandData.name %></strong> <span class="tag is-small<%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) === "NSFW" ? " is-danger" : "" %>"><%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) %></span> &bull; <%- commandData.description %>
 	</div>
 	<div class="is-pulled-right command-item-section command-item-section-options">
-		<a class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level==0 ? "E" : ("Admin level &ge;" + commandData.admin_level + ", e") %>nabled in <%= commandData.disabled_channel_ids.length==0 ? "all" : (channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((channelData.length - commandData.disabled_channel_ids.length)==1 && commandData.disabled_channel_ids.length>0) ? "" : "s" %></a>
+		<a id="command-<%= commandData.name %>-settings" class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level==0 ? "E" : ("Admin level &ge;" + commandData.admin_level + ", e") %>nabled in <%= commandData.disabled_channel_ids.length==0 ? "all" : (channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((channelData.length - commandData.disabled_channel_ids.length)==1 && commandData.disabled_channel_ids.length>0) ? "" : "s" %></a>
 	</div>
-	<div id="command-<%= commandData.name %>-modal" class="modal">
+	<div id="command-<%= commandData.name %>-modal" class="modal command-item-modal" data-target="#command-<%= commandData.name%>-settings">
 		<div class="modal-background"></div>
 		<div class="modal-container">
 			<div class="modal-content">
