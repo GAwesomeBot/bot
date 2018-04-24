@@ -45,7 +45,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 		}
 	}
 
-	const sortedMembers = serverDocument.members.filter(m => m.messages).sort((a, b) => b.messages - a.messages);
+	const sortedMembers = serverDocument.members.filter(m => m.messages && msg.guild.members.has(m.id)).sort((a, b) => b.messages - a.messages);
 	const totalMessages = sortedMembers.reduce((a, b) => (a.messages || a) + b.messages, 0);
 	const description = sortedMembers
 		.slice(0, 8)
