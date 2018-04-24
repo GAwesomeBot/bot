@@ -65,6 +65,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.bot = app.client = client;
 	app.auth = auth;
 	app.toobusy = toobusy;
+	app.toobusy.maxLag(200);
 	app.routes = [];
 
 	// We always recommend using a reverse proxy like nginx, so unless you're on port 80, always run GAB with the --proxy option!
