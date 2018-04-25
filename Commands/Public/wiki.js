@@ -1,44 +1,6 @@
 const wiki = require("wikijs").default();
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-/*
-{ raw:
-   { pageid: 6710844,
-     ns: 0,
-     title: 'Hello',
-     contentmodel: 'wikitext',
-     pagelanguage: 'en',
-     pagelanguagehtmlcode: 'en',
-     pagelanguagedir: 'ltr',
-     touched: '2018-04-06T11:52:13Z',
-     lastrevid: 833894712,
-     length: 11891,
-     fullurl: 'https://en.wikipedia.org/wiki/Hello',
-     editurl: 'https://en.wikipedia.org/w/index.php?title=Hello&action=edit',
-     canonicalurl: 'https://en.wikipedia.org/wiki/Hello' },
-  html: [Function: html],
-  content: [Function: content],
-  summary: [Function: summary],
-  images: [Function: images],
-  references: [Function: references],
-  links: [Function: links],
-  categories: [Function: categories],
-  coordinates: [Function: coordinates],
-  info: [Function: q],
-  backlinks: [Function: backlinks],
-  rawImages: [Function: h],
-  mainImage: [Function: mainImage],
-  langlinks: [Function: langlinks],
-  rawInfo: [Function: p],
-  fullInfo: [Function: fullInfo] }
-
-  if multiple: page.raw.pageprops: { disambiguation: '' } },
-  summary: 
-  What or WHAT may refer to:
-what, an interrogative pronoun in English:
-"What?", one of the Five Ws used in journalism.
-*/
-
 module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	await msg.send({
 		embed: {
