@@ -1,5 +1,4 @@
 const wiki = require("wikijs").default();
-const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
 module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	await msg.send({
