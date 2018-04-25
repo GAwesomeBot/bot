@@ -8,8 +8,8 @@ const ascii = `
  \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
 			`;
 
-const { Traffic, Updater, CLI } = require("./Modules");
-const { Boot, Console, Sharder } = require("./Internals");
+const { Traffic, Updater } = require("./Modules");
+const { Boot, Console, Sharder, CLI } = require("./Internals");
 const { Stopwatch, Gag } = require("./Modules/Utils");
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");

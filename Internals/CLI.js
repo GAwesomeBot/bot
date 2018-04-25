@@ -1,9 +1,7 @@
 const { cli } = require("../Configurations/commands");
 const {
-	Errors: {
 		Error: GABError,
-	},
-} = require("../Internals/index");
+} = require("./Errors");
 
 class CLI {
 	constructor (sharder, db, traffic) {

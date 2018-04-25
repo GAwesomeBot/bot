@@ -22,5 +22,4 @@ module.exports = {
 	Trivia: require("./Trivia.js"),
 	Updater: require("./Updater.js"),
 	Utils: require("./Utils/index"),
-	CLI: require("./CLI"),
 };
