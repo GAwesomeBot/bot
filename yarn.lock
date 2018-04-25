@@ -666,8 +666,8 @@ diff@~1.0.8:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid e12ab7428f49308f1a6a617c8afd7185939b923d
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/e12ab7428f49308f1a6a617c8afd7185939b923d"
+  uid "95b531742a8ed3215dabc5e5e1277e2d0ac3de88"
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/95b531742a8ed3215dabc5e5e1277e2d0ac3de88"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
