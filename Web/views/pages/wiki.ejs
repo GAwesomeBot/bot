@@ -179,7 +179,7 @@
 							<% } else { %>
 								<% var activeSearchQuery = data.activeSearchQuery; %>
 								<% mode = data.title %>
-								<% include ../partials/no-results %>
+                        		<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl: null, mode }) %>
 							<% } %>
 						<% } else if(mode=="edit") { %>
 							<% include ../partials/wiki-editor %>

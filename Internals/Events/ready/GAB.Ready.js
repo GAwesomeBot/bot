@@ -101,8 +101,8 @@ class Ready extends BaseEvent {
 		winston.debug("Setting bots playing activity.");
 		let activity = {
 			name: configJSON.activity.name.format({ shard: this.client.shardID, totalShards: this.client.shard.count }),
+			type: configJSON.activity.type,
 			url: configJSON.activity.twitchURL || null,
-			type: configJSON.activity.twitchURL !== "" ? "WATCHING" : "PLAYING",
 		};
 		if (configJSON.activity.name === "default") {
 			activity = {

@@ -223,7 +223,7 @@
 	</div>
 <% } else { %>
 	<% var resetUrl = "/extensions/" + mode; %>
-	<% include ../partials/no-results %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode }) %>
 <% } %>
 <% if(numPages>1) { %>
 	<br>

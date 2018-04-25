@@ -252,7 +252,7 @@ GAwesomeUtil.showActivitySelections = () => {
 </div>
 <% if(data.serverData.length==0) { %>
 	<% var resetUrl = "/activity/servers?q=&count=" + data.itemsPerPage + "&page=1&sort=" + data.sortOrder + "&category=All&publiconly=false"; %>
-	<% include ../partials/no-results %> 
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode }) %>
 <% } %>
 <% if(data.numPages>1) { %>
 	<br>

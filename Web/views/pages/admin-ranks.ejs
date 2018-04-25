@@ -61,8 +61,8 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(configData.ranks_list.length>0) { %>
-							<table class="table is-fullwidth">
+                            <%- include("../partials/no-results", { isHidden: configData.ranks_list.length, isSearchQuery: false, description: "All the default ranks are gone! Fill out the form below to add your own rank." }) %>
+							<table class="table is-fullwidth<%= configData.ranks_list.length ? "" : " is-hidden" %>">
 								<thead>
 								<tr>
 									<th>Name</th>
@@ -73,68 +73,51 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<configData.ranks_list.length; i++) { %>
-								<tr>
-									<td>
-										<%= configData.ranks_list[i]._id %>
-									</td>
-									<td>
-										<p class="control is-narrow">
-											<input name="rank-<%= i %>-max_score" class="input is-primary is-small" type="number" value="<%= configData.ranks_list[i].max_score %>" min="1" placeholder="Max. activity score">
-										</p>
-									</td>
-									<td>
-										<p class="control">
-											<span class="select is-primary is-small">
-												<select name="rank-<%= i %>-role_id">
-													<option value="">None</option>
-													<% for(var j=0; j<roleData.length; j++) { %>
-													<option value="<%= roleData[j].id %>" <%= configData.ranks_list[i].role_id==roleData[j].id ? "selected" : "" %>><%= roleData[j].name %></option>
-													<% } %>
-												</select>
-											</span>
-										</p>
-									</td>
-									<td>
-										<%= configData.ranks_list[i].members %>
-									</td>
-									<td>
-										<input type="checkbox" id="rank-<%= i %>-removed" name="rank-<%= i %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="rank-<%= i %>-removed" onclick="$('#rank-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
-											<span>Remove</span>
-											<span class="icon is-small">
-												<i class="fa fa-times"></i>
-											</span>
-										</button>
-									</td>
-								</tr>
-								<% } %>
+								<% configData.ranks_list.forEach(rankDocument => { %>
+									<tr>
+										<td>
+											<%= rankDocument._id %>
+										</td>
+										<td>
+											<p class="control is-narrow">
+												<input name="rank-<%= rankDocument._id %>-max_score" class="input is-primary is-small" type="number" value="<%= rankDocument.max_score %>" min="1" placeholder="Max. activity score">
+											</p>
+										</td>
+										<td>
+											<p class="control">
+												<span class="select is-primary is-small">
+													<select name="rank-<%= rankDocument._id %>-role_id">
+														<option value="">None</option>
+														<% for(var j=0; j<roleData.length; j++) { %>
+															<option value="<%= roleData[j].id %>" <%= rankDocument.role_id==roleData[j].id ? "selected" : "" %>><%= roleData[j].name %></option>
+														<% } %>
+													</select>
+												</span>
+											</p>
+										</td>
+										<td>
+											<%= rankDocument.members %>
+										</td>
+										<td>
+											<button class="button is-small is-danger" name="<%= rankDocument._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+												<span>Remove</span>
+												<span class="icon is-small">
+													<i class="fa fa-times"></i>
+												</span>
+											</button>
+										</td>
+									</tr>
+								<% }); %>
 								</tbody>
 							</table>
 							<input type="checkbox" id="ranks_list-reset" name="ranks_list-reset" style="display: none;">
-							<button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); saveFormState(); Turbolinks.visit('');">
+							<button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); submitForm(); saveFormState(); Turbolinks.visit('');">
 								<span>Reset Everyone's Rank</span>
 								<span class="icon is-small">
 									<i class="fa fa-times"></i>
 								</span>
 							</button>
 							<br><br>
-							<% } else { %>
-							<article class="message" style="margin-bottom: 0px;">
-								<div class="message-header">
-									<p>
-										<span class="icon">
-											<i class="fa fa-meh-o"></i>
-										</span>
-										Nothing to see here
-									</p>
-								</div>
-								<div class="message-body">
-									All the default ranks are gone! Fill out the form below to add your own rank.
-								</div>
-							</article>
-							<br>
-							<% } %>
 						</div>
 						<div class="field">
 							<div class="control is-expanded">

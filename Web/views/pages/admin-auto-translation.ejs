@@ -61,70 +61,51 @@
 						</div>
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
-						<div class="field">
-							<div style="overflow-x: scroll;">
-								<% if(configData.translated_messages.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>Language</th>
-												<th>Channels</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.translated_messages.length; i++) { %>
-												<tr>
-													<td>
-														<img class="image is-24x24" src="<%= configData.translated_messages[i].avatar %>" alt="<%= configData.translated_messages[i]._id %>">
-													</td>
-													<td>
-														<%= configData.translated_messages[i].username %>
-													</td>
-													<td>
-														<%= configData.translated_messages[i].source_language.toUpperCase() %>
-													</td>
-													<td>
-														<% for(var j=0; j<channelData.length; j++) { %>
-															<label class="checkbox">
-															<input name="translated_messages-<%= i %>-enabled_channel_ids-<%= channelData[j].id %>" type="checkbox" <%= configData.translated_messages[i].enabled_channel_ids.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-																#<%= channelData[j].name %>
-															</label>
-															<br>
-														<% } %>
-													</td>
-													<td>
-														<input type="checkbox" id="translated_messages-<%= i %>-removed" name="translated_messages-<%= i %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="translated_messages-<%= i %>-removed" onclick="$('#translated_messages-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't set any members to translate messages for yet. Fill out the form below to get started.
-										</div>
-									</article>
-									<br>
-								<% } %>
-							</div>
+						<div class="field" style="overflow-x: scroll;">
+                            <%- include("../partials/no-results", { isHidden: configData.translated_messages.length, isSearchQuery: false, description: "You haven't set any members to translate messages for yet. Fill out the form below to get started." }) %>
+							<table class="table is-fullwidth<%= configData.translated_messages.length ? "" : " is-hidden" %>">
+								<thead>
+									<tr>
+										<th></th>
+										<th>Username</th>
+										<th>Language</th>
+										<th>Channels</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									<% configData.translated_messages.forEach(autoTranslationDocument => { %>
+										<tr>
+											<td>
+												<img class="image is-24x24" src="<%= autoTranslationDocument.avatar %>" alt="<%= autoTranslationDocument._id %>">
+											</td>
+											<td>
+												<%= autoTranslationDocument.username %>
+											</td>
+											<td>
+												<%= autoTranslationDocument.source_language.toUpperCase() %>
+											</td>
+											<td>
+												<% for(var j=0; j<channelData.length; j++) { %>
+													<label class="checkbox">
+														<input name="translated_messages-<%= autoTranslationDocument._id %>-enabled_channel_ids-<%= channelData[j].id %>" type="checkbox" <%= autoTranslationDocument.enabled_channel_ids.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
+														#<%= channelData[j].name %>
+													</label>
+												<br>
+												<% } %>
+											</td>
+											<td>
+												<button class="button is-small is-danger" name="<%= autoTranslationDocument._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+													<span>Remove</span>
+													<span class="icon is-small">
+														<i class="fa fa-times"></i>
+													</span>
+												</button>
+											</td>
+										</tr>
+									<% }) %>
+								</tbody>
+							</table>
 						</div>
 						<br>
 						<div class="columns">

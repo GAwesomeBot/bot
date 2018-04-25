@@ -49,7 +49,7 @@ module.exports = class Giveaways {
 					channel.send({
 						embed: {
 							color: 0x00FF00,
-							description: `Congratulations **@${client.getName(server, serverDocument, winner)}**! 🎊`,
+							description: `Congratulations **@${client.getName(serverDocument, winner)}**! 🎊`,
 							footer: {
 								text: `You won the giveaway "${channelDocument.giveaway.title}" out of ${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "person!" : "users!"}`,
 							},
@@ -68,7 +68,7 @@ module.exports = class Giveaways {
 					creator.send({
 						embed: {
 							color: 0x3669FA,
-							description: `Your giveaway "${channelDocument.giveaway.title}" running in #${channel.name} on \`${server}\` has ended.\n${winner ? `The winner was **@${client.getName(server, serverDocument, winner)}**.` : "Nobody won this time 😕"}`,
+							description: `Your giveaway "${channelDocument.giveaway.title}" running in #${channel.name} on \`${server}\` has ended.\n${winner ? `The winner was **@${client.getName(serverDocument, winner)}**.` : "Nobody won this time 😕"}`,
 						},
 					});
 				}

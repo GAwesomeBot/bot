@@ -188,7 +188,7 @@
                                 Found <strong id="warning-count"><%= configData.data.master.warns.length %></strong> configuration warnings:
                                 <% configData.data.master.warns.forEach(warn => { %>
                                     <dd id="warning-<%= configData.data.master.warns.indexOf(warn) %>">
-                                        <% if (serverData.accessShutdown) { %>
+                                        <% if (accessPrivileges.includes("shutdown")) { %>
                                             <button class="button is-small is-white" onclick="dismissWarning(`<%= warn %>`, <%= configData.data.master.warns.indexOf(warn) %>); return false;" title="Dismiss warning">
                                                 <span class="icon is-small">
                                                     <i class="fa fa-times"></i>
@@ -203,7 +203,7 @@
                         </div>
                     </div>
                     <footer class="card-footer">
-                        <% if (serverData.accessShutdown) { %>
+                        <% if (accessPrivileges.includes("shutdown")) { %>
                         <a id="shutdown" class="card-footer-item card-footer-item-danger" href="javascript:shutdown()">
                             <span class="icon">
                                 <i class="fa fa-power-off"></i>
@@ -274,7 +274,7 @@
                                 </div>
                             </div>
                             <footer class="card-footer">
-                                <% if (serverData.accessShutdown) { %>
+                                <% if (accessPrivileges.includes("shutdown")) { %>
                                 <% if (!configData.data.shards[i].isFrozen) { %><a id="freeze-<%= configData.data.shards[i].ID %>" class="card-footer-item" href="javascript:freezeShard(<%= configData.data.shards[i].ID %>)">Freeze</a><% } %>
                                 <% if (!configData.data.shards[i].isFrozen) { %><a id="reset-<%= configData.data.shards[i].ID %>" class="card-footer-item" href="javascript:resetShard(<%= configData.data.shards[i].ID %>)">Reset</a><% } %>
                                 <a id="restart-<%= configData.data.shards[i].ID %>" class="card-footer-item card-footer-item-danger" href="javascript:restartShard(<%= configData.data.shards[i].ID %>)">Restart</a>

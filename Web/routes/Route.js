@@ -1,5 +1,5 @@
 class Route {
-	constructor (router, route, middleware, controller, method, type) {
+	constructor (router, route, middleware, controller, method, type, parent) {
 		const mw = require("../middleware");
 
 		// Set parameters
@@ -9,6 +9,7 @@ class Route {
 		this.isAPI = type === "api";
 		this.isStatic = type === "static";
 		this.state = "open";
+		this.parentRoute = parent;
 
 		// Create wrapper for error handling
 		this.wrapper = async (req, res, next) => {
@@ -28,19 +29,24 @@ class Route {
 }
 
 class DashboardRoute extends Route {
-	constructor (router, route, middleware, middlewarePOST, controller, controllerPOST) {
+	constructor (router, route, middleware, middlewarePOST, controller, controllerPOST, pullEndpointKey) {
 		const mw = require("../middleware");
 
 		// Prepare Dashboard Middleware
 		middleware = [mw.authorizeDashboardAccess, ...middleware];
-		middlewarePOST = [mw.authorizeDashboardAccess, ...middlewarePOST];
 		super(router, route, middleware, controller, "get", "dashboard");
-
-		// Create final Middleware passed to the router, and cache it for hot reloading
-		this.postMiddleware = [mw.populateRequest(this), ...middlewarePOST, controllerPOST];
+		this.postMiddleware = middlewarePOST = [mw.authorizeDashboardAccess, ...middlewarePOST];
 
 		// Register middleware to route in router
-		router.post(route, this.postMiddleware);
+		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "dashboard", this);
+
+		if (pullEndpointKey) {
+			this.deleteRoute = new Route(router, `${route}/:id`, this.postMiddleware, (req, res) => {
+				if (pullEndpointKey === "tags") req.svr.document.config.tags.list.pull(req.params.id);
+				else req.svr.document.config[pullEndpointKey].pull(req.params.id);
+				require("../helpers").saveAdminConsoleOptions(req, res, true);
+			}, "delete", "dashboard", this);
+		}
 	}
 }
 
@@ -49,14 +55,14 @@ class ConsoleRoute extends Route {
 		const mw = require("../middleware");
 
 		middleware = [mw.authorizeConsoleAccess, ...middleware];
-		middlewarePOST = [mw.authorizeConsoleAccess, ...middlewarePOST];
 		super(router, route, middleware, controller, "get", "console");
+		this.postMiddleware = middlewarePOST = [mw.authorizeConsoleAccess, ...middlewarePOST];
 		this.perm = permission;
 		this.advanced = true;
 
-		this.postMiddleware = [mw.populateRequest(this), ...middlewarePOST, controllerPOST];
-
-		router.post(route, this.postMiddleware);
+		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "console", this);
+		this.postRoute.perm = permission;
+		this.postRoute.advanced = true;
 	}
 }
 

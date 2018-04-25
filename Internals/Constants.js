@@ -95,7 +95,16 @@ exports.Text = {
 			].join("\n"),
 		},
 	}),
+	GUILD_VERIFICATION_LEVEL: level => exports.GUILD_VERIFICATION_LEVELS[level],
 };
+
+exports.GUILD_VERIFICATION_LEVELS = [
+	"None",
+	"Low - must have verified email on account",
+	"Medium - must be registered on Discord for longer than 5 minutes",
+	"High - (╯°□°）╯︵ ┻━┻ - must be a member of the server for longer than 10 minutes",
+	"Very High - ┻━┻ミヽ(ಠ益ಠ)ﾉ彡┻━┻ - must have a verified phone number",
+];
 
 // Hardcoded names for the child process manager
 exports.WorkerTypes = {
@@ -206,9 +215,10 @@ exports.APIs = {
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
-	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${category ? category : ""}`,
 	GIPHY: (token, query, nsfw) => `http://api.giphy.com/v1/gifs/random?api_key=${token}&rating=${nsfw}&format=json&limit=1&tag=${encodeURIComponent(query)}`,
+	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
+	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 };
 
 exports.EmptySpace = `\u200b`;

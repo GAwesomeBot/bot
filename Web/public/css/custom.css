@@ -25,6 +25,10 @@
     color: #fff;
 }
 
+.is-hidden {
+    display: none;
+}
+
 .navbar {
     box-shadow: none;
 }
@@ -134,6 +138,15 @@
 .is-divider[data-content]::after {
     font-size: 1rem;
     transform: translateY(-1.35rem);
+}
+
+#scroll-top-button-container {
+    display: none;
+    position: fixed;
+    padding-bottom: 25px;
+    right: 0;
+    bottom: 0;
+    z-index: 99;
 }
 
 /* Spinner by tobiasahlin.com/spinkit/ */

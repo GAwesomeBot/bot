@@ -15,5 +15,5 @@
 <% } else { %>
 	<% var resetUrl = "/wiki/Home"; %>
 	<% var activeSearchQuery = data.activeSearchQuery; %>
-	<% include ../partials/no-results %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode }) %>
 <% } %>

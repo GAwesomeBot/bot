@@ -64,34 +64,33 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.trivia_sets.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
-											<tr>
-												<th>Name</th>
-												<th>Questions</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.trivia_sets.length; i++) { %>
+                                <%- include("../partials/no-results", { isHidden: configData.trivia_sets.length, isSearchQuery: false, description: "You haven't uploaded any custom trivia sets yet. Select a file below to get started." }) %>
+								<table class="table is-fullwidth<%= configData.trivia_sets.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Questions</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+									<% configData.trivia_sets.forEach(triviaSet => { %>
                                             <tr>
 												<td>
-													<%= configData.trivia_sets[i]._id %>
+													<%= triviaSet._id %>
 												</td>
 												<td>
-													<%= configData.trivia_sets[i].items.length %>
+													<%= triviaSet.items.length %>
 												</td>
 												<td>
-													<a class="button is-small" href="<%= currentPage %>?i=<%= i %>" target="_blank" download="<%= configData.trivia_sets[i]._id %>.json">
+													<a class="button is-small" href="<%= currentPage %>?i=<%= triviaSet._id %>" target="_blank" download="<%= triviaSet._id %>.json">
 														<span>Download</span>
 														<span class="icon is-small">
 															<i class="fa fa-download"></i>
 														</span>
 													</a>
 													&nbsp;
-                                                    <input type="checkbox" id="trivia_set-<%= i %>-removed" name="trivia_set-<%= i %>-removed" style="display: none;">
-                                                    <button class="button is-small is-danger" onclick="$('#trivia_set-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
+                                                    <button class="button is-small is-danger" name="<%= triviaSet._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
@@ -99,25 +98,9 @@
 													</button>
 												</td>
                                             </tr>
-											<% } %>
+									<% }) %>
 										</tbody>
 									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't uploaded any custom trivia sets yet. Select a file below to get started.
-										</div>
-									</article>
-									<br>
-								<% } %>
 							</div>
 							<div class="field is-horizontal">
 								<div class="field-body">

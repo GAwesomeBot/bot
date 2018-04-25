@@ -46,7 +46,7 @@
                     <% } %>
                 <% } else { %>
                     <% var activeSearchQuery, mode = "blog"; %>
-                    <% include ../partials/no-results %>
+                    <%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl: null, mode }) %>
                 <% } %>
 
                 <nav class="level is-mobile arrow-link">

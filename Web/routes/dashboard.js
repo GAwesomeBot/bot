@@ -18,21 +18,21 @@ module.exports = router => {
 	// Commands
 	setupDashboardPage(router, "/commands/command-options", [], controllers.dashboard.commands.options);
 	setupDashboardPage(router, "/commands/command-list", [], controllers.dashboard.commands.list);
-	setupDashboardPage(router, "/commands/rss-feeds", [], controllers.dashboard.commands.rss);
-	setupDashboardPage(router, "/commands/streamers", [], controllers.dashboard.commands.streamers);
-	setupDashboardPage(router, "/commands/tags", [], controllers.dashboard.commands.tags);
-	setupDashboardPage(router, "/commands/auto-translation", [], controllers.dashboard.commands.translation);
-	setupDashboardPage(router, "/commands/trivia-sets", [], controllers.dashboard.commands.trivia);
+	setupDashboardPage(router, "/commands/rss-feeds", [], controllers.dashboard.commands.rss, "rss_feeds");
+	setupDashboardPage(router, "/commands/streamers", [], controllers.dashboard.commands.streamers, "streamers_data");
+	setupDashboardPage(router, "/commands/tags", [], controllers.dashboard.commands.tags, "tags");
+	setupDashboardPage(router, "/commands/auto-translation", [], controllers.dashboard.commands.translation, "translated_messages");
+	setupDashboardPage(router, "/commands/trivia-sets", [], controllers.dashboard.commands.trivia, "trivia_sets");
 	setupDashboardPage(router, "/commands/api-keys", [], controllers.dashboard.commands.APIKeys);
 	setupDashboardPage(router, "/commands/tag-reaction", [], controllers.dashboard.commands.reaction);
 
 	// Stats and Points
 	setupDashboardPage(router, "/stats-points/stats-collection", [], controllers.dashboard.stats.collection);
-	setupDashboardPage(router, "/stats-points/ranks", [], controllers.dashboard.stats.ranks);
+	setupDashboardPage(router, "/stats-points/ranks", [], controllers.dashboard.stats.ranks, "ranks_list");
 	setupDashboardPage(router, "/stats-points/gawesome-points", [], controllers.dashboard.stats.points);
 
 	// Administration
-	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins);
+	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins, "admins");
 	setupDashboardPage(router, "/administration/moderation", [], controllers.dashboard.administration.moderation);
 	setupDashboardPage(router, "/administration/blocked", [], controllers.dashboard.administration.blocked);
 	setupDashboardPage(router, "/administration/muted", [], controllers.dashboard.administration.muted);

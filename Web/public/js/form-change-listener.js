@@ -14,6 +14,13 @@ function submitForm() {
 				form.find("span:nth-child(2)").html("Error");
 			}
 			else form.find("span:nth-child(2)").html("Saved");
+
+			$(".menu-modifier").each((index, modifier) => {
+				modifier = $(modifier);
+				const tag = $(modifier.data("modifies"));
+				if (modifier.is(":checked")) tag.removeClass("is-hidden");
+				else tag.addClass("is-hidden");
+			});
 		});
 }
 

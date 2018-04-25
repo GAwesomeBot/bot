@@ -28,8 +28,8 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 							<div class="field">
-								<label class="checkbox" >
-								<input name="isEnabled" type="checkbox" onclick="$('.moderation-feature').toggleClass('is-hidden');" <%= configData.moderation.isEnabled ? "checked" : "" %>>
+								<label class="checkbox">
+									<input class="menu-modifier" data-modifies=".moderation-only-menu-item" name="isEnabled" type="checkbox" onclick="$('.moderation-feature').toggleClass('is-hidden');" <%= configData.moderation.isEnabled ? "checked" : "" %>>
 									Act as a <strong>super-smart</strong> server moderator
 								</label>
 							</div>
@@ -41,7 +41,7 @@
 								<div class="field">
 									<div class="control">
 										<label class="checkbox" >
-										<input name="autokick_members-isEnabled" type="checkbox" <%= configData.moderation.autokick_members.isEnabled ? "checked" : "" %>>
+											<input name="autokick_members-isEnabled" type="checkbox" <%= configData.moderation.autokick_members.isEnabled ? "checked" : "" %>>
 											Automatically kick members after&nbsp;
 										</label>
 										<span class="select is-small">

@@ -150,22 +150,20 @@
 							<a href="/dashboard/<%= serverData.id %>/administration/strikes">Strikes</a>
 						<% } %>
 					</li>
-					<% if (configData.moderation.isEnabled) { %>
-						<li>
-							<% if (currentPage === `/dashboard/${serverData.id}/administration/status-messages`) { %>
-								<a class="is-active" href="#">Status Messages</a>
-							<% } else { %>
-								<a href="/dashboard/<%= serverData.id %>/administration/status-messages">Status Messages</a>
-							<% } %>
-						</li>
-						<li>
-							<% if (currentPage === `/dashboard/${serverData.id}/administration/filters`) { %>
-								<a class="is-active" href="#">Filters</a>
-							<% } else { %>
-								<a href="/dashboard/<%= serverData.id %>/administration/filters">Filters</a>
-							<% } %>
-						</li>
-					<% } %>
+					<li>
+						<% if (currentPage === `/dashboard/${serverData.id}/administration/status-messages`) { %>
+							<a class="moderation-only-menu-item is-active<%= configData.moderation.isEnabled ? "" : " is-hidden" %>" href="#">Status Messages</a>
+						<% } else { %>
+							<a class="moderation-only-menu-item<%= configData.moderation.isEnabled ? "" : " is-hidden" %>" href="/dashboard/<%= serverData.id %>/administration/status-messages">Status Messages</a>
+						<% } %>
+					</li>
+					<li>
+						<% if (currentPage === `/dashboard/${serverData.id}/administration/filters`) { %>
+							<a class="moderation-only-menu-item is-active<%= configData.moderation.isEnabled ? "" : " is-hidden" %>" href="#">Filters</a>
+						<% } else { %>
+							<a class="moderation-only-menu-item<%= configData.moderation.isEnabled ? "" : " is-hidden" %>" href="/dashboard/<%= serverData.id %>/administration/filters">Filters</a>
+						<% } %>
+					</li>
 				</ul>
 			<% } else { %>
 				<a href="/dashboard/<%= serverData.id %>/administration/moderation">Moderation &#9662;</a>

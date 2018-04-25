@@ -10,7 +10,7 @@ const ascii = `
 
 const { Traffic, Updater, CLI } = require("./Modules");
 const { Boot, Console, Sharder } = require("./Internals");
-const { Stopwatch } = require("./Modules/Utils");
+const { Stopwatch, Gag } = require("./Modules/Utils");
 // Set up a winston instance for the Master Process
 global.winston = new Console("master");
 
@@ -24,7 +24,7 @@ winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawe
 
 process.setMaxListeners(0);
 
-const parsedArgs = require("gar")(process.argv.slice(2));
+const parsedArgs = Gag(process.argv.slice(2));
 
 Object.keys(parsedArgs).forEach(arg => {
 	let func;

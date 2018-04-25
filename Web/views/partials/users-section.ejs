@@ -227,5 +227,5 @@ GAwesomeUtil.searchUsers = (query) => {
 	document.getElementById("frame").style.backgroundImage = "";document.getElementById("frame").style.paddingBottom = "";
 	</script>
 	<% var resetUrl = "/activity/users?q="; %>
-	<% include ../partials/no-results %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode }) %>
 <% } %>

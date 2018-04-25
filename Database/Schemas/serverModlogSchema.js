@@ -66,5 +66,9 @@ module.exports = {
 			type: Boolean,
 			default: true,
 		},
+		canEdit: {
+			type: Boolean,
+			default: true,
+		},
 	}, { usePushEach: true })],
 };

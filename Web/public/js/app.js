@@ -6,10 +6,15 @@ const GAwesomePaths = {};
 
 function saveFormState() {
 	try {
+		// Save builder code if it exists
 		$("#builder-code-box").val(cm.getDoc().getValue());
 	} catch (err) {}
+	// Set form state to current serialized form
 	initial_form_state = $('#form').serialize();
-	$("#form-submit span:nth-child(2)").html("Save")
+	// Reset save button
+	$("#form-submit span:nth-child(2)").html("Save");
+	// Update Turbolinks snapshots
+	GAwesomeUtil.snapshot("body");
 }
 
 GAwesomeData.activity = { guildData: {} };
@@ -104,6 +109,13 @@ GAwesomeData.extensions.html = {
 
 GAwesomeUtil.reload = () => window.location.reload(true);
 GAwesomeUtil.refresh = () => Turbolinks.visit("");
+GAwesomeUtil.snapshot = tagName => {
+	const tag = document.getElementsByTagName(tagName)[0];
+	if (!Turbolinks || !Turbolinks.controller) return;
+	const cache = Turbolinks.controller.cache.snapshots;
+	if (tag && cache && cache[window.location.href]) cache[window.location.href][tagName] = tag.cloneNode(true);
+	return cache[window.location.href];
+};
 
 GAwesomeUtil.log = (msg, level, force) => {
 	if (!GAwesomeData.config.debug && !force) return;
@@ -586,10 +598,13 @@ GAwesomeUtil.dashboardWrapper = func => {
 GAwesomeUtil.dashboard.connect = () => {
 	return GAwesomeUtil.dashboardWrapper(() => {
 		if (GAwesomeData.dashboard.socket) {
+			GAwesomeUtil.log("Closing stale Dashboard socket");
 			GAwesomeData.dashboard.socket.close();
 		}
+		GAwesomeUtil.log("Opening new Dashboard socket");
 		GAwesomeData.dashboard.socket = io(window.location.pathname, { transports: ["websocket"] });
 		GAwesomeData.dashboard.socket.on("update", function(data) {
+			GAwesomeUtil.log(`Received Socket data: ${data}`);
 			if (!hide_update_modal && GAwesomeData.dashboard.svrid === data && localStorage.getItem("dashboardUpdates") !== "none") {
 				$("html").addClass("is-clipped");
 				$("#update-modal").addClass("is-active");
@@ -617,6 +632,46 @@ GAwesomeUtil.dashboard.getCache = (svr, key) => {
 		return undefined;
 	}
 	return cache.data;
+};
+
+GAwesomeUtil.dashboard.removeElement = elem => {
+	return GAwesomeUtil.dashboardWrapper(() => {
+		const button = $(elem);
+		button.addClass("is-loading");
+
+		const tableRow = button.parents("tr");
+		const table = tableRow.parents("table");
+		const isLastTableRow = tableRow.is(":only-child")
+		const buttonName = button.attr("name");
+
+		const afterDelete = () => {
+			tableRow.fadeOut(400, () => {
+				tableRow.remove();
+				if (isLastTableRow) {
+					table.addClass("is-hidden");
+					$(".no-elements-message").removeClass("is-hidden");
+				}
+				saveFormState();
+			});
+		};
+
+		$.ajax({
+			url: `${window.location.pathname}/${buttonName}`,
+			method: "DELETE",
+		}).always(afterDelete);
+	});
+};
+
+GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
+	const generateStr = (adminLevel, channelCount, totalChannelCount) => `${adminLevel === 0 ? "E" : ("Admin level &ge;" + adminLevel + ", e")}nabled in ${channelCount - totalChannelCount === 0 ? "all" : channelCount} channel${(channelCount - totalChannelCount === 0 || channelCount !== 1) ? "s" : ""}`;
+
+	const inputs = modal.find(":input");
+	const data = inputs.serializeArray();
+	const channelCount = data.filter(input => input.name.match(/.*-disabled_channel_ids-.*/)).length;
+	const totalChannelCount = inputs.filter((i, input) => $(input).attr("name").match(/.*-disabled_channel_ids-.*/)).length;
+	const adminLevel = Number(data.filter(input => input.name.endsWith("-adminLevel"))[0].value);
+	const overview = generateStr(adminLevel, channelCount, totalChannelCount);
+	settingsBox.html(overview);
 };
 
 GAwesomePaths["landing"] = () => {
@@ -777,6 +832,7 @@ GAwesomePaths["dashboard"] = () => {
 
 document.addEventListener("turbolinks:load", () => {
 	try {
+		GAwesomeUtil.log("Start load page JS");
 		// Update active navbar item
 		GAwesomeUtil.updateHeader();
 
@@ -789,6 +845,7 @@ document.addEventListener("turbolinks:load", () => {
 
 		// Close old dashboard socket if still open
 		if (GAwesomeData.dashboard.socket) {
+			GAwesomeUtil.log("Closing stale Dashboard socket");
 			GAwesomeData.dashboard.socket.close();
 			delete GAwesomeData.dashboard.socket;
 		}
@@ -801,6 +858,7 @@ document.addEventListener("turbolinks:load", () => {
 		// Execute page function and finish loading bar when done
 		if (func) func();
 		NProgress.done();
+		GAwesomeUtil.log(`Finished loading page using ${GAwesomeData.section !== "" ? GAwesomeData.section : "landing"} section handler`);
 	} catch (err) {
 		NProgress.done();
 		NProgress.remove();

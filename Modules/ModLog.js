@@ -36,20 +36,16 @@ module.exports = class ModLog {
 					creatorStr = ModLog.getUserText(creator instanceof GuildMember ? creator.user : creator);
 				}
 				let description = ModLog.getEntryText(++serverDocument.modlog.current_id, type, affectedUser, creatorStr, reason);
-				let m;
-				try {
-					m = await ch.send({
-						embed: {
-							description,
-							color: Colors.INFO,
-							footer: {
-								text: member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason.` : "",
-							},
+				let m = await ch.send({
+					embed: {
+						description,
+						color: Colors.INFO,
+						footer: {
+							text: `${member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason. | ` : ""}Entry created`,
 						},
-					});
-				} catch (err) {
-					return;
-				}
+						timestamp: new Date,
+					},
+				}).catch(() => null);
 				if (m) {
 					serverDocument.modlog.entries.push({
 						_id: serverDocument.modlog.current_id,
@@ -58,6 +54,7 @@ module.exports = class ModLog {
 						creator: creatorStr,
 						message_id: m.id,
 						reason,
+						canEdit: !!member,
 					});
 					return serverDocument.save().then(() => serverDocument.modlog.current_id);
 				}

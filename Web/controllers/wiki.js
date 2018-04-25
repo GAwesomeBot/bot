@@ -142,9 +142,11 @@ module.exports.edit.post = async (req, res) => {
 		try {
 			const wikiDocument = await Wiki.findOne({ _id: req.params.id }).exec();
 			if (!wikiDocument) return renderError(res, "That article does not exist!");
+			const history = diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0);
+			diff.cleanupSemantic(history);
 			wikiDocument.updates.push({
 				_id: req.user.id,
-				diff: diff.prettyHtml(diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0)),
+				diff: diff.prettyHtml(history),
 			});
 			wikiDocument.content = req.body.content;
 

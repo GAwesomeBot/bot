@@ -80,7 +80,7 @@ class SpamHandler extends BaseEvent {
 						this.client.messageBotAdmins(msg.guild, this.serverDocument, {
 							embed: {
 								color: Colors.RED,
-								description: `**@${this.client.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.`,
+								description: `**@${this.client.getName(this.serverDocument, msg.member, true)}** is spamming in #${msg.channel.name} (${msg.channel}) on ${msg.guild}.`,
 							},
 						});
 
@@ -139,7 +139,7 @@ class SpamHandler extends BaseEvent {
 								violatorRoleID = this.serverDocument.config.moderation.filters.spam_filter.violator_role_id;
 							}
 							// eslint-disable-next-line max-len
-							this.client.handleViolation(msg.guild, this.serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(msg.channel.guild, this.serverDocument, msg.member, true)}** (${msg.member}) continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, this.serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
+							this.client.handleViolation(msg.guild, this.serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.bot.getName(this.serverDocument, msg.member, true)}** (${msg.member}) continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, this.serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
 						}
 						await userDocument.save().catch(err => {
 							winston.debug(`Failed to save user document...`, err);
