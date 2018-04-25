@@ -4,7 +4,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 	await msg.send({
 		embed: {
 			color: Colors.INFO,
-			title: `Searching Wikipedia just for you`,
+			title: `Searching Wikipedia just for you ⌛`,
 			description: `Please stand by...`,
 		},
 	});
@@ -19,7 +19,10 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: "What was that again? 📚🤓",
-					description: "The almighty Wikipedia could not find a result for your search query. Maybe try something different?",
+					description: "A result could not be found for your search query.",
+					footer: {
+						text: "Check for typos or try something else!",
+					},
 				},
 			});
 		}
@@ -33,12 +36,8 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 	if (description.length > 2040) {
 		description = `${description.substring(0, 2040)}...`;
 	}
-	let mainImage;
-	try {
-		mainImage = await result.mainImage();
-	} catch (e) {
-		// Sometimes wikijs crashes when attempting to grab a main image. If it works, great. If not, too bad.
-	}
+	// Sometimes wikijs crashes when attempting to grab a main image. If it works, great. If not, too bad.
+	const mainImage = await result.mainImage().catch(() => null);
 	const fields = [
 		{
 			name: "Permalink",
