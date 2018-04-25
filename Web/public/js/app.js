@@ -663,7 +663,7 @@ GAwesomeUtil.dashboard.removeElement = elem => {
 };
 
 GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
-	const generateStr = (adminLevel, channelCount, totalChannelCount) => `${adminLevel === 0 ? "E" : ("Admin level &ge;" + adminLevel + ", e")}nabled in ${channelCount - totalChannelCount === 0 ? "all" : channelCount} channel${(channelCount - totalChannelCount === 0 || channelCount !== 1) ? "s" : ""}`;
+	const generateStr = (adminLevel, channelCount, totalChannelCount) => `${adminLevel === 0 ? (channelCount === 0 ? "Dis" :"En") : ("Admin level &ge;" + adminLevel + (channelCount === 0 ? ", dis" : ", en"))}abled in ${channelCount - totalChannelCount === 0 || channelCount === 0 ? "all" : channelCount} channel${(channelCount - totalChannelCount === 0 || channelCount !== 1) ? "s" : ""}`;
 
 	const inputs = modal.find(":input");
 	const data = inputs.serializeArray();
