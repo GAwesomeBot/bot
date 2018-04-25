@@ -857,7 +857,7 @@ document.addEventListener("turbolinks:load", () => {
 
 		// Execute page function and finish loading bar when done
 		if (func) func();
-		NProgress.done();
+		NProgress.done(true);
 		GAwesomeUtil.log(`Finished loading page using ${GAwesomeData.section !== "" ? GAwesomeData.section : "landing"} section handler`);
 	} catch (err) {
 		NProgress.done();
