@@ -15,18 +15,18 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 			let description;
 			switch (body.reason) {
 				case "banned":
-					description = "This subreddit has been banned by the reddit Admins 🚫";
+					description = "This subreddit has been banned by the Reddit Admins 🚫";
 					break;
 				case "private":
 					description = "This subreddit has been set to private by its moderators 🤐";
 					break;
 				default:
 					if (body.message === "Forbidden" && body.error === 403) {
-						description = "This subreddit has been quarantined by the reddit Admins 😱";
+						description = "This subreddit has been quarantined by the Reddit Admins 😱";
 					} else if (status === 302) {
 						description = "This subreddit does not seem to exist.";
 					} else {
-						winston.debug(`Failed to fetch reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
+						winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
 						description = "There was an unknown error while fetching your results.";
 					}
 					break;
@@ -52,19 +52,18 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 		const fields = [];
 		const thumbnails = [];
 		let nsfwFiltered = 0;
-		body.data.children.forEach(s => {
-			s = s.data;
-			if (!msg.channel.nsfw && s.over_18) {
+		body.data.children.forEach(({ data }) => {
+			if (!msg.channel.nsfw && data.over_18) {
 				nsfwFiltered++;
 				return;
 			}
-			let description = `**__${s.title}__**${s.gilded ? ` ⭐**${s.gilded}**` : ""}${s.stickied ? " 📌" : ""}\n\n${s.selftext || s.url}`;
+			let description = `**__${data.title}__**${data.gilded ? ` ⭐**${data.gilded}**` : ""}${data.stickied ? " 📌" : ""}\n\n${data.selftext || data.url}`;
 			descriptions.push(description.length > 2040 ? `${description.substring(0, 2040)}...` : description);
-			thumbnails.push(!["default", "self"].includes(s.thumbnail) ? s.thumbnail : null);
+			thumbnails.push(!["default", "self"].includes(data.thumbnail) ? data.thumbnail : null);
 			const meta = [
-				`Submitted ${moment.unix(s.created_utc).fromNow()} by [${s.author}](https://www.reddit.com/user/${s.author})${s.subreddit !== subreddit ? ` to [r/${s.subreddit}](https://www.reddit.com/r/${s.subreddit})` : ""}`,
-				`With ${s.num_comments} comments and ${s.score} points so far`,
-				`[**permalink**](https://www.reddit.com${s.permalink})`,
+				`Submitted ${moment.unix(data.created_utc).fromNow()} by [${data.author}](https://www.reddit.com/user/${data.author})${data.subreddit !== subreddit ? ` to [r/${data.subreddit}](https://www.reddit.com/r/${data.subreddit})` : ""}`,
+				`With ${data.num_comments} comments and ${data.score} points so far`,
+				`[**permalink**](https://www.reddit.com${data.permalink})`,
 			];
 			fields.push([{
 				name: EmptySpace,
@@ -78,7 +77,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: "Hold on a second! 🛑",
-					description: "All results were filtered for being marked NSFW. If you want to see them go to an NSFW channel or ask an Admin to make this channel NSFW.",
+					description: "All results were filtered for being marked NSFW. If you want to see them go to a NSFW channel or ask an Admin to make this channel NSFW.",
 				},
 			});
 		}
@@ -89,12 +88,12 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 		}, [], fields, thumbnails);
 		await menu.init();
 	} else {
-		winston.debug(`Failed to fetch reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
+		winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.ERROR,
 				title: Text.COMMAND_ERR(),
-				description: `I was unable to fetch results from reddit!`,
+				description: `I was unable to fetch results from Reddit!`,
 			},
 		});
 	}
