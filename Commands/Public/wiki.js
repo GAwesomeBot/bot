@@ -1,6 +1,6 @@
 const wiki = require("wikijs").default();
 
-module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
 	await msg.send({
 		embed: {
 			color: Colors.INFO,
