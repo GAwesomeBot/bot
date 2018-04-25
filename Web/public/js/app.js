@@ -343,6 +343,9 @@ GAwesomeUtil.populateWikiBookmarks = () => {
 	}
 };
 
+GAwesomeUtil.isLoading = elem => $(elem).addClass("is-loading");
+GAwesomeUtil.isFinished = elem => $(elem).removeClass("is-loading");
+
 GAwesomeUtil.publishExtension = extid => {
 	if (confirm("Are you sure you want to publish this extension? Everyone will be able to view and use this extension!")) {
 		NProgress.start();
@@ -672,6 +675,17 @@ GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
 	const adminLevel = Number(data.filter(input => input.name.endsWith("-adminLevel"))[0].value);
 	const overview = generateStr(adminLevel, channelCount, totalChannelCount);
 	settingsBox.html(overview);
+};
+
+GAwesomeUtil.dashboard.post = payload => {
+	return new Promise((resolve, reject) => {
+		$.ajax({
+			url: window.location.pathname,
+			method: "POST",
+			data: payload
+		}).success(resolve)
+			.fail(reject)
+	});
 };
 
 GAwesomePaths["landing"] = () => {

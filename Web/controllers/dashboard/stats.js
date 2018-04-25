@@ -79,6 +79,10 @@ controllers.ranks.post = async (req, res) => {
 			max_score: req.body["new-max_score"],
 			role_id: req.body["new-role_id"] || null,
 		});
+	} else if (req.body["ranks_list-reset"]) {
+		serverDocument.members.forEach(member => {
+			member.rank = "No Rank";
+		});
 	} else {
 		serverDocument.config.ranks_list.forEach(rankDocument => {
 			rankDocument.max_score = parseInt(req.body[`rank-${rankDocument._id}-max_score`]);
@@ -86,11 +90,6 @@ controllers.ranks.post = async (req, res) => {
 				rankDocument.role_id = req.body[`rank-${rankDocument._id}-role_id`];
 			}
 		});
-		if (req.body["ranks_list-reset"]) {
-			serverDocument.members.forEach(member => {
-				member.rank = "No Rank";
-			});
-		}
 	}
 	serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
 
