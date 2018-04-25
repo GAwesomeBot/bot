@@ -1,6 +1,6 @@
 const { cli } = require("../Configurations/commands");
 const {
-		Error: GABError,
+	Error: GABError,
 } = require("./Errors");
 
 class CLI {
