@@ -2539,6 +2539,10 @@ snekfetch@^3.5.8, snekfetch@^3.6.0, snekfetch@^3.6.4:
   version "3.6.4"
   resolved "https://registry.yarnpkg.com/snekfetch/-/snekfetch-3.6.4.tgz#d13e80a616d892f3d38daae4289f4d258a645120"
 
+snekfetch@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/snekfetch/-/snekfetch-4.0.0.tgz#949b066de47a5bd70d39d7b0a3a7fcd9ee1156a1"
+
 sntp@1.x.x:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/sntp/-/sntp-1.0.9.tgz#6541184cc90aeea6c6e7b35e2659082443c66198"

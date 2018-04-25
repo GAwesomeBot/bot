@@ -53,7 +53,7 @@
     "remove-markdown": "^0.2.2",
     "require-reload": "^0.2.2",
     "showdown": "^1.8.6",
-    "snekfetch": "^3.6.4",
+    "snekfetch": "^4.0.0",
     "socket.io": "^2.1.0",
     "tail": "^1.2.3",
     "text-diff": "^1.0.1",
