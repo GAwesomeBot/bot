@@ -367,8 +367,8 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		imgur: {
-			usage: `<image attachment> or <image URL>`,
-			description: `Uploads an image or images to Imgur`,
+			usage: `<image attachment> and/or <image URLs>`,
+			description: `Uploads one or multiple images to Imgur`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
