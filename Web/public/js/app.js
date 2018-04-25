@@ -886,8 +886,12 @@ $(window).scroll(function() {
 	}
 });
 
-$(document).on('turbolinks:click', function() {
-	if (window.location.pathname.startsWith("/dashboard")) NProgress.configure({ parent: "section.section.is-white"});
+$(document).on('turbolinks:click', function({ originalEvent }) {
+	const a = document.createElement("a");
+	a.href = originalEvent.data.url;
+	const targetIsDashboard = a.pathname.startsWith("/dashboard") && a.pathname !== "/dashboard";
+	const currentLocationIsDashboard = window.location.pathname.startsWith("/dashboard") && window.location.pathname !== "/dashboard";
+	if (targetIsDashboard && currentLocationIsDashboard) NProgress.configure({ parent: "section.section.is-white"});
 	else NProgress.configure({ parent: "body" });
 	NProgress.start();
 });
