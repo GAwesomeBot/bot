@@ -1,6 +1,6 @@
 const { Structures, splitMessage, MessageAttachment, MessageEmbed } = require("discord.js");
 
-const IsObject = input => Object.prototype.toString.call(input) === "[object Object]";
+const IsObject = input => input && input.constructor === Object;
 
 module.exports = () => {
 	Structures.extend("Guild", Guild => {
