@@ -1,10 +1,10 @@
-const imgur = require("imgur");
+const { Imgur } = require("../../Modules/index");
 const { IsURL } = require("../../Modules/Utils/index");
 const { tokens: { imgurClientID } } = require("../../Configurations/auth");
 
-imgur.setClientId(imgurClientID);
-
 module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
+	const imgur = new Imgur(imgurClientID);
+
 	if (msg.suffix === "credits" && configJSON.maintainers.includes(msg.author.id)) {
 		const c = await imgur.getCredits();
 		return msg.send({
@@ -24,10 +24,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		});
 	}
 	if (msg.suffix) {
-		filesToUpload = filesToUpload.concat(
-			msg.suffix.split(" ")
-				.trimAll()
-				.filter(IsURL));
+		filesToUpload = [...filesToUpload, ...msg.suffix.split(" ").trimAll().filter(IsURL)];
 	}
 	if (!filesToUpload.length) {
 		return msg.send({
@@ -63,9 +60,9 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		}
 	} catch (err) {
 		winston.debug(`Failed to upload image to Imgur`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
-		switch (err.status) {
+		switch (err.statusCode) {
 			case 400:
-				if (err.message === "File is over the size limit") {
+				if (err.body.data.error === "File is over the size limit") {
 					return msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
@@ -73,7 +70,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 							description: "You can only upload files with up to 10MB each! Blame Imgur for that limit.",
 						},
 					});
-				} else if (err.message.code === 1003) {
+				} else if (err.body.data.error.code === 1003) {
 					return msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
@@ -89,7 +86,10 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 					embed: {
 						color: Colors.SOFT_ERR,
 						title: "We're being rate limited! 😱",
-						description: "Looks like we hit our daily upload limit. If you want to be able to upload more files consider asking an Admin to set a custom Imgur client ID for this server.",
+						description: "Looks like we hit our daily upload limit. Please try again later.",
+						footer: {
+							text: "Consider asking an Admin to set a custom Imgur client ID in the server dashboard.",
+						},
 					},
 				});
 			case 500:
@@ -104,7 +104,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		return msg.send({
 			embed: {
 				color: Colors.ERROR,
-				title: `Something went wrong! 😱`,
+				title: Text.COMMAND_ERR(),
 				description: "An unknown error occurred and we were unable to handle it.",
 			},
 		});
