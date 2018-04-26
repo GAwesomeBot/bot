@@ -19,9 +19,9 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: "What was that again? 📚🤓",
-					description: "The almighty Wikipedia could not find a result for your search query.",
+					description: "Even Wikipedia doesn't seem to know what you're talking about.",
 					footer: {
-						text: "Check for typos or try something else!",
+						text: "Check for typos or try searching for something else!",
 					},
 				},
 			});
