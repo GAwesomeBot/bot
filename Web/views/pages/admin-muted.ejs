@@ -9,8 +9,6 @@
 	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newMute() {
-		submitForm();
-
 		var newMutedMember = $("#new-mute-member");
 		if(newMutedMember.val()) {
 			newMutedMember.removeClass("is-danger");
@@ -30,7 +28,7 @@
 				},
 				success: function() {
 					saveFormState();
-				  Turbolinks.visit('');
+				  	Turbolinks.visit('');
 				}
 			});
 		}
@@ -58,85 +56,68 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); Turbolinks.visit(''); return false;">
+					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(muted.length>0) { %>
-							<table class="table is-fullwidth">
+                            <%- include("../partials/no-results", { isHidden: muted.length, isSearchQuery: false, description: "There are no muted members in any channel on this server. Type the name of a user below to mute someone." }) %>
+							<table class="table is-fullwidth<%= muted.length ? "" : " is-hidden" %>">
 								<thead>
-								<tr>
-									<th></th>
-									<th>Username</th>
-									<th>ID</th>
-									<th></th>
-								</tr>
+									<tr>
+										<th></th>
+										<th>Username</th>
+										<th>ID</th>
+										<th></th>
+									</tr>
 								</thead>
 								<tbody>
-								<% for(var i = 0; i < muted.length; i++) { %>
-								<tr>
-									<td>
-										<img class="image is-24x24" src="<%= muted[i].avatar %>" alt="<%= muted[i].id %>">
-									</td>
-									<td>
-										<%= muted[i].name %>
-									</td>
-									<td>
-										<%= muted[i].id %>
-									</td>
-									<td>
-										<a class="button is-small is-primary modal-button" data-target="#muted-<%= i %>-channels-modal">
-											<span class="icon is-small">
-												<i class="fa fa-hashtag"></i>
-											</span>
-											<span>Channels</span>
-										</a>
-										<input type="checkbox" id="muted-<%= muted[i].id %>-removed" name="muted-<%= muted[i].id %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="muted-<%= muted[i].id %>-removed" onclick="$('#muted-<%= muted[i].id %>-removed').attr('checked', true); saveFormState();">
-											<span>Remove</span>
-											<span class="icon is-small">
-												<i class="fa fa-times"></i>
-											</span>
-										</button>
-									</td>
-								</tr>
-								<div id="muted-<%= i %>-channels-modal" class="modal">
-									<div class="modal-background"></div>
-									<div class="modal-container">
-										<div class="modal-content">
-											<div class="box">
-												<h4 class="subtitle is-4">
-													Muted channels for <strong>@<%= muted[i].name %></strong>
-												</h4>
-												<% for(var j=0; j<channelData.length; j++) { %>
-												<label class="checkbox">
-													<input name="muted-<%= muted[i].id %>-<%= channelData[j].id %>" type="checkbox" <%= muted[i].channels.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-													#<%= channelData[j].name %>
-												</label>
-												<br>
-												<% } %>
-											</div>
-										</div>
-									</div>
-									<a class="modal-close"></a>
-								</div>
-								<% } %>
+									<% muted.forEach(muteDocument => { %>
+										<tr>
+											<td>
+												<img class="image is-24x24" src="<%= muteDocument.avatar %>" alt="<%= muteDocument.id %>">
+											</td>
+											<td>
+												<%= muteDocument.name %>
+											</td>
+											<td>
+												<%= muteDocument.id %>
+											</td>
+											<td>
+												<a class="button is-small is-primary modal-button" data-target="#muted-<%= muteDocument.id %>-channels-modal">
+													<span class="icon is-small">
+														<i class="fa fa-hashtag"></i>
+													</span>
+													<span>Channels</span>
+												</a>
+												<button class="button is-small is-danger" name="<%= muteDocument.id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+													<span>Remove</span>
+													<span class="icon is-small">
+														<i class="fa fa-times"></i>
+													</span>
+												</button>
+												<div id="muted-<%= muteDocument.id %>-channels-modal" class="modal">
+													<div class="modal-background"></div>
+													<div class="modal-container">
+														<div class="modal-content">
+															<div class="box">
+																<h4 class="subtitle is-4">
+																	Muted channels for <strong>@<%= muteDocument.name %></strong>
+																</h4>
+                                                        		<% for(var j=0; j<channelData.length; j++) { %>
+																	<label class="checkbox">
+																		<input name="muted-<%= muteDocument.id %>-<%= channelData[j].id %>" type="checkbox" <%= muteDocument.channels.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
+																		#<%= channelData[j].name %>
+																	</label>
+																	<br>
+																<% } %>
+															</div>
+														</div>
+													</div>
+													<a class="modal-close"></a>
+												</div>
+											</td>
+										</tr>
+									<% }) %>
 								</tbody>
 							</table>
-							<% } else { %>
-							<article class="message">
-								<div class="message-header">
-									<p>
-										<span class="icon">
-											<i class="fa fa-meh-o"></i>
-										</span>
-										Nothing to see here
-									</p>
-								</div>
-								<div class="message-body">
-									There are no muted members in any channel on this server. Type the name of a user below to muted someone.
-								</div>
-							</article>
-							<br>
-							<% } %>
 						</div>
 						<div class="field is-horizontal">
 							<div class="field-body">

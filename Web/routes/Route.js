@@ -41,11 +41,7 @@ class DashboardRoute extends Route {
 		this.postRoute = new Route(router, route, this.postMiddleware, controllerPOST, "post", "dashboard", this);
 
 		if (pullEndpointKey) {
-			this.deleteRoute = new Route(router, `${route}/:id`, this.postMiddleware, (req, res) => {
-				if (pullEndpointKey === "tags") req.svr.document.config.tags.list.pull(req.params.id);
-				else req.svr.document.config[pullEndpointKey].pull(req.params.id);
-				require("../helpers").saveAdminConsoleOptions(req, res, true);
-			}, "delete", "dashboard", this);
+			this.deleteRoute = new Route(router, `${route}/:id`, this.postMiddleware, require("../controllers/dashboard/delete")(pullEndpointKey), "delete", "dashboard", this);
 		}
 	}
 }

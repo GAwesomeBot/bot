@@ -202,7 +202,7 @@ controllers.muted.post = async (req, res) => {
 
 		let memberDocument = serverDocument.members.id(member.user.id);
 		if (!memberDocument) {
-			serverDocument.members.push({ _id: member.id });
+			serverDocument.members.push({ _id: member.user.id });
 			memberDocument = serverDocument.members.id(member.user.id);
 		}
 
@@ -216,13 +216,7 @@ controllers.muted.post = async (req, res) => {
 			const parameters = key.split("-");
 			if (parameters.length === 3 && parameters[0] === "muted" && svr.memberList.includes(parameters[1]) && memberDocuments.id(parameters[1])) {
 				const memberDocument = memberDocuments.id(parameters[1]);
-				if (parameters[2] === "removed") {
-					// Muted member removed
-					for (let memberMutedDocument of memberDocument.muted) {
-						client.IPC.send("unmuteMember", { guild: svr.id, channel: memberMutedDocument._id, member: parameters[1] });
-					}
-					memberDocument.muted = [];
-				} else if (svr.channels.includes(parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
+				if (svr.channels.some(ch => ch.id === parameters[2]) && req.body[key] === "on" && !memberDocument.muted.id(parameters[2])) {
 					// Muted member new channels
 					client.IPC.send("muteMember", { guild: svr.id, channel: parameters[2], member: parameters[1] });
 					memberDocument.muted.push({ _id: parameters[2] });
