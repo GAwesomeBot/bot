@@ -34,7 +34,7 @@ module.exports = router => {
 	// Administration
 	setupDashboardPage(router, "/administration/admins", [], controllers.dashboard.administration.admins, "admins");
 	setupDashboardPage(router, "/administration/moderation", [], controllers.dashboard.administration.moderation);
-	setupDashboardPage(router, "/administration/blocked", [], controllers.dashboard.administration.blocked);
+	setupDashboardPage(router, "/administration/blocked", [], controllers.dashboard.administration.blocked, "blocked");
 	setupDashboardPage(router, "/administration/muted", [], controllers.dashboard.administration.muted);
 	setupDashboardPage(router, "/administration/strikes", [], controllers.dashboard.administration.strikes);
 	setupDashboardPage(router, "/administration/status-messages", [], controllers.dashboard.administration.status);

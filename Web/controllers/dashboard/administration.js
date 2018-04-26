@@ -134,7 +134,7 @@ controllers.blocked = async (req, res) => {
 					name: member.user.username,
 					id: member.user.id,
 					avatar: client.getAvatarURL(member.user.id, member.user.avatar) || "/static/img/discord-icon.png",
-					isGlobal: !!configJSON.userBlocklist.includes(member.user.id),
+					isGlobal: configJSON.userBlocklist.includes(member.user.id),
 				};
 			}),
 			moderation: {
@@ -151,13 +151,6 @@ controllers.blocked.post = async (req, res) => {
 		if (member && !serverDocument.config.blocked.includes(member.user.id) && req.app.client.getUserBotAdmin(req.svr, serverDocument, member) === 0) {
 			serverDocument.config.blocked.push(member.user.id);
 		}
-	} else {
-		for (let i = 0; i < serverDocument.config.blocked.length; i++) {
-			if (req.body[`block-${i}-removed`] !== undefined) {
-				serverDocument.config.blocked[i] = null;
-			}
-		}
-		serverDocument.config.blocked.spliceNullElements();
 	}
 	save(req, res);
 };
