@@ -56,7 +56,9 @@ class CLI {
 		} else {
 			if (this.currentlyRunningCommand.data.isMultiline) {
 				if (trimmedData.endsWith(`\u0007`)) {
-					trimmedData = trimmedData.replace(/\u0007/, "");
+					// This error is ignored because in the console, it is mostly seen as ^G
+					// eslint-disable-next-line no-control-regex
+					trimmedData = trimmedData.replace(/\u0007/g, "");
 					this.commandArgs += trimmedData;
 					try {
 						this.currentlyRunningCommand.func({ cli: this }, this.currentlyRunningCommand.data, this.commandArgs);
