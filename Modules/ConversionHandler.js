@@ -25,7 +25,7 @@ class ConversionHandler {
 			jsonExists = false;
 		}
 		if (jsonExists) {
-			const res = await fsn.readJSON("./Temp/currency.json", { encoding: "utf8" });
+			const res = await fsn.readJSON("./Temp/currency.json");
 			money.rates = res.rates;
 			money.base = res.base;
 			this.lastUpdated = res.date;
