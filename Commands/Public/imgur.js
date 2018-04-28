@@ -24,7 +24,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		});
 	}
 	if (msg.suffix) {
-		filesToUpload = [...filesToUpload, ...msg.suffix.split(" ").trimAll().filter(IsURL)];
+		filesToUpload = filesToUpload.concat(msg.suffix.split(" ").trimAll().filter(IsURL));
 	}
 	if (!filesToUpload.length) {
 		return msg.send({
