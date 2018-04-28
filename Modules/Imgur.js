@@ -17,7 +17,7 @@ module.exports = class Imgur {
 		}
 		const res = await this._createRequest("post", "image", form);
 		return {
-			status: res.status,
+			status: res.statusCode,
 			body: res.body,
 			data: res.body.data,
 			raw: res,
@@ -27,7 +27,7 @@ module.exports = class Imgur {
 	async createAlbum () {
 		const res = await this._createRequest("post", "album");
 		return {
-			status: res.status,
+			status: res.statusCode,
 			body: res.body,
 			data: res.body.data,
 			raw: res,
@@ -37,7 +37,7 @@ module.exports = class Imgur {
 	async getCredits () {
 		const res = await this._createRequest("get", "credits");
 		return {
-			status: res.status,
+			status: res.statusCode,
 			body: res.body,
 			data: res.body.data,
 			raw: res,
