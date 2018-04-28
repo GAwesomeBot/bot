@@ -49,8 +49,8 @@ module.exports = class Imgur {
 			.set({
 				Authorization: `Client-ID ${this.clientID}`,
 			});
-		for (const k in form) {
-			req.attach(k, form[k]);
+		for (const [key, value] of Object.entries(form)) {
+			req.attach(key, value);
 		}
 		return req;
 	}
