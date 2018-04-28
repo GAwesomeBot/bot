@@ -516,7 +516,7 @@ class MessageCreate extends BaseEvent {
 			throw err;
 		}
 		let response;
-		if (res.status === 200 && res.body) {
+		if (res.statusCode === 200 && res.body) {
 			response = JSON.parse(res.body).botsay
 				.replaceAll("Program-O", this.client.user.username)
 				.replaceAll("<br/>", "\n")

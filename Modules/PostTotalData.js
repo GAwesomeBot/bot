@@ -13,10 +13,10 @@ module.exports = async client => {
 		} catch (err) {
 			winston.warn(`Failed to post to Discordlist.net >~<`, err);
 		}
-		if (res && res.status === 200) {
+		if (res && res.statusCode === 200) {
 			winston.info(`Succesfully POSTed to Discordlist.net`);
 		} else {
-			winston.warn(`Failed to POST to Discordlist.net`, { statusCode: res.status });
+			winston.warn(`Failed to POST to Discordlist.net`, { statusCode: res.statusCode });
 		}
 	}
 };

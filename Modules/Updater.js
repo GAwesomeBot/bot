@@ -26,10 +26,10 @@ module.exports = {
 			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`);
 		} catch (err) {
 			res = {};
-			res.status = 404;
+			res.statusCode = 404;
 		}
 		if (res) {
-			if (res.status === 404) {
+			if (res.statusCode === 404) {
 				return 404;
 			}
 			return res.body;

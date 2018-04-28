@@ -70,6 +70,6 @@ module.exports = class GitHubGist {
 		} catch (err) {
 			throw err;
 		}
-		return res.status === 204;
+		return res.statusCode === 204;
 	}
 };

@@ -23,11 +23,11 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 			if (num > serverDocument.config.command_fetch_properties.max_count) {
 				num = serverDocument.config.command_fetch_properties.max_count;
 			}
-			let { body, status } = await get(APIs.E621(query)).set({
+			let { body, statusCode } = await get(APIs.E621(query)).set({
 				Accept: "application/json",
 				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
 			});
-			if (body && status === 200) {
+			if (body && statusCode === 200) {
 				const unparsed = [], descriptions = [], fields = [], images = [];
 				for (let i = 0; i < num; i++) {
 					const random = Math.floor(Math.random() * body.length);
