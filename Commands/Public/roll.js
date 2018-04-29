@@ -1,13 +1,11 @@
-const ArgParser = require("../../Modules/MessageUtils/Parser");
-
 module.exports = async ({ Constants: { Colors, Text }, Utils: { PromiseWait } }, documents, msg, commandData) => {
 	let min = 1;
 	let max = 6;
 	if (msg.suffix) {
-		const choices = ArgParser.parseQuoteArgs(msg.suffix, " ");
+		const choices = msg.suffix.split(" ");
 		if (choices.length === 1) {
 			max = +choices[0];
-		} else {
+		} else if (choices.length > 2) {
 			min = +choices[0];
 			max = +choices[1];
 		}
@@ -21,9 +19,7 @@ module.exports = async ({ Constants: { Colors, Text }, Utils: { PromiseWait } },
 			},
 		});
 	}
-	if (min > max) {
-		[min, max] = [max, min];
-	}
+	if (min > max) [min, max] = [max, min];
 	const randNum = Math.floor(Math.random() * (max - min + 1)) + min;
 	await msg.send({
 		embed: {
