@@ -18,10 +18,10 @@ module.exports = async client => {
 		} catch (err) {
 			winston.warn(`Failed to post to DiscordBots..\n`, err);
 		}
-		if (res && res.status === 200) {
+		if (res && res.statusCode === 200) {
 			winston.info(`Succesfully POSTed to bots.discord.pw`);
 		} else {
-			winston.warn(`Failed to POST to bots.discord.pw`, { statusCode: res.status });
+			winston.warn(`Failed to POST to bots.discord.pw`, { statusCode: res.statusCode });
 		}
 	}
 };

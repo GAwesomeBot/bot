@@ -9,7 +9,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 	} else {
 		subreddit = subreddit.replace(/^\/?r\//, "");
 	}
-	const { body, status, statusText, headers } = await get(APIs.REDDIT(subreddit), { followRedirects: false }).catch(e => e);
+	const { body, statusCode, statusText, headers } = await get(APIs.REDDIT(subreddit), { followRedirects: false }).catch(e => e);
 	if (body) {
 		if (!body.data) {
 			let description;
@@ -23,10 +23,10 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 				default:
 					if (body.message === "Forbidden" && body.error === 403) {
 						description = "This subreddit has been quarantined by the Reddit Admins 😱";
-					} else if (status === 302) {
+					} else if (statusCode === 302) {
 						description = "This subreddit does not seem to exist.";
 					} else {
-						winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
+						winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 						description = "There was an unknown error while fetching your results.";
 					}
 					break;

@@ -13,9 +13,9 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 		else if (number > serverDocument.config.command_fetch_properties.max_count) number = serverDocument.config.command_fetch_properties.max_count;
 		else number = parseInt(number);
 
-		let { body, status } = await get(APIs.ANIME(query)).set("Accept", "application/vnd.api+json");
+		let { body, statusCode } = await get(APIs.ANIME(query)).set("Accept", "application/vnd.api+json");
 		body = JSON.parse(body.toString());
-		if (status === 200 && body.data && body.data.length) {
+		if (statusCode === 200 && body.data && body.data.length) {
 			const list = [];
 			const results = [];
 			const getDisplay = data => {

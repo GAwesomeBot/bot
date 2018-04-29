@@ -12,6 +12,6 @@ const { GABError } = require("../Internals/Errors");
 module.exports = async (query, nsfw = "pg-13") => {
 	if (!query) throw new GABError("MISSING_GIPHY_QUERY");
 	const res = await get(APIs.GIPHY(giphyAPI, query, nsfw));
-	if (res.status === 200 && res.body && res.body.data) return res.body.data;
+	if (res.statusCode === 200 && res.body && res.body.data) return res.body.data;
 	else throw new GABError("NO_GIPHY_RESULT");
 };
