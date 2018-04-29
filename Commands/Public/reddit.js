@@ -88,7 +88,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 		}, [], fields, thumbnails);
 		await menu.init();
 	} else {
-		winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
+		winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.ERROR,
