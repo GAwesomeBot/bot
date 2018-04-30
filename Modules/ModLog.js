@@ -41,7 +41,7 @@ module.exports = class ModLog {
 						description,
 						color: Colors.INFO,
 						footer: {
-							text: `${member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason. | ` : ""}Entry created`,
+							text: `${member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <reason>" to change the reason. | ` : ""}Entry created`,
 						},
 						timestamp: new Date,
 					},
