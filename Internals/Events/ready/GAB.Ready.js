@@ -390,7 +390,7 @@ class Ready extends BaseEvent {
 
 							// Kick member if they're inactive and autokick is on
 							const memberDocument = serverDocument.members.id(member.id);
-							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(server, serverDocument, member) === 0) {
+							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(server, serverDocument, member) === 0 && member.kickable) {
 								try {
 									await member.kick(`Kicked for inactivity on server.`);
 									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id });
