@@ -19,9 +19,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 	}
 	let filesToUpload = [];
 	if (msg.attachments.size) {
-		[...msg.attachments.values()].forEach(a => {
-			filesToUpload.push(a.url);
-		});
+		for (const a of msg.attachments.values()) filesToUpload.push(a.url);
 	}
 	if (msg.suffix) {
 		filesToUpload = filesToUpload.concat(msg.suffix.split(" ").trimAll().filter(IsURL));
