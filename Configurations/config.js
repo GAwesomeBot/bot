@@ -1,48 +1,48 @@
 const configs = {
 	/*
-   * Represents how many shards the bot will have.
-   * It *must* be a integer, aka *1*, *52* etc. OR "auto"
-   */
+   	 * Represents how many shards the bot will have.
+   	 * It *must* be a integer, aka *1*, *52* etc. OR "auto"
+   	 */
 	shardTotal: 1,
 	/*
-   * The URL all the bot commands should point to.
-   * Example: /about shows this link for the web interface
-   */
+   	 * The URL all the bot commands should point to.
+   	 * Example: /about shows this link for the web interface
+   	 */
 	hostingURL: "",
 	/*
-   * The server IP the web inteface should point itself to.
-   * Preferably, you leave it as *0.0.0.0* so that it is on the local machine
-   */
+   	 * The server IP the web inteface should point itself to.
+   	 * Preferably, you leave it as *0.0.0.0* so that it is on the local machine
+   	 */
 	serverIP: "0.0.0.0",
 	/*
-   * The HTTP / HTTPS ports the bot should use. If you use Cloudflare, you should just keep httpPort to *80*
-   * They are both Integers
-   */
+   	 * The HTTP / HTTPS ports the bot should use. If you use Cloudflare, you should just keep httpPort to *80*
+   	 * They are both Integers
+   	 */
 	httpPort: 80,
 	httpsPort: 433,
 	/*
-   * Certificate / Private Key paths to the files, required for HTTPS.
-   * If you are on Windows, make sure to escape the *\*
-   */
+   	 * Certificate / Private Key paths to the files, required for HTTPS.
+   	 * If you are on Windows, make sure to escape the *\*
+   	 */
 	cert: "",
 	privateKey: "",
 	/*
-   * If the bot should try to automatically redirect to https.
-   * Needs cert and privateKey to be fulfilled
-   */
+   	 * If the bot should try to automatically redirect to https.
+   	 * Needs cert and privateKey to be fulfilled
+   	 */
 	httpsRedirect: false,
 	/*
-   * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
-   */
+   	 * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
+   	 */
 	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
 	/*
-   * MaxVoiceChannels should remain as is.
-   */
+   	 * MaxVoiceChannels should remain as is.
+   	 */
 	maxVoiceChannels: 2,
 	/*
-   * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
+   	 * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
 	 * Otherwise. !! DO NOT TOUCH !!
-   */
+   	 */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot&permissions=470281471",
 	/*
 	 * Level of output the console should display. List of levels:
@@ -66,16 +66,16 @@ const configs = {
 	 * The encrypted data will be lost otherwise.
 	 * So, set it to something secore, then never ever touch it. Save it in a file!
 	 * Hell, it can even be a random word! Just remember: never share this.
+	 * Make sure it isn't longer than 16 characters!
+	 * You can use https://passwordsgenerator.net/ to generate an encryption key.
 	 */
-	encryptionPassword: "vPuVQ;e!9RH9:&`pSh'Y",
+	encryptionKey: "usM9^y5KHtF_UCn?",
 	/*
 	 * Discord channel and server where any errors should be outputted,
 	 * whenever applicable
-	 * debugServer: The server ID of the server
 	 * debugChannel: The Channel ID in the server
 	 */
 	discord: {
-		debugServer: ``,
 		debugChannel: ``,
 	},
 	/*
