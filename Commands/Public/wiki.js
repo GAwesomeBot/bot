@@ -44,7 +44,6 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			title: result.raw.title,
 			url: result.raw.fullurl,
 			description,
-			fields,
 			image: {
 				url: mainImage,
 			},
