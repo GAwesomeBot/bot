@@ -33,22 +33,16 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 		// 100 is a bit short so load the full description in that case
 		description = await result.content();
 	}
-	if (description.length > 2040) {
-		description = `${description.substring(0, 2040)}...`;
+	if (description.length > 1980) {
+		description = `${description.substring(0, 1980)}...\nArticle is too long, click [**here**](${result.raw.fullurl}) to read more!`;
 	}
 	// Sometimes wikijs crashes when attempting to grab a main image. If it works, great. If not, too bad.
 	const mainImage = await result.mainImage().catch(() => null);
-	const fields = [
-		{
-			name: "Permalink",
-			value: result.raw.fullurl,
-			inline: false,
-		},
-	];
 	msg.send({
 		embed: {
 			color: Colors.RESPONSE,
 			title: result.raw.title,
+			url: result.raw.fullurl,
 			description,
 			fields,
 			image: {
