@@ -31,15 +31,15 @@ const configs = {
 	 * Needs cert and privateKey to be fulfilled
 	 */
 	httpsRedirect: false,
-	 /*
+	/*
 	 * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
 	 */
 	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
-	 /*
+	/*
 	 * MaxVoiceChannels should remain as is.
 	 */
 	maxVoiceChannels: 2,
-	 /*
+	/*
 	 * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
 	 * Otherwise. !! DO NOT TOUCH !!
 	 */
