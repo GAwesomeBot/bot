@@ -1508,9 +1508,9 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-kareem@2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/kareem/-/kareem-2.0.6.tgz#011ed59fd718bb147c63141a799fc888cd5a211b"
+kareem@2.0.7:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/kareem/-/kareem-2.0.7.tgz#8d260366a4df4236ceccec318fcf10c17c5beb22"
 
 lcid@^1.0.0:
   version "1.0.0"
@@ -1806,13 +1806,13 @@ mongoose-legacy-pluralize@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz#3ba9f91fa507b5186d399fb40854bff18fb563e4"
 
-mongoose@^5.0.16:
-  version "5.0.16"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.0.16.tgz#a405ff0a6583442d9c55fead8ea4fdbdc0b4f5ba"
+mongoose@^5.0.17:
+  version "5.0.17"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.0.17.tgz#7c70e663b8ac567460902dca636ebb59f36a540a"
   dependencies:
     async "2.1.4"
     bson "~1.0.4"
-    kareem "2.0.6"
+    kareem "2.0.7"
     lodash.get "4.4.2"
     mongodb "3.0.7"
     mongoose-legacy-pluralize "1.0.2"
