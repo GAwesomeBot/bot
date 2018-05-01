@@ -60,16 +60,24 @@ const configs = {
 	 */
 	secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
 	/**
-	 * The password that will be used in the encryption of data
+	 * A secure, random password used to separate your main encryption key from
+	 * someone elses.
+	 * YOU SHOULD CHANGE THIS.
+	 * And DO NOT CHANGE IT AFTERWARDS.
+	 * Use https://passwordsgenerator.net/ to generatet something big and secure!
+	 */
+	encryptionPassword: "fEmH!bRP4S8a4^*fpQ=%",
+	/**
+	 * The initial value that will be used in the encryption of data
 	 * YOU MUST CHANGE THIS.
 	 * And whatever you do. DO NOT CHANGE THIS AFTERWARDS.
 	 * The encrypted data will be lost otherwise.
 	 * So, set it to something secore, then never ever touch it. Save it in a file!
 	 * Hell, it can even be a random word! Just remember: never share this.
 	 * Make sure it isn't longer than 16 characters!
-	 * You can use https://passwordsgenerator.net/ to generate an encryption key.
+	 * You can use https://passwordsgenerator.net/ to generate an encryption iv.
 	 */
-	encryptionKey: "usM9^y5KHtF_UCn?",
+	encryptionIv: "usM9^y5KHtF_UCn?",
 	/*
 	 * Discord channel and server where any errors should be outputted,
 	 * whenever applicable
