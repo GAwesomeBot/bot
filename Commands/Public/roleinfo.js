@@ -1,19 +1,21 @@
 const moment = require("moment");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
+const rolesPerPage = 50;
+
 module.exports = async ({ client, Constants: { Colors, Text }, Utils: { TitlecasePermissions } }, documents, msg, commandData) => {
 	if (!msg.suffix) {
 		const roles = msg.guild.roles;
 		let sortedRoles = [...roles.values()].sort((a, b) => b.position - a.position);
 		const descriptions = [];
-		for (let i = 0; i < roles.size; i += 50) {
-			const roleSegment = sortedRoles.slice(i, i + 50).join("\n");
-			descriptions.push(`${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + 50 < roles.size ? `\n...and ${roles.size - i - 50} more` : ""}`);
+		for (let i = 0; i < roles.size; i += rolesPerPage) {
+			const roleSegment = sortedRoles.slice(i, i + rolesPerPage).join("\n");
+			descriptions.push(`${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < roles.size ? `\n...and ${roles.size - i - rolesPerPage} more` : ""}`);
 		}
 		const menu = new PaginatedEmbed(msg, {
 			color: Colors.INFO,
 			title: `This guild has ${roles.size} roles:`,
-			footer: roles.size > 50 ? `Page {currentPage} out of {totalPages}` : "",
+			footer: roles.size > rolesPerPage ? `Page {currentPage} out of {totalPages}` : "",
 		}, {
 			descriptions,
 		});
@@ -53,8 +55,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		if (role.managed) {
 			elements.push("🤖 Managed by an integration");
 		}
-		// TODO in case no additional permissions granted for role?
-		elements.push(`👌 Permissions:\n\`\`\`${TitlecasePermissions(permissions)}\`\`\``);
+		elements.push(`👌 Permissions:${permissions.length ? `\n\`\`\`${TitlecasePermissions(permissions)}\`\`\`` : " This role does not grant any additional permissions"}`);
 		return msg.send({
 			embed: {
 				title: `Information for role ${role.name} :: ${role.id}`,
