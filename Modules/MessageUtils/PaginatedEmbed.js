@@ -2,31 +2,43 @@ const { Colors, PageEmojis } = require("../../Internals/Constants");
 
 class PaginatedEmbed {
 	/**
-	 * After creating a PaginatedEmbed call `#init()` to set it up and start listenig for reactions.
+	 * After creating a PaginatedEmbed call `#init()` to set it up and start listening for reactions.
 	 *
-	 * @param originalMsg 	The original message that created this paginated embed.
+	 * @param {Message} originalMsg 	The original message that created this paginated embed.
 	 * 						May be a custom object, the only required fields are `channel` and `author.id`
 	 * @param embedTemplate A slightly edited embed object that serves as the base template for all pages,
 	 * 						with strings being formatted via templates
 	 * @param pageData		All the data used for the different pages of the embed pages,
 	 * 						with the fields being arrays with values (or null) for every page
 	 */
-	constructor (originalMsg, embedTemplate, pageData) {
+	constructor (originalMsg, embedTemplate, {
+		authors = [],
+		titles = [],
+		colors = [],
+		urls = [],
+		descriptions = [],
+		fields = [],
+		timestamps = [],
+		thumbnails = [],
+		images = [],
+		footers = [],
+		pageCount = null,
+	} = {}) {
 		this.channel = originalMsg.channel;
 		this.authorID = originalMsg.author.id;
 		this.pageEmojis = PageEmojis;
 		this.pageEmojiArray = [...Object.values(this.pageEmojis)];
 
-		this.authors = pageData.authors || [];
-		this.titles = pageData.titles || [];
-		this.colors = pageData.colors || [];
-		this.urls = pageData.urls || [];
-		this.descriptions = pageData.descriptions || [];
-		this.fields = pageData.fields || [];
-		this.timestamps = pageData.timestamps || [];
-		this.thumbnails = pageData.thumbnails || [];
-		this.images = pageData.images || [];
-		this.footers = pageData.footers || [];
+		this.authors = authors;
+		this.titles = titles;
+		this.colors = colors;
+		this.urls = urls;
+		this.descriptions = descriptions;
+		this.fields = fields;
+		this.timestamps = timestamps;
+		this.thumbnails = thumbnails;
+		this.images = images;
+		this.footers = footers;
 
 		this.embedTemplate = Object.assign({
 			author: "{author}",
@@ -45,7 +57,7 @@ class PaginatedEmbed {
 		}, embedTemplate);
 
 		this.currentPage = 0;
-		this.totalPages = pageData.pageCount || this.descriptions.length;
+		this.totalPages = pageCount || this.descriptions.length;
 	}
 
 	async init (timeout = 300000) {
