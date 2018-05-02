@@ -117,14 +117,14 @@ class PaginatedEmbed {
 		return {
 			embed: {
 				author: {
-					name: this.embedTemplate.author.format(this._getFormatOptions({ author: this.authors[this.currentPage] })),
+					name: this.embedTemplate.author.format(this._getFormatOptions({ author: this.authors[this.currentPage] || "" })),
 					icon_url: this.embedTemplate.authorIcon,
 					url: this.embedTemplate.authorUrl,
 				},
-				title: this.embedTemplate.title.format(this._getFormatOptions({ title: this.titles[this.currentPage] })),
+				title: this.embedTemplate.title.format(this._getFormatOptions({ title: this.titles[this.currentPage] || "" })),
 				color: this.colors[this.currentPage] || this.embedTemplate.color,
 				url: this.urls[this.currentPage] || this.embedTemplate.url,
-				description: this.embedTemplate.description.format(this._getFormatOptions({ description: this.descriptions[this.currentPage] })),
+				description: this.embedTemplate.description.format(this._getFormatOptions({ description: this.descriptions[this.currentPage] || "" })),
 				fields: this.fields[this.currentPage] || this.embedTemplate.fields,
 				timestamp: this.timestamps[this.currentPage] || this.embedTemplate.timestamp,
 				thumbnail: {
@@ -134,7 +134,7 @@ class PaginatedEmbed {
 					url: this.images[this.currentPage] || this.embedTemplate.image,
 				},
 				footer: {
-					text: this.embedTemplate.footer.format(this._getFormatOptions({ footer: this.footers[this.currentPage] })),
+					text: this.embedTemplate.footer.format(this._getFormatOptions({ footer: this.footers[this.currentPage] || "" })),
 					icon_url: this.embedTemplate.footerIcon,
 				},
 			},
