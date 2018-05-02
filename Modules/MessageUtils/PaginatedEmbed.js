@@ -45,7 +45,7 @@ class PaginatedEmbed {
 		}, embedTemplate);
 
 		this.currentPage = 0;
-		this.totalPages = pageData.pageCount || this.descriptions.length - 1;
+		this.totalPages = pageData.pageCount || this.descriptions.length;
 	}
 
 	async init (timeout = 300000) {
@@ -89,16 +89,16 @@ class PaginatedEmbed {
 	async _handlePageChange (reaction) {
 		switch (reaction.emoji.name) {
 			case this.pageEmojis.back: {
-				this.currentPage--;
-				if (this.currentPage < 0) this.currentPage = 0;
 				this._removeUserReaction(reaction, this.authorID);
+				if (this.currentPage === 0) return;
+				this.currentPage--;
 				this._updateMessage();
 				break;
 			}
 			case this.pageEmojis.forward: {
-				this.currentPage++;
-				if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
 				this._removeUserReaction(reaction, this.authorID);
+				if (this.currentPage === this.totalPages - 1) return;
+				this.currentPage++;
 				this._updateMessage();
 				break;
 			}
@@ -150,7 +150,7 @@ class PaginatedEmbed {
 	}
 
 	_getFormatOptions (obj) {
-		return Object.assign({ currentPage: this.currentPage + 1, totalPages: this.totalPages + 1 }, obj);
+		return Object.assign({ currentPage: this.currentPage + 1, totalPages: this.totalPages }, obj);
 	}
 }
 
