@@ -118,14 +118,15 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 					`\tCurrently at **${countDocument.value}** 📊`,
 				].join("\n");
 			}).chunk(10);
-			const description = [];
+			const descriptions = [];
 			for (const chunk of chunks) {
-				description.push(chunk.join("\n\n"));
+				descriptions.push(chunk.join("\n\n"));
 			}
-			const menu = new PaginatedEmbed(msg, description, {
+			const menu = new PaginatedEmbed(msg, {
 				title: `There ${info.length === 1 ? "is" : "are"} ${info.length} count${info.length === 1 ? "" : "s"} on "${msg.guild}" 📋`,
 				color: Colors.INFO,
-				footer: `Page {current description} out of {total descriptions}`,
+			}, {
+				descriptions,
 			});
 			await menu.init();
 		} else {

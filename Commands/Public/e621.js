@@ -63,10 +63,14 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 					images.push(`${unparsed[i].file_url}`);
 					descriptions.push(tempDesc.join("\n"));
 				}
-				const menu = new PaginatedEmbed(msg, descriptions, {
+				const menu = new PaginatedEmbed(msg, {
 					color: Colors.RESPONSE,
-					footer: `Result {current description} out of {total descriptions} results`,
-				}, images, fields);
+					footer: `Result {currentPage} out of {totalPages} results`,
+				}, {
+					descriptions,
+					fields,
+					images,
+				});
 				await m.delete();
 				await menu.init();
 			} else {

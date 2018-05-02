@@ -151,11 +151,13 @@ module.exports = {
 								author: {
 									id: usr.id,
 								},
-							}, options, {
+							}, {
 								footer: `You have 4 minute to respond using the number matched to the options shown above.`,
 								title: `There's a poll in #${ch.name} called "__${channelDocument.poll.title}__" ⚔`,
 								description: `To vote anonymously, please select one of the following options.\n**Note** You may need to remove and re-add your reaction for page changes!\n\n{description}`,
 								color: Colors.INFO,
+							}, {
+								descriptions: options,
 							});
 							await initMsg.delete();
 							await menu.init();
@@ -229,20 +231,22 @@ module.exports = {
 						`\t**${option}**`,
 					].join("\n"));
 					map = map.chunk(10);
-					const description = [];
+					const descriptions = [];
 					for (const innerArray of map) {
-						description.push(innerArray.join("\n"));
+						descriptions.push(innerArray.join("\n"));
 					}
 					const menu = new PaginatedEmbed({
 						channel: initMsg.channel,
 						author: {
 							id: usr.id,
 						},
-					}, description, {
+					}, {
 						title: `🍻 Poll named "__${title}__" has started!`,
 						color: Colors.SUCCESS,
 						description: `Check out #${ch.name} (${ch}) to see your poll in action!\nHere are the polls options:\n\n{description}`,
 						footer: ``,
+					}, {
+						descriptions,
 					});
 					await menu.init();
 					await serverDocument.save();

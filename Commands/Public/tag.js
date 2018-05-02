@@ -59,14 +59,15 @@ class TagCommand {
 		if (info.length) {
 			for (let i = 0; i < info.length; i++) info[i] = await info[i];
 			const chunks = info.chunk(10);
-			const description = [];
+			const descriptions = [];
 			for (const chunk of chunks) {
-				description.push(chunk.join("\n\n"));
+				descriptions.push(chunk.join("\n\n"));
 			}
-			const menu = new PaginatedEmbed(this.msg, description, {
+			const menu = new PaginatedEmbed(this.msg, {
 				title: `${this.msg.guild}'s tags:`,
 				color: this.Colors.RESPONSE,
-				footer: `Page {current description} out of {total descriptions}`,
+			}, {
+				descriptions,
 			});
 			await menu.init();
 		} else {

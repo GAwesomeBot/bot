@@ -76,12 +76,13 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 				`\tExpires **${moment(countdown.expiry_timestamp).fromNow()}**`,
 			].join("\n"));
 			const chunks = arr.chunk(10);
-			const description = [];
-			for (const chunk of chunks) description.push(chunk.join("\n\n"));
-			new PaginatedEmbed(msg, description, {
+			const descriptions = [];
+			for (const chunk of chunks) descriptions.push(chunk.join("\n\n"));
+			await new PaginatedEmbed(msg, {
 				title: `There ${arr.length === 1 ? "is" : "are"} ${arr.length} countdown${arr.length === 1 ? "" : "s"} on "${msg.guild}" 🎆`,
 				color: Colors.INFO,
-				footer: `Page {current description} out of {total descriptions}`,
+			}, {
+				descriptions,
 			}).init();
 		} else {
 			msg.send({

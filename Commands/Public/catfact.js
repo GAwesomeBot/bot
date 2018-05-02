@@ -1,5 +1,5 @@
 const { get } = require("snekfetch");
-const PaginatedMenu = require("../../Modules/MessageUtils/PaginatedEmbed");
+const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
 module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	let number = msg.suffix;
@@ -10,14 +10,16 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 
 	const { body, statusCode, statusText } = await get(APIs.CATFACT(number));
 	if (statusCode === 200 && body && body.data.length) {
-		const facts = [];
+		const descriptions = [];
 		body.data.forEach(d => {
-			facts.push(d.fact);
+			descriptions.push(d.fact);
 		});
-		const menu = new PaginatedMenu(msg, facts, {
+		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
-			title: `Cat fact {current description} out of {total descriptions}`,
+			title: `Cat fact {currentPage} out of {totalPages}`,
 			footer: ``,
+		}, {
+			descriptions,
 		});
 		await menu.init();
 	} else {
