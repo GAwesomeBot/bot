@@ -667,8 +667,8 @@ detect-libc@^1.0.2:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid "745669a7c9ade99d04803770ba3a222f74074f6d"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/745669a7c9ade99d04803770ba3a222f74074f6d"
+  uid ddab8096cffa8719694896ee3fba69e5f1b71f7b
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/ddab8096cffa8719694896ee3fba69e5f1b71f7b"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
