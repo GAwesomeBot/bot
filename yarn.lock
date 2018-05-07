@@ -343,10 +343,9 @@ camelcase@^4.1.0:
   uid b4ded3443aea546de7d051614ba6262688d4a460
   resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/b4ded3443aea546de7d051614ba6262688d4a460"
 
-"canvas-prebuilt@github:node-gfx/node-canvas-prebuilt":
+canvas-prebuilt@^2.0.0-alpha.12:
   version "2.0.0-alpha.12"
-  uid "3511b8e2510efc922b8ec97fdde55f11983c1125"
-  resolved "https://codeload.github.com/node-gfx/node-canvas-prebuilt/tar.gz/3511b8e2510efc922b8ec97fdde55f11983c1125"
+  resolved "https://registry.yarnpkg.com/canvas-prebuilt/-/canvas-prebuilt-2.0.0-alpha.12.tgz#8fafe05910314e0aaab6d7785c3e3afb01594998"
   dependencies:
     nan "^2.4.0"
     node-pre-gyp "^0.6.36"
@@ -766,9 +765,9 @@ escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
 
-escape-latex@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/escape-latex/-/escape-latex-1.0.0.tgz#74b9e94d8c178645704c33791e95a4155b59718f"
+escape-latex@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/escape-latex/-/escape-latex-1.0.3.tgz#1b9085e3e66570faabe21f05655643f64e78717a"
 
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
@@ -1681,13 +1680,13 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-mathjs@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.2.1.tgz#23359a2a147a898e5ebc1f43ebf6df3e946ccc49"
+mathjs@^4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.2.2.tgz#a56785d49ff23da32c1e4eb26763e380592d22ae"
   dependencies:
     complex.js "2.0.4"
     decimal.js "9.0.1"
-    escape-latex "1.0.0"
+    escape-latex "1.0.3"
     fraction.js "4.0.4"
     javascript-natural-sort "0.7.1"
     seed-random "2.2.0"
