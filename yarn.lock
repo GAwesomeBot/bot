@@ -343,10 +343,9 @@ camelcase@^4.1.0:
   uid b4ded3443aea546de7d051614ba6262688d4a460
   resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/b4ded3443aea546de7d051614ba6262688d4a460"
 
-"canvas-prebuilt@github:node-gfx/node-canvas-prebuilt":
+canvas-prebuilt@^2.0.0-alpha.12:
   version "2.0.0-alpha.12"
-  uid "3511b8e2510efc922b8ec97fdde55f11983c1125"
-  resolved "https://codeload.github.com/node-gfx/node-canvas-prebuilt/tar.gz/3511b8e2510efc922b8ec97fdde55f11983c1125"
+  resolved "https://registry.yarnpkg.com/canvas-prebuilt/-/canvas-prebuilt-2.0.0-alpha.12.tgz#8fafe05910314e0aaab6d7785c3e3afb01594998"
   dependencies:
     nan "^2.4.0"
     node-pre-gyp "^0.6.36"
@@ -667,8 +666,8 @@ detect-libc@^1.0.2:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid ddab8096cffa8719694896ee3fba69e5f1b71f7b
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/ddab8096cffa8719694896ee3fba69e5f1b71f7b"
+  uid fca6d3be568fa57fb75bb3483ac6d637d5a4e190
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/fca6d3be568fa57fb75bb3483ac6d637d5a4e190"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
