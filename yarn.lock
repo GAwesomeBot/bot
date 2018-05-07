@@ -343,10 +343,9 @@ camelcase@^4.1.0:
   uid b4ded3443aea546de7d051614ba6262688d4a460
   resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/b4ded3443aea546de7d051614ba6262688d4a460"
 
-"canvas-prebuilt@github:node-gfx/node-canvas-prebuilt":
+canvas-prebuilt@^2.0.0-alpha.12:
   version "2.0.0-alpha.12"
-  uid "3511b8e2510efc922b8ec97fdde55f11983c1125"
-  resolved "https://codeload.github.com/node-gfx/node-canvas-prebuilt/tar.gz/3511b8e2510efc922b8ec97fdde55f11983c1125"
+  resolved "https://registry.yarnpkg.com/canvas-prebuilt/-/canvas-prebuilt-2.0.0-alpha.12.tgz#8fafe05910314e0aaab6d7785c3e3afb01594998"
   dependencies:
     nan "^2.4.0"
     node-pre-gyp "^0.6.36"
@@ -696,9 +695,9 @@ ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
 
-ejs@^2.5.9:
-  version "2.5.9"
-  resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.9.tgz#7ba254582a560d267437109a68354112475b0ce5"
+ejs@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.6.1.tgz#498ec0d495655abc6f23cd61868d926464071aa0"
 
 encodeurl@~1.0.2:
   version "1.0.2"
