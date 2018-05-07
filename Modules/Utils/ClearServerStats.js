@@ -10,6 +10,7 @@ module.exports = async (client, server, serverDocument) => {
 	// Rank members by activity score for the week
 	const topMembers = [];
 	await Promise.all(serverDocument.members.map(async memberDocument => {
+		if (!memberDocument) return;
 		const member = server.members.get(memberDocument._id);
 		if (member && member.id !== client.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
