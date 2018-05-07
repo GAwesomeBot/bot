@@ -25,6 +25,10 @@
     color: #fff;
 }
 
+pre {
+    white-space: pre-wrap!important;
+}
+
 .is-hidden {
     display: none;
 }
