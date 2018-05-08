@@ -138,11 +138,11 @@ module.exports = () => {
 			}
 
 			get command () {
-				return this._commandObject.command || null;
+				return this._commandObject ? this._commandObject.command || null : null;
 			}
 
 			get suffix () {
-				return this._commandObject.suffix || null;
+				return this._commandObject ? this._commandObject.suffix || null : null;
 			}
 
 			async send (content, options) {
