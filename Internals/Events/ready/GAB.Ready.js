@@ -215,7 +215,7 @@ class Ready extends BaseEvent {
 				if (serverDocument.config.streamers_data.length) {
 					for (const streamerData of serverDocument.config.streamers_data) {
 						try {
-							await sendStreamerMessage(guild, serverDocument, streamerData);
+							await sendStreamerMessage(this.client, guild, serverDocument, streamerData);
 						} catch (err) {
 							winston.warn(`Failed to send streaming message to server ;.;\n`, err);
 						}
