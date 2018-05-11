@@ -509,7 +509,7 @@ client.on("emojiUpdate", async (oldEmoji, newEmoji) => {
  * WebSocket Errors
  */
 client.on("error", async error => {
-	winston.warn(`Received ERROR event from Discord.js!`, { error });
+	winston.warn(`Received ERROR event from Discord.js!`, { err: error.message });
 });
 
 /**
