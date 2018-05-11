@@ -232,8 +232,8 @@ GAwesomeUtil.activityViewportUpdate = mq => {
 		$(".header-search-box").removeClass("is-large");
 		document.getElementById("frame").style.paddingLeft = "15px";
 		document.getElementById("frame").style.paddingRight = "15px";
-		if (document.getElementById("search-select").value === "servers") {
-			switchLayout("list");
+		if (window.location.pathname !== "/activity/users") {
+			GAwesomeUtil.switchActivityLayout("list");
 		}
 	} else {
 		$(".header-search-box").addClass("is-large");

@@ -7,14 +7,14 @@
                     GAwesomeBot
                 </a>
 
-                <button id="navbar-burger" class="navbar-burger button" onClick="$(this).toggleClass('is-active'); $('#navbar-menu').toggleClass('is-active');">
+                <button id="navbar-burger" class="navbar-burger button" onClick="$(this).toggleClass('is-active'); $('#navbar-menu').slideToggle('fast');">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
             </div>
 
-            <div id="navbar-menu" class=" navbar-menu">
+            <div id="navbar-menu" class="navbar-menu">
                 <div class="navbar-end">
                 <a class="navbar-item is-active" href="https://status.gawesomebot.com" title="Status">
                   <span class="icon is-small">
@@ -72,7 +72,7 @@
                 </script>
 
                 <% if(authUser) { %>
-                <a id="nav-dashboard" class="navbar-item is-active" href="/dashboard" title="Go to dashboard">
+                <a id="nav-dashboard" class="navbar-item is-active is-flex-centered" href="/dashboard" title="Go to dashboard">
                     <img class="image is-16x16" src="<%= authUser.avatar %>" style="border-radius: 100%;" alt="<%= authUser.id %>">
                     &nbsp;
                     <span><%= authUser.username %></span>
