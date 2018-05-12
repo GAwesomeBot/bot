@@ -26,10 +26,10 @@ module.exports = class RandomAnimals {
 		} catch (err) {
 			throw err;
 		}
-		if (res.text.includes(".mp4")) {
+		if (res.raw.toString().includes(".mp4")) {
 			return RandomAnimals.dog();
 		} else {
-			return `https://random.dog/${res.text}`;
+			return `https://random.dog/${res.raw.toString()}`;
 		}
 	}
 };
