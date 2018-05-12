@@ -38,6 +38,7 @@ module.exports = {
 				"Temp Mute",
 				"Delete Role",
 				"Modify Role",
+				"Create Role",
 			],
 			required: true,
 		},
