@@ -196,7 +196,7 @@ controllers.options.homepage = async (req, { res }) => {
 		headerImage: configJSON.headerImage,
 		homepageMessageHTML: configJSON.homepageMessageHTML,
 	}).setPageData({
-		dirname: path.join(__dirname, "/public/static/img/"),
+		dirname: path.join(__dirname, "../public/img/"),
 		page: "maintainer-homepage.ejs",
 	}).render();
 };
