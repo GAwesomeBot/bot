@@ -14,7 +14,7 @@ module.exports = async (client, server, motdDocument) => {
 			const channel = server.channels.get(serverConfigDocument.message_of_the_day.channel_id);
 			if (channel) {
 				serverConfigDocument.message_of_the_day.last_run = Date.now();
-				await serverConfigDocument.message_of_the_day.save().catch(err => {
+				await serverDocument.save().catch(err => {
 					winston.warn(`Failed to save message of the day data... 😞\n`, err);
 					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 				});
