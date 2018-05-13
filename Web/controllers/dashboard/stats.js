@@ -20,7 +20,6 @@ controllers.collection = async (req, res) => {
 		currentPage: `${req.baseUrl}${req.path}`,
 		configData: {
 			commands: {
-				games: serverDocument.config.commands.games,
 				messages: serverDocument.config.commands.messages,
 				stats: serverDocument.config.commands.stats,
 			},

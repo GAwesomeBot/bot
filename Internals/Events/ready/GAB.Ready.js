@@ -358,61 +358,33 @@ class Ready extends BaseEvent {
 	}
 
 	/**
-	 * Count a server's stats (games, clearing, etc.);
+	 * Count a server's stats (autokick, clearing, etc.);
 	 */
 	async statsCollector () {
 		winston.debug("Collecting stats for servers.");
-		const promiseArray = [];
-		const countServerStats = async server => {
-			const serverDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
-				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
-			});
-			if (serverDocument) {
-				winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
-				// Clear stats for server if older than a week
-				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
-					await clearStats(this.client, server, serverDocument);
-				} else {
-					// Iterate through all members
-					server.members.forEach(async member => {
-						if (member.id !== this.client.user.id && !member.user.bot) {
-							await winston.silly(`Collecting member stats from guild ${server} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
-							const game = await this.client.getGame(member);
-							if (game !== "" && member.presence.status === "online") {
-								await winston.silly(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
-								let gameDocument = serverDocument.games.id(game);
-								if (!gameDocument) {
-									serverDocument.games.push({ _id: game });
-									gameDocument = serverDocument.games.id(game);
-								}
-								gameDocument.time_played++;
-							}
+		const clearStatsServerDocuments = await Servers.find({ stats_timestamp: { $lt: Date.now() - 604800000 } }).exec();
+		await Promise.all(clearStatsServerDocuments.map(serverDocument => clearStats(this.client, serverDocument)));
 
-							// Kick member if they're inactive and autokick is on
-							const memberDocument = serverDocument.members.id(member.id);
-							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(server, serverDocument, member) === 0 && member.kickable) {
-								try {
-									await member.kick(`Kicked for inactivity on server.`);
-									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id });
-								} catch (err) {
-									memberDocument.cannotAutokick = true;
-									winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id }, err);
-								}
-							}
-						}
-					});
+		const autokickServerDocuments = await Servers.find({
+			"config.moderation.isEnabled": true,
+			"config.moderation.autokick_members.isEnabled": true,
+		}).exec();
+		autokickServerDocuments.forEach(serverDocument => {
+			const guild = this.client.guilds.get(serverDocument._id);
+			if (!guild) return;
+			serverDocument.members.forEach(async memberDocument => {
+				const member = guild.members.get(memberDocument._id);
+				if (memberDocument && member && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(server, serverDocument, member) === 0 && member.kickable) {
 					try {
-						await serverDocument.save();
+						await member.kick(`Kicked for inactivity on server.`);
+						winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id });
 					} catch (err) {
-						winston.warn(`Failed to save server data for stats.. <.>`, { svrid: server.id }, err);
+						memberDocument.cannotAutokick = true;
+						winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id }, err);
 					}
 				}
-			}
-		};
-		this.client.guilds.forEach(guild => {
-			promiseArray.push(countServerStats(guild));
+			});
 		});
-		await Promise.all(promiseArray);
 		this.client.setTimeout(async () => {
 			await this.statsCollector();
 		}, 900000);
