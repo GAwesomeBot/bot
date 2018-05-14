@@ -43,7 +43,7 @@
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.16",
     "money": "^0.2.0",
-    "mongoose": "^5.0.18",
+    "mongoose": "^5.1.0",
     "mstranslator": "^3.0.0",
     "object-sizeof": "^1.2.0",
     "parse-duration": "^0.1.1",
