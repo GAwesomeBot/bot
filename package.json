@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "async-dl-github-repo": "^2.0.0",
-    "body-parser": "^1.18.2",
+    "body-parser": "^1.18.3",
     "canvas-constructor": "github:kyranet/canvasConstructor",
     "canvas-prebuilt": "^2.0.0-alpha.12",
     "chalk": "^1.1.3",
