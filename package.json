@@ -41,7 +41,7 @@
     "jimp": "^0.2.28",
     "mathjs": "^4.2.2",
     "moment": "^2.22.1",
-    "moment-timezone": "^0.5.16",
+    "moment-timezone": "^0.5.17",
     "money": "^0.2.0",
     "mongoose": "^5.0.18",
     "mstranslator": "^3.0.0",
