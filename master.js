@@ -100,7 +100,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			winston.error(`In config.js, shardTotal must be a number or "auto"`)
 			process.exit(1);
 		}
-		if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
+		if (!parseInt(configJS.shardTotal) && configJS.shardTotal !== "auto")) {
 			winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
 			process.exit(1);
 		}
