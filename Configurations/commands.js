@@ -642,7 +642,7 @@ const commands = {
 		},
 		role: {
 			aliases: ["roles"],
-			usage: `[<name> or "me"] [|] ["." or <hex color> or "reset color" or "hoist" or "joinable" or <user> or <new role name>]`,
+			usage: `[<name> or "me"] [|] ["." or <hex color> or "reset color" or "hoist" or "joinable" or "mentionable" or <user> or <new role name>]`,
 			description: `Adds members to roles, modifies roles or sets colors`,
 			defaults: {
 				isEnabled: true,
