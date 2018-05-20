@@ -10,6 +10,7 @@ module.exports = async (client, serverDocument) => {
 	// Rank members by activity score for the week
 	const topMembers = [];
 	const server = client.guilds.get(serverDocument._id);
+	if (!server) return;
 	await Promise.all(serverDocument.members.map(async memberDocument => {
 		if (!memberDocument) return;
 		const member = server.members.get(memberDocument._id);

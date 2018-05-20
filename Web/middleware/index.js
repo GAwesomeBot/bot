@@ -2,6 +2,8 @@ const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
 
 class GABResponse {
 	constructor (req, res, page) {
+		if (!req.user) req.user = {};
+
 		this.template = {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
