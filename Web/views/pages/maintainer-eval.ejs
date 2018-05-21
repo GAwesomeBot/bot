@@ -51,7 +51,7 @@
                   .done(data => {
                   	data = JSON.parse(data);
                   	let log = evalLog.replace("$CODE$", code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'))
-                      .replace("$RESULT$", (Array.isArray(data.result) ? data.result[0] : data.result).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'))
+                      .replace("$RESULT$", String(data.result).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'))
                       .replace("$COLOR$", data.err ? "#ff473b" : "#37dc22")
                       .replace("$TYPE$", data.err ? "times" : "check");
                   	$("#evalResults").prepend(log);
