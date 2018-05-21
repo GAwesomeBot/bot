@@ -1,22 +1,17 @@
 const mongoose = require("mongoose");
 mongoose.pluralize(null);
 mongoose.Promise = global.Promise;
+
 const serverSchema = require("./Schemas/serverSchema");
 const userSchema = require("./Schemas/userSchema");
 const modulesSchema = require("./Schemas/modulesSchema.js");
-modulesSchema.index({
-	name: "text",
-	description: "text",
-});
 const blogSchema = require("./Schemas/blogSchema.js");
 const wikiSchema = require("./Schemas/wikiSchema");
 const trafficSchema = require("./Schemas/trafficSchema");
 
-const { addToGlobal } = require("../Modules/Utils/GlobalDefines.js");
 
 exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 	if (client) {
-		/* eslint-disable prefer-arrow-callback, no-invalid-this */
 		serverSchema.plugin(function hookIntoSchema (schema) {
 			winston.debug(`Hooking into the server schema...`);
 			schema.post("save", async function _ () {
@@ -75,3 +70,49 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 });
 
 exports.get = exports.getConnection = () => global.Database;
+
+const { MongoClient } = require("mongodb");
+
+const Model = require("./Model");
+const { addToGlobal } = require("../Modules/Utils/GlobalDefines.js");
+
+/**
+ * Prepares models, creates and connects a client to MongoDB
+ * @param {object} config A set of MongoDB config options
+ * @returns {Promise<Object>}
+ */
+exports.einitialize = async config => {
+	const mongoClient = await MongoClient.connect(config.URL, config.options);
+	const db = mongoClient.db(config.db);
+	const [
+		Servers,
+		Users,
+		Gallery,
+		Blog,
+		Wiki,
+		Traffic,
+	] = [
+		new Model(db, "servers", serverSchema),
+		new Model(db, "users", userSchema),
+		new Model(db, "gallery", modulesSchema),
+		new Model(db, "blog", blogSchema),
+		new Model(db, "wiki", wikiSchema),
+		new Model(db, "traffic", trafficSchema),
+	];
+	addToGlobal("EServers", Servers);
+	addToGlobal("EUsers", Users);
+	addToGlobal("EGallery", Gallery);
+	addToGlobal("EBlog", Blog);
+	addToGlobal("EWiki", Wiki);
+	addToGlobal("EClient", db);
+	addToGlobal("EDatabase", {
+		Servers, servers: Servers,
+		Users, users: Users,
+		Gallery, gallery: Gallery,
+		Blog, blog: Blog,
+		Wiki, wiki: Wiki,
+		Traffic, traffic: Traffic,
+		client: db,
+	});
+	return global.EDatabase.client;
+};

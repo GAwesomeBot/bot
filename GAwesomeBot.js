@@ -44,6 +44,7 @@ ObjectDefines(client);
 global.ThatClientThatDoesCaching = client;
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
+database.einitialize(configJS.database);
 database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL, global.ThatClientThatDoesCaching).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
@@ -131,7 +132,7 @@ client.IPC.on("unmuteMember", async msg => {
 client.IPC.on("createMOTD", async msg => {
 	try {
 		const guild = client.guilds.get(msg.guild);
-		const serverDocument = await client.cache.get(guild.id);
+		const serverDocument = await EServers.findOne(guild.id);
 
 		MessageOfTheDay(client, guild, serverDocument.config.message_of_the_day);
 	} catch (err) {
@@ -146,7 +147,7 @@ client.IPC.on("postAllData", async () => {
 client.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = client.guilds.get(guildID);
-	const serverDocument = await client.cache.get(guild.id);
+	const serverDocument = await EServers.findOne(guild.id);
 	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
 	if (channel) {
 		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
@@ -158,7 +159,7 @@ client.IPC.on("createPublicInviteLink", async msg => {
 client.IPC.on("deletePublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = client.guilds.get(guildID);
-	const serverDocument = await client.cache.get(guild.id);
+	const serverDocument = await EServers.findOne(guild.id);
 	let invites = await guild.fetchInvites();
 	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");

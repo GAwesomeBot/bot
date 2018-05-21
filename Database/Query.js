@@ -1,0 +1,180 @@
+const { Error: GABError } = require("../Internals/Errors");
+
+const mpath = require("mpath");
+
+module.exports = class Query {
+	/**
+	 * An object with methods to interact with a Document
+	 * @constructor
+	 * @param {Document} doc The Document this Query object interacts with
+	 */
+	constructor (doc) {
+		/**
+		 * The Document this Query object interacts with
+		 * @type {Document}
+		 * @private
+		 */
+		this._doc = doc;
+		/**
+		 * The mpath string pointing to the current selected object
+		 * @type {string}
+		 */
+		this.parsed = "";
+		/**
+		 * The current value being interacted with
+		 * @type {Document.Object|Object}
+		 */
+		this.current = this._doc._doc;
+	}
+
+	/**
+	 * Change the current value being pointed to to a property of said current value
+	 * @param {string} path The path of the property to select
+	 * @returns {module.Query}
+	 */
+	prop (path) {
+		try {
+			if (path === "..") {
+				const index = this.parsed.lastIndexOf(".");
+				this.parsed = this.parsed.substring(0, index);
+				this.current = this.parsed === "" ? this._doc._doc : mpath.get(this.parsed, this._doc._doc);
+				return this;
+			}
+
+			this.parsed += this._parseForString(path);
+			this.current = mpath.get(this.parsed, this._doc._doc);
+			return this;
+		} catch (err) {
+			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
+		}
+	}
+
+	/**
+	 * Get a (nested) property from the current value using an mpath string
+	 * @param {string} key The mpath string pointing to the current value, using template variable labels in the form of "$label"
+	 * @param {object|array} [data] An Object or Array mapping variable labels to strings or ID's. All strings are ran through Query._findById first to check for ID matches.
+	 * @returns {*}
+	 */
+	get (key, data) {
+		try {
+			let found = true;
+			if (!data || (data.constructor !== Object && data.constructor !== Array)) return mpath.get(this.parsed + this._parseForString(key), this._doc._doc);
+			let splitted = key.split(".");
+			let parsed = "";
+			splitted.forEach(piece => {
+				const val = data[piece.replace("$", "")];
+				if (!val || !piece.startsWith("$")) {
+					parsed += this._parseForString(piece, parsed);
+				} else {
+					const index = this._findById(val, mpath.get(this.parsed + this._parseForString(parsed), this._doc._doc), parsed);
+					if (index === null) found = false;
+					parsed += this._parseForString(String(index) || val, parsed);
+				}
+			});
+			return found ? mpath.get(this.parsed + this._parseForString(parsed), this._doc._doc) : undefined;
+		} catch (err) {
+			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
+		}
+	}
+
+	/**
+	 * Sets the current value to a subdocument of the current array by _id
+	 * @param {string} id The _id value of the subdocument to find
+	 * @returns {module.Query}
+	 */
+	id (id) {
+		try {
+			if (!this._canId()) return this.prop(id);
+			const index = this._findById(id);
+			this.parsed += this._parseForString(index);
+			this.current = mpath.get(this.parsed, this._doc._doc);
+			return this;
+		} catch (err) {
+			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
+		}
+	}
+
+	/**
+	 * Set the value of a path
+	 * @param {string} path
+	 * @param {*} value
+	 * @returns {module.Query}
+	 */
+	set (path, value) {
+		try {
+			if (value !== undefined) {
+				const parsed = this.parsed + this._parseForString(path);
+				mpath.set(parsed, value, this._doc._doc);
+				mpath.set(parsed, value, this._doc);
+				this._doc._setAtomic(parsed, value, "$set");
+			} else {
+				mpath.set(this.parsed, path, this._doc._doc);
+				mpath.set(this.parsed, path, this._doc);
+				this._doc._setAtomic(this.parsed, path, "$set");
+			}
+			return this;
+		} catch (err) {
+			throw new GABError("GADRIVER_ERROR", "Could not set atomics or parse Query.");
+		}
+	}
+
+	/**
+	 * Gets a subdocument of the current array by _id
+	 * @param {string} id The _id value of the subdocument to get
+	 * @returns {*}
+	 */
+	getById (id) {
+		if (!this._canId()) return this.prop(id);
+		return this.get("$0", [this._findById(id)]);
+	}
+
+	pull () {
+
+	}
+
+	/**
+	 * The current raw value Query.parsed is pointing towards
+	 * @returns {*}
+	 * @readonly
+	 */
+	get val () {
+		return mpath.get(this.parsed, this._doc._doc);
+	}
+
+	/**
+	 * Parse a mpath piece to be suffixed to the current mpath
+	 * @param {string} str The piece to be parsed
+	 * @param {string} [obj=module.Query.parsed] The mpath root the piece is to be suffixed onto
+	 * @returns {string}
+	 * @private
+	 */
+	_parseForString (str, obj = this.parsed) {
+		return obj === "" ? str : `.${str}`;
+	}
+
+	/**
+	 * Check if the current value or obj can be used to find a subdocument by ID
+	 * @param {object} [obj=model.Query.current] The object to be checked
+	 * @returns {boolean}
+	 * @private
+	 */
+	_canId (obj = this.current) {
+		return obj && obj.constructor === Array;
+	}
+
+	/**
+	 * Internal function to find an array value by its _id property, returns null if value is not found
+	 * @param {string} id The ID to test the array values against
+	 * @param {object} [obj=model.Query.current] The array that holds the value to be found
+	 * @returns {*}
+	 * @private
+	 */
+	_findById (id, obj = this.current) {
+		if (this._canId(obj)) {
+			const index = obj.findIndex(prop => prop._id === id);
+			return index === -1 ? null : index;
+		} else {
+			return null;
+		}
+	}
+};

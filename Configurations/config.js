@@ -32,9 +32,19 @@ const configs = {
 	 */
 	httpsRedirect: false,
 	/*
-	 * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
-	 */
-	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
+   * The database connection options
+   */
+	database: {
+		/*
+		 * The URL pointing to the MongoDB instance GAB should use
+		 */
+		URL: "mongodb://localhost:27017/",
+		/*
+		 * The name of the Database GAB should use
+		 */
+		db: "gawesomebot",
+	},
+	databaseURL: "mongodb://localhost:27017/gawesomebot",
 	/*
 	 * MaxVoiceChannels should remain as is.
 	 */
