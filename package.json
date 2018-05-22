@@ -39,7 +39,7 @@
     "fs-nextra": "^0.3.4",
     "gifwrap": "^0.7.5",
     "jimp": "^0.2.28",
-    "mathjs": "^4.2.2",
+    "mathjs": "^4.3.0",
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.17",
     "money": "^0.2.0",
