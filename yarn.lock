@@ -482,9 +482,9 @@ commander@~2.13.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
 
-complex.js@2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/complex.js/-/complex.js-2.0.4.tgz#d8e7cfb9652d1e853e723386421c1a0ca7a48373"
+complex.js@2.0.10:
+  version "2.0.10"
+  resolved "https://registry.yarnpkg.com/complex.js/-/complex.js-2.0.10.tgz#afac74e4fb9131e8709f9c300420ce58fa36f18d"
 
 component-bind@1.0.0:
   version "1.0.0"
@@ -1090,9 +1090,9 @@ forwarded@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.2.tgz#98c23dab1175657b8c0573e8ceccd91b0ff18c84"
 
-fraction.js@4.0.4:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.0.4.tgz#04e567110718adf7b52974a10434ab4c67a5183e"
+fraction.js@4.0.8:
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.0.8.tgz#e53618112e3b36b348c61a81323173bceb01e418"
 
 fresh@0.5.2:
   version "0.5.2"
@@ -1727,14 +1727,14 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-mathjs@^4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.2.2.tgz#a56785d49ff23da32c1e4eb26763e380592d22ae"
+mathjs@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.3.0.tgz#d87ab9d041d2751ce6d562290cc94bc12abaacca"
   dependencies:
-    complex.js "2.0.4"
+    complex.js "2.0.10"
     decimal.js "9.0.1"
     escape-latex "1.0.3"
-    fraction.js "4.0.4"
+    fraction.js "4.0.8"
     javascript-natural-sort "0.7.1"
     seed-random "2.2.0"
     tiny-emitter "2.0.2"
