@@ -32,8 +32,8 @@ const configs = {
 	 */
 	httpsRedirect: false,
 	/*
-   * The database connection options
-   */
+	 * The database connection options
+	 */
 	database: {
 		/*
 		 * The URL pointing to the MongoDB instance GAB should use
@@ -74,7 +74,7 @@ const configs = {
 	 * someone elses.
 	 * YOU SHOULD CHANGE THIS.
 	 * And DO NOT CHANGE IT AFTERWARDS.
-	 * Use https://passwordsgenerator.net/ to generatet something big and secure!
+	 * Use https://passwordsgenerator.net/ to generate something big and secure!
 	 */
 	encryptionPassword: "fEmH!bRP4S8a4^*fpQ=%",
 	/**
@@ -97,8 +97,8 @@ const configs = {
 		debugChannel: ``,
 	},
 	/*
-   * Optional: If you want your bot to have an invite link to your guild, for support or things.
-   */
+	 * Optional: If you want your bot to have an invite link to your guild, for support or things.
+	 */
 	discordLink: "https://discord.gg/NZwzJ9Q",
 	donateCharities: [
 		{
@@ -110,8 +110,8 @@ const configs = {
 	],
 	donateSubtitle: "The GAwesomeBot team currently doesn't accept direct payments. (<a href='/wiki/FAQs#donations'>here's why</a>) Instead, you can use the following methods to support the project!",
 	/*
-   * These last values should remain untouched.
-   */
+	 * These last values should remain untouched.
+	 */
 	moment_date_format: "ddd MMMM Do YYYY [at] H:mm:ss",
 	voteTriggers: [
 		" +!",
