@@ -355,8 +355,8 @@ camelcase@^4.1.0:
 
 "canvas-constructor@github:kyranet/canvasConstructor":
   version "1.0.1"
-  uid a0a42f8870539a03f12bf2b0eed7bdf91f26655e
-  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/a0a42f8870539a03f12bf2b0eed7bdf91f26655e"
+  uid "27429b30034f0c09bbb4bd83a65b4d38f2e14f2b"
+  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/27429b30034f0c09bbb4bd83a65b4d38f2e14f2b"
 
 canvas-prebuilt@^2.0.0-alpha.12:
   version "2.0.0-alpha.12"
