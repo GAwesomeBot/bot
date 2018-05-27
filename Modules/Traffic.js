@@ -15,7 +15,7 @@ class Traffic {
 	}
 
 	get get () {
-		let res = {
+		const res = {
 			pageViews: this.pageViews,
 			authViews: this.authViews,
 			uniqueUsers: this.uniqueUsers,
@@ -40,18 +40,17 @@ class Traffic {
 
 	async fetch () {
 		this.winston.debug(`Fetching traffic data`);
-		this.IPC.send("traffic", {}, "*").then(msg => {
-			let payload = msg.reduce((val, oldVal) => ({
-				pageViews: val.pageViews + oldVal.pageViews,
-				authViews: val.authViews + oldVal.authViews,
-				uniqueUsers: val.uniqueUsers + oldVal.uniqueUsers,
-			}));
-			this.winston.silly(`Fetched traffic data: `, payload);
-			this.pageViews = payload.pageViews;
-			this.authViews = payload.authViews;
-			this.uniqueUsers = payload.uniqueUsers;
-			this.flush();
-		});
+		const msg = await this.IPC.send("traffic", {}, "*");
+		const payload = msg.reduce((val, oldVal) => ({
+			pageViews: val.pageViews + oldVal.pageViews,
+			authViews: val.authViews + oldVal.authViews,
+			uniqueUsers: val.uniqueUsers + oldVal.uniqueUsers,
+		}));
+		this.winston.silly(`Fetched traffic data: `, payload);
+		this.pageViews = payload.pageViews;
+		this.authViews = payload.authViews;
+		this.uniqueUsers = payload.uniqueUsers;
+		this.flush();
 	}
 
 	async count (TID, authenticated) {
@@ -61,14 +60,14 @@ class Traffic {
 	}
 
 	async data () {
-		let data = {};
+		const data = {};
 		data.hour = this.pageViews;
 		if (!this.db.traffic) this.db = this.db.get();
 		const rawData = await this.db.traffic.find().exec();
 		data.day = rawData.filter(traffic => (Date.now() - 86400000) < traffic._id);
 		data.days = {};
 		rawData.forEach(traffic => {
-			let day = new Date(traffic._id).getDate();
+			const day = new Date(traffic._id).getDate();
 			if (!data.days[day]) {
 				data.days[day] = traffic;
 			} else {

@@ -34,13 +34,13 @@ module.exports = async (result, buffer) => {
 	let gif;
 	if (Buffer.isBuffer(buffer)) {
 		gif = await codec.decodeGif(buffer);
-		frames = gif.frames;
+		({ frames } = gif);
 	} else if (buffer instanceof GifFrame) {
 		frames = [buffer];
 	}
 	frames.map(async frame => {
 		const image = new Jimp(frame.bitmap.width, frame.bitmap.height);
-		let bImage = new BitmapImage(frame);
+		const bImage = new BitmapImage(frame);
 		image.bitmap = bImage.bitmap;
 		image.resize(result.type === "unicode" ? 72 : 128, AUTO);
 		return new GifFrame(bImage);

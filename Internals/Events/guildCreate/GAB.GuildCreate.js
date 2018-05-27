@@ -22,7 +22,7 @@ class GuildCreate extends BaseEvent {
 			} else if (shouldMakeDocument || !serverDocument) {
 				winston.info(`Joined server ${guild}`, { svrid: guild.id });
 				try {
-					let newServerDocument = await Servers.create(await getNewServerData(this.client, guild, new Servers({ _id: guild.id })));
+					const newServerDocument = await Servers.create(await getNewServerData(this.client, guild, new Servers({ _id: guild.id })));
 					this.client.cache.set(newServerDocument._id, newServerDocument);
 				} catch (err) {
 					winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);

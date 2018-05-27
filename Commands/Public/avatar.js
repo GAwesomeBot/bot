@@ -25,7 +25,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument }, m
 		});
 	};
 
-	let member = msg.member;
+	let { member } = msg;
 	let fetchedUsr = false;
 	if (msg.suffix && msg.suffix !== "me" && !/^\d+$/.test(msg.suffix.trim())) {
 		member = client.memberSearch(msg.suffix.trim(), msg.guild);

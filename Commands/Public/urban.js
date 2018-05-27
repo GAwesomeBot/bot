@@ -20,7 +20,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 		const fields = [];
 		body.list.forEach(d => {
 			let description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition}`;
-			let example = d.example ? `\n\n_${d.example}_` : "";
+			const example = d.example ? `\n\n_${d.example}_` : "";
 			if (description.length + example.length > 2000) {
 				description = `${description.substring(0, 1997 - example.length)}...`;
 				// This weird thing is to retain the formatting of the example (the underscores)

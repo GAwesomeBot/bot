@@ -26,7 +26,7 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 				},
 			},
 		});
-		let changes = {};
+		const changes = {};
 		let message = null;
 		try {
 			message = await client.awaitPMMessage(msg.channel, msg.author);

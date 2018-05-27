@@ -33,7 +33,7 @@ class ConversionHandler {
 			this.initTimer();
 		} else if (openExchangeRatesKey && this.client.shard.id === 0) {
 			try {
-				let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
+				const res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
 				if (res.body && res.body.rates && res.body.base) {
 					money.rates = res.body.rates;
 					money.base = res.body.base;
@@ -68,7 +68,7 @@ class ConversionHandler {
 		this.moneyTimer = this.client.setInterval(async () => {
 			try {
 				if (openExchangeRatesKey && this.client.shard.id === 0) {
-					let res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
+					const res = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
 					if (res.body && res.body.rates && res.body.base) {
 						money.rates = res.body.rates;
 						money.base = res.body.base;
@@ -107,7 +107,7 @@ class ConversionHandler {
 	}
 
 	async convert ({ from, to, content } = {}) {
-		let retData = { error: null, result: null, type: null };
+		const retData = { error: null, result: null, type: null };
 		try {
 			const converted = Math.round(convertUnits(content).from(from).to(to) * 1000) / 1000;
 			retData.result = converted;

@@ -51,7 +51,7 @@ class WorkerManager {
 
 	async safeSend (command, d) {
 		try {
-			let res = await this.worker.send(command, d);
+			const res = await this.worker.send(command, d);
 			return res;
 		} catch (e) {
 			if (e.code === "ERR_IPC_CHANNEL_CLOSED") {

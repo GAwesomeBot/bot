@@ -3,12 +3,12 @@ const ArgParser = require("../../Modules/MessageUtils/Parser");
 
 module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
 	if (msg.suffix) {
-		let apps = ArgParser.parseQuoteArgs(msg.suffix, ",");
-		let results = [];
+		const apps = ArgParser.parseQuoteArgs(msg.suffix, ",");
+		const results = [];
 		for (const app of apps) {
 			let res;
 			try {
-				res = (await iTunes({ entity: "software", country: "US", term: app, limit: 1 }))[0];
+				[res] = await iTunes({ entity: "software", country: "US", term: app, limit: 1 });
 			} catch (err) {
 				winston.verbose(`Couldn't find any Apple app called "${app}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				results.push({

@@ -74,7 +74,7 @@ module.exports = middleware => {
 	middleware.authorizeConsoleAccess = (req, res, next) => {
 		if (req.isAuthenticated()) {
 			if (configJSON.maintainers.includes(req.user.id)) {
-				const perm = req.perm;
+				const { perm } = req;
 				if (perm === "maintainer" || canDo(perm, req.user.id)) {
 					req.isAuthorized = true;
 					req.level = process.env.GAB_HOST !== req.user.id ? configJSON.sudoMaintainers.includes(req.user.id) ? 2 : 1 : 0;

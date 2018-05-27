@@ -3,7 +3,7 @@ module.exports = pullEndpointKey => (req, res) => {
 		case "muted": {
 			const memberDocument = req.svr.document.members.id(req.params.id);
 			if (!memberDocument || !req.svr.memberList.includes(req.params.id)) return res.sendStatus(404);
-			for (let memberMutedDocument of memberDocument.muted) {
+			for (const memberMutedDocument of memberDocument.muted) {
 				req.app.client.IPC.send("unmuteMember", { guild: req.svr.id, channel: memberMutedDocument._id, member: req.params.id });
 			}
 			memberDocument.muted = [];

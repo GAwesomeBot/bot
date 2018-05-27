@@ -6,7 +6,7 @@ module.exports = class ServerDocumentCache extends BaseCache {
 	}
 
 	async get (id) {
-		let existing = super.get(id);
+		const existing = super.get(id);
 		if (existing) return existing;
 		return this.holds.findOne({ _id: id }).exec()
 			.then(serverDocument => super.set(serverDocument._id, serverDocument))
@@ -21,7 +21,7 @@ module.exports = class ServerDocumentCache extends BaseCache {
 
 	async update (id) {
 		try {
-			let newDocument = await this.holds.findOne({ _id: id }).exec();
+			const newDocument = await this.holds.findOne({ _id: id }).exec();
 			if (newDocument) this._cache.set(id, newDocument);
 		} catch (err) {
 			winston.warn(`Failed to get new server document for cache update!`, { guild: id }, err);

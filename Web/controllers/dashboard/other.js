@@ -36,8 +36,8 @@ controllers.nameDisplay.post = async (req, res) => {
 };
 
 controllers.activities = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const ongoingTrivia = [];
@@ -113,13 +113,13 @@ controllers.activities = async (req, res) => {
 
 	let defaultChannel;
 
-	let generalChannel = svr.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
+	const generalChannel = svr.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
 
 	if (generalChannel) {
 		defaultChannel = generalChannel;
 	} else {
-		defaultChannel = svr.channels.filter(c => c.type === "text")
-			.sort((a, b) => a.rawPosition - b.rawPosition)[0];
+		[defaultChannel] = svr.channels.filter(c => c.type === "text")
+			.sort((a, b) => a.rawPosition - b.rawPosition);
 	}
 
 	res.render("pages/admin-ongoing-activities.ejs", {
@@ -162,8 +162,8 @@ controllers.activities.post = async (req, res) => {
 };
 
 controllers.public = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-public-data.ejs", {

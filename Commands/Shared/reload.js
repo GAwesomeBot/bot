@@ -20,13 +20,12 @@ module.exports = async ({ client }, msg, commandData) => {
 	}
 	params.forEach(param => {
 		let type = "public";
-		let commandArgs = param.split(".");
+		const commandArgs = param.split(".");
 		let cmd;
 		if (commandArgs.length > 1) {
-			type = commandArgs[0];
-			cmd = commandArgs[1];
+			[type, cmd] = commandArgs;
 		} else {
-			cmd = commandArgs[0];
+			[cmd] = commandArgs;
 		}
 		// Lets check if the command type exists
 		if (commands.hasOwnProperty(type)) {

@@ -98,7 +98,7 @@ module.exports = {
 		"no-trailing-spaces": "error",
 		"no-unneeded-ternary": "error",
 		"no-whitespace-before-property": "error",
-		"object-curly-newline": ["error", { multiline: true, consistent: true }],
+		"object-curly-newline": ["error", { "multiline": true, "consistent": true }],
 		"object-curly-spacing": ["error", "always"],
 		"operator-assignment": "error",
 		"operator-linebreak": ["error", "after"],

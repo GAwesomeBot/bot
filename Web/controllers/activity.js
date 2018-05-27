@@ -152,7 +152,7 @@ module.exports = (req, res) => {
 				], async (err3, serverDocuments) => {
 					let serverData = [];
 					if (!err3 && serverDocuments) {
-						let webp = req.accepts("image/webp") === "image/webp";
+						const webp = req.accepts("image/webp") === "image/webp";
 						serverData = serverDocuments.map(serverDocument => parsers.serverData(req, serverDocument, webp));
 					}
 					serverData = await Promise.all(serverData);
@@ -218,9 +218,9 @@ module.exports = (req, res) => {
 					let publicProfilesCount = 0;
 					let reminderCount = 0;
 					if (!err4 && userResult) {
-						totalPoints = userResult[0].totalPoints;
-						publicProfilesCount = userResult[0].publicProfilesCount;
-						reminderCount = userResult[0].reminderCount;
+						({ totalPoints } = userResult[0]);
+						({ publicProfilesCount } = userResult[0]);
+						({ reminderCount } = userResult[0]);
 					}
 
 					renderPage({

@@ -53,7 +53,7 @@ module.exports = class Trivia {
 			channelDocument.trivia.score = 0;
 			channelDocument.trivia.responders = [];
 			client.logMessage(serverDocument, LoggingLevels.INFO, `User "${member.tag}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
-			msg.send({
+			await msg.send({
 				embed: {
 					color: Colors.TRIVIA_START,
 					description: `Trivia game started by ${member} 🎮`,
@@ -67,7 +67,8 @@ module.exports = class Trivia {
 						text: `No cheating! Nobody likes cheaters! 👀`,
 					},
 				},
-			}).then(() => this.next(client, svr, serverDocument, ch, channelDocument));
+			});
+			this.next(client, svr, serverDocument, ch, channelDocument);
 		}
 	}
 
@@ -109,7 +110,7 @@ module.exports = class Trivia {
 			};
 
 			if (channelDocument.trivia.current_question.answer) {
-				msg.send({
+				await msg.send({
 					embed: {
 						color: 0xff9200,
 						description: `The answer was \`${channelDocument.trivia.current_question.answer}\` 😛`,
@@ -117,7 +118,8 @@ module.exports = class Trivia {
 							text: "Here comes the next one...",
 						},
 					},
-				}).then(doNext);
+				});
+				doNext();
 			} else {
 				doNext();
 			}
@@ -158,7 +160,7 @@ module.exports = class Trivia {
 						}
 					}
 				}
-				msg.send({
+				await msg.send({
 					embed: {
 						color: 0x50ff60,
 						description: `${usr} got it right! 🎉 The answer was \`${channelDocument.trivia.current_question.answer}\`.`,
@@ -166,10 +168,9 @@ module.exports = class Trivia {
 							text: "Get ready for the next one...",
 						},
 					},
-				}).then(() => {
-					channelDocument.trivia.current_question.answer = null;
-					this.next(client, svr, serverDocument, ch, channelDocument);
 				});
+				channelDocument.trivia.current_question.answer = null;
+				this.next(client, svr, serverDocument, ch, channelDocument);
 			} else {
 				msg.send({
 					content: `${usr},`,

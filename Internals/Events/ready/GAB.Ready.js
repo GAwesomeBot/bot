@@ -36,23 +36,19 @@ class Ready extends BaseEvent {
 	// Runs after leaving any blocklisted guilds (if any)
 	async afterLeaving () {
 		try {
-			this.ensureDocuments().then(async newServerDocuments => {
-				if (newServerDocuments && newServerDocuments.length > 0) {
-					winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-					await Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
-						winston.warn(`Failed to insert new server documents..`, err);
-					}).then(async () => {
-						winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
-						await this.setBotActivity();
-					});
-					this.client.emit("allDocumentsIn");
-				} else {
-					this.client.emit("allDocumentsIn");
+			const newServerDocuments = await this.ensureDocuments();
+			if (newServerDocuments && newServerDocuments.length > 0) {
+				winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
+				await Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
+					winston.warn(`Failed to insert new server documents..`, err);
+				}).then(async () => {
+					winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
 					await this.setBotActivity();
-				}
-			});
+				});
+			} else {
+				await this.setBotActivity();
+			}
 		} catch (err) {
-			this.client.emit("allDocumentsIn");
 			await this.setBotActivity();
 		}
 	}
@@ -60,7 +56,7 @@ class Ready extends BaseEvent {
 	// Ensure that all servers have database documents
 	async ensureDocuments () {
 		winston.debug("Ensuring all guilds have a serverDocument.");
-		let newServerDocuments = [];
+		const newServerDocuments = [];
 		const makeNewDocument = async guild => {
 			const serverDocument = await Servers.findOne({ _id: guild.id }).exec().catch(err => {
 				winston.debug(`Failed to find server data for server ${guild.id}!`, err);
@@ -76,7 +72,7 @@ class Ready extends BaseEvent {
 				newServerDocuments.push(await getNewServerData(this.client, guild, new Servers({ _id: guild.id })));
 			}
 		};
-		let promiseArray = [];
+		const promiseArray = [];
 		this.client.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
 		await Promise.all(promiseArray);
 		return newServerDocuments;
@@ -91,8 +87,8 @@ class Ready extends BaseEvent {
 			},
 		}).remove()
 			.exec()
-			.catch(err => winston.warn(`Failed to prune old server documents -_-`, err))
-			.then(() => winston.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`));
+			.then(() => winston.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`))
+			.catch(err => winston.warn(`Failed to prune old server documents -_-`, err));
 		await this.setBotActivity();
 	}
 
@@ -248,9 +244,8 @@ class Ready extends BaseEvent {
 						const sendStreamingRSSFeed = async j => {
 							if (j < serverDocument.config.rss_feeds.length) {
 								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
-									sendStreamingRSSUpdates(this.client, server, serverDocument, serverDocument.config.rss_feeds[j]).then(async () => {
-										await sendStreamingRSSFeed(++j);
-									});
+									await sendStreamingRSSUpdates(this.client, server, serverDocument, serverDocument.config.rss_feeds[j]);
+									await sendStreamingRSSFeed(++j);
 								} else {
 									await sendStreamingRSSFeed(++j);
 								}

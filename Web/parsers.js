@@ -17,7 +17,7 @@ const parsers = module.exports;
 
 parsers.serverData = async (req, serverDocument, webp = false) => {
 	let data;
-	let svr = new GetGuild(req.app.client, serverDocument._id);
+	const svr = new GetGuild(req.app.client, serverDocument._id);
 	await svr.initialize(["OWNER", req.app.client.user.id]);
 	await svr.fetchProperty("createdAt");
 	if (svr.success) {
@@ -98,7 +98,7 @@ parsers.userData = async (req, usr, userDocument) => {
 		userProfile.profileFields = profileFields;
 		userProfile.pastNames = userDocument.past_names;
 		userProfile.afkMessage = userDocument.afk_message;
-		for (let svr of mutualServers) {
+		for (const svr of mutualServers) {
 			const owner = svr.members[svr.ownerID];
 			userProfile.mutualServers.push({
 				name: svr.name,
@@ -126,7 +126,7 @@ parsers.extensionData = async (req, galleryDocument) => {
 		case "timer":
 			typeIcon = "clock-o";
 			if (moment(galleryDocument.interval)) {
-				let interval = moment.duration(galleryDocument.interval);
+				const interval = moment.duration(galleryDocument.interval);
 				typeDescription = `${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
 			} else {
 				typeDescription = `${galleryDocument.interval}ms`;

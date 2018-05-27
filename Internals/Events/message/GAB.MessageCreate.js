@@ -56,7 +56,7 @@ class MessageCreate extends BaseEvent {
 						text: msg.content,
 					});
 					if (res.url) {
-						url = res.url;
+						({ url } = res);
 					}
 				}
 				for (const maintainerID of this.configJSON.maintainers) {

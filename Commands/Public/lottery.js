@@ -229,7 +229,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 		const creator = msg.guild.members.get(channelDocument.lottery.creator_id);
 		const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
 		const ticketPrice = Math.floor(participantTotal * channelDocument.lottery.multiplier);
-		const multiplier = channelDocument.lottery.multiplier;
+		const { multiplier } = channelDocument.lottery;
 		const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
 		msg.send({
 			embed: {

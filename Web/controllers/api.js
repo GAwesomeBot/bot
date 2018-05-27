@@ -20,7 +20,7 @@ controllers.servers = async (req, res) => {
 	if (req.query.id) {
 		params._id = req.query.id;
 	}
-	let webp = req.accepts("image/webp") !== false;
+	const webp = req.accepts("image/webp") !== false;
 	Servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
 		.exec(async (err, serverDocuments) => {
 			if (!err && serverDocuments && serverDocuments.length) {
@@ -72,7 +72,7 @@ controllers.users.list = async (req, res) => {
 			},
 		}], (err, users) => {
 			if (!err && users) {
-				let response = users.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
+				const response = users.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
 				response.spliceNullElements();
 				res.json(response);
 			} else {

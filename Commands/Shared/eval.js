@@ -2,15 +2,15 @@ const { Gist, RegExpMaker } = require("../../Modules/Utils/");
 
 module.exports = async (main, msg, commandData) => {
 	if (msg.suffix) {
-		let hrstart = process.hrtime();
-		let suffix = msg.suffix;
+		const hrstart = process.hrtime();
+		let { suffix } = msg;
 		try {
 			if (suffix.startsWith("```js") && suffix.endsWith("```")) suffix = suffix.substring(5, suffix.length - 3);
 			const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
 			suffix = suffix
 				.replace(/(main\.bot\.token|main\.client\.token|msg\.client\.token)/g, "\"mfaNop\"")
 				.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
-			let { discord, tokens } = require("../../Configurations/auth");
+			const { discord, tokens } = require("../../Configurations/auth");
 			const censor = [
 				discord.clientSecret,
 				discord.clientToken,

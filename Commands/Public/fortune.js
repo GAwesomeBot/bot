@@ -32,7 +32,7 @@ module.exports = async ({ Constants: { Colors, APIs, FortuneCategories, Text } }
 		},
 	});
 	try {
-		let res = await get(ENDPOINT).set("Accept", "application/json");
+		const res = await get(ENDPOINT).set("Accept", "application/json");
 		msg.send({
 			embed: {
 				color: Colors.SUCCESS,

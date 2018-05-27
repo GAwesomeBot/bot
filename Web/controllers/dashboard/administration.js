@@ -60,7 +60,7 @@ controllers.admins.post = (req, res) => {
 };
 
 controllers.moderation = async (req, res) => {
-	const client = req.app.client;
+	const { client } = req.app;
 	const svr = await req.svr.fetchCollection("roles");
 	const serverDocument = req.svr.document;
 
@@ -110,8 +110,8 @@ controllers.moderation.post = async (req, res) => {
 };
 
 controllers.blocked = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const blockedMembers = svr.memberList.filter(member => serverDocument.config.blocked.includes(member))
@@ -156,8 +156,8 @@ controllers.blocked.post = async (req, res) => {
 };
 
 controllers.muted = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const mutedMemberList = serverDocument.members.filter(memberDocument => memberDocument.muted && memberDocument.muted.length > 0 && svr.memberList.includes(memberDocument._id));
@@ -192,8 +192,8 @@ controllers.muted = async (req, res) => {
 	});
 };
 controllers.muted.post = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	if (req.body["new-member"] && req.body["new-channel_id"]) {
@@ -238,8 +238,8 @@ controllers.muted.post = async (req, res) => {
 };
 
 controllers.strikes = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 
@@ -330,8 +330,8 @@ controllers.strikes.post = async (req, res) => {
 };
 
 controllers.status = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const statusMessagesData = serverDocument.toObject().config.moderation.status_messages;
@@ -425,8 +425,8 @@ controllers.status.post = async (req, res) => {
 };
 
 controllers.filters = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
@@ -494,8 +494,8 @@ controllers.filters.post = async (req, res) => {
 };
 
 controllers.MOTD = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
@@ -532,8 +532,8 @@ controllers.MOTD.post = async (req, res) => {
 };
 
 controllers.voicetext = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-voicetext-channels.ejs", {
@@ -567,8 +567,8 @@ controllers.voicetext.post = async (req, res) => {
 };
 
 controllers.roles = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
@@ -623,8 +623,8 @@ controllers.roles.post = async (req, res) => {
 };
 
 controllers.logs = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	try {

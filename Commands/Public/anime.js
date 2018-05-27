@@ -3,7 +3,7 @@ const ReactionMenu = require("../../Modules/MessageUtils/ReactionMenus/ReactionB
 
 module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		let split = msg.suffix.split(/\s+/);
+		const split = msg.suffix.split(/\s+/);
 		let number = split.pop(), query = split.join(" ");
 		if (!query || isNaN(number)) {
 			query = msg.suffix;
@@ -70,12 +70,7 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 					list.push(`[ ${i + 1} ] ${entry.attributes.canonicalTitle}`);
 				}
 			}
-			if (list.length === 1) {
-				msg.send(results[0]);
-			} else {
-				let menu = new ReactionMenu(msg, {}, { options: list, results });
-				await menu.init();
-			}
+			new ReactionMenu(msg, {}, { options: list, results }).init();
 		} else {
 			winston.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.send({

@@ -40,15 +40,9 @@ function message (key, args) {
 	return String(...args);
 }
 
-/**
- * Register an error code and message.
- * @param {string} sym Unique name for the error
- * @param {Function|String} val Value of the error
- */
-exports.register = (sym, val) => {
-	messages.set(sym, typeof val === "function" ? val : String(val));
+module.exports = {
+	register: (sym, val) =>	messages.set(sym, typeof val === "function" ? val : String(val)),
+	Error: makeGABError(Error),
+	TypeError: makeGABError(TypeError),
+	RangeError: makeGABError(RangeError),
 };
-
-exports.Error = makeGABError(Error);
-exports.TypeError = makeGABError(TypeError);
-exports.RangeError = makeGABError(RangeError);

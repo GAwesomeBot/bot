@@ -57,8 +57,8 @@ controllers.options.post = async (req, res) => {
 };
 
 controllers.list = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const commandCategories = {};
@@ -111,8 +111,8 @@ controllers.list.post = async (req, res) => {
 };
 
 controllers.rss = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-rss-feeds.ejs", {
@@ -169,8 +169,8 @@ controllers.rss.post = async (req, res) => {
 };
 
 controllers.streamers = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-streamers.ejs", {
@@ -219,8 +219,8 @@ controllers.streamers.post = async (req, res) => {
 };
 
 controllers.tags = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const data = {
@@ -315,8 +315,8 @@ controllers.tags.post = async (req, res) => {
 };
 
 controllers.translation = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	const data = {
@@ -382,8 +382,8 @@ controllers.translation.post = async (req, res) => {
 };
 
 controllers.trivia = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	if (req.query.i) {
@@ -433,8 +433,8 @@ controllers.trivia.post = async (req, res) => {
 };
 
 controllers.APIKeys = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-api-keys.ejs", {
@@ -461,8 +461,8 @@ controllers.APIKeys.post = async (req, res) => {
 };
 
 controllers.reaction = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-tag-reaction.ejs", {

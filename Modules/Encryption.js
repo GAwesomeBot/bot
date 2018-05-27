@@ -11,7 +11,7 @@ module.exports = class EncryptionManager {
 		this.client = client;
 		client.fetchApplication().then(data => {
 			password = pbkdf2Sync(pass, data.owner.id, 100000, 16, "sha512").toString("hex");
-		});
+		}).catch();
 	}
 
 	encrypt (data) {

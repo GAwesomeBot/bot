@@ -8,7 +8,7 @@ module.exports = () => {
 			get defaultChannel () {
 				if (this.channels.filter(c => c.type === "text").size === 0) return null;
 
-				let generalChannel = this.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
+				const generalChannel = this.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
 				if (generalChannel && generalChannel.permissionsFor(this.me).has(["VIEW_CHANNEL", "SEND_MESSAGES"])) {
 					return generalChannel;
 				}
@@ -55,7 +55,7 @@ module.exports = () => {
 								enumerable: false,
 								value: object,
 							});
-						});
+						}).catch();
 				} else if (this.client.isReady) {
 					let command = data.content.toLowerCase().trim();
 					let suffix = null;
@@ -100,7 +100,7 @@ module.exports = () => {
 										writable: true,
 									});
 								}
-							});
+							}).catch();
 					} else if (this.client.isReady) {
 						let command = data.content.toLowerCase().trim();
 						let suffix = null;

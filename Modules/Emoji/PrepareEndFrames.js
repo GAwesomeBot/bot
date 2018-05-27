@@ -29,7 +29,7 @@ const Jimp = require("jimp");
 const EmojiUtil = require("./EmojiUtil");
 
 module.exports = async (totalWidth, totalHeight, images, frames) => {
-	let finishedFrames = [];
+	const finishedFrames = [];
 	images.forEach(frame => {
 		EmojiUtil.fillArray(frame, Math.floor(frames / frame.length) + 1);
 	});
@@ -37,7 +37,7 @@ module.exports = async (totalWidth, totalHeight, images, frames) => {
 	for (let i = 0; i < frames; i++) {
 		let pos = 0;
 		const getPixel = index => {
-			let aPos = pos;
+			const aPos = pos;
 			pos += images[index][0].bitmap.width + 8;
 			return aPos;
 		};

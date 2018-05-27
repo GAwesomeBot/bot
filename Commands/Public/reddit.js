@@ -57,7 +57,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 				nsfwFiltered++;
 				return;
 			}
-			let description = `**__${data.title}__**${data.gilded ? ` ⭐**${data.gilded}**` : ""}${data.stickied ? " 📌" : ""}\n\n${data.selftext || data.url}`;
+			const description = `**__${data.title}__**${data.gilded ? ` ⭐**${data.gilded}**` : ""}${data.stickied ? " 📌" : ""}\n\n${data.selftext || data.url}`;
 			descriptions.push(description.length > 2040 ? `${description.substring(0, 2040)}...` : description);
 			thumbnails.push(!["default", "self"].includes(data.thumbnail) ? data.thumbnail : null);
 			const meta = [
@@ -65,11 +65,13 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 				`With ${data.num_comments} comments and ${data.score} points so far`,
 				`[**permalink**](https://www.reddit.com${data.permalink})`,
 			];
-			fields.push([{
-				name: EmptySpace,
-				value: meta.join("\n"),
-				inline: false,
-			}]);
+			fields.push([
+				{
+					name: EmptySpace,
+					value: meta.join("\n"),
+					inline: false,
+				},
+			]);
 		});
 
 		if (!descriptions.length) {
@@ -81,12 +83,11 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 				},
 			});
 		}
-		const menu = new PaginatedEmbed(msg, descriptions, {
+		new PaginatedEmbed(msg, descriptions, {
 			color: Colors.RESPONSE,
 			title: `Submission {current description} out of {total descriptions} in r/${subreddit}`,
 			footer: nsfwFiltered ? `${nsfwFiltered} post${nsfwFiltered > 1 ? "s were" : " was"} filtered for being marked NSFW as this channel is not marked as such.` : "",
-		}, [], fields, thumbnails);
-		await menu.init();
+		}, [], fields, thumbnails).init();
 	} else {
 		winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({

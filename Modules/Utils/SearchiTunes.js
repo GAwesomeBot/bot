@@ -45,7 +45,7 @@ module.exports = async params => {
 		if (!res.body.results.length) {
 			throw new Error(`No results!`);
 		} else if (firstRes) {
-			ret = res.body.results[0];
+			[ret] = res.body.results;
 		} else {
 			ret = res.body.results;
 		}

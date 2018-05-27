@@ -1,4 +1,4 @@
-module.exports = class Utils {
+class Utils {
 	constructor () {
 		throw new Error(`The ${this.constructor.name} class may not be instantiated.`);
 	}
@@ -66,9 +66,9 @@ module.exports = class Utils {
 
 		return color;
 	}
-};
+}
 
-exports.Colors = {
+Utils.Colors = {
 	DEFAULT: 0x000000,
 	AQUA: 0x1ABC9C,
 	GREEN: 0x2ECC71,
@@ -95,3 +95,5 @@ exports.Colors = {
 	DARK_BUT_NOT_BLACK: 0x2C2F33,
 	NOT_QUITE_BLACK: 0x23272A,
 };
+
+module.exports = Utils;

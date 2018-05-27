@@ -89,7 +89,7 @@ class TagCommand {
 		}
 
 		if (params.length >= 2) {
-			this.value = params[1];
+			[, this.value] = params;
 		}
 
 		if (params.length >= 3) {

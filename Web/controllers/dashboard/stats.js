@@ -4,8 +4,8 @@ const parsers = require("../../parsers");
 const controllers = module.exports;
 
 controllers.collection = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-stats-collection.ejs", {
@@ -45,8 +45,8 @@ controllers.collection.post = async (req, res) => {
 };
 
 controllers.ranks = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
@@ -96,8 +96,8 @@ controllers.ranks.post = async (req, res) => {
 };
 
 controllers.points = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-gawesome-points.ejs", {

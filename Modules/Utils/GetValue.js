@@ -21,7 +21,7 @@ module.exports = (client, val, merge, func) => {
 				case "arr":
 					return res.reduce((prev, value) => prev.concat(value), []);
 				case "map": {
-					let ress = res.map(value => new Discord.Collection(value));
+					const ress = res.map(value => new Discord.Collection(value));
 					return ress.reduce((prev, value) => prev.concat(value), new Discord.Collection());
 				}
 				default:

@@ -10,6 +10,16 @@ module.exports = class extends BaseMenu {
 		if (!withExtensions) this.allowedEmojis.splice(this.allowedEmojis.indexOf(HelpMenuEmojis.extension), 1);
 	}
 
+	async init (time) {
+		await super.init(time);
+		this.collector = this.msg.createReactionCollector(
+			(reaction, user) => user.id === this.originalMsg.author.id && this.allowedEmojis.includes(reaction.emoji.name),
+			{ time }
+		);
+		await this.prepareReactions();
+		this.handle();
+	}
+
 	async sendInitialMessage () {
 		this.msg = await this.originalMsg.channel.send(this.defaultPage);
 	}

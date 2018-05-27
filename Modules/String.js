@@ -7,7 +7,7 @@ const escapeChars = {
 };
 
 const reversedEscapeChars = {};
-for (let key in escapeChars) reversedEscapeChars[escapeChars[key]] = key;
+for (const key in escapeChars) reversedEscapeChars[escapeChars[key]] = key;
 
 class StringJS {
 	constructor (string) {
@@ -32,8 +32,8 @@ class StringJS {
 	}
 
 	between (left, right) {
-		let s = this.s;
-		let startPos = s.indexOf(left), endPos = s.indexOf(right, startPos + left.length);
+		const { s } = this;
+		const startPos = s.indexOf(left), endPos = s.indexOf(right, startPos + left.length);
 		if (endPos === -1 && right !== null) {
 			return new StringJS("");
 		} else if (endPos === -1 && right === null) {
@@ -44,7 +44,7 @@ class StringJS {
 	}
 
 	camelize () {
-		let s = this.trim().s.replace(/(-|_|\s)+(.)?/g, (matchc, sep, c) => c ? c.toUpperCase() : "");
+		const s = this.trim().s.replace(/(-|_|\s)+(.)?/g, (matchc, sep, c) => c ? c.toUpperCase() : "");
 		return new StringJS(s);
 	}
 
@@ -57,7 +57,7 @@ class StringJS {
 	}
 
 	chompLeft (prefix) {
-		let s = this.s;
+		let { s } = this;
 		if (s.startsWith(prefix)) {
 			s = s.slice(prefix.length);
 			return new StringJS(s);
@@ -68,7 +68,7 @@ class StringJS {
 
 	chompRight (suffix) {
 		if (this.endsWith(suffix)) {
-			let s = this.s;
+			let { s } = this;
 			s = s.slice(0, s.length - suffix.length);
 			return new StringJS(s);
 		} else {
@@ -77,7 +77,7 @@ class StringJS {
 	}
 
 	collapseWhitespace () {
-		let s = this.s.replace(/[\s\xa0]+/g, " ").replace(/^\s+|\s+$/g, "");
+		const s = this.s.replace(/[\s\xa0]+/g, " ").replace(/^\s+|\s+$/g, "");
 		return new StringJS(s);
 	}
 
@@ -98,20 +98,20 @@ class StringJS {
 	}
 
 	dasherize () {
-		let s = this.trim().s.replace(/[_\s]+/g, "-").replace(/([A-Z])/g, "-$1").replace(/-+/g, "-")
+		const s = this.trim().s.replace(/[_\s]+/g, "-").replace(/([A-Z])/g, "-$1").replace(/-+/g, "-")
 			.toLowerCase();
 		return new StringJS(s);
 	}
 
 	equalsIgnoredCase (string) {
-		let s = this.s;
+		const { s } = this;
 		return s.toLowerCase() === string.toLowerCase();
 	}
 
 	endsWith (...args) {
-		let suffixes = Array.prototype.slice.call(args, 0);
+		const suffixes = Array.prototype.slice.call(args, 0);
 		for (let i = 0; i < suffixes.length; i++) {
-			let l = this.s.length - suffixes[i].length;
+			const l = this.s.length - suffixes[i].length;
 			if (l >= 0 && this.s.indexOf(suffixes[i], l) === l) return true;
 		}
 		return false;
@@ -122,7 +122,7 @@ class StringJS {
 	}
 
 	ensureLeft (prefix) {
-		let s = this.s;
+		const { s } = this;
 		if (s.startsWith(prefix)) {
 			return this;
 		} else {
@@ -131,7 +131,7 @@ class StringJS {
 	}
 
 	ensureRight (suffix) {
-		let s = this.s;
+		const { s } = this;
 		if (this.endsWith(suffix)) {
 			return this;
 		} else {
@@ -141,7 +141,7 @@ class StringJS {
 
 	humanize () {
 		if (this.s === null || this.s === undefined) return new StringJS("");
-		let s = this.underscore().replace(/_id$/, "").replace(/_/g, " ")
+		const s = this.underscore().replace(/_id$/, "").replace(/_/g, " ")
 			.trim()
 			.capitalize();
 		return new StringJS(s);
@@ -173,7 +173,7 @@ class StringJS {
 
 	left (N) {
 		if (N >= 0) {
-			var s = this.s.substr(0, N);
+			const s = this.s.substr(0, N);
 			return new StringJS(s);
 		} else {
 			return this.right(-N);
@@ -185,7 +185,7 @@ class StringJS {
 	}
 
 	replaceAll (string, replace) {
-		let s = this.s.split(string).join(replace);
+		const s = this.s.split(string).join(replace);
 		return new StringJS(s);
 	}
 
@@ -198,7 +198,7 @@ class StringJS {
 	}
 
 	startsWith (...args) {
-		let prefixes = Array.prototype.slice.call(args, 0);
+		const prefixes = Array.prototype.slice.call(args, 0);
 		for (let i = 0; i < prefixes.length; ++i) {
 			if (this.s.lastIndexOf(prefixes[i], 0) === 0) return true;
 		}
@@ -214,7 +214,7 @@ class StringJS {
 	}
 
 	titleCase () {
-		let s = this.s;
+		let { s } = this;
 		if (s) {
 			s = s.replace(/(^[a-z]| [a-z]|-[a-z]|_[a-z])/g,	$1 => $1.toUpperCase());
 		}
@@ -223,7 +223,7 @@ class StringJS {
 
 	toBoolean () {
 		if (typeof this.orig === "string") {
-			let s = this.s.toLowerCase();
+			const s = this.s.toLowerCase();
 			return s === "true" || s === "yes" || s === "on" || s === "1";
 		} else {
 			return this.orig === true || this.orig === 1;
@@ -231,7 +231,7 @@ class StringJS {
 	}
 
 	toFloat (precision) {
-		let num = parseFloat(this.s);
+		const num = parseFloat(this.s);
 		if (precision) return parseFloat(num.toFixed(precision));
 		else return num;
 	}
@@ -241,17 +241,17 @@ class StringJS {
 	}
 
 	trim () {
-		let s = this.s.trim();
+		const s = this.s.trim();
 		return new StringJS(s);
 	}
 
 	trimLeft () {
-		let s = this.s.trimLeft();
+		const s = this.s.trimLeft();
 		return new StringJS(s);
 	}
 
 	trimRight () {
-		let s = this.s.trimRight();
+		const s = this.s.trimRight();
 		return new StringJS(s);
 	}
 
@@ -260,7 +260,7 @@ class StringJS {
 	}
 
 	underscore () {
-		let s = this.trim().s.replace(/([a-z\d])([A-Z]+)/g, "$1_$2").replace(/([A-Z\d]+)([A-Z][a-z])/g, "$1_$2").replace(/[-\s]+/g, "_")
+		const s = this.trim().s.replace(/([a-z\d])([A-Z]+)/g, "$1_$2").replace(/([A-Z\d]+)([A-Z][a-z])/g, "$1_$2").replace(/[-\s]+/g, "_")
 			.toLowerCase();
 		return new StringJS(s);
 	}

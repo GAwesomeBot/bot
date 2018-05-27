@@ -1,5 +1,5 @@
 const API = require("../index");
-const ScopeManager = API.ScopeManager;
+const { ScopeManager } = API;
 let emoji, scopeManager;
 
 module.exports = class Emoji {

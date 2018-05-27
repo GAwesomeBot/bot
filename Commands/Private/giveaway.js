@@ -24,7 +24,7 @@ module.exports = {
 	},
 	// Params: { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname }
 	run: async (main, { initMsg: initMsgID, usrid, chname, guildid }) => {
-		const Colors = main.Constants.Colors;
+		const { Colors } = main.Constants;
 		const usr = await main.client.users.fetch(usrid, true);
 		try {
 			const usrch = await usr.createDM();
@@ -32,7 +32,7 @@ module.exports = {
 
 			const svr = main.client.guilds.get(guildid);
 			const member = svr.members.get(usr.id);
-			const serverDocument = svr.serverDocument;
+			const { serverDocument } = svr;
 
 			if (serverDocument.config.blocked.includes(usr.id)) return;
 
