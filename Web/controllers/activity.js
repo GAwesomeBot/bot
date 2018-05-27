@@ -218,9 +218,9 @@ module.exports = (req, res) => {
 					let publicProfilesCount = 0;
 					let reminderCount = 0;
 					if (!err4 && userResult) {
-						({ totalPoints } = userResult[0]);
-						({ publicProfilesCount } = userResult[0]);
-						({ reminderCount } = userResult[0]);
+						[{ totalPoints }] = userResult;
+						[{ publicProfilesCount }] = userResult;
+						[{ reminderCount }] = userResult;
 					}
 
 					renderPage({

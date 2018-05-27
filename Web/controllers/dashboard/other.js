@@ -4,8 +4,8 @@ const { saveAdminConsoleOptions: save, parseAuthUser } = require("../../helpers"
 const controllers = module.exports;
 
 controllers.nameDisplay = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-name-display.ejs", {
