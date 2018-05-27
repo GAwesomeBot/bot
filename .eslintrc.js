@@ -98,7 +98,7 @@ module.exports = {
 		"no-trailing-spaces": "error",
 		"no-unneeded-ternary": "error",
 		"no-whitespace-before-property": "error",
-		"object-curly-newline": "error",
+		"object-curly-newline": ["error", { multiline: true, consistent: true }],
 		"object-curly-spacing": ["error", "always"],
 		"operator-assignment": "error",
 		"operator-linebreak": ["error", "after"],
@@ -120,7 +120,7 @@ module.exports = {
 		"no-useless-computed-key": "error",
 		"no-useless-constructor": "error",
 		"prefer-arrow-callback": "error",
-		//"prefer-const": "error",
+		"prefer-const": ["error", { destructuring: "all" }],
 		"prefer-destructuring": ["error", {
 			VariableDeclarator: {
 				array: false,
