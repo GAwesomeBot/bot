@@ -1744,9 +1744,9 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-mathjs@^4.3.0:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.3.0.tgz#d87ab9d041d2751ce6d562290cc94bc12abaacca"
+mathjs@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.4.0.tgz#be31296c59a4b0d7d3f4fbc804f5d5ac11ad7552"
   dependencies:
     complex.js "2.0.10"
     decimal.js "9.0.1"
