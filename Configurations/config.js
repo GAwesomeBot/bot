@@ -3,12 +3,12 @@ const configs = {
 	 * Represents how many shards the bot will have.
 	 * It *must* be a integer, aka *1*, *52* etc. OR "auto"
 	 */
-	shardTotal: 1,
+	shardTotal: 2,
 	/*
 	 * The URL all the bot commands should point to.
 	 * Example: /about shows this link for the web interface
 	 */
-	hostingURL: "",
+	hostingURL: "https://dev.gawesomebot.com/",
 	/*
 	 * The server IP the web inteface should point itself to.
 	 * Preferably, you leave it as *0.0.0.0* so that it is on the local machine
@@ -42,9 +42,9 @@ const configs = {
 		/*
 		 * The name of the Database GAB should use
 		 */
-		db: "gawesomebot",
+		db: "gabbe",
 	},
-	databaseURL: "mongodb://localhost:27017/gawesomebot",
+	databaseURL: "mongodb://localhost:27017/gabbe",
 	/*
 	 * MaxVoiceChannels should remain as is.
 	 */

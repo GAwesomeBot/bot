@@ -94,7 +94,7 @@ exports.einitialize = async config => {
 		Wiki,
 		Traffic,
 	] = [
-		new Model(db, "servers", serverSchema),
+		new Model(db, "servers", new (require("./Schemas/E/Schema"))({ _id: "string", data: { type: "string", default: "woops!" } })),
 		new Model(db, "users", userSchema),
 		new Model(db, "gallery", modulesSchema),
 		new Model(db, "blog", blogSchema),

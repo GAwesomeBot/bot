@@ -1,4 +1,5 @@
 const Document = require("./Document");
+const { Error: GABError } = require("../Internals/Errors");
 
 module.exports = class Model {
 	/**
@@ -12,6 +13,7 @@ module.exports = class Model {
 		this._collection = collection;
 		this._schema = schema;
 		this._client = client.collection(this._collection);
+		this._cache = new Map();
 	}
 
 	/**
@@ -21,13 +23,40 @@ module.exports = class Model {
 	 */
 	async findOne (query) {
 		if (typeof query === "string") query = { _id: query };
-		const raw = await this._client.findOne(query);
-		if (raw) return new Document(raw, this);
-		else return null;
+
+		const raw = this._findCache(query) || await this._find(query);
+		if (!raw) return null;
+
+		const doc = new Document(raw, this);
+		doc.cache();
+		return doc;
 	}
 
-	async insert (data) {
-		if (!data) return null;
-		if (data.constructor === "array")
+	async insert (data, opts) {
+		if (!data) throw new GABError("GADRIVER_INVALID_PARAMS");
+
+		let func = "insertOne";
+		if (data.constructor === Array) func = "insertMany";
+
+		const raw = new this._schema(data);
+
+		try {
+			await this._client[func](raw, opts);
+		} catch (err) {
+			throw new GABError("MONGODB_ERROR", err);
+		}
+
+		const doc = new Document(raw, this);
+		doc.cache();
+		return doc;
+	}
+
+	_find (query, opts, multi) {
+		return this._client[multi ? "find" : "findOne"](query, opts);
+	}
+
+	_findCache (query) {
+		if (this._cache.has(query._id)) return this._cache.get(query._id);
+		else return null;
 	}
 };

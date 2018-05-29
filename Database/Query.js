@@ -24,7 +24,8 @@ module.exports = class Query {
 		 * The current value being interacted with
 		 * @type {Document.Object|Object}
 		 */
-		this.current = this._doc._doc;
+		this._current = this._doc._doc;
+		this._schema = this._doc._model._schema;
 	}
 
 	/**
@@ -37,12 +38,14 @@ module.exports = class Query {
 			if (path === "..") {
 				const index = this.parsed.lastIndexOf(".");
 				this.parsed = this.parsed.substring(0, index);
-				this.current = this.parsed === "" ? this._doc._doc : mpath.get(this.parsed, this._doc._doc);
+				this._current = this.parsed === "" ? this._doc._doc : mpath.get(this.parsed, this._doc._doc);
+				this._schema = this._schema._parent;
 				return this;
 			}
 
 			this.parsed += this._parseForString(path);
-			this.current = mpath.get(this.parsed, this._doc._doc);
+			this._current = mpath.get(this.parsed, this._doc._doc);
+			this._schema = this._schema[path];
 			return this;
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
@@ -87,7 +90,7 @@ module.exports = class Query {
 			if (!this._canId()) return this.prop(id);
 			const index = this._findById(id);
 			this.parsed += this._parseForString(index);
-			this.current = mpath.get(this.parsed, this._doc._doc);
+			this._current = mpath.get(this.parsed, this._doc._doc);
 			return this;
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
@@ -104,13 +107,9 @@ module.exports = class Query {
 		try {
 			if (value !== undefined) {
 				const parsed = this.parsed + this._parseForString(path);
-				mpath.set(parsed, value, this._doc._doc);
-				mpath.set(parsed, value, this._doc);
-				this._doc._setAtomic(parsed, value, "$set");
+				this._writeValue(parsed, value);
 			} else {
-				mpath.set(this.parsed, path, this._doc._doc);
-				mpath.set(this.parsed, path, this._doc);
-				this._doc._setAtomic(this.parsed, path, "$set");
+				this._writeValue(this.parsed, path);
 			}
 			return this;
 		} catch (err) {
@@ -154,27 +153,40 @@ module.exports = class Query {
 
 	/**
 	 * Check if the current value or obj can be used to find a subdocument by ID
-	 * @param {object} [obj=model.Query.current] The object to be checked
+	 * @param {object} [obj=model.Query._current] The object to be checked
 	 * @returns {boolean}
 	 * @private
 	 */
-	_canId (obj = this.current) {
+	_canId (obj = this._current) {
 		return obj && obj.constructor === Array;
 	}
 
 	/**
 	 * Internal function to find an array value by its _id property, returns null if value is not found
 	 * @param {string} id The ID to test the array values against
-	 * @param {object} [obj=model.Query.current] The array that holds the value to be found
+	 * @param {object} [obj=model.Query._current] The array that holds the value to be found
 	 * @returns {*}
 	 * @private
 	 */
-	_findById (id, obj = this.current) {
+	_findById (id, obj = this._current) {
 		if (this._canId(obj)) {
 			const index = obj.findIndex(prop => prop._id === id);
 			return index === -1 ? null : index;
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Internal function to write a value to a specified path at all locations necessary
+	 * @param {string} path
+	 * @param {*} val
+	 * @private
+	 */
+	_writeValue (path, val) {
+		mpath.set(path, val, this._doc._doc);
+		mpath.set(path, val, this._doc);
+		//this._doc._modifyCache(path, val);
+		this._doc._setAtomic(path, val, "$set");
 	}
 };

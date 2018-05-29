@@ -148,25 +148,25 @@ client.IPC.on("postAllData", async () => {
 });
 
 client.IPC.on("createPublicInviteLink", async msg => {
-	const guildID = msg.guild;
-	const guild = client.guilds.get(guildID);
+	let guildID = msg.guild;
+	let guild = client.guilds.get(guildID);
 	const serverDocument = await EServers.findOne(guild.id);
-	const channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
+	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
 	if (channel) {
-		const invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
-		serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
+		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
+		serverDocument.query.set("config.public_data.server_listing.invite_link", `https://discord.gg/${invite.code}`);
 		serverDocument.save();
 	}
 });
 
 client.IPC.on("deletePublicInviteLink", async msg => {
-	const guildID = msg.guild;
-	const guild = client.guilds.get(guildID);
+	let guildID = msg.guild;
+	let guild = client.guilds.get(guildID);
 	const serverDocument = await EServers.findOne(guild.id);
-	const invites = await guild.fetchInvites();
-	const invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
+	let invites = await guild.fetchInvites();
+	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
-	serverDocument.config.public_data.server_listing.invite_link = null;
+	serverDocument.query.set("config.public_data.server_listing.invite_link", null);
 	serverDocument.save();
 });
 

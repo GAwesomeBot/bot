@@ -1,6 +1,24 @@
 const Query = require("./Query");
 const { Error: GABError } = require("../Internals/Errors");
 
+const mpath = require("mpath");
+
+const isObject = obj => obj && obj.constructor === Object;
+
+const deepClone = source => {
+	if (typeof source !== "object" || source === null) return source;
+	if (Array.isArray(source)) {
+		const output = new Array(source.length);
+		for (let i = 0, len = source.length; i < len; i++) output[i] = deepClone(source[i]);
+		return output;
+	}
+	if (isObject(source)) {
+		const output = {};
+		for (const key in source) output[key] = deepClone(source[key]);
+		return output;
+	}
+};
+
 module.exports = class Document {
 	/**
 	 * An object representing a Model document from MongoDB
@@ -20,7 +38,7 @@ module.exports = class Document {
 		 */
 		this._client = this._model._client;
 		/**
-		 * An internal collection of all the atomics to be pushed to MongoDB on save
+		 * An internal collection of all the atomic operations to be pushed to MongoDB on save
 		 * @type {Object}
 		 * @private
 		 */
@@ -30,7 +48,7 @@ module.exports = class Document {
 		 * @type {Object}
 		 * @private
 		 */
-		this._doc = doc;
+		this._doc = deepClone(doc);
 
 		Object.assign(this, doc);
 	}
@@ -39,11 +57,16 @@ module.exports = class Document {
 	 * Pushes the pending changes of this document to MongoDB
 	 * @returns {Promise<void>}
 	 */
-	save () {
-		const atomics = this._atomics;
+	async save () {
+		const ops = this._atomics;
 		this._atomics = {};
 		try {
-			return this._client.updateOne({ _id: this._id }, atomics, { multi: true });
+			this._handleAtomics();
+		} catch (err) {
+			throw new GABError("MONGODB_ERROR", err);
+		}
+		try {
+			return await this._client.updateOne({ _id: this._id }, ops, { multi: true });
 		} catch (err) {
 			throw new GABError("MONGODB_ERROR", err);
 		}
@@ -95,5 +118,81 @@ module.exports = class Document {
 		} else {
 			this._atomics[atomic][path] = value;
 		}
+	}
+
+	/**
+	 * Handle this Document's registered Atomics to prepare them for save
+	 * @private
+	 */
+	_handleAtomics () {
+		// TODO: Handle atomics on save to update Model cache
+		if (this._atomics.$set) {
+			Object.keys(this._atomics.$set).forEach(key => {
+				const value = this._atomics.$set[key];
+				this._modifyCache(key, value);
+			});
+		}
+
+		if (this._atomics.$inc) {
+			Object.keys(this._atomics.$inc).forEach(key => {
+				const value = mpath.get(key, this._cache);
+				this._modifyCache(key, value + this._atomics.$inc[key]);
+			});
+		}
+
+		if (this._atomics.$push) {
+			Object.keys(this._atomics.$push).forEach(key => {
+				const values = this._atomics.$push[key].$each;
+				this._modifyCache(key, mpath.get(key, this._cache).concat(values));
+			});
+		}
+	}
+
+	/**
+	 * Modify a value of the cached version of this document
+	 * @param {string} path
+	 * @param {*} val
+	 * @private
+	 */
+	_modifyCache (path, val) {
+		if (this._existsInCache) mpath.set(path, val, this._cache);
+	}
+
+	/**
+	 * Actually set a document in Model._cache, returning false if the document already exists in cache
+	 * @param {boolean} force A boolean indicating if the existing document in cache should be ignored and overwritten
+	 * @returns {boolean} A boolean indicating if the document was inserted or not
+	 * @private
+	 */
+	_setCache (force) {
+		if (!this._existsInCache || force) return !!this._model._cache.set(this._doc._id, this._doc);
+		else return false;
+	}
+
+	/**
+	 * A boolean indicating if a possibly outdated version of this document exists in the Model's cache
+	 * @returns {boolean}
+	 * @private
+	 */
+	get _existsInCache () {
+		return this._model._cache.has(this._doc._id);
+	}
+
+	/**
+	 * The cached version of this document
+	 * @returns {Document | undefined}
+	 * @private
+	 */
+	get _cache () {
+		return this._model._cache.get(this._doc._id);
+	}
+
+	/**
+	 * Cache this document in the Model's cache
+	 * @param {boolean} update If an existing version of this document in the Model's cache should be overwritten when found
+	 * @returns {boolean}
+	 */
+	cache (update) {
+		return this._setCache(update);
 	}
 };
