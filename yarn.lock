@@ -685,8 +685,8 @@ detect-libc@^1.0.2:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid "30c7d6d1b16a336a1ff37cac23fc5dfe3c952417"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/30c7d6d1b16a336a1ff37cac23fc5dfe3c952417"
+  uid faf27fabc055cb3850e823cf36c0af21c0139c35
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/faf27fabc055cb3850e823cf36c0af21c0139c35"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
@@ -1885,7 +1885,7 @@ mongoose@^5.1.2:
     regexp-clone "0.0.1"
     sliced "1.0.1"
 
-mpath@0.4.1:
+mpath@0.4.1, mpath@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/mpath/-/mpath-0.4.1.tgz#ed10388430380bf7bbb5be1391e5d6969cb08e89"
 
