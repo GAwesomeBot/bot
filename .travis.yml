@@ -14,5 +14,13 @@ jobs:
     - stage: build
       if: type = push
       script: bash ./travis/build.sh
+after_success:
+  - wget https://raw.githubusercontent.com/KingDGrizzle/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh success $WEBHOOK_URL
+after_failure:
+  - wget https://raw.githubusercontent.com/KingDGrizzle/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh failure $WEBHOOK_URL
 dist: trusty
 sudo: true
