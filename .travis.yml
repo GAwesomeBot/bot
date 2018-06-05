@@ -4,8 +4,6 @@ node_js:
 cache:
   directories:
     - "$HOME/.npm"
-before_install:
-  - npm i -g npm@latest
 install: npm ci
 jobs:
   include:
