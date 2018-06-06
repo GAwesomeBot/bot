@@ -685,12 +685,12 @@ detect-libc@^1.0.2:
 
 "discord.js@github:discordjs/discord.js":
   version "12.0.0-dev"
-  uid "276109ed3c8ee990296af34e2ae0a6174e151c70"
-  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/276109ed3c8ee990296af34e2ae0a6174e151c70"
+  uid "5071477172053ef9d274aaab16cec0cfbd25b860"
+  resolved "https://codeload.github.com/discordjs/discord.js/tar.gz/5071477172053ef9d274aaab16cec0cfbd25b860"
   dependencies:
     pako "^1.0.0"
     prism-media "^0.2.0"
-    snekfetch "^3.6.0"
+    snekfetch "^4.0.1"
     tweetnacl "^1.0.0"
     ws "^4.0.0"
 
@@ -2596,7 +2596,7 @@ sliced@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/sliced/-/sliced-1.0.1.tgz#0b3a662b5d04c3177b1926bea82b03f837a2ef41"
 
-snekfetch@^3.5.8, snekfetch@^3.6.0:
+snekfetch@^3.5.8:
   version "3.6.4"
   resolved "https://registry.yarnpkg.com/snekfetch/-/snekfetch-3.6.4.tgz#d13e80a616d892f3d38daae4289f4d258a645120"
 
