@@ -28,7 +28,7 @@ module.exports = {
 		"node",
 	],
 	rules: {
-		"no-extra-parens": ["warn", "all", { nestedBinaryExpressions: false	}],
+		"no-extra-parens": ["warn", "all", { nestedBinaryExpressions: false }],
 		"accessor-pairs": "warn",
 		"array-callback-return": "error",
 		"curly": ["error", "multi-line", "consistent"],
