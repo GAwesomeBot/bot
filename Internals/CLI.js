@@ -33,7 +33,7 @@ class CLI {
 	 * @param {Buffer} data The incoming data from the stdin
 	 */
 	listener (data) {
-		let strData = data.toString();
+		const strData = data.toString();
 		let trimmedData = strData.trim();
 		if (!this.currentlyRunningCommand) {
 			let [command, ...args] = trimmedData.split(" ");
