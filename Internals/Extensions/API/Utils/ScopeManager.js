@@ -47,8 +47,7 @@ module.exports = class ScopeManager {
 	 * @returns {Boolean} True if the extension can successfully execute any functions that requires the given scope
 	 */
 	check (scope, category, channel) {
-		let scopes = this.scopes;
-		let permissions = this.permissions;
+		let { scopes, permissions } = this;
 		if (category) {
 			scopes = this.scopes[category];
 			permissions = this.permissions[category];

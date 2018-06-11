@@ -38,7 +38,7 @@ module.exports = async (client, server, serverDocument) => {
 	// Default tag reactions
 	serverDocument.config.tag_reaction.messages = defTagReactions;
 
-	let guildCount = await Utils.GetValue(client, "guilds.size", "int");
+	const guildCount = await Utils.GetValue(client, "guilds.size", "int");
 	// Send message to server owner about GAwesomeBot
 	await client.messageBotAdmins(server, serverDocument, {
 		embed: {

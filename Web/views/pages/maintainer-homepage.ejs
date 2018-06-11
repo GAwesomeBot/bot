@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Homepage - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
@@ -11,7 +11,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState(); updatePreview(document.getElementById('message-html').value);">
+<body onload="saveFormState();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -55,7 +55,7 @@
 								</h4>
 								<div class="box hero">
 									<div class="hero-body has-text-centered">
-										<h3 id="message-preview" class="title is-5"></h3>
+										<h3 id="message-preview" class="title is-5"><%-configData.homepageMessageHTML%></h3>
 									</div>
 								</div>
 							</div>

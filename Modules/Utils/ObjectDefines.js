@@ -128,8 +128,8 @@ module.exports = client => {
 		let original = this.toString();
 		if (!arguments.length) return original;
 		// eslint-disable-next-line prefer-rest-params
-		let type = typeof arguments[0], options = type === "string" || type === "number" ? Array.prototype.slice.call(arguments) : arguments[0];
-		for (let text in options) original = original.replace(new RegExp(`\\{${text}\\}`, "gi"), options[text]);
+		const type = typeof arguments[0], options = type === "string" || type === "number" ? Array.prototype.slice.call(arguments) : arguments[0];
+		for (const text in options) original = original.replace(new RegExp(`\\{${text}\\}`, "gi"), options[text]);
 		return original;
 	};
 

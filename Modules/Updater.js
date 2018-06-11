@@ -1,7 +1,7 @@
 const dgr = require("async-dl-github-repo");
 const fs = require("fs-nextra");
 const snekfetch = require("snekfetch");
-const Console = require("../Internals").Console;
+const { Console } = require("../Internals");
 // TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {
@@ -26,10 +26,10 @@ module.exports = {
 			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`);
 		} catch (err) {
 			res = {};
-			res.status = 404;
+			res.statusCode = 404;
 		}
 		if (res) {
-			if (res.status === 404) {
+			if (res.statusCode === 404) {
 				return 404;
 			}
 			return res.body;
@@ -98,7 +98,7 @@ module.exports = {
 		io.on("files_conf", async files_conf => {
 			winston.info(`Installing configuration files...`);
 			const promiseArray = [];
-			files_conf.map(file => {
+			files_conf.forEach(file => {
 				promiseArray.push(fs.writeFile(`./${file.file}`, file.data));
 			});
 			await Promise.all(promiseArray);

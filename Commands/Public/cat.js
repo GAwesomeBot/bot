@@ -9,7 +9,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 		},
 	});
 	try {
-		let cat = await RandomAnimals.cat();
+		const cat = await RandomAnimals.cat();
 		if (cat) {
 			msg.send({
 				embed: {

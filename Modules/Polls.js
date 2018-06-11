@@ -38,7 +38,7 @@ module.exports = {
 		const votes = {};
 		let winner;
 		let winnerCount = 0;
-		let options = {};
+		const options = {};
 		pollDocument.options.forEach((option, i) => {
 			options[i] = {
 				id: i,

@@ -1,3 +1,5 @@
+/* eslint node/exports-style: ["error", "exports"] */
+
 const Timeout = require("./Timeout");
 const Interval = require("./Interval");
 

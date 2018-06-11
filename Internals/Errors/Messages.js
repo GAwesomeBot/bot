@@ -55,6 +55,11 @@ const Messages = {
 
 	MISSING_GIPHY_QUERY: `You need to provide a query for Giphy!`,
 	NO_GIPHY_RESULT: `There were to Giphy results for your query!`,
+
+	// Database Faults
+	MONGODB_ERROR: err => `An unknown error occurred while interacting with MongoDB: ${err}`,
+	GADRIVER_ERROR: err => `An unknown error occurred within GADriver: ${err}`,
+	GADRIVER_INVALID_PARAMS: `A GADriver method was executed with insufficient or invalid parameters.`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

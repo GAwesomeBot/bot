@@ -1,6 +1,6 @@
 const API = require("../index");
-const Collection = require("discord.js").Collection;
-const ScopeManager = API.ScopeManager;
+const { Collection } = require("discord.js");
+const { ScopeManager } = API;
 // eslint-disable-next-line no-unused-vars
 let scopeManager, guild, serverDocument;
 
@@ -14,7 +14,7 @@ module.exports = class Guild {
 	 */
 	constructor (rawGuild, scopes) {
 		guild = rawGuild;
-		serverDocument = rawGuild.serverDocument;
+		({ serverDocument } = rawGuild);
 		scopeManager = new ScopeManager(scopes);
 
 		this.afkChannelID = rawGuild.afkChannelID;

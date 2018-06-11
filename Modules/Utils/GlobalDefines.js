@@ -1,3 +1,3 @@
-exports.addToGlobal = (name, val) => {
+module.exports.addToGlobal = (name, val) => {
 	global[name] = val;
 };

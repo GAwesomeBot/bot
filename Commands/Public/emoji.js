@@ -2,7 +2,7 @@ const { MessageAttachment } = require("discord.js");
 
 module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, documents, msg, commandData) => {
 	if (msg.suffix) {
-		let m = await msg.channel.send({
+		const m = await msg.channel.send({
 			embed: {
 				color: Colors.INFO,
 				description: `We're processing your input.`,

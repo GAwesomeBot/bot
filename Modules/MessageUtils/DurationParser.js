@@ -6,8 +6,7 @@ module.exports = async string => {
 	const args = string.split("|").trimAll();
 	if (args.length === 2) {
 		// Easy peasy lemon sqeezy
-		event = args[0];
-		time = args[1];
+		[event, time] = args;
 	} else {
 		// Parse with assumption to "command to ... in ..."
 		time = string.substring(string.toLowerCase().lastIndexOf(" in ") + 4);

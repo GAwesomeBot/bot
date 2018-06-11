@@ -1,5 +1,5 @@
 module.exports = async ({ client, configJS, Constants: { Colors } }, msg, commandData) => {
-	const userDocument = msg.author.userDocument;
+	const { userDocument } = msg.author;
 	if (msg.suffix) {
 		if (msg.suffix.includes("|")) {
 			const params = msg.suffix.split("|");

@@ -31,7 +31,7 @@ module.exports = {
 
 			const svr = main.client.guilds.get(params.guildid);
 			const member = svr.members.get(usr.id);
-			const serverDocument = svr.serverDocument;
+			const { serverDocument } = svr;
 
 			if (serverDocument.config.blocked.includes(usr.id)) return;
 

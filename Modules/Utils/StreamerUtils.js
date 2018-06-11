@@ -3,8 +3,8 @@ const auth = require("../../Configurations/auth.js");
 const snekfetch = require("snekfetch");
 
 const isStreamingTwitch = async username => {
-	const { body: { stream }, status } = await snekfetch.get(`https://api.twitch.tv/kraken/streams/${username}?client_id=${auth.tokens.twitchClientID}`);
-	if (status === 200 && stream) {
+	const { body: { stream }, statusCode } = await snekfetch.get(`https://api.twitch.tv/kraken/streams/${username}?client_id=${auth.tokens.twitchClientID}`);
+	if (statusCode === 200 && stream) {
 		return {
 			name: stream.channel.display_name,
 			type: "Twitch",
@@ -17,9 +17,9 @@ const isStreamingTwitch = async username => {
 };
 
 const isStreamingYoutube = async channel => {
-	const { body: { items }, status } = await snekfetch.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.googleAPI}`);
+	const { body: { items }, statusCode } = await snekfetch.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.googleAPI}`);
 	const item = items[0];
-	if (status === 200 && item && item.snippet.liveBroadcastContent === "live") {
+	if (statusCode === 200 && item && item.snippet.liveBroadcastContent === "live") {
 		return {
 			name: item.snippet.channelTitle,
 			type: "YouTube",

@@ -2,6 +2,8 @@ const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
 
 class GABResponse {
 	constructor (req, res, page) {
+		if (!req.user) req.user = {};
+
 		this.template = {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
@@ -75,7 +77,7 @@ middleware.populateRequest = route => (req, res, next) => {
 
 middleware.registerTraffic = (req, res, next) => {
 	if (!req.cookies.trafficID || req.cookies.trafficID !== req.app.client.traffic.TID) {
-		let TID = req.app.client.traffic.TID;
+		const { TID } = req.app.client.traffic;
 		res.cookie("trafficID", TID, { httpOnly: true });
 	}
 	req.app.client.traffic.count(req.cookies.trafficID, req.isAuthenticated());
@@ -112,7 +114,7 @@ middleware.logRequest = (req, res, next) => {
 };
 
 middleware.getConsoleSection = (req, res, next) => {
-	req.section = req.path.split("/")[1];
+	[, req.section] = req.path.split("/");
 	next();
 };
 

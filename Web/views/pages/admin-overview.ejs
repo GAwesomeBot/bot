@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Admin Console - GAwesomeBot</title>
 	<% include ../partials/head %>
@@ -80,20 +80,6 @@
 									<h2 class="subtitle">
 										<img src="<%= topMember.avatar %>" style="border-radius: 100%;width: 24px;vertical-align: middle;" alt="<%= topMember.id %>">
 										top member
-									</h2>
-								</div>
-							<% } %>
-							<% if(topGame) { %>
-								<br>
-								<div class="has-text-centered">
-									<h1 class="title">
-										<strong><%= topGame %></strong>
-									</h1>
-									<h2 class="subtitle">
-										<span class="icon">
-						                    <i class="fa fa-gamepad"></i>
-						                </span>
-										most-played game
 									</h2>
 								</div>
 							<% } %>

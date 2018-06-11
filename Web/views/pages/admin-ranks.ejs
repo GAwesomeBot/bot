@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Ranks - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
@@ -95,7 +95,7 @@
 												</span>
 											</p>
 										</td>
-										<td>
+										<td class="ranks-member-count">
 											<%= rankDocument.members %>
 										</td>
 										<td>
@@ -110,8 +110,7 @@
 								<% }); %>
 								</tbody>
 							</table>
-							<input type="checkbox" id="ranks_list-reset" name="ranks_list-reset" style="display: none;">
-							<button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); submitForm(); saveFormState(); Turbolinks.visit('');">
+							<button class="button is-danger" name="ranks_list-reset" onclick="GAwesomeUtil.isLoading(this); GAwesomeUtil.dashboard.post({ 'ranks_list-reset': true }).then(() => { GAwesomeUtil.isFinished(this); $('.ranks-member-count').html(0); }); return false;">
 								<span>Reset Everyone's Rank</span>
 								<span class="icon is-small">
 									<i class="fa fa-times"></i>

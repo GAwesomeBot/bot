@@ -97,7 +97,6 @@ controllers.overview = async (req, res) => {
 		await req.svr.fetchMember([richestMember ? richestMember : undefined, topMember ? topMember : undefined]);
 		richestMember = req.svr.members[richestMember];
 		topMember = req.svr.members[topMember];
-		const topGame = req.svr.document.games.sort((a, b) => b.time_played - a.time_played)[0];
 		res.render("pages/admin-overview.ejs", {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			sudo: req.isSudo,
@@ -120,7 +119,6 @@ controllers.overview = async (req, res) => {
 				id: topMember.user.id,
 				avatar: req.app.client.getAvatarURL(topMember.user.id, topMember.user.avatar) || "/static/img/discord-icon.png",
 			} : null,
-			topGame: topGame ? topGame._id : null,
 			richestMember: richestMember ? {
 				username: richestMember.user.username,
 				id: richestMember.user.id,

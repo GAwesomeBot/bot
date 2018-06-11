@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Maintainers - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
@@ -126,7 +126,7 @@
 											</div>
 											<div class="control">
 												<button class="button is-small <% if (maintainer.isSudoMaintainer) { %>is-warning<% } else { %>is-primary<% } %>" name="maintainer-sudo" value="<%= maintainer.id %>"
-														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers? Sudo Maintainers can access all bot data and configuration; be careful!<% } %>');"<% if(!
+														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers?<% } %>');"<% if(!
 																isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
 													<% if (maintainer.isSudoMaintainer) { %>
 														<span>Revoke Sudo</span>

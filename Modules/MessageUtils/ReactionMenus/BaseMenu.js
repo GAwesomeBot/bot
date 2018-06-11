@@ -27,15 +27,20 @@ class BaseReactionMenu extends EventEmitter {
 			this.totalPages = this.options.length;
 		}
 		await this.sendInitialMessage();
-		this.collector = this.msg.createReactionCollector(
-			(reaction, user) => user.id === this.originalMsg.author.id && this.allowedEmojis.includes(reaction.emoji.name),
-			{ time }
-		);
-		await this.prepareReactions();
-		this.handle();
+		if (this.options.length > 1 || this.totalPages >= 1) {
+			this.collector = this.msg.createReactionCollector(
+				(reaction, user) => user.id === this.originalMsg.author.id && this.allowedEmojis.includes(reaction.emoji.name),
+				{ time }
+			);
+			await this.prepareReactions();
+			this.handle();
+		}
 	}
 
 	async sendInitialMessage () {
+		if (this.options.length === 1) {
+			return this.originalMsg.channel.send(this.results[0]);
+		}
 		this.msg = await this.originalMsg.channel.send({
 			embed: {
 				color: this.template.color,
@@ -60,23 +65,20 @@ class BaseReactionMenu extends EventEmitter {
 		this.collector.once("end", this._handleEnd.bind(this));
 	}
 
-	async _handleEnd (_, reason) {
-		if (reason && reason === "manual") {
-			try {
-				await this.msg.reactions.removeAll();
-			} catch (err) {
-				winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
-				this.msg.reactions.forEach(r => r.users.remove());
-			}
-		} else {
-			this.msg.delete();
-			this.originalMsg.channel.send({
-				embed: {
-					color: Colors.LIGHT_ORANGE,
-					description: `You've exited the menu or the menu expired.`,
-				},
-			});
+	async _handleEnd () {
+		try {
+			await this.msg.reactions.removeAll();
+		} catch (err) {
+			winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
+			this.msg.reactions.forEach(r => r.users.remove());
 		}
+		this.msg.edit({
+			embed: {
+				color: Colors.LIGHT_ORANGE,
+				description: `You've exited the menu or the menu expired.`,
+			},
+		});
+
 		// Null out the collector
 		this.collector = null;
 	}

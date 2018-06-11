@@ -28,7 +28,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 					},
 				});
 			} else {
-				let expiry = Date.now() + time;
+				const expiry = Date.now() + time;
 				serverDocument.config.countdown_data.push({
 					_id: event.toLowerCase().trim(),
 					channel_id: msg.channel.id,
@@ -45,7 +45,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 				});
 			}
 		} else {
-			let countdownDocument = serverDocument.config.countdown_data.id(msg.suffix.trim().toLowerCase());
+			const countdownDocument = serverDocument.config.countdown_data.id(msg.suffix.trim().toLowerCase());
 			if (countdownDocument) {
 				msg.send({
 					embed: {
@@ -70,20 +70,19 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 			.filter(countdownDoc => msg.guild.channels.has(countdownDoc.channel_id))
 			.sort((a, b) => a.expiry_timestamp - b.expiry_timestamp);
 		if (countdowns.length) {
-			let arr = countdowns.map(countdown => [
+			const arr = countdowns.map(countdown => [
 				`» **${countdown._id}** «`,
 				`\tIn #${msg.guild.channel(countdown.channel_id).name} (${msg.guild.channel(countdown.channel_id)})`,
 				`\tExpires **${moment(countdown.expiry_timestamp).fromNow()}**`,
 			].join("\n"));
 			const chunks = arr.chunk(10);
-			let description = [];
+			const description = [];
 			for (const chunk of chunks) description.push(chunk.join("\n\n"));
-			const menu = new PaginatedEmbed(msg, description, {
+			new PaginatedEmbed(msg, description, {
 				title: `There ${arr.length === 1 ? "is" : "are"} ${arr.length} countdown${arr.length === 1 ? "" : "s"} on "${msg.guild}" 🎆`,
 				color: Colors.INFO,
 				footer: `Page {current description} out of {total descriptions}`,
-			});
-			await menu.init();
+			}).init();
 		} else {
 			msg.send({
 				embed: {

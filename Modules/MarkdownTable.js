@@ -191,7 +191,7 @@ class MarkdownTable {
 	}
 
 	dotindex (value) {
-		let match = EXPRESSION_LAST_DOT.exec(value);
+		const match = EXPRESSION_LAST_DOT.exec(value);
 
 		return match ? match.index + 1 : value.length;
 	}

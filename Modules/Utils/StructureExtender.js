@@ -1,6 +1,6 @@
 const { Structures, splitMessage, MessageAttachment, MessageEmbed } = require("discord.js");
 
-const IsObject = input => Object.prototype.toString.call(input) === "[object Object]";
+const IsObject = input => input && input.constructor === Object;
 
 module.exports = () => {
 	Structures.extend("Guild", Guild => {
@@ -8,7 +8,7 @@ module.exports = () => {
 			get defaultChannel () {
 				if (this.channels.filter(c => c.type === "text").size === 0) return null;
 
-				let generalChannel = this.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
+				const generalChannel = this.channels.find(ch => (ch.name === "general" || ch.name === "mainchat") && ch.type === "text");
 				if (generalChannel && generalChannel.permissionsFor(this.me).has(["VIEW_CHANNEL", "SEND_MESSAGES"])) {
 					return generalChannel;
 				}
@@ -55,7 +55,7 @@ module.exports = () => {
 								enumerable: false,
 								value: object,
 							});
-						});
+						}).catch();
 				} else if (this.client.isReady) {
 					let command = data.content.toLowerCase().trim();
 					let suffix = null;
@@ -100,7 +100,7 @@ module.exports = () => {
 										writable: true,
 									});
 								}
-							});
+							}).catch();
 					} else if (this.client.isReady) {
 						let command = data.content.toLowerCase().trim();
 						let suffix = null;
@@ -138,11 +138,11 @@ module.exports = () => {
 			}
 
 			get command () {
-				return this._commandObject.command || null;
+				return this._commandObject ? this._commandObject.command || null : null;
 			}
 
 			get suffix () {
-				return this._commandObject.suffix || null;
+				return this._commandObject ? this._commandObject.suffix || null : null;
 			}
 
 			async send (content, options) {

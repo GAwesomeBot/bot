@@ -4,8 +4,8 @@
 */
 
 module.exports = sargs => {
-	let props = {};
-	let lones = [];
+	const props = {};
+	const lones = [];
 
 	const convertIfApplicable = value => value.toString().toLowerCase() === "true" ? true : value.toString().toLowerCase() === "false" ? false : value;
 	const removeStartHyphens = value => value.replace(/^-+/g, "");

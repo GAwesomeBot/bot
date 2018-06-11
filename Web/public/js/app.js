@@ -232,8 +232,8 @@ GAwesomeUtil.activityViewportUpdate = mq => {
 		$(".header-search-box").removeClass("is-large");
 		document.getElementById("frame").style.paddingLeft = "15px";
 		document.getElementById("frame").style.paddingRight = "15px";
-		if (document.getElementById("search-select").value === "servers") {
-			switchLayout("list");
+		if (window.location.pathname !== "/activity/users") {
+			GAwesomeUtil.switchActivityLayout("list");
 		}
 	} else {
 		$(".header-search-box").addClass("is-large");
@@ -342,6 +342,9 @@ GAwesomeUtil.populateWikiBookmarks = () => {
 		$("#menu-spacer").addClass("is-hidden");
 	}
 };
+
+GAwesomeUtil.isLoading = elem => $(elem).addClass("is-loading");
+GAwesomeUtil.isFinished = elem => $(elem).removeClass("is-loading");
 
 GAwesomeUtil.publishExtension = extid => {
 	if (confirm("Are you sure you want to publish this extension? Everyone will be able to view and use this extension!")) {
@@ -663,7 +666,7 @@ GAwesomeUtil.dashboard.removeElement = elem => {
 };
 
 GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
-	const generateStr = (adminLevel, channelCount, totalChannelCount) => `${adminLevel === 0 ? "E" : ("Admin level &ge;" + adminLevel + ", e")}nabled in ${channelCount - totalChannelCount === 0 ? "all" : channelCount} channel${(channelCount - totalChannelCount === 0 || channelCount !== 1) ? "s" : ""}`;
+	const generateStr = (adminLevel, channelCount, totalChannelCount) => `${adminLevel === 0 ? (channelCount === 0 ? "Dis" :"En") : ("Admin level &ge;" + adminLevel + (channelCount === 0 ? ", dis" : ", en"))}abled in ${channelCount - totalChannelCount === 0 || channelCount === 0 ? "all" : channelCount} channel${(channelCount - totalChannelCount === 0 || channelCount !== 1) ? "s" : ""}`;
 
 	const inputs = modal.find(":input");
 	const data = inputs.serializeArray();
@@ -672,6 +675,17 @@ GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
 	const adminLevel = Number(data.filter(input => input.name.endsWith("-adminLevel"))[0].value);
 	const overview = generateStr(adminLevel, channelCount, totalChannelCount);
 	settingsBox.html(overview);
+};
+
+GAwesomeUtil.dashboard.post = payload => {
+	return new Promise((resolve, reject) => {
+		$.ajax({
+			url: window.location.pathname,
+			method: "POST",
+			data: payload
+		}).success(resolve)
+			.fail(reject)
+	});
 };
 
 GAwesomePaths["landing"] = () => {
@@ -857,7 +871,7 @@ document.addEventListener("turbolinks:load", () => {
 
 		// Execute page function and finish loading bar when done
 		if (func) func();
-		NProgress.done();
+		NProgress.done(true);
 		GAwesomeUtil.log(`Finished loading page using ${GAwesomeData.section !== "" ? GAwesomeData.section : "landing"} section handler`);
 	} catch (err) {
 		NProgress.done();
@@ -886,8 +900,12 @@ $(window).scroll(function() {
 	}
 });
 
-$(document).on('turbolinks:click', function() {
-	if (window.location.pathname.startsWith("/dashboard")) NProgress.configure({ parent: "section.section.is-white"});
+$(document).on('turbolinks:click', function({ originalEvent }) {
+	const a = document.createElement("a");
+	a.href = originalEvent.data.url;
+	const targetIsDashboard = a.pathname.startsWith("/dashboard") && a.pathname !== "/dashboard";
+	const currentLocationIsDashboard = window.location.pathname.startsWith("/dashboard") && window.location.pathname !== "/dashboard";
+	if (targetIsDashboard && currentLocationIsDashboard) NProgress.configure({ parent: "section.section.is-white"});
 	else NProgress.configure({ parent: "body" });
 	NProgress.start();
 });

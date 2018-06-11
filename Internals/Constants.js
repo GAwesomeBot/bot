@@ -1,5 +1,8 @@
+/* eslint node/exports-style: ["error", "exports"] */
+
 exports.ModLogEntries = {
 	ADD_ROLE: "Add Role",
+	CREATE_ROLE: "Create Role",
 	REMOVE_ROLE: "Remove Role",
 	DELETE_ROLE: "Delete Role",
 	MODIFY_ROLE: "Modify Role",
@@ -217,6 +220,7 @@ exports.APIs = {
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
 	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${category ? category : ""}`,
 	GIPHY: (token, query, nsfw) => `http://api.giphy.com/v1/gifs/random?api_key=${token}&rating=${nsfw}&format=json&limit=1&tag=${encodeURIComponent(query)}`,
+	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 };
@@ -302,6 +306,92 @@ exports.FortuneCategories = [
 	"science",
 	"wisdom",
 ];
+
+exports.EightBall = {
+	WaitTimes: [1000, 1500, 3000, 2500, 2000, 1250, 500, 300, 100, 600],
+	Answers: [
+		{
+			color: 0x43B581,
+			answer: "It is certain",
+		},
+		{
+			color: 0x43B581,
+			answer: "It is decidedly so",
+		},
+		{
+			color: 0x43B581,
+			answer: "Without a doubt",
+		},
+		{
+			color: 0x43B581,
+			answer: "Yes, definitely",
+		},
+		{
+			color: 0x43B581,
+			answer: "You may rely on it",
+		},
+		{
+			color: 0x43B581,
+			answer: "As I see it, yes",
+		},
+		{
+			color: 0x43B581,
+			answer: "Most likely",
+		},
+		{
+			color: 0x43B581,
+			answer: "Outlook good",
+		},
+		{
+			color: 0x43B581,
+			answer: "Yes",
+		},
+		{
+			color: 0x43B581,
+			answer: "Signs point to yes",
+		},
+		{
+			color: 0xE55B0A,
+			answer: "Reply hazy try again",
+		},
+		{
+			color: 0xE55B0A,
+			answer: "Ask again later",
+		},
+		{
+			color: 0xE55B0A,
+			answer: "Better not tell you now",
+		},
+		{
+			color: 0xE55B0A,
+			answer: "Cannot predict now",
+		},
+		{
+			color: 0xE55B0A,
+			answer: "Concentrate and ask again",
+		},
+		{
+			color: 0xCC0F16,
+			answer: "Don't count on it",
+		},
+		{
+			color: 0xCC0F16,
+			answer: "My reply is no",
+		},
+		{
+			color: 0xCC0F16,
+			answer: "My sources say no",
+		},
+		{
+			color: 0xCC0F16,
+			answer: "Outlook not so good",
+		},
+		{
+			color: 0xCC0F16,
+			answer: "Very doubtful",
+		},
+	],
+};
 
 /**
  * Past this line there can be snippets of code under specific licenses

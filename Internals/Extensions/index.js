@@ -1,12 +1,12 @@
 const { VM } = require("vm2");
 const fs = require("fs-nextra");
 const API = require("./API");
-const Sandbox = API.Sandbox;
+const { Sandbox } = API;
 
 const getExtensionCode = extensionDocument => fs.readFile(`${__dirname}/../../Extensions/${extensionDocument.code_id}.gabext`, "utf8");
 
 const parseScopes = extensionDocument => {
-	const scopes = extensionDocument.scopes;
+	const { scopes } = extensionDocument;
 	const parsed = {
 		messages: {
 			readChannel: false,
@@ -86,7 +86,7 @@ const parseScopes = extensionDocument => {
 	return parsed;
 };
 
-exports.run = async (client, serverDocument, extensionDocument, params) => {
+module.exports = async (client, serverDocument, extensionDocument, params) => {
 	let extensionCode;
 	try {
 		extensionCode = await getExtensionCode(extensionDocument);

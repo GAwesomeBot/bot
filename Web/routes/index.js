@@ -3,7 +3,7 @@ const express = require("express");
 const { setupPage, setupRedirection } = require("../helpers");
 const controllers = require("../controllers");
 const middleware = require("../middleware");
-const Route = require("./Route").Route;
+const { Route } = require("./Route");
 
 const dashboardRouting = require("./dashboard");
 const maintainerDashboardRouting = require("./maintainer");

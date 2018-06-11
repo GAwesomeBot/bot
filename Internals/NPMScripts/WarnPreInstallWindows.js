@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-concat, no-console */
 if (process.platform === "win32") {
-	let text = [
+	const text = [
 		"\u001b[31m" + "[Warning]" + "\u001b[39m" + " You are running Windows!",
 		"You may encounter issues while installing GAwesomeBot's Dependencies.",
 		"",

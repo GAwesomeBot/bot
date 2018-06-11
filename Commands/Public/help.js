@@ -9,7 +9,7 @@ const getCommandHelp = (name, type, usage, description) => [
 
 module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMenuEmojis } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		let description = [];
+		const description = [];
 		const [pmCmd, publicCmd, sharedCmd] = [client.getPMCommandMetadata(msg.suffix), client.getPublicCommandMetadata(msg.suffix), client.getSharedCommandMetadata(msg.suffix)];
 		pmCmd && description.push(getCommandHelp(pmCmd.command, "PM", pmCmd.usage, pmCmd.description));
 		publicCmd && description.push(getCommandHelp(publicCmd.command, "Public", publicCmd.usage, publicCmd.description));
@@ -48,7 +48,7 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 			commands[cmdData.category].temp = [];
 		}
 		if (serverDocument.config.commands[command] && serverDocument.config.commands[command].isEnabled && memberBotAdminLevel >= serverDocument.config.commands[command].admin_level && !serverDocument.config.commands[command].disabled_channel_ids.includes(msg.channel.id)) {
-			let string = `${msg.guild.commandPrefix}${cmdData.command}`;
+			const string = `${msg.guild.commandPrefix}${cmdData.command}`;
 			if (string.length > longest) longest = string.length;
 			commands[cmdData.category].temp.push([string, cmdData.usage || "No usage help provided."]);
 		}
@@ -57,7 +57,7 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 	if (serverDocument.extensions.length) {
 		for (const extension of serverDocument.extensions) {
 			if (memberBotAdminLevel >= extension.admin_level) {
-				let string = `${msg.guild.commandPrefix}${extension.key}`;
+				const string = `${msg.guild.commandPrefix}${extension.key}`;
 				if (string.length > longest) longest = string.length;
 				commands["Extensions ⚙️"].temp.push([string, extension.usage_help || "No usage help provided."]);
 			}
@@ -65,7 +65,7 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 	}
 
 	for (const category of Object.keys(commands)) {
-		const temp = commands[category].temp;
+		const { temp } = commands[category];
 		if (temp.length) {
 			for (const [cmdKey, usage] of temp) {
 				commands[category].push(`${cmdKey.padEnd(longest)} | ${usage}`);

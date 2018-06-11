@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Stats Collection - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
@@ -28,8 +28,6 @@
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="command-items">
 						<% var commandData = configData.commands.stats;commandData.name = "stats";commandData.description = commandDescriptions.stats;commandData.category = commandCategories.stats; %>
-						<% include ../partials/admin-command-item %>
-						<% var commandData = configData.commands.games;commandData.name = "games";commandData.description = commandDescriptions.games;commandData.category = commandCategories.games; %>
 						<% include ../partials/admin-command-item %>
 						<% var commandData = configData.commands.messages;commandData.name = "messages";commandData.description = commandDescriptions.messages;commandData.category = commandCategories.messages; %>
 						<% include ../partials/admin-command-item %>

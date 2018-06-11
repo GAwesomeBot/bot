@@ -23,7 +23,7 @@ module.exports = class ModLog {
 	}
 
 	static async create (guild, type, member, creator, reason = null) {
-		let serverDocument = guild.serverDocument;
+		const { serverDocument } = guild;
 		if (serverDocument && serverDocument.modlog.isEnabled && serverDocument.modlog.channel_id) {
 			const ch = guild.channels.get(serverDocument.modlog.channel_id);
 			if (ch && ch.type === "text") {
@@ -35,13 +35,13 @@ module.exports = class ModLog {
 				if (creator) {
 					creatorStr = ModLog.getUserText(creator instanceof GuildMember ? creator.user : creator);
 				}
-				let description = ModLog.getEntryText(++serverDocument.modlog.current_id, type, affectedUser, creatorStr, reason);
-				let m = await ch.send({
+				const description = ModLog.getEntryText(++serverDocument.modlog.current_id, type, affectedUser, creatorStr, reason);
+				const m = await ch.send({
 					embed: {
 						description,
 						color: Colors.INFO,
 						footer: {
-							text: `${member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <new reason>" to change the reason. | ` : ""}Entry created`,
+							text: `${member ? `Use "${guild.commandPrefix}reason ${serverDocument.modlog.current_id} <reason>" to change the reason. | ` : ""}Entry created`,
 						},
 						timestamp: new Date,
 					},

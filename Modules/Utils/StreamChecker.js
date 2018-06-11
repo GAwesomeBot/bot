@@ -1,8 +1,8 @@
 const isStreaming = require("./StreamerUtils");
-const { Templates: { StreamingTemplate } } = require("../../Internals/Constants");
+const { Templates: { StreamingTemplate }, LoggingLevels } = require("../../Internals/Constants");
 
 // Checks if a user is streaming on Twitch, YouTube Gaming, and posts message in server channel if necessary
-module.exports = async (server, serverDocument, streamerDocument) => {
+module.exports = async (client, server, serverDocument, streamerDocument) => {
 	try {
 		const data = await isStreaming(streamerDocument.type, streamerDocument._id);
 
@@ -26,6 +26,7 @@ module.exports = async (server, serverDocument, streamerDocument) => {
 			winston.warn(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
 		});
 	} catch (err) {
-		winston.warn(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err.message);
+		winston.debug(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err.message);
+		client.logMessage(serverDocument, LoggingLevels.ERROR, `Streamer ${streamerDocument._id} is not configured correctly, and I failed to fetch their streaming status!`, streamerDocument.channel_id);
 	}
 };

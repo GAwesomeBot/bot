@@ -16,7 +16,7 @@ module.exports = class EmojiUtil {
 	}
 
 	static async getEmojiMetadata (emoji) {
-		let discordUtilEmoji = DJSUtil.parseEmoji(emoji);
+		const discordUtilEmoji = DJSUtil.parseEmoji(emoji);
 		if (discordUtilEmoji && discordUtilEmoji.id && discordUtilEmoji.animated) {
 			return {
 				type: "custom",
@@ -86,12 +86,12 @@ module.exports = class EmojiUtil {
 
 	static stripOut (providedEmoji, skinToneText, unicodeSkinTone, mobileSkinTone, body) {
 		if (skinToneText && skinToneText.length) {
-			let emoji = skinToneText[1];
-			let skinTone = parseInt(skinToneText[2]) + 1;
+			const emoji = skinToneText[1];
+			const skinTone = parseInt(skinToneText[2]) + 1;
 			if (!body[emoji] || body[`skin-tone-${skinTone}`]) return "";
 			return `${body[emoji]}${body[`skin-tone${skinTone}`]}`;
 		} else if (mobileSkinTone && mobileSkinTone.length) {
-			let skinTone = parseInt(mobileSkinTone[2]) + 1;
+			const skinTone = parseInt(mobileSkinTone[2]) + 1;
 			return `${mobileSkinTone[1]}${body[`skin-tone-${skinTone}`]}`;
 		} else if (unicodeSkinTone && unicodeSkinTone.length) {
 			if (!body[unicodeSkinTone[1]]) return "";

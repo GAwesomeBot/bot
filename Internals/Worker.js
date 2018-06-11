@@ -24,11 +24,11 @@ const p = new Process();
 // #region Math
 p.on("runMathCommand", (data, callback) => {
 	winston.silly(`Received data from master shard for calculating...`, data);
-	let retData = { error: null, result: null };
+	const retData = { error: null, result: null };
 	switch (data.command) {
 		case MathJSCommands.EVAL: {
 			try {
-				let result = safeEval(data.info);
+				const result = safeEval(data.info);
 				retData.result = `${result}`;
 			} catch (err) {
 				retData.error = `${err}`;
@@ -38,7 +38,7 @@ p.on("runMathCommand", (data, callback) => {
 		}
 		case MathJSCommands.HELP: {
 			try {
-				let result = mathjs.help(data.info);
+				const result = mathjs.help(data.info);
 				retData.result = `${result}`;
 			} catch (err) {
 				retData.error = err;

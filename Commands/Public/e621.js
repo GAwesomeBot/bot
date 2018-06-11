@@ -5,7 +5,7 @@ const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	if (msg.channel.nsfw) {
 		if (msg.suffix) {
-			let m = await msg.channel.send({
+			const m = await msg.channel.send({
 				embed: {
 					color: Colors.INFO,
 					description: `We're fetching the requested images...`,
@@ -23,11 +23,11 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 			if (num > serverDocument.config.command_fetch_properties.max_count) {
 				num = serverDocument.config.command_fetch_properties.max_count;
 			}
-			let { body, status } = await get(APIs.E621(query)).set({
+			const { body, statusCode } = await get(APIs.E621(query)).set({
 				Accept: "application/json",
 				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
 			});
-			if (body && status === 200) {
+			if (body && statusCode === 200) {
 				const unparsed = [], descriptions = [], fields = [], images = [];
 				for (let i = 0; i < num; i++) {
 					const random = Math.floor(Math.random() * body.length);
@@ -39,7 +39,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 						`Click [here](https://e621.net/post/show/${unparsed[i].id}) to see the full post.`,
 					];
 					if (unparsed[i].description) {
-						let d = `\`\`\`css\n${unparsed[i].description.split("").slice(0, 1500).join("")
+						const d = `\`\`\`css\n${unparsed[i].description.split("").slice(0, 1500).join("")
 							.replace(/(\[\/?b\]|\[\/?u\]|\[\/?i\])/g, "")}${unparsed[i].description.length > 1500 ? `...\`\`\` Read more [here](https://e621.net/post/show/${unparsed[i].id})` : "```"}`;
 						tempDesc.push(d);
 					}

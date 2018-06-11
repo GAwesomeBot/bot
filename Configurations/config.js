@@ -1,48 +1,58 @@
 const configs = {
 	/*
-   * Represents how many shards the bot will have.
-   * It *must* be a integer, aka *1*, *52* etc. OR "auto"
-   */
-	shardTotal: 1,
+	 * Represents how many shards the bot will have.
+	 * It *must* be a integer, aka *1*, *52* etc. OR "auto"
+	 */
+	shardTotal: 2,
 	/*
-   * The URL all the bot commands should point to.
-   * Example: /about shows this link for the web interface
-   */
-	hostingURL: "",
+	 * The URL all the bot commands should point to.
+	 * Example: /about shows this link for the web interface
+	 */
+	hostingURL: "https://dev.gawesomebot.com/",
 	/*
-   * The server IP the web inteface should point itself to.
-   * Preferably, you leave it as *0.0.0.0* so that it is on the local machine
-   */
+	 * The server IP the web inteface should point itself to.
+	 * Preferably, you leave it as *0.0.0.0* so that it is on the local machine
+	 */
 	serverIP: "0.0.0.0",
 	/*
-   * The HTTP / HTTPS ports the bot should use. If you use Cloudflare, you should just keep httpPort to *80*
-   * They are both Integers
-   */
+	 * The HTTP / HTTPS ports the bot should use. If you use Cloudflare, you should just keep httpPort to *80*
+	 * They are both Integers
+	 */
 	httpPort: 80,
 	httpsPort: 433,
 	/*
-   * Certificate / Private Key paths to the files, required for HTTPS.
-   * If you are on Windows, make sure to escape the *\*
-   */
+	 * Certificate / Private Key paths to the files, required for HTTPS.
+	 * If you are on Windows, make sure to escape the *\*
+	 */
 	cert: "",
 	privateKey: "",
 	/*
-   * If the bot should try to automatically redirect to https.
-   * Needs cert and privateKey to be fulfilled
-   */
+	 * If the bot should try to automatically redirect to https.
+	 * Needs cert and privateKey to be fulfilled
+	 */
 	httpsRedirect: false,
 	/*
-   * The URL to the database. You should keep it as is, or just rename the *awesomebot* at the end.
-   */
-	databaseURL: "mongodb://localhost:27017/awesomebot?poolSize=10",
+	 * The database connection options
+	 */
+	database: {
+		/*
+		 * The URL pointing to the MongoDB instance GAB should use
+		 */
+		URL: "mongodb://localhost:27017/",
+		/*
+		 * The name of the Database GAB should use
+		 */
+		db: "gabbe",
+	},
+	databaseURL: "mongodb://localhost:27017/gabbe",
 	/*
-   * MaxVoiceChannels should remain as is.
-   */
+	 * MaxVoiceChannels should remain as is.
+	 */
 	maxVoiceChannels: 2,
 	/*
-   * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
+	 * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
 	 * Otherwise. !! DO NOT TOUCH !!
-   */
+	 */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot&permissions=470281471",
 	/*
 	 * Level of output the console should display. List of levels:
@@ -60,27 +70,35 @@ const configs = {
 	 */
 	secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
 	/**
-	 * The password that will be used in the encryption of data
+	 * A secure, random password used to separate your main encryption key from
+	 * someone elses.
+	 * YOU SHOULD CHANGE THIS.
+	 * And DO NOT CHANGE IT AFTERWARDS.
+	 * Use https://passwordsgenerator.net/ to generate something big and secure!
+	 */
+	encryptionPassword: "fEmH!bRP4S8a4^*fpQ=%",
+	/**
+	 * The initial value that will be used in the encryption of data
 	 * YOU MUST CHANGE THIS.
 	 * And whatever you do. DO NOT CHANGE THIS AFTERWARDS.
 	 * The encrypted data will be lost otherwise.
 	 * So, set it to something secore, then never ever touch it. Save it in a file!
 	 * Hell, it can even be a random word! Just remember: never share this.
+	 * Make sure it isn't longer than 16 characters!
+	 * You can use https://passwordsgenerator.net/ to generate an encryption iv.
 	 */
-	encryptionPassword: "vPuVQ;e!9RH9:&`pSh'Y",
+	encryptionIv: "usM9^y5KHtF_UCn?",
 	/*
 	 * Discord channel and server where any errors should be outputted,
 	 * whenever applicable
-	 * debugServer: The server ID of the server
 	 * debugChannel: The Channel ID in the server
 	 */
 	discord: {
-		debugServer: ``,
 		debugChannel: ``,
 	},
 	/*
-   * Optional: If you want your bot to have an invite link to your guild, for support or things.
-   */
+	 * Optional: If you want your bot to have an invite link to your guild, for support or things.
+	 */
 	discordLink: "https://discord.gg/NZwzJ9Q",
 	donateCharities: [
 		{
@@ -92,8 +110,8 @@ const configs = {
 	],
 	donateSubtitle: "The GAwesomeBot team currently doesn't accept direct payments. (<a href='/wiki/FAQs#donations'>here's why</a>) Instead, you can use the following methods to support the project!",
 	/*
-   * These last values should remain untouched.
-   */
+	 * These last values should remain untouched.
+	 */
 	moment_date_format: "ddd MMMM Do YYYY [at] H:mm:ss",
 	voteTriggers: [
 		" +!",

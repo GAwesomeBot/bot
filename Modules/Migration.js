@@ -4,15 +4,15 @@
 const Driver = require("../Database/Driver");
 const { databaseURL } = require("../Configurations/config");
 const winston = new (require("../Internals").Console)("MIGRATION");
-const { public } = require("../Configurations/commands");
+const { public: publicCommands } = require("../Configurations/commands");
 
 module.exports = () => {
 	winston.info(`Preparing to migrate "${databaseURL}" to GAB 4.1...`);
 
 	const MigrateChatterBot = async () => {
-		let serverDocuments = await Servers.find({ "config.chatterbot": { $in: [true, false] } });
+		const serverDocuments = await Servers.find({ "config.chatterbot": { $in: [true, false] } });
 		for (const serverDocument of serverDocuments) {
-			let oldChatterBot = serverDocument.config.chatterbot;
+			const oldChatterBot = serverDocument.config.chatterbot;
 			serverDocument.config.chatterbot = {
 				isEnabled: oldChatterBot,
 				disabled_channel_ids: [],
@@ -26,7 +26,7 @@ module.exports = () => {
 	};
 
 	const AddBanGif = async () => {
-		let serverDocuments = await Servers.find({ "config.ban_gif": { $exists: false } });
+		const serverDocuments = await Servers.find({ "config.ban_gif": { $exists: false } });
 		for (const serverDocument of serverDocuments) {
 			serverDocument.config.ban_gif = "https://i.imgur.com/3QPLumg.gif";
 			await serverDocument.save().catch(err => {
@@ -38,9 +38,9 @@ module.exports = () => {
 	};
 
 	const MigrateDocumentsAndCommands = async () => {
-		let serverDocuments = await Servers.find({});
-		let allCommandsKey = Object.keys(public);
-		let defaultCommandObject = (adminLevel, isEnabled) => ({ isEnabled, admin_level: adminLevel, disabled_channel_ids: [] });
+		const serverDocuments = await Servers.find({});
+		const allCommandsKey = Object.keys(publicCommands);
+		const defaultCommandObject = (adminLevel, isEnabled) => ({ isEnabled, admin_level: adminLevel, disabled_channel_ids: [] });
 
 		for (const serverDocument of serverDocuments) {
 			const objectServerDocument = await Servers.findOne({ _id: serverDocument._id }).lean();
@@ -56,7 +56,7 @@ module.exports = () => {
 
 			for (const cmd of allCommandsKey) {
 				if (objectServerDocument.config.commands[cmd]) continue;
-				const newCommand = defaultCommandObject(public[cmd].defaults.adminLevel, public[cmd].defaults.isEnabled);
+				const newCommand = defaultCommandObject(publicCommands[cmd].defaults.adminLevel, publicCommands[cmd].defaults.isEnabled);
 				objectServerDocument.config.commands[cmd] = newCommand;
 			}
 
@@ -70,14 +70,18 @@ module.exports = () => {
 		}
 	};
 
-	Driver.initialize(databaseURL).catch(err => {
-		winston.error(`Failed to connect to the database!\n`, err);
-		process.exit(-1);
-	}).then(() => {
-		winston.info(`Updating data...`);
-		Promise.all([MigrateChatterBot(), AddBanGif(), MigrateDocumentsAndCommands()]).then(() => {
-			winston.info(`Successfully migrated "${databaseURL}" to 4.1! You may now launch GAwesomeBot without the "--migrate" flag.`);
-			process.exit(0);
+	Driver.initialize(databaseURL)
+		.then(async () => {
+			winston.info(`Updating data...`);
+			try {
+				await Promise.all([MigrateChatterBot(), AddBanGif(), MigrateDocumentsAndCommands()]);
+				winston.info(`Successfully migrated "${databaseURL}" to 4.1! You may now launch GAwesomeBot without the "--migrate" flag.`);
+				process.exit(0);
+				// eslint-disable-next-line
+			} catch (_) {}
+		})
+		.catch(err => {
+			winston.error(`Failed to connect to the database!\n`, err);
+			process.exit(-1);
 		});
-	});
 };

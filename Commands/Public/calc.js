@@ -5,7 +5,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 			try {
 				args.shift();
 				args = args.join(" ");
-				let helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, data: args });
+				const helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, data: args });
 				msg.send({
 					embed: {
 						color: Colors.INFO,
@@ -13,7 +13,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 					},
 				});
 			} catch (err) {
-				let description = [
+				const description = [
 					`Couldn't find any help message for \`${args}\`!`,
 					"",
 					"We use **[MathJS](http://mathjs.org/)** to calculate your equations.",
@@ -38,7 +38,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				},
 			});
 			try {
-				let res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, data: msg.suffix.trim() });
+				const res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, data: msg.suffix.trim() });
 				msg.send({
 					embed: {
 						color: Colors.RESPONSE,

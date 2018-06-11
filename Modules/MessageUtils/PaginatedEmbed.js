@@ -1,7 +1,7 @@
 const { Colors, PageEmojis } = require("../../Internals/Constants");
 
 class PaginatedEmbed {
-	constructor (msg, descriptions = [], embed = null, images = [], fields = []) {
+	constructor (msg, descriptions = [], embed = null, images = [], fields = [], thumbnails = []) {
 		this.client = msg.client;
 		this.originalMsg = msg;
 
@@ -20,6 +20,7 @@ class PaginatedEmbed {
 		}, embed);
 		this.images = images;
 		this.fields = fields;
+		this.thumbnails = thumbnails;
 	}
 
 	async init (timeout = 300000) {
@@ -43,6 +44,9 @@ class PaginatedEmbed {
 				description: this.embedTemplate.description.format({ description: this._currentPage }),
 				footer: {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
+				},
+				thumbnail: {
+					url: this.thumbnails[this.currentDescription] || null,
 				},
 				image: {
 					url: this.images[this.currentDescription] || null,
@@ -118,6 +122,9 @@ class PaginatedEmbed {
 				description: this.embedTemplate.description.format({ description: this._currentPage }),
 				footer: {
 					text: this.embedTemplate.footer.format({ "current description": this.currentDescription + 1, "total descriptions": this.totalDescriptions + 1 }),
+				},
+				thumbnail: {
+					url: this.thumbnails[this.currentDescription] || null,
 				},
 				image: {
 					url: this.images[this.currentDescription] || null,

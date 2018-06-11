@@ -29,7 +29,7 @@ class ManageCommands {
 	parse (mode = null) {
 		const params = this.suffix.split(/\s+/).trimAll().toLowerCaseAll();
 
-		for (let param of params) {
+		for (const param of params) {
 			if (param &&
 				(
 					(param === "enable" || param === "disable") ||
@@ -51,7 +51,7 @@ class ManageCommands {
 			case "disable": {
 				// Parse for disabling
 				params.forEach(param => {
-					let split = param.split(".").trimAll();
+					const split = param.split(".").trimAll();
 					if (split.length === 2 && split[1] === "all") {
 						this.disableAll.push(split[0]);
 					} else if (split.length === 2 && split[0] === "all") {
@@ -66,7 +66,7 @@ class ManageCommands {
 			case "enable": {
 				// Parse for enabling
 				params.forEach(param => {
-					let split = param.split(".").trimAll();
+					const split = param.split(".").trimAll();
 					if (split.length === 2 && split[1] === "all") {
 						this.enableAll.push(split[0]);
 					} else if (split.length === 2 && split[0] === "all") {
@@ -230,7 +230,7 @@ class ManageCommands {
 		const gistUploader = new Gist(this.client);
 		const fields = [];
 		let enabledString = `» **${enabled.join("**\n» **")}**`;
-		let enabledAllString = `» **${enabledAll.join("**\n» **")}**`;
+		const enabledAllString = `» **${enabledAll.join("**\n» **")}**`;
 		if (enabledString.length > 1024) {
 			enabledString = `» **${enabled.join("**\n\n» **")}**`;
 			const res = await gistUploader.upload({

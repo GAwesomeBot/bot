@@ -10,7 +10,7 @@ const md = new showdown.Converter({
 });
 md.setFlavor("github");
 const moment = require("moment");
-const Tail = require("tail").Tail;
+const { Tail } = require("tail");
 
 const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo, renderError } = require("../helpers");
 const Updater = require("../../Modules/Updater");
@@ -196,7 +196,7 @@ controllers.options.homepage = async (req, { res }) => {
 		headerImage: configJSON.headerImage,
 		homepageMessageHTML: configJSON.homepageMessageHTML,
 	}).setPageData({
-		dirname: path.join(__dirname, "/public/static/img/"),
+		dirname: path.join(__dirname, "../public/img/"),
 		page: "maintainer-homepage.ejs",
 	}).render();
 };
@@ -246,7 +246,7 @@ controllers.options.contributors.post = async (req, res) => {
 			configJSON.wikiContributors.push(usr.id);
 		}
 	} else if (configJSON.maintainers.includes(req.user.id)) {
-		let i = configJSON.wikiContributors.indexOf(req.body["contributor-removed"]);
+		const i = configJSON.wikiContributors.indexOf(req.body["contributor-removed"]);
 		configJSON.wikiContributors[i] = null;
 		configJSON.wikiContributors.spliceNullElements();
 	}
@@ -301,8 +301,8 @@ controllers.management.maintainers.post = async (req, res) => {
 
 		const perms = Object.keys(req.body).filter(param => param.startsWith("perm-"));
 		perms.forEach(perm => {
-			let value = req.body[perm];
-			perm = perm.split("-")[1];
+			const value = req.body[perm];
+			[, perm] = perm.split("-");
 			if (configJSON.perms[perm] === 0 && process.env.GAB_HOST !== req.user.id) return;
 			switch (value) {
 				case "sudo":
@@ -322,7 +322,7 @@ controllers.management.maintainers.post = async (req, res) => {
 };
 
 controllers.management.shards = async (req, { res }) => {
-	let data = await req.app.client.IPC.send("shardData", {});
+	const data = await req.app.client.IPC.send("shardData", {});
 	res.setConfigData({
 		shardTotal: Number(process.env.SHARD_COUNT),
 		data,
@@ -361,7 +361,7 @@ controllers.management.shards.post = async (req, res) => {
 };
 
 controllers.management.version = async (req, { res }) => {
-	let version = await Updater.check();
+	const version = await Updater.check();
 	if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
 
 	res.setPageData({
@@ -400,9 +400,8 @@ controllers.management.eval = async (req, { res }) => {
 };
 controllers.management.eval.post = async (req, res) => {
 	if (req.body.code && req.body.target) {
-		req.app.client.IPC.send("evaluate", { code: req.body.code, target: req.body.target }).then(result => {
-			res.send(JSON.stringify(result));
-		});
+		const result = await req.app.client.IPC.send("evaluate", { code: req.body.code, target: req.body.target });
+		res.send(JSON.stringify(result));
 		winston.info(`Maintainer ${req.user.username} executed JavaScript from the Maintainer Console!`, { maintainer: req.user.id, code: req.body.code, target: req.body.target });
 	} else {
 		res.sendStatus(400);
@@ -414,7 +413,7 @@ controllers.management.logs = async (req, { res }) => {
 		if (err) return renderError(res, "An error occurred while fetching old logs");
 
 		results.reverse();
-		let logs = JSON.stringify(results.map(log => {
+		const logs = JSON.stringify(results.map(log => {
 			log.timestamp = moment(log.timestamp).format("DD-MM-YYYY HH:mm:ss");
 			return log;
 		}));

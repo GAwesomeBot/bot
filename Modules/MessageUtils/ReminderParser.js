@@ -7,8 +7,7 @@ module.exports = async (client, userDocument, str) => {
 	const args = str.split("|").trimAll();
 	if (args.length === 2) {
 		// Easy parse
-		remind = args[0];
-		timestr = args[1];
+		[remind, timestr] = args;
 	} else {
 		// Parse with assumption "remind me to ... in ..."
 		timestr = str.substring(str.toLowerCase().lastIndexOf(" in ") + 4);

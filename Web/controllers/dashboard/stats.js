@@ -4,8 +4,8 @@ const parsers = require("../../parsers");
 const controllers = module.exports;
 
 controllers.collection = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-stats-collection.ejs", {
@@ -20,7 +20,6 @@ controllers.collection = async (req, res) => {
 		currentPage: `${req.baseUrl}${req.path}`,
 		configData: {
 			commands: {
-				games: serverDocument.config.commands.games,
 				messages: serverDocument.config.commands.messages,
 				stats: serverDocument.config.commands.stats,
 			},
@@ -46,8 +45,8 @@ controllers.collection.post = async (req, res) => {
 };
 
 controllers.ranks = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
@@ -79,6 +78,10 @@ controllers.ranks.post = async (req, res) => {
 			max_score: req.body["new-max_score"],
 			role_id: req.body["new-role_id"] || null,
 		});
+	} else if (req.body["ranks_list-reset"]) {
+		serverDocument.members.forEach(member => {
+			member.rank = "No Rank";
+		});
 	} else {
 		serverDocument.config.ranks_list.forEach(rankDocument => {
 			rankDocument.max_score = parseInt(req.body[`rank-${rankDocument._id}-max_score`]);
@@ -86,11 +89,6 @@ controllers.ranks.post = async (req, res) => {
 				rankDocument.role_id = req.body[`rank-${rankDocument._id}-role_id`];
 			}
 		});
-		if (req.body["ranks_list-reset"]) {
-			serverDocument.members.forEach(member => {
-				member.rank = "No Rank";
-			});
-		}
 	}
 	serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
 
@@ -98,8 +96,8 @@ controllers.ranks.post = async (req, res) => {
 };
 
 controllers.points = async (req, res) => {
-	const client = req.app.client;
-	const svr = req.svr;
+	const { client } = req.app;
+	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	res.render("pages/admin-gawesome-points.ejs", {

@@ -8,8 +8,8 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 	else if (isNaN(number)) number = serverDocument.config.command_fetch_properties.default_count;
 	else number = parseInt(number);
 
-	const { body, status, statusText } = await get(APIs.CATFACT(number));
-	if (status === 200 && body && body.data.length) {
+	const { body, statusCode, statusText } = await get(APIs.CATFACT(number));
+	if (statusCode === 200 && body && body.data.length) {
 		const facts = [];
 		body.data.forEach(d => {
 			facts.push(d.fact);
@@ -21,7 +21,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 		});
 		await menu.init();
 	} else {
-		winston.verbose(`Failed to fetch cat facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
+		winston.verbose(`Failed to fetch cat facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,

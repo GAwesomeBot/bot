@@ -155,8 +155,8 @@ module.exports = class GABClient extends DJSClient {
 				suffix: null,
 			};
 		} else if (cmdstr) {
-			let command = cmdstr.split(/\s+/)[0].toLowerCase();
-			let suffix = cmdstr.replace(/[\r\n\t]/g, match => {
+			const command = cmdstr.split(/\s+/)[0].toLowerCase();
+			const suffix = cmdstr.replace(/[\r\n\t]/g, match => {
 				const escapes = {
 					"\r": "{r}",
 					"\n": "{n}",
@@ -328,10 +328,10 @@ module.exports = class GABClient extends DJSClient {
 	async canRunSharedCommand (command, user) {
 		command = this.getSharedCommandName(command);
 		if (!(configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id))) throw new GABError("UNAUTHORIZED_USER", user);
-		let commandData = this.getSharedCommandMetadata(command);
+		const commandData = this.getSharedCommandMetadata(command);
 		switch (commandData.perm) {
 			case "eval": {
-				let value = configJSON.perms.eval;
+				const value = configJSON.perms.eval;
 				switch (value) {
 					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
@@ -349,7 +349,7 @@ module.exports = class GABClient extends DJSClient {
 			}
 			case "administration":
 			case "admin": {
-				let value = configJSON.perms.administration;
+				const value = configJSON.perms.administration;
 				switch (value) {
 					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
@@ -366,7 +366,7 @@ module.exports = class GABClient extends DJSClient {
 				break;
 			}
 			case "shutdown": {
-				let value = configJSON.perms.shutdown;
+				const value = configJSON.perms.shutdown;
 				switch (value) {
 					case 0: return process.env.GAB_HOST === user.id;
 					case 1: {
@@ -511,7 +511,7 @@ module.exports = class GABClient extends DJSClient {
 		if (type) {
 			switch (type.toLowerCase()) {
 				case "ban": {
-					let obj = {
+					const obj = {
 						canClientBan: false,
 						memberAboveAffected: false,
 					};
@@ -541,7 +541,7 @@ module.exports = class GABClient extends DJSClient {
 	 */
 	getGame (userOrMember) {
 		return new Promise(resolve => {
-			let presence = userOrMember.presence;
+			const { presence } = userOrMember;
 			if (presence.activity && presence.activity !== null && presence.activity.name) {
 				resolve(presence.activity.name);
 			} else {
@@ -598,16 +598,16 @@ module.exports = class GABClient extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								Users.findOne({ _id: member.id }).catch(err => {
-									winston.warn(`Failed to find user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
-								}).then(userDocument => {
-									if (userDocument) {
-										userDocument.points += 100;
-										userDocument.save().catch(usrErr => {
-											winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, usrErr);
-										});
-									}
-								});
+								Users.findOne({ _id: member.id })
+									.then(async userDocument => {
+										if (userDocument) {
+											userDocument.points += 100;
+											await userDocument.save();
+										}
+									})
+									.catch(err => {
+										winston.warn(`Failed to find or save user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
+									});
 							}
 							// Assign new rank role if necessary
 							if (rank.role_id) {
@@ -830,7 +830,7 @@ module.exports = class GABClient extends DJSClient {
 		if (server.ownerID === member.user.id) return 3;
 
 		let adminLevel = 0;
-		let roles = member.roles;
+		let { roles } = member;
 		if (!(roles instanceof Array)) roles = [...roles.keys()];
 		for (const role of roles) {
 			const adminDocument = serverDocument.config.admins.id(role.id || role);
@@ -961,7 +961,7 @@ module.exports = class GABClient extends DJSClient {
 			if (discriminatorQuery) {
 				usr = usrs.find(a => (a.user || a).discriminator === discriminatorQuery);
 			} else if (usrs.length > 0) {
-				usr = usrs[0];
+				[usr] = usrs;
 			}
 		}
 		return usr;

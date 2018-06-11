@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Evaluate - <%= serverData.name %> Maintainer Console</title>
     <% include ../partials/head %>
@@ -11,20 +11,20 @@
 						<i class="fa fa-$TYPE$ fa-2x"></i>
 					</span>
                 </figure>
-                <div class="media-content">
+                <div class="media-content has-overflow">
                     <div class="content">
                         <strong>
                             Code:
                         </strong>
                         <small>
-                            <code>$CODE$</code>
+                            <code class="is-word-wrapping">$CODE$</code>
                         </small>
                         <br>
                         <strong>
                             Result:
                         </strong>
                         <br>
-                        $RESULT$
+                        <pre class="is-word-wrapping">$RESULT$</pre>
                     </div>
                 </div>
             </article>
@@ -50,8 +50,8 @@
         		$.post("/dashboard/maintainer/management/eval", { code, target })
                   .done(data => {
                   	data = JSON.parse(data);
-                  	let log = evalLog.replace("$CODE$", code)
-                      .replace("$RESULT$", `<pre>${data.result}</pre>`)
+                  	let log = evalLog.replace("$CODE$", code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'))
+                      .replace("$RESULT$", String(data.result).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'))
                       .replace("$COLOR$", data.err ? "#ff473b" : "#37dc22")
                       .replace("$TYPE$", data.err ? "times" : "check");
                   	$("#evalResults").prepend(log);
@@ -77,6 +77,7 @@
                 <% include ../partials/maintainer-menu %>
             </div>
             <div class="column">
+                <div class="container is-fluid">
                 <h1 class="title">
                     Evaluate
                 </h1>
@@ -128,6 +129,7 @@
                     <div id="evalResults">
 
                     </div>
+                </div>
                 </div>
             </div>
         </div>

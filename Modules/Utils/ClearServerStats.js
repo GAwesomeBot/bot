@@ -6,10 +6,13 @@
  * @param {Guild} server The server which has its stats cleared
  * @param serverDocument The Server Document
  */
-module.exports = async (client, server, serverDocument) => {
+module.exports = async (client, serverDocument) => {
 	// Rank members by activity score for the week
 	const topMembers = [];
+	const server = client.guilds.get(serverDocument._id);
+	if (!server) return;
 	await Promise.all(serverDocument.members.map(async memberDocument => {
+		if (!memberDocument) return;
 		const member = server.members.get(memberDocument._id);
 		if (member && member.id !== client.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
@@ -52,8 +55,7 @@ module.exports = async (client, server, serverDocument) => {
 		await Promise.all(promiseArray);
 	}
 
-	// Reset game and command data
-	serverDocument.games = [];
+	// Reset command data
 	serverDocument.command_usage = {};
 	serverDocument.markModified("command_usage");
 

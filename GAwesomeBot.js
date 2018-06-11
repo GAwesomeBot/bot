@@ -44,6 +44,7 @@ ObjectDefines(client);
 global.ThatClientThatDoesCaching = client;
 
 winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
+database.einitialize(configJS.database);
 database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL, global.ThatClientThatDoesCaching).catch(err => {
 	winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 	process.exit(1);
@@ -57,20 +58,23 @@ database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.arg
 	client.traffic = new Traffic(client.IPC, true);
 
 	winston.debug("Logging in to Discord Gateway.");
-	client.init().then(() => {
-		winston.info("Successfully connected to Discord!");
+	try {
+		await client.init();
 		client.IPC.send("ready", { id: client.shard.id });
 		process.setMaxListeners(0);
-	}).catch(err => {
+	} catch (err) {
 		if (err.code === "TOKEN_INVALID") {
 			winston.error(`The token you provided in auth.js could not be used to login into Discord.`);
 			client.IPC.send("shutdown", { soft: false, err: true });
 		} else {
-			winston.error(`Failed to connect to Discord :/\n${err}`);
+			winston.error(`Failed to connect to Discord :/`);
+			// eslint-disable-next-line no-console
+			console.error(err);
 			process.exit(1);
 		}
-	});
-});
+	}
+})
+	.catch();
 
 process.on("unhandledRejection", reason => {
 	winston.error(`An unexpected error occurred, and we failed to handle it. x.x\n`, reason);
@@ -98,7 +102,7 @@ client.IPC.on("getGuild", async (msg, callback) => {
 		if (msg.settings.parse === "noKeys") result = [];
 		let guilds = msg.settings.mutualOnlyTo ? client.guilds.filter(guild => guild.members.has(msg.settings.mutualOnlyTo)) : client.guilds;
 
-		let query = msg.settings.findFilter;
+		const query = msg.settings.findFilter;
 		if (query) guilds = guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || svr.members.get(svr.ownerID).user.username.toLowerCase().indexOf(query) > -1);
 
 		guilds.forEach((val, key) => {
@@ -142,7 +146,7 @@ client.IPC.on("unmuteMember", async msg => {
 client.IPC.on("createMOTD", async msg => {
 	try {
 		const guild = client.guilds.get(msg.guild);
-		const serverDocument = await client.cache.get(guild.id);
+		const serverDocument = await EServers.findOne(guild.id);
 
 		MessageOfTheDay(client, guild, serverDocument.config.message_of_the_day);
 	} catch (err) {
@@ -157,11 +161,11 @@ client.IPC.on("postAllData", async () => {
 client.IPC.on("createPublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = client.guilds.get(guildID);
-	const serverDocument = await client.cache.get(guild.id);
+	const serverDocument = await EServers.findOne(guild.id);
 	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
 	if (channel) {
 		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
-		serverDocument.config.public_data.server_listing.invite_link = `https://discord.gg/${invite.code}`;
+		serverDocument.query.set("config.public_data.server_listing.invite_link", `https://discord.gg/${invite.code}`);
 		serverDocument.save();
 	}
 });
@@ -169,11 +173,11 @@ client.IPC.on("createPublicInviteLink", async msg => {
 client.IPC.on("deletePublicInviteLink", async msg => {
 	let guildID = msg.guild;
 	let guild = client.guilds.get(guildID);
-	const serverDocument = await client.cache.get(guild.id);
+	const serverDocument = await EServers.findOne(guild.id);
 	let invites = await guild.fetchInvites();
 	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
-	serverDocument.config.public_data.server_listing.invite_link = null;
+	serverDocument.query.set("config.public_data.server_listing.invite_link", null);
 	serverDocument.save();
 });
 
@@ -184,7 +188,7 @@ client.IPC.on("eval", async (msg, callback) => {
 });
 
 client.IPC.on("evaluate", async (msg, callback) => {
-	let result = {};
+	const result = {};
 	try {
 		result.result = client._eval(msg);
 	} catch (err) {
@@ -196,24 +200,24 @@ client.IPC.on("evaluate", async (msg, callback) => {
 });
 
 client.IPC.on("cacheUpdate", msg => {
-	let guildID = msg.guild;
-	let guild = client.guilds.get(guildID);
+	const guildID = msg.guild;
+	const guild = client.guilds.get(guildID);
 	if (guild) client.cache.update(guild.id);
 });
 
 client.IPC.on("leaveGuild", async msg => {
-	let guild = client.guilds.get(msg);
+	const guild = client.guilds.get(msg);
 	if (guild) guild.leave();
 });
 
 client.IPC.on("sendMessage", async msg => {
-	let payload = typeof msg === "string" ? JSON.parse(msg) : msg;
+	const payload = typeof msg === "string" ? JSON.parse(msg) : msg;
 	if (payload.guild === "*") {
 		client.guilds.forEach(svr => {
 			svr.defaultChannel.send(payload.message);
 		});
 	} else {
-		let guild = client.guilds.get(payload.guild);
+		const guild = client.guilds.get(payload.guild);
 		let channel;
 		if (guild) channel = guild.channels.get(payload.channel);
 		if (channel) channel.send(payload.message);
@@ -221,10 +225,10 @@ client.IPC.on("sendMessage", async msg => {
 });
 
 client.IPC.on("updateBotUser", async msg => {
-	let payload = msg;
+	const payload = msg;
 	if (payload.avatar) client.user.setAvatar(payload.avatar);
 	if (payload.username && payload.username !== client.user.username) client.user.setUsername(payload.username);
-	let activity = {};
+	const activity = {};
 	if (!payload.game || payload.game === "gawesomebot.com") activity.name = "https://gawesomebot.com | Shard {shard}".format({ shard: client.shardID });
 	else activity.name = payload.game.format({ shard: client.shardID, totalShards: client.shard.count });
 	activity.type = payload.type || "PLAYING";
@@ -241,7 +245,7 @@ client.IPC.on("traffic", async (msg, callback) => {
 });
 
 client.IPC.on("shardData", async (msg, callback) => {
-	let data = {};
+	const data = {};
 	data.isFrozen = global.isFrozen;
 	if (!data.isFrozen) {
 		data.users = client.users.size;
@@ -380,7 +384,7 @@ client.IPC.on("freeze", async (msg, callback) => {
 });
 
 client.IPC.on("restart", async (msg, callback) => {
-	let shouldReset = msg.soft;
+	const shouldReset = msg.soft;
 	if (!shouldReset) {
 		client.isReady = false;
 		callback(); // eslint-disable-line callback-return
@@ -520,7 +524,7 @@ client.on("emojiUpdate", async (oldEmoji, newEmoji) => {
  * WebSocket Errors
  */
 client.on("error", async error => {
-	winston.warn(`Received ERROR event from Discord.js!`, { error });
+	winston.warn(`Received ERROR event from Discord.js!`, { err: error.message });
 });
 
 /**
@@ -695,10 +699,10 @@ client.on("guildUpdate", async (oldGuild, newGuild) => {
  */
 client.on("message", async msg => {
 	if (client.isReady) {
-		let proctime = process.hrtime();
+		const proctime = process.hrtime();
 		if (!msg.author.bot) {
 			try {
-				let find = await Users.findOne({ _id: msg.author.id });
+				const find = await Users.findOne({ _id: msg.author.id });
 				if (!find) await Users.create(new Users({ _id: msg.author.id }));
 			} catch (err) {
 				if (!/duplicate key/.test(err.message)) {

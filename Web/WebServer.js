@@ -1,3 +1,5 @@
+/* eslint node/exports-style: ["error", "exports"] */
+
 const express = require("express");
 const http = require("http");
 const https = require("https");
@@ -157,7 +159,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	}));
 
 	client.IPC.on("dashboardUpdate", msg => {
-		const namespace = msg.namespace;
+		const { namespace } = msg;
 		const param = msg.location;
 		try {
 			io.of(namespace).emit("update", param);

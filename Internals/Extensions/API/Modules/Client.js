@@ -1,7 +1,7 @@
 const API = require("../index");
 const { Constants: { Colors } } = require("../../../index");
 let bot, server, serverDocument, scopes, scopeManager, extensionDocument;
-const ScopeManager = API.ScopeManager;
+const { ScopeManager } = API;
 
 /**
  * Sandboxed Discord.js client
@@ -170,7 +170,7 @@ module.exports = class Client {
 		scopeManager.check("readGlobal", "messages", channel);
 
 		if (!filter || typeof filter !== "function") filter = () => true;
-		let response = (await channel.awaitMessages(res => (res.author.id === usrid) && filter(res), {
+		const response = (await channel.awaitMessages(res => (res.author.id === usrid) && filter(res), {
 			max: 1,
 			time: 60000,
 		})).first();

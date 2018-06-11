@@ -3,7 +3,7 @@ const auth = require("../../Configurations/auth");
 const os = require("os");
 
 module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandData) => {
-	let version = await Updater.get(configJSON.branch, configJSON.version);
+	const version = await Updater.get(configJSON.branch, configJSON.version);
 	if (msg.suffix) {
 		const args = msg.suffix.split(" ");
 		if (args.includes("-h") || args.includes("--help")) {
@@ -84,7 +84,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				});
 			}
 			if (args.includes("-o") || args.includes("--os") || args.includes("--operating-system")) {
-				let platform = process.platform;
+				let { platform } = process;
 				switch (platform) {
 					case "win32":
 						platform = "Windows";
@@ -122,7 +122,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 						value: `❌ You are **not** a maintainer`,
 					});
 				} else {
-					let perms = [];
+					const perms = [];
 					Object.keys(configJSON.perms).forEach(perm => {
 						if (!isMaintainer) return;
 						if (!isSudoMaintainer && configJSON.perms[perm] === 2) return;

@@ -1,6 +1,6 @@
 module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		let suffix = msg.suffix;
+		let { suffix } = msg;
 		if (msg.suffix.startsWith(`"`) && msg.suffix.endsWith(`"`)) suffix = msg.suffix.slice(1, msg.suffix.length - 1);
 		if (suffix.length > 25) {
 			return msg.send({

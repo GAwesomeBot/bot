@@ -77,14 +77,14 @@ class Sharder {
 
 	create (id) {
 		this.winston.verbose("Creating new shard instance and process.", { id: id });
-		let worker = this.cluster.fork({
+		const worker = this.cluster.fork({
 			CLIENT_TOKEN: this.token,
 			SHARD_ID: id,
 			SHARD_COUNT: this.count,
 			GAB_HOST: this.host,
 			NODE_ENV: this.mode,
 		});
-		let shard = new Shard(id, worker.process, this, worker);
+		const shard = new Shard(id, worker.process, this, worker);
 		this.shards.set(id, shard);
 	}
 

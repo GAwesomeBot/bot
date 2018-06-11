@@ -5,19 +5,19 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 		else if (args.length === 3 && args[1].toLowerCase().trim() === "to") args.splice(1, 1);
 		if (args.length === 2) {
 			const match = /(\d*)(\w*)/.exec(args[0]);
-			let newArgs = [match[1], match[2], args[1]];
+			const newArgs = [match[1], match[2], args[1]];
 			args = newArgs;
 		}
 		if (args.length === 3 && !isNaN(args[0]) && args[1] && args[2]) {
 			try {
-				let res = await client.conversionHandler.convert({ content: args[0], from: args[1], to: args[2] });
-				if (res.result && res.type) {
-					switch (res.type) {
+				const { result, type } = await client.conversionHandler.convert({ content: args[0], from: args[1], to: args[2] });
+				if (result && type) {
+					switch (type) {
 						case "money": {
 							return msg.send({
 								embed: {
 									color: Colors.RESPONSE,
-									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(res.result * 100) / 100}**${args[2].toUpperCase()}**`,
+									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(result * 100) / 100}**${args[2].toUpperCase()}**`,
 								},
 							});
 						}
@@ -25,7 +25,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 							return msg.send({
 								embed: {
 									color: Colors.RESPONSE,
-									description: `${args[0]}**${args[1]}** is ${res.result}**${args[2]}**`,
+									description: `${args[0]}**${args[1]}** is ${result}**${args[2]}**`,
 								},
 							});
 						}

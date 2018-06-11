@@ -12,7 +12,7 @@ const codec = new GifCodec();
 module.exports = async emojis => {
 	emojis = emojis.map(e => e.trim()).filter(Boolean);
 	if (emojis.length > 6) emojis = emojis.splice(0, 6);
-	let results = await Promise.all(emojis.map(e => EmojiUtils.getEmojiMetadata(e)));
+	const results = await Promise.all(emojis.map(e => EmojiUtils.getEmojiMetadata(e)));
 	// #region SingleParamGiven
 	if (results.length === 1) {
 		if (results[0].type === "unicode") {
@@ -22,7 +22,7 @@ module.exports = async emojis => {
 		}
 		if (results[0].url.endsWith(".gif")) {
 			const decodedGif = await codec.decodeGif((await get(results[0].url)).body);
-			const frames = decodedGif.frames;
+			const { frames } = decodedGif;
 			frames.map(async frame => {
 				const image = new Jimp(frame.bitmap.width, frame.bitmap.height);
 				const bImage = new BitmapImage(frame);
@@ -59,11 +59,11 @@ module.exports = async emojis => {
 		const image = await read(result.url);
 		return prepareFrames(result, new GifFrame(new BitmapImage(image.bitmap)));
 	}));
-	let rawFrames = data.map(img => img.frames);
+	const rawFrames = data.map(img => img.frames);
 
 	let totalWidth = 0;
-	let totalHeight = rawFrames.slice().sort((a, b) => b[0].bitmap.height - a[0].bitmap.height)[0][0].bitmap.height;
-	let totalFrames = rawFrames.slice().sort((a, b) => b.length - a.length)[0].length;
+	const totalHeight = rawFrames.slice().sort((a, b) => b[0].bitmap.height - a[0].bitmap.height)[0][0].bitmap.height;
+	const totalFrames = rawFrames.slice().sort((a, b) => b.length - a.length)[0].length;
 	rawFrames.forEach(frames => {
 		frames.forEach(frame => {
 			frame.interlaced = false;
@@ -75,7 +75,7 @@ module.exports = async emojis => {
 		else totalWidth += rawFrames[i][0].bitmap.width + 8;
 	}
 
-	let finalTotalFrames = await prepareEndFrames(totalWidth, totalHeight, rawFrames.slice(), totalFrames);
+	const finalTotalFrames = await prepareEndFrames(totalWidth, totalHeight, rawFrames.slice(), totalFrames);
 	finalTotalFrames.forEach(frame => {
 		frame.interlaced = false;
 	});
@@ -83,7 +83,7 @@ module.exports = async emojis => {
 	const gif = await codec.encodeGif(finalTotalFrames);
 	let image = gif.buffer;
 	if (gif.frames.length === 1) {
-		let frame = gif.frames[0];
+		const frame = gif.frames[0];
 		const tempImage = new Jimp(0, 0);
 		tempImage.bitmap = new BitmapImage(frame).bitmap;
 		image = await new Promise((resolve, reject) => tempImage.getBuffer(MIME_PNG, (error, buffer) => error ? reject(error) : resolve(buffer)));
