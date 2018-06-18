@@ -629,9 +629,9 @@ decamelize@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
 
-decimal.js@9.0.1:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-9.0.1.tgz#1cc8b228177da7ab6498c1cc06eb130a290e6e1e"
+decimal.js@10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.0.1.tgz#d04b16b277f0f9af09671cee225c4882e8857c58"
 
 deep-extend@~0.4.0:
   version "0.4.2"
@@ -784,9 +784,9 @@ escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
 
-escape-latex@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/escape-latex/-/escape-latex-1.0.3.tgz#1b9085e3e66570faabe21f05655643f64e78717a"
+escape-latex@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/escape-latex/-/escape-latex-1.1.0.tgz#c0a94a51eb8c73c3a67a95cc90fbb626cef54539"
 
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
@@ -1748,13 +1748,13 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-mathjs@^4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-4.4.2.tgz#79a5c8ad92a6434e22dbfac13e223a9bd62d6981"
+mathjs@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-5.0.0.tgz#e0ec6ff5d81c56427d111c0c9a73f7ba5c28617d"
   dependencies:
     complex.js "2.0.10"
-    decimal.js "9.0.1"
-    escape-latex "1.0.3"
+    decimal.js "10.0.1"
+    escape-latex "1.1.0"
     fraction.js "4.0.8"
     javascript-natural-sort "0.7.1"
     seed-random "2.2.0"
