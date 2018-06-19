@@ -2981,9 +2981,9 @@ wide-align@^1.1.0:
   dependencies:
     string-width "^1.0.2"
 
-wikijs@^4.7.0:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.7.0.tgz#d486ef70b8e2c9c00e9803fd475add8e7c56c093"
+wikijs@^4.8.0:
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.8.0.tgz#6e2092540b195c1de2aba280e4f77bf99247e788"
   dependencies:
     infobox-parser "3.0.1"
     isomorphic-fetch "^2.2.1"
