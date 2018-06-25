@@ -65,7 +65,7 @@
     "vm2": "^3.6.0",
     "wikijs": "^4.8.0",
     "winston": "^2.4.2",
-    "winston-daily-rotate-file": "^3.2.1",
+    "winston-daily-rotate-file": "^3.2.3",
     "wolfram-node": "0.0.1",
     "xml-parser": "^1.2.1",
     "xss-filters": "^1.2.7",
