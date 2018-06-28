@@ -2897,9 +2897,9 @@ table@^4.0.3:
     slice-ansi "1.0.0"
     string-width "^2.1.1"
 
-tail@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/tail/-/tail-1.2.3.tgz#b08d6fa79fb928869631a341a51c14497c1c4255"
+tail@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/tail/-/tail-1.2.4.tgz#0877f3123258fd6e65320c0b27097a1343c2add1"
 
 tar-pack@^3.4.0:
   version "3.4.1"
