@@ -57,7 +57,7 @@
     "showdown": "^1.8.6",
     "snekfetch": "^4.0.4",
     "socket.io": "^2.1.1",
-    "tail": "^1.2.3",
+    "tail": "^1.2.4",
     "text-diff": "^1.0.1",
     "toobusy-js": "^0.5.1",
     "urban": "^0.3.1",
