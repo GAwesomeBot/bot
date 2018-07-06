@@ -3080,9 +3080,9 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vm2@^3.6.1:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/vm2/-/vm2-3.6.1.tgz#09c20e0d4adc8630a7dbbfc0bf0bce587c06cbb4"
+vm2@^3.6.2:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/vm2/-/vm2-3.6.2.tgz#6b7a962e8ffeed98fbe35a194feb282ead56a551"
 
 whatwg-fetch@>=0.10.0:
   version "2.0.3"
