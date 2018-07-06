@@ -31,7 +31,7 @@ class VoteHandler extends BaseEvent {
 			} catch (_) {
 				member = null;
 			}
-			const voteString = msg.content.split(/\s+/).splice(1).join(" ");
+			const voteString = msg.content.split(/\s+/).slice(1).join(" ");
 			if (member && ![this.client.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 				const targetUserDocument = await Users.findOne({ _id: member.id });
 				if (targetUserDocument) {
