@@ -483,9 +483,9 @@ commander@~2.13.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
 
-complex.js@2.0.10:
-  version "2.0.10"
-  resolved "https://registry.yarnpkg.com/complex.js/-/complex.js-2.0.10.tgz#afac74e4fb9131e8709f9c300420ce58fa36f18d"
+complex.js@2.0.11:
+  version "2.0.11"
+  resolved "https://registry.yarnpkg.com/complex.js/-/complex.js-2.0.11.tgz#09a873fbf15ffd8c18c9c2201ccef425c32b8bf1"
 
 component-bind@1.0.0:
   version "1.0.0"
@@ -1819,18 +1819,18 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-mathjs@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-5.0.1.tgz#d4a8f47ed44a9c08aae00712e70464265ebcd6d0"
+mathjs@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-5.0.2.tgz#ed23dcfb40e886697447bcfe43e5dc5d92dd8eb0"
   dependencies:
-    complex.js "2.0.10"
+    complex.js "2.0.11"
     decimal.js "10.0.1"
     escape-latex "1.1.0"
     fraction.js "4.0.8"
     javascript-natural-sort "0.7.1"
     seed-random "2.2.0"
     tiny-emitter "2.0.2"
-    typed-function "1.0.3"
+    typed-function "1.0.4"
 
 media-typer@0.3.0:
   version "0.3.0"
@@ -3001,9 +3001,9 @@ type-is@~1.6.15, type-is@~1.6.16:
     media-typer "0.3.0"
     mime-types "~2.1.18"
 
-typed-function@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/typed-function/-/typed-function-1.0.3.tgz#57026246214b664a5af45ef0a06679f4453bd090"
+typed-function@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/typed-function/-/typed-function-1.0.4.tgz#6b25993b8587b0a5c3356585d6ef99aa63f6d317"
 
 uglify-es@^3.3.9:
   version "3.3.9"
