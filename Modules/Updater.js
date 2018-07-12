@@ -8,7 +8,7 @@ module.exports = {
 	check: async (config = configJSON) => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
 		} catch (err) {
 			winston.warn(`Failed to check for new updates. ~.~\n`, err);
 			throw err;
