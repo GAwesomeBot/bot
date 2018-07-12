@@ -22,7 +22,7 @@
     "canvas-constructor": "github:kyranet/canvasConstructor",
     "canvas-prebuilt": "^2.0.0-alpha.12",
     "chalk": "^1.1.3",
-    "circular-json": "^0.5.4",
+    "circular-json": "^0.5.5",
     "compression": "^1.7.2",
     "connect-mongo": "^2.0.1",
     "convert-units": "^2.3.4",
