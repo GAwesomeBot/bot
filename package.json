@@ -63,7 +63,7 @@
     "urban": "^0.3.1",
     "uuid": "^3.3.2",
     "vm2": "^3.6.2",
-    "wikijs": "^4.8.0",
+    "wikijs": "^4.8.1",
     "winston": "^2.4.2",
     "winston-daily-rotate-file": "^3.2.3",
     "wolfram-node": "0.0.1",
