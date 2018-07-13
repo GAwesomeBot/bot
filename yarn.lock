@@ -3124,9 +3124,9 @@ winston-compat@^0.1.4:
     logform "^1.6.0"
     triple-beam "^1.2.0"
 
-winston-daily-rotate-file@^3.2.3:
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/winston-daily-rotate-file/-/winston-daily-rotate-file-3.2.3.tgz#9f80e7a421ab32b073c1217bae62e762001197d6"
+winston-daily-rotate-file@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/winston-daily-rotate-file/-/winston-daily-rotate-file-3.3.0.tgz#d730f00dfb059555212cbf6ac90e3f3226595832"
   dependencies:
     file-stream-rotator "^0.2.1"
     semver "^5.5.0"
