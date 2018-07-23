@@ -1,24 +1,47 @@
 const moment = require("moment");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
+const Permissions = require("discord.js/src/util/Permissions.js");
 
-const rolesPerPage = 50;
+const rolesPerPage = 25;
 
 module.exports = async ({ client, Constants: { Colors, Text }, Utils: { TitlecasePermissions } }, documents, msg, commandData) => {
 	if (!msg.suffix) {
-		const roles = msg.guild.roles;
-		let sortedRoles = [...roles.values()].sort((a, b) => b.position - a.position);
+		const guildRoles = [...msg.guild.roles.values()].sort((a, b) => b.position - a.position);
 		const descriptions = [];
-		for (let i = 0; i < roles.size; i += rolesPerPage) {
-			const roleSegment = sortedRoles.slice(i, i + rolesPerPage).join("\n");
-			descriptions.push(`${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < roles.size ? `\n...and ${roles.size - i - rolesPerPage} more` : ""}`);
+		for (let i = 0; i < guildRoles.length; i += rolesPerPage) {
+			const roleSegment = guildRoles.slice(i, i + rolesPerPage).join("\n");
+			descriptions.push(`These are the roles on this server:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < guildRoles.length ? `\n...and ${guildRoles.length - i - rolesPerPage} more` : ""}`,);
 		}
+
+		const memberRoles = [...msg.member.roles.values()].sort((a, b) => b.position - a.position);
+		const totalPermissions = memberRoles.reduce((a, b) => a | b.permissions, 0);
+		for (let i = 0; i < memberRoles.length; i += rolesPerPage) {
+			const roleSegment = memberRoles.slice(i, i + rolesPerPage).join("\n");
+			descriptions.push([
+				`You currently have those roles:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < memberRoles.length ? `\n...and ${memberRoles.length - i - rolesPerPage} more` : ""}`,
+				"\nYour roles grant you get the following permissions:",
+				totalPermissions ? `\`\`\`${TitlecasePermissions(new Permissions(totalPermissions).toArray(false).join(", "))}\`\`\`` : "You do not have any permissions on this server ⁉️",
+			].join("\n"));
+		}
+		if (descriptions.length === 2 && descriptions[0].length + descriptions[1].length < 2048) {
+			return msg.send({
+				embed: {
+					color: Colors.INFO,
+					title: `This guild has ${guildRoles.length} roles:`,
+					description: `${descriptions[0]}\n\n${descriptions[1]}`,
+				},
+			});
+		}
+
 		const menu = new PaginatedEmbed(msg, {
 			color: Colors.INFO,
-			title: `This guild has ${roles.size} roles:`,
-			footer: roles.size > rolesPerPage ? `Page {currentPage} out of {totalPages}` : "",
+			title: `This guild has ${guildRoles.length} roles:`,
+			description: `{description}`,
+			footer: `Page {currentPage} out of {totalPages}`,
 		}, {
 			descriptions,
 		});
+		// 450 chars to display all permissions
 		await menu.init();
 	} else {
 		let role;
