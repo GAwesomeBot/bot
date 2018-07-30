@@ -1,5 +1,4 @@
 const Updater = require("../../Modules/Updater");
-const auth = require("../../Configurations/auth");
 const os = require("os");
 
 module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandData) => {

@@ -8,13 +8,13 @@ module.exports = {
 	check: async (config = configJSON) => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
 		} catch (err) {
 			winston.warn(`Failed to check for new updates. ~.~\n`, err);
 			throw err;
 		}
 		if (res) {
-			if (!res.body["up-to-date"] && !res.body.latest) {
+			if (res.statusCode !== 200 || (!res.body["up-to-date"] && !res.body.latest)) {
 				return 404;
 			}
 			return res.body;
@@ -23,13 +23,13 @@ module.exports = {
 	get: async (branch, version) => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`, { redirect: false });
 		} catch (err) {
 			res = {};
 			res.statusCode = 404;
 		}
 		if (res) {
-			if (res.statusCode === 404) {
+			if (res.statusCode !== 200) {
 				return 404;
 			}
 			return res.body;
@@ -47,7 +47,10 @@ module.exports = {
 
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`);
+			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
+			if (res.statusCode !== 200) {
+				throw new Error(`Updater received unexpected status code ${res.statusCode} ${res.statusText}`);
+			}
 		} catch (err) {
 			winston.error("An error occurred while fetching version metadata ~.~\n", err);
 		}
