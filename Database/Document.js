@@ -2,6 +2,7 @@ const Query = require("./Query");
 const { Error: GABError } = require("../Internals/Errors");
 
 const mpath = require("mpath");
+const { ObjectID } = require("mongodb");
 
 const isObject = obj => obj && obj.constructor === Object;
 
@@ -34,6 +35,12 @@ module.exports = class Document {
 		 */
 		this._model = model;
 		/**
+		 * Set to true for new Documents which do not exist in the database or cache.
+		 * @type {boolean}
+		 * @private
+		 */
+		this._new = false;
+		/**
 		 * !ignore
 		 */
 		this._client = this._model._client;
@@ -50,7 +57,7 @@ module.exports = class Document {
 		 */
 		this._doc = deepClone(doc);
 
-		Object.assign(this, doc);
+		Object.assign(this, this._doc);
 	}
 
 	/**
@@ -61,9 +68,9 @@ module.exports = class Document {
 		const ops = this._atomics;
 		this._atomics = {};
 		try {
-			this._handleAtomics();
+			(this._new ? this._setCache : this._handleAtomics)();
 		} catch (err) {
-			throw new GABError("MONGODB_ERROR", err);
+			throw new GABError("GADRIVER_ERROR", err);
 		}
 		try {
 			return await this._client.updateOne({ _id: this._id }, ops, { multi: true });
@@ -72,13 +79,8 @@ module.exports = class Document {
 		}
 	}
 
-	/**
-	 * Directly updates a set of mpath mapped changes
-	 * @param {object} path A set of mpath mapped changes to push to MongoDB
-	 * @returns {Promise}
-	 */
-	update (path) {
-		return this._client.updateOne({ _id: this._id }, { $set: path }, { multi: true });
+	validate () {
+		return this._model._schema.validateDoc(this);
 	}
 
 	/**
@@ -91,6 +93,19 @@ module.exports = class Document {
 
 	toString () {
 		return JSON.stringify(this.toObject());
+	}
+
+	toJSON () {
+		return this._doc;
+	}
+
+	/**
+	 * Cache this document in the Model's cache
+	 * @param {boolean} update If an existing version of this document in the Model's cache should be overwritten when found
+	 * @returns {boolean}
+	 */
+	cache (update) {
+		return this._setCache(update);
 	}
 
 	/**
@@ -155,7 +170,7 @@ module.exports = class Document {
 	 * @private
 	 */
 	_modifyCache (path, val) {
-		if (this._existsInCache) mpath.set(path, val, this._cache);
+		if (this._existsInCache && !this._new) mpath.set(path, val, this._cache);
 	}
 
 	/**
@@ -188,11 +203,15 @@ module.exports = class Document {
 	}
 
 	/**
-	 * Cache this document in the Model's cache
-	 * @param {boolean} update If an existing version of this document in the Model's cache should be overwritten when found
-	 * @returns {boolean}
+	 * Create a new document which does not exist in the database or cache
+	 * @param {object} obj The object containing the new document's data
+	 * @param {Model} model The Model this Document is created by
+	 * @returns {module.Document}
 	 */
-	cache (update) {
-		return this._setCache(update);
+	static new (obj, model) {
+		const doc = new Document(obj, model);
+		doc._new = true;
+		if (!doc._doc._id && model.schema._options._id !== false && !model.schema._definitions.get("_id")) doc._id = doc._doc._id = new ObjectID();
+		return doc;
 	}
 };

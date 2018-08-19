@@ -94,12 +94,12 @@ exports.einitialize = async config => {
 		Wiki,
 		Traffic,
 	] = [
-		new Model(db, "servers", new (require("./Schemas/E/Schema"))({ _id: "string", data: { type: "string", default: "woops!" } })),
-		new Model(db, "users", userSchema),
-		new Model(db, "gallery", modulesSchema),
-		new Model(db, "blog", blogSchema),
-		new Model(db, "wiki", wikiSchema),
-		new Model(db, "traffic", trafficSchema),
+		new Model(db, "servers", require("./Schemas/E/serverSchema")),
+		new Model(db, "users", require("./Schemas/E/userSchema")),
+		new Model(db, "gallery", require("./Schemas/E/modulesSchema")),
+		new Model(db, "blog", require("./Schemas/E/blogSchema")),
+		new Model(db, "wiki", require("./Schemas/E/wikiSchema")),
+		new Model(db, "traffic", require("./Schemas/E/trafficSchema")),
 	];
 	addToGlobal("EServers", Servers);
 	addToGlobal("EUsers", Users);

@@ -10,8 +10,8 @@ module.exports = class Model {
 	 * @constructor
 	 */
 	constructor (client, collection, schema) {
+		this.schema = schema;
 		this._collection = collection;
-		this._schema = schema;
 		this._client = client.collection(this._collection);
 		this._cache = new Map();
 	}
@@ -38,7 +38,7 @@ module.exports = class Model {
 		let func = "insertOne";
 		if (data.constructor === Array) func = "insertMany";
 
-		const raw = new this._schema(data);
+		const raw = new this.schema.build(data);
 
 		try {
 			await this._client[func](raw, opts);
@@ -49,6 +49,10 @@ module.exports = class Model {
 		const doc = new Document(raw, this);
 		doc.cache();
 		return doc;
+	}
+
+	new (data) {
+		return Document.new(this.schema.build(data), this);
 	}
 
 	_find (query, opts, multi) {

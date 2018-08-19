@@ -1,4 +1,5 @@
 const { Error: GABError } = require("../Internals/Errors");
+const Schema = require("./Schemas/E/Schema");
 
 const mpath = require("mpath");
 
@@ -25,7 +26,7 @@ module.exports = class Query {
 		 * @type {Document.Object|Object}
 		 */
 		this._current = this._doc._doc;
-		this._schema = this._doc._model._schema;
+		this._definition = this._doc._model.schema;
 	}
 
 	/**
@@ -39,13 +40,15 @@ module.exports = class Query {
 				const index = this.parsed.lastIndexOf(".");
 				this.parsed = this.parsed.substring(0, index);
 				this._current = this.parsed === "" ? this._doc._doc : mpath.get(this.parsed, this._doc._doc);
-				this._schema = this._schema._parent;
+
+				this._shiftSchema(this.parsed, true);
+
 				return this;
 			}
 
 			this.parsed += this._parseForString(path);
 			this._current = mpath.get(this.parsed, this._doc._doc);
-			this._schema = this._schema[path];
+			this._shiftSchema(path);
 			return this;
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
@@ -62,7 +65,7 @@ module.exports = class Query {
 		try {
 			let found = true;
 			if (!data || (data.constructor !== Object && data.constructor !== Array)) return mpath.get(this.parsed + this._parseForString(key), this._doc._doc);
-			let splitted = key.split(".");
+			const splitted = key.split(".");
 			let parsed = "";
 			splitted.forEach(piece => {
 				const val = data[piece.replace("$", "")];
@@ -105,6 +108,7 @@ module.exports = class Query {
 	 */
 	set (path, value) {
 		try {
+			// TODO: Implement validation of new value
 			if (value !== undefined) {
 				const parsed = this.parsed + this._parseForString(path);
 				this._writeValue(parsed, value);
@@ -158,7 +162,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_canId (obj = this._current) {
-		return obj && obj.constructor === Array;
+		return obj && obj.constructor === Array && this._definition.type.key === "array";
 	}
 
 	/**
@@ -186,7 +190,25 @@ module.exports = class Query {
 	_writeValue (path, val) {
 		mpath.set(path, val, this._doc._doc);
 		mpath.set(path, val, this._doc);
-		//this._doc._modifyCache(path, val);
 		this._doc._setAtomic(path, val, "$set");
+	}
+
+	/**
+	 * Shift the currently selected Definition to the desired path
+	 * @param {string} paths The mpath of the to-be selected Definition
+	 * @param {boolean} absolute If set to true, the paths will be applied from the root schema
+	 * @returns {Definition|null}
+	 * @private
+	 */
+	_shiftSchema (paths, absolute) {
+		if (absolute) this._definition = this._doc._model._schema;
+
+		const parsedArray = paths.split(".");
+		parsedArray.forEach(path => {
+			if (this._definition instanceof Schema) this._definition = this._definition._definitions.get(path);
+			else if (this._definition && this._definition.type.key === "schema") this._definition = this._definition.type.schema._definitions.get(path);
+			else this._definition = null;
+		});
+		return this._definition;
 	}
 };

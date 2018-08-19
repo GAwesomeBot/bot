@@ -5,7 +5,7 @@ module.exports = {
 		es6: true,
 	},
 	parserOptions: {
-		ecmaVersion: 9,
+		ecmaVersion: 2018,
 		sourceType: "module",
 		ecmaFeatures: {
 			experimentalObjectRestSpread: true,
