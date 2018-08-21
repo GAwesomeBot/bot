@@ -148,23 +148,23 @@ client.IPC.on("postAllData", async () => {
 });
 
 client.IPC.on("createPublicInviteLink", async msg => {
-	let guildID = msg.guild;
-	let guild = client.guilds.get(guildID);
+	const guildID = msg.guild;
+	const guild = client.guilds.get(guildID);
 	const serverDocument = await EServers.findOne(guild.id);
-	let channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
+	const channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
 	if (channel) {
-		let invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
+		const invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
 		serverDocument.query.set("config.public_data.server_listing.invite_link", `https://discord.gg/${invite.code}`);
 		serverDocument.save();
 	}
 });
 
 client.IPC.on("deletePublicInviteLink", async msg => {
-	let guildID = msg.guild;
-	let guild = client.guilds.get(guildID);
+	const guildID = msg.guild;
+	const guild = client.guilds.get(guildID);
 	const serverDocument = await EServers.findOne(guild.id);
-	let invites = await guild.fetchInvites();
-	let invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
+	const invites = await guild.fetchInvites();
+	const invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
 	serverDocument.query.set("config.public_data.server_listing.invite_link", null);
 	serverDocument.save();
@@ -179,7 +179,7 @@ client.IPC.on("eval", async (msg, callback) => {
 client.IPC.on("evaluate", async (msg, callback) => {
 	const result = {};
 	try {
-		result.result = client._eval(msg);
+		result.result = await client._eval(msg);
 	} catch (err) {
 		result.err = true;
 		result.result = err;
@@ -256,11 +256,11 @@ client.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			const serverDocument = await Servers.findOne({ _id: svr.id });
 			if (!serverDocument) return;
-			let channelDocument = serverDocument.channels.id(ch.id);
+			let channelDocument = serverDocument.query.prop("channels").id(ch.id).val;
 			if (!channelDocument) {
-				serverDocument.channels.push({ _id: ch.id });
+				serverDocument.query.prop("channels").push({ _id: ch.id });
 				channelDocument = serverDocument.channels.id(ch.id);
 			}
 			if (msg.action === "end") await Trivia.end(client, svr, serverDocument, ch, channelDocument);

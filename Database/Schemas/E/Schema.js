@@ -203,7 +203,7 @@ class Definition {
 			this.type = Types[raw.name.toLowerCase()];
 			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
 		} else if (raw.constructor === Object) {
-			try { this.type = Types[raw.type.name.toLowerCase()]; } catch (err) { console.log(this.key); throw err;}
+			this.type = Types[raw.type.name.toLowerCase()];
 			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
 
 			this._default = raw.default || null;
@@ -340,7 +340,6 @@ class Schema {
 	}
 
 	validateDoc (doc) {
-		// TODO: Finish manual validation of doc
 		const obj = doc.toObject();
 		return this.validate(obj, doc);
 	}
@@ -368,5 +367,7 @@ class Schema {
 }
 
 module.exports = Schema;
+
+module.exports.ValidationError = ValidationError;
 
 const TypeDefs = [String, Date, Array, Object, Number, Boolean, Schema.Mixed];

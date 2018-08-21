@@ -215,7 +215,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 			if (msg.target === "master") {
 				let result = {};
 				try {
-					result.result = eval(msg.code);
+					result.result = await eval(`(async () => {${msg.code})()`);
 				} catch (err) {
 					result.err = true;
 					result.result = err;
@@ -223,7 +223,7 @@ database.initialize(configJS.databaseURL).catch(err => {
 				if (typeof result.result !== "string") result.result = require("util").inspect(result.result, false, 1);
 				return callback(result);
 			} else if (sharder.shards.has(Number(msg.target)) || msg.target === "all") {
-				sharder.IPC.send("evaluate", msg.code, msg.target === "all" ? "*" : Number(msg.target)).then(res => {
+				sharder.IPC.send("evaluate", `(async () => {${msg.code}})()`, msg.target === "all" ? "*" : Number(msg.target)).then(res => {
 					let result = {};
 					if (msg.target !== "all") result.result = res.result;
 					else result.result = res.map(m => m.result);

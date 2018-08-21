@@ -68,7 +68,7 @@ module.exports = class Document {
 		const ops = this._atomics;
 		this._atomics = {};
 		try {
-			(this._new ? this._setCache : this._handleAtomics)();
+			(this._new ? this._setCache : this._handleAtomics).call(this);
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", err);
 		}

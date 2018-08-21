@@ -108,15 +108,23 @@ module.exports = class Query {
 	 */
 	set (path, value) {
 		try {
-			// TODO: Implement validation of new value
 			if (value !== undefined) {
 				const parsed = this.parsed + this._parseForString(path);
+
+				const definition = this._shiftSchema(path, false, false);
+				const err = definition.validate(value, true);
+				if (err && (!Array.isArray(err) || err.length)) throw new Schema.ValidationError(err, this._doc);
+
 				this._writeValue(parsed, value);
 			} else {
+				const err = this._definition.validate(path, true);
+				if (err && (!Array.isArray(err) || err.length)) throw new Schema.ValidationError(err, this._doc);
+
 				this._writeValue(this.parsed, path);
 			}
 			return this;
 		} catch (err) {
+			if (err.constructor === Schema.ValidationError) throw err;
 			throw new GABError("GADRIVER_ERROR", "Could not set atomics or parse Query.");
 		}
 	}
@@ -131,8 +139,15 @@ module.exports = class Query {
 		return this.get("$0", [this._findById(id)]);
 	}
 
-	pull () {
+	push () {
+		// TODO: Write Query#push()
+		if (!this._canId()) return this;
 
+
+	}
+
+	pull () {
+		// TODO: Write Query#pull()
 	}
 
 	/**
@@ -162,7 +177,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_canId (obj = this._current) {
-		return obj && obj.constructor === Array && this._definition.type.key === "array";
+		return obj && obj.constructor === Array && this._definition.isArray;
 	}
 
 	/**
@@ -197,18 +212,22 @@ module.exports = class Query {
 	 * Shift the currently selected Definition to the desired path
 	 * @param {string} paths The mpath of the to-be selected Definition
 	 * @param {boolean} absolute If set to true, the paths will be applied from the root schema
+	 * @param {boolean} mutate If set to true, the current definition will be shifted
 	 * @returns {Definition|null}
 	 * @private
 	 */
-	_shiftSchema (paths, absolute) {
-		if (absolute) this._definition = this._doc._model._schema;
+	_shiftSchema (paths, absolute, mutate = true) {
+		let definition;
+		if (absolute) definition = this._doc._model._schema;
 
 		const parsedArray = paths.split(".");
 		parsedArray.forEach(path => {
-			if (this._definition instanceof Schema) this._definition = this._definition._definitions.get(path);
-			else if (this._definition && this._definition.type.key === "schema") this._definition = this._definition.type.schema._definitions.get(path);
-			else this._definition = null;
+			if (this._definition instanceof Schema) definition = this._definition._definitions.get(path);
+			else if (this._definition && this._definition.type.key === "schema") definition = this._definition.type.schema._definitions.get(path);
+			else definition = null;
 		});
-		return this._definition;
+
+		if (mutate) this._definition = definition;
+		return definition;
 	}
 };
