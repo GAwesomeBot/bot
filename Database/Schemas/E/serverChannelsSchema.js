@@ -3,7 +3,7 @@ const Schema = require("./Schema");
 /*
  * Server's channel data (giveaway, trivia, etc.)
  */
-module.exports = new Schema({
+module.exports = Schema.Map({
 	_id: {
 		type: String,
 		required: true,

@@ -12,9 +12,9 @@ module.exports = new Schema({
 	},
 	config: require("./serverConfigSchema.js"),
 	extensions: [require("./modulesSchema.js")],
-	members: [require("./serverMembersSchema.js")],
+	members: require("./serverMembersSchema.js"),
 	games: [require("./serverGamesSchema.js")],
-	channels: [require("./serverChannelsSchema")],
+	channels: require("./serverChannelsSchema"),
 	command_usage: Schema.Mixed,
 	messages_today: {
 		type: Number,

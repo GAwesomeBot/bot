@@ -1,6 +1,8 @@
 /* eslint-disable max-len*/
 const { Error: GABError } = require("../../../Internals/Errors");
 
+const MapSymbol = Symbol("map");
+
 /**
  * A Definition Type
  * @typedef {{ key: string, validator: function(*) } | function(Schema)} Type
@@ -37,6 +39,11 @@ const Types = {
 	schema: schema => ({
 		validator: schema.validate,
 		key: "schema",
+		schema: schema,
+	}),
+	map: schema => ({
+		validator: schema.validate,
+		key: "map",
 		schema: schema,
 	}),
 };
@@ -119,6 +126,14 @@ class ValidationError extends Error {
 					obj.deviancy = "not the right type";
 					obj.correct = "array";
 					break;
+				case "map":
+					obj.deviancy = "not the right type";
+					obj.correct = "object";
+					break;
+				case "duplicate":
+					obj.deviancy = "already existent";
+					obj.correct = "unique";
+					break;
 				default:
 					obj.deviancy = "illegal";
 					obj.correct = "different";
@@ -188,6 +203,11 @@ class Definition {
 		 */
 		this.isArray = false;
 		/**
+		 * If this definition describes an object of values, mapped by _id, this will be true
+         * @type {boolean}
+         */
+		this.isMap = false;
+		/**
 		 * An array of validation functions to pass before the value is set
 		 * @type {Array}
 		 * @private
@@ -199,7 +219,12 @@ class Definition {
 		 */
 		this.invalid = false;
 
-		if (TypeDefs.includes(raw)) {
+		if (raw[MapSymbol]) {
+			this.type = Types.map(raw.schema);
+			this._default = {};
+			this.isMap = true;
+			this.type.schema._parent = this;
+		} else if (TypeDefs.includes(raw)) {
 			this.type = Types[raw.name.toLowerCase()];
 			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
 		} else if (raw.constructor === Object) {
@@ -256,10 +281,8 @@ class Definition {
 			if (!this.required && (value === undefined || value === null)) return null;
 			else if (this.required && (value === undefined || value === null)) return { type: "required", value: val, path: this.key, definition: this };
 
-			if (this.type.key === "schema") return this.type.schema.validate(val);
-
+			if (this.type.key === "schema" || this.type.key === "map") return this.type.schema.validate(val);
 			if (this.type && !this.type.validator(val)) return { type: "type", value: val, path: this.key, definition: this };
-			else if (this.isArray && !Array.isArray(value) && absolute) return { type: "array", value: val, path: this.key, definition: this };
 
 			const results = this._validations.map(validator => validator.validator(val) ? true : { type: validator.key, value: val, path: this.key, definition: this });
 			if (results.some(res => res !== true)) return results.filter(res => res !== true);
@@ -267,7 +290,11 @@ class Definition {
 			return null;
 		};
 
-		if (this.isArray && Array.isArray(value)) return value.map(val => validate(val));
+		if (this.isArray && !Types.array.validator(value) && absolute) return { type: "array", value, path: this.key, definition: this };
+		else if (this.isMap && !Types.object.validator(value) && absolute) return { type: "map", value, path: this.key, definition: this };
+
+		if (this.isArray && Types.array.validator(value) && absolute) return value.map(validate);
+		else if (this.isMap && Types.object.validator(value) && absolute) return Object.values(value).map(validate);
 		return validate(value);
 	}
 
@@ -298,6 +325,8 @@ class Schema {
 			const val = this._schema[key];
 			this._definitions.set(key, new Definition(val, key, this));
 		});
+
+		if (this._options.map && !this._definitions.has("_id")) throw new GABError("GADRIVER_ERROR", "A Map type Schema must have an _id value");
 	}
 
 	build (raw = {}) {
@@ -326,7 +355,7 @@ class Schema {
 		let errors = [];
 
 		this._definitions.forEach(definition => {
-			const error = definition.validate(obj[definition.key]);
+			const error = definition.validate(obj[definition.key], true);
 			if (error && Array.isArray(error)) errors = errors.concat(error);
 			else if (error) errors.push(error);
 
@@ -362,7 +391,14 @@ class Schema {
 	}
 
 	static Mixed () {
-		this.type = Types.Mixed;
+		return {};
+	}
+
+	static Map (schema) {
+		const obj = {};
+		obj[MapSymbol] = true;
+		obj.schema = new Schema(schema, { map: true });
+		return obj;
 	}
 }
 

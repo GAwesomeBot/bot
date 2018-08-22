@@ -30,12 +30,14 @@ module.exports = class Query {
 	}
 
 	/**
-	 * Change the current value being pointed to to a property of said current value
+	 * Change the current selection to a property of said selected value
 	 * @param {string} path The path of the property to select
 	 * @returns {module.Query}
 	 */
 	prop (path) {
 		try {
+			if (this._definition.isMap) return this.id(path);
+
 			if (path === "..") {
 				const index = this.parsed.lastIndexOf(".");
 				this.parsed = this.parsed.substring(0, index);
@@ -56,7 +58,7 @@ module.exports = class Query {
 	}
 
 	/**
-	 * Get a (nested) property from the current value using an mpath string
+	 * Get a (nested) property from the current selection using an mpath string
 	 * @param {string} key The mpath string pointing to the current value, using template variable labels in the form of "$label"
 	 * @param {object|array} [data] An Object or Array mapping variable labels to strings or ID's. All strings are ran through Query._findById first to check for ID matches.
 	 * @returns {*}
@@ -72,9 +74,9 @@ module.exports = class Query {
 				if (!val || !piece.startsWith("$")) {
 					parsed += this._parseForString(piece, parsed);
 				} else {
-					const index = this._findById(val, mpath.get(this.parsed + this._parseForString(parsed), this._doc._doc), parsed);
+					const index = this._findById(val, mpath.get(this.parsed + this._parseForString(parsed), this._doc._doc));
 					if (index === null) found = false;
-					parsed += this._parseForString(String(index) || val, parsed);
+					parsed += this._parseForString(String(index || val), parsed);
 				}
 			});
 			return found ? mpath.get(this.parsed + this._parseForString(parsed), this._doc._doc) : undefined;
@@ -84,14 +86,14 @@ module.exports = class Query {
 	}
 
 	/**
-	 * Sets the current value to a subdocument of the current array by _id
-	 * @param {string} id The _id value of the subdocument to find
+	 * Selects a subdocument of the current array or map by _id
+	 * @param {string} id The _id value of the subdocument to select
 	 * @returns {module.Query}
 	 */
 	id (id) {
 		try {
 			if (!this._canId()) return this.prop(id);
-			const index = this._findById(id);
+			const index = this._definition.isMap ? id : this._findById(id);
 			this.parsed += this._parseForString(index);
 			this._current = mpath.get(this.parsed, this._doc._doc);
 			return this;
@@ -113,12 +115,18 @@ module.exports = class Query {
 
 				const definition = this._shiftSchema(path, false, false);
 				const err = definition.validate(value, true);
-				if (err && (!Array.isArray(err) || err.length)) throw new Schema.ValidationError(err, this._doc);
+				if (err && (!Array.isArray(err) || err.length)) {
+					err.path = parsed;
+					throw new Schema.ValidationError(err, this._doc);
+				}
 
 				this._writeValue(parsed, value);
 			} else {
 				const err = this._definition.validate(path, true);
-				if (err && (!Array.isArray(err) || err.length)) throw new Schema.ValidationError(err, this._doc);
+				if (err && (!Array.isArray(err) || err.length)) {
+					err.path = this.parsed;
+					throw new Schema.ValidationError(err, this._doc);
+				}
 
 				this._writeValue(this.parsed, path);
 			}
@@ -139,11 +147,23 @@ module.exports = class Query {
 		return this.get("$0", [this._findById(id)]);
 	}
 
-	push () {
+	push (value) {
 		// TODO: Write Query#push()
 		if (!this._canId()) return this;
 
+		if (this._definition.isMap && !value._id) return new Schema.ValidationError({ type: "required", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
 
+		if (!(this._definition.isArray ? this._findById(value._id) : this._current[value._id])) {
+			return new Schema.ValidationError({ type: "duplicate", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
+		}
+
+		const obj = this._definition.type.schema.build(value);
+
+		const err = this._definition.validate(obj);
+		if (err) {
+			err.path = this.parsed;
+			throw new Schema.ValidationError(err, this._doc);
+		}
 	}
 
 	pull () {
@@ -151,7 +171,7 @@ module.exports = class Query {
 	}
 
 	/**
-	 * The current raw value Query.parsed is pointing towards
+	 * The current raw value this Query has selected
 	 * @returns {*}
 	 * @readonly
 	 */
@@ -177,7 +197,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_canId (obj = this._current) {
-		return obj && obj.constructor === Array && this._definition.isArray;
+		return obj && obj.constructor === Array && (this._definition.isArray || this._definition.isMap);
 	}
 
 	/**
@@ -208,6 +228,12 @@ module.exports = class Query {
 		this._doc._setAtomic(path, val, "$set");
 	}
 
+	_push (path, val) {
+		mpath.get(path, this._doc._doc).push(val);
+		mpath.get(path, this._doc).push(val);
+		this._doc._setAtomic(path, val, "$push");
+	}
+
 	/**
 	 * Shift the currently selected Definition to the desired path
 	 * @param {string} paths The mpath of the to-be selected Definition
@@ -217,13 +243,13 @@ module.exports = class Query {
 	 * @private
 	 */
 	_shiftSchema (paths, absolute, mutate = true) {
-		let definition;
+		let definition = this._definition;
 		if (absolute) definition = this._doc._model._schema;
 
 		const parsedArray = paths.split(".");
 		parsedArray.forEach(path => {
-			if (this._definition instanceof Schema) definition = this._definition._definitions.get(path);
-			else if (this._definition && this._definition.type.key === "schema") definition = this._definition.type.schema._definitions.get(path);
+			if (definition instanceof Schema) definition = definition._definitions.get(path);
+			else if (definition && definition.type.key === "schema") definition = definition.type.schema._definitions.get(path);
 			else definition = null;
 		});
 

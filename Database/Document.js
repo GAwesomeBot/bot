@@ -67,6 +67,9 @@ module.exports = class Document {
 	async save () {
 		const ops = this._atomics;
 		this._atomics = {};
+		let err;
+		if (this._new) err = this.validate();
+		if (err) throw err;
 		try {
 			(this._new ? this._setCache : this._handleAtomics).call(this);
 		} catch (err) {

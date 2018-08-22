@@ -1,6 +1,6 @@
 const Schema = require("./Schema");
 
-module.exports = new Schema({
+module.exports = Schema.Map({
 	_id: {
 		type: String,
 		required: true,
