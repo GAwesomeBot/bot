@@ -36,8 +36,6 @@ module.exports = class Query {
 	 */
 	prop (path) {
 		try {
-			if (this._definition.isMap) return this.id(path);
-
 			if (path === "..") {
 				const index = this.parsed.lastIndexOf(".");
 				this.parsed = this.parsed.substring(0, index);
@@ -114,19 +112,11 @@ module.exports = class Query {
 				const parsed = this.parsed + this._parseForString(path);
 
 				const definition = this._shiftSchema(path, false, false);
-				const err = definition.validate(value, true);
-				if (err && (!Array.isArray(err) || err.length)) {
-					err.path = parsed;
-					throw new Schema.ValidationError(err, this._doc);
-				}
+				this._validate(definition, parsed, value);
 
 				this._writeValue(parsed, value);
 			} else {
-				const err = this._definition.validate(path, true);
-				if (err && (!Array.isArray(err) || err.length)) {
-					err.path = this.parsed;
-					throw new Schema.ValidationError(err, this._doc);
-				}
+				this._validate(this._definition, this.parsed, path);
 
 				this._writeValue(this.parsed, path);
 			}
@@ -138,7 +128,7 @@ module.exports = class Query {
 	}
 
 	/**
-	 * Gets a subdocument of the current array by _id
+	 * Gets a subdocument of the currently selected array by _id
 	 * @param {string} id The _id value of the subdocument to get
 	 * @returns {*}
 	 */
@@ -147,23 +137,33 @@ module.exports = class Query {
 		return this.get("$0", [this._findById(id)]);
 	}
 
+	/**
+	 * Pushes a value to the currently selected array or map
+	 * @param {*} value The value to be pushed to the currently selected array or map
+	 * @returns {module.Query}
+	 */
 	push (value) {
-		// TODO: Write Query#push()
 		if (!this._canId()) return this;
 
-		if (this._definition.isMap && !value._id) return new Schema.ValidationError({ type: "required", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
+		if (this._definition.isMap && !value._id) throw new Schema.ValidationError({ type: "required", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
 
-		if (!(this._definition.isArray ? this._findById(value._id) : this._current[value._id])) {
-			return new Schema.ValidationError({ type: "duplicate", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
+		if (this._definition.isArray ? this._findById(value._id) : this._current[value._id]) {
+			throw new Schema.ValidationError({ type: "duplicate", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
 		}
 
 		const obj = this._definition.type.schema.build(value);
 
-		const err = this._definition.validate(obj);
-		if (err) {
-			err.path = this.parsed;
-			throw new Schema.ValidationError(err, this._doc);
+		this._validate(this._definition, this.parsed, obj, false);
+
+		if (this._definition.isMap) {
+			const ID = obj._id;
+
+			this._writeValue(`${this.parsed}${this._parseForString(ID)}`, obj);
+		} else if (this._definition.isArray) {
+			this._push(this.prased, obj);
 		}
+
+		return this;
 	}
 
 	pull () {
@@ -197,7 +197,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_canId (obj = this._current) {
-		return obj && obj.constructor === Array && (this._definition.isArray || this._definition.isMap);
+		return obj && ((this._definition.isArray && Array.isArray(obj)) || (this._definition.isMap && obj.constructor === Object));
 	}
 
 	/**
@@ -217,18 +217,26 @@ module.exports = class Query {
 	}
 
 	/**
-	 * Internal function to write a value to a specified path at all locations necessary
+	 * Internal function to write a value to a specified path
 	 * @param {string} path
 	 * @param {*} val
 	 * @private
 	 */
 	_writeValue (path, val) {
+		val = this._definition.cast(val);
 		mpath.set(path, val, this._doc._doc);
 		mpath.set(path, val, this._doc);
 		this._doc._setAtomic(path, val, "$set");
 	}
 
+	/**
+	 * Internal function to push a value to an array at the specified path
+	 * @param {string} path
+	 * @param {*} val
+	 * @private
+	 */
 	_push (path, val) {
+		val = this._definition.cast(val);
 		mpath.get(path, this._doc._doc).push(val);
 		mpath.get(path, this._doc).push(val);
 		this._doc._setAtomic(path, val, "$push");
@@ -255,5 +263,25 @@ module.exports = class Query {
 
 		if (mutate) this._definition = definition;
 		return definition;
+	}
+
+	/**
+	 * Validates a value against a given definition, prepares the ValidationError (if created) to be thrown, returns null otherwise
+	 * @param {Definition} definition
+	 * @param {string} path
+	 * @param {*} value
+	 * @param {boolean} [absolute=true]
+	 * @returns {null}
+	 * @private
+	 */
+	_validate (definition, path, value, absolute = true) {
+		const error = definition.validate(value, absolute);
+
+		if (error && (!Array.isArray(error) || error.length)) {
+			error.path = path;
+			throw new Schema.ValidationError(error, this._doc);
+		} else {
+			return null;
+		}
 	}
 };

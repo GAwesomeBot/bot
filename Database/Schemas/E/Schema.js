@@ -13,8 +13,9 @@ const Types = {
 		key: "string",
 	},
 	date: {
-		validator: val => !isNaN(Date.parse(val)),
+		validator: val => val instanceof Date || !isNaN(new Date(val)),
 		key: "date",
+		cast: val => val === null || val === "" ? null : val instanceof Date ? val : new Date(val instanceof Number || typeof val === "number" ? val : Number(val)),
 	},
 	array: {
 		validator: Array.isArray,
@@ -39,11 +40,6 @@ const Types = {
 	schema: schema => ({
 		validator: schema.validate,
 		key: "schema",
-		schema: schema,
-	}),
-	map: schema => ({
-		validator: schema.validate,
-		key: "map",
 		schema: schema,
 	}),
 };
@@ -220,7 +216,7 @@ class Definition {
 		this.invalid = false;
 
 		if (raw[MapSymbol]) {
-			this.type = Types.map(raw.schema);
+			this.type = Types.schema(raw.schema);
 			this._default = {};
 			this.isMap = true;
 			this.type.schema._parent = this;
@@ -231,7 +227,7 @@ class Definition {
 			this.type = Types[raw.type.name.toLowerCase()];
 			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
 
-			this._default = raw.default || null;
+			this._default = raw.default === undefined ? null : raw.default;
 			this._required = Boolean(raw.required);
 			this._parseValidations(raw);
 		} else if (raw.constructor === module.exports || raw[0].constructor === module.exports) {
@@ -257,13 +253,13 @@ class Definition {
 	}
 
 	get default () {
-		if (this.type.key === "schema" && !this.isArray) return this.type.schema._defaultDocument;
+		if (this.type.key === "schema" && !this.isArray && !this.isMap) return this.type.schema._defaultDocument;
 		if (this.required) return null;
 
 		let val = this._default;
 		if (typeof this._default === "function") val = this._default();
 
-		return val;
+		return this.cast(val);
 	}
 
 	get required () {
@@ -277,14 +273,21 @@ class Definition {
 	 * @returns {ValidationErrorObject|null}
 	 */
 	validate (value, absolute) {
+		let invalid = false;
+
+		const invalidate = (type, val) => {
+			invalid = true;
+			return { type, value: val, path: this.key, definition: this };
+		};
+
 		const validate = val => {
 			if (!this.required && (value === undefined || value === null)) return null;
-			else if (this.required && (value === undefined || value === null)) return { type: "required", value: val, path: this.key, definition: this };
+			else if (this.required && (value === undefined || value === null)) return invalidate("required", val);
 
-			if (this.type.key === "schema" || this.type.key === "map") return this.type.schema.validate(val);
-			if (this.type && !this.type.validator(val)) return { type: "type", value: val, path: this.key, definition: this };
+			if (this.type.key === "schema") return this.type.schema.validate(val);
+			if (this.type && !this.type.validator(val)) return invalidate("type", val);
 
-			const results = this._validations.map(validator => validator.validator(val) ? true : { type: validator.key, value: val, path: this.key, definition: this });
+			const results = this._validations.map(validator => validator.validator(val) ? true : invalidate(validator.key, val));
 			if (results.some(res => res !== true)) return results.filter(res => res !== true);
 
 			return null;
@@ -293,9 +296,20 @@ class Definition {
 		if (this.isArray && !Types.array.validator(value) && absolute) return { type: "array", value, path: this.key, definition: this };
 		else if (this.isMap && !Types.object.validator(value) && absolute) return { type: "map", value, path: this.key, definition: this };
 
-		if (this.isArray && Types.array.validator(value) && absolute) return value.map(validate);
-		else if (this.isMap && Types.object.validator(value) && absolute) return Object.values(value).map(validate);
-		return validate(value);
+		let errors;
+		if (this.isArray && Types.array.validator(value) && absolute) errors = value.map(validate);
+		else if (this.isMap && Types.object.validator(value) && absolute) errors = Object.values(value).map(validate);
+		else return validate(value);
+
+		if (invalid) return errors;
+		return null;
+	}
+
+	cast (value) {
+		if (this.type.cast && typeof this.type.cast === "function") {
+			return this.type.cast(value);
+		}
+		return value;
 	}
 
 	_parseValidations (schema) {
@@ -336,12 +350,12 @@ class Schema {
 			const definition = this._definitions.get(key);
 
 			if (definition && definition.type.key === "schema") {
-				doc[key] = definition.isArray ? raw[key].map(val => definition.type.schema.build(val)) : definition.type.schema.build(raw[key]);
+				doc[key] = definition.isArray || definition.isMap ? raw[key].map(val => definition.type.schema.build(val)) : definition.type.schema.build(raw[key]);
 			} else if (definition) {
 				const value = raw[key];
 				const err = definition.validate(value, true);
 				if (err && (!Array.isArray(err) || err.some(a => a))) throw new ValidationError(err, doc);
-				doc[key] = value;
+				doc[key] = definition.cast(value);
 			} else if (key[0] !== "_") {
 				throw new ValidationError({ type: "undefined", value: raw[key], path: key, definition }, doc);
 			}
@@ -357,6 +371,7 @@ class Schema {
 		this._definitions.forEach(definition => {
 			const error = definition.validate(obj[definition.key], true);
 			if (error && Array.isArray(error)) errors = errors.concat(error);
+
 			else if (error) errors.push(error);
 
 			if (unvalidated.includes(definition.key)) unvalidated.splice(unvalidated.indexOf(definition.key), 1);
@@ -383,8 +398,7 @@ class Schema {
 
 		this._definitions.forEach((definition, key) => {
 			const definitionDefault = definition.default;
-			if (definitionDefault) ret[key] = definitionDefault;
-			else if (definition.type.key === "schema") ret[key] = definition.type.schema._defaultDocument;
+			if (definitionDefault !== null) ret[key] = definitionDefault;
 		});
 
 		return ret;

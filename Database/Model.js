@@ -38,7 +38,7 @@ module.exports = class Model {
 		let func = "insertOne";
 		if (data.constructor === Array) func = "insertMany";
 
-		const raw = new this.schema.build(data);
+		const raw = this.schema.build(data);
 
 		try {
 			await this._client[func](raw, opts);

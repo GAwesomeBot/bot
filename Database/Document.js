@@ -18,6 +18,9 @@ const deepClone = source => {
 		for (const key in source) output[key] = deepClone(source[key]);
 		return output;
 	}
+	if (source instanceof Date) {
+		return new Date(source.getTime());
+	}
 };
 
 module.exports = class Document {
@@ -67,23 +70,23 @@ module.exports = class Document {
 	async save () {
 		const ops = this._atomics;
 		this._atomics = {};
-		let err;
-		if (this._new) err = this.validate();
-		if (err) throw err;
+		let error;
+		if (this._new) error = this.validate();
+		if (error) throw error;
 		try {
 			(this._new ? this._setCache : this._handleAtomics).call(this);
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", err);
 		}
 		try {
-			return await this._client.updateOne({ _id: this._id }, ops, { multi: true });
+			return await (this._new ? this._client.insertOne(this._doc, {}) : this._client.updateOne({ _id: this._id }, ops, { multi: true }));
 		} catch (err) {
 			throw new GABError("MONGODB_ERROR", err);
 		}
 	}
 
 	validate () {
-		return this._model._schema.validateDoc(this);
+		return this._model.schema.validateDoc(this);
 	}
 
 	/**
