@@ -16,7 +16,7 @@ class VoteHandler extends BaseEvent {
 		return true;
 	}
 	async prerequisite (msg) {
-		this.serverDocument = await this.client.cache.get(msg.guild.id);
+		this.serverDocument = await EServers.findOne(msg.guild.id);
 	}
 
 	async handle (msg) {
@@ -33,7 +33,7 @@ class VoteHandler extends BaseEvent {
 			}
 			const voteString = msg.content.split(/\s+/).slice(1).join(" ");
 			if (member && ![this.client.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
-				const targetUserDocument = await Users.findOne({ _id: member.id });
+				const targetUserDocument = await EUsers.findOne(member.id);
 				if (targetUserDocument) {
 					let voteAction = null;
 
@@ -42,7 +42,7 @@ class VoteHandler extends BaseEvent {
 						if (voteString.startsWith(voteTrigger)) {
 							voteAction = "upvoted";
 							// Increment points and exit loop
-							targetUserDocument.points++;
+							targetUserDocument.query.inc("points");
 							break;
 						}
 					}
@@ -65,14 +65,14 @@ class VoteHandler extends BaseEvent {
 
 						if (voteAction === "gilded") {
 							// Get author data
-							const authorDocument = await Users.findOne({ _id: msg.author.id });
+							const authorDocument = await EUsers.findOne(msg.author.id);
 							if (authorDocument) {
 								if (authorDocument.points > 10) {
-									authorDocument.points -= 10;
+									authorDocument.query.inc("points", -10);
 									await authorDocument.save().catch(err => {
 										winston.debug("Failed to save user data for points", { usrid: msg.author.id }, err);
 									});
-									targetUserDocument.points += 10;
+									targetUserDocument.query.inc("points", 10);
 									await saveTargetUserDocument();
 								} else {
 									winston.verbose(`User "${msg.author.tag}" does not have enough points to gild "${member.user.tag}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });

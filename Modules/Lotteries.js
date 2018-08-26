@@ -22,8 +22,10 @@ module.exports = {
 		}
 	},
 	end: async (client, svr, serverDocument, ch, channelDocument) => {
+		const queryDocument = serverDocument.query.id("channels", channelDocument._id);
+
 		if (channelDocument.lottery.isOngoing) {
-			channelDocument.lottery.isOngoing = false;
+			queryDocument.set("lottery.isOngoing", false);
 			let winner;
 			while (!winner && channelDocument.lottery.participant_ids.length > 1) {
 				const i = Math.floor(Math.random() * channelDocument.lottery.participant_ids.length);
@@ -34,12 +36,12 @@ module.exports = {
 					channelDocument.lottery.participant_ids.splice(i, 1);
 				}
 			}
+			queryDocument.set("lottery.participant_ids", []);
 			try {
-				await serverDocument.save();
 				if (winner) {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
-					const userDocument = await Users.findOne({ _id: winner.id });
-					userDocument.points += prize;
+					const userDocument = await EUsers.findOne({ _id: winner.id });
+					userDocument.query.set("points", userDocument.points + prize);
 					try {
 						await userDocument.save();
 					} catch (_) {

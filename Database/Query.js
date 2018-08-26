@@ -9,7 +9,7 @@ module.exports = class Query {
 	 * @constructor
 	 * @param {Document} doc The Document this Query object interacts with
 	 */
-	constructor (doc) {
+	constructor (doc, path) {
 		/**
 		 * The Document this Query object interacts with
 		 * @type {Document}
@@ -20,13 +20,14 @@ module.exports = class Query {
 		 * The mpath string pointing to the current selected object
 		 * @type {string}
 		 */
-		this.parsed = "";
+		this.parsed = path || "";
 		/**
 		 * The current value being interacted with
 		 * @type {Document.Object|Object}
 		 */
-		this._current = this._doc._doc;
+		this._current = path ? mpath.get(path, this._doc._doc) : this._doc._doc;
 		this._definition = this._doc._model.schema;
+		if (path) this._shiftSchema(path, true);
 	}
 
 	/**
@@ -85,11 +86,15 @@ module.exports = class Query {
 
 	/**
 	 * Selects a subdocument of the current array or map by _id
+	 * @param {string} path
 	 * @param {string} id The _id value of the subdocument to select
 	 * @returns {module.Query}
 	 */
-	id (id) {
+	id (path, id) {
 		try {
+			if (path !== undefined) this.prop(path);
+			else id = path;
+
 			if (!this._canId()) return this.prop(id);
 			const index = this._definition.isMap ? id : this._findById(id);
 			this.parsed += this._parseForString(index);
@@ -114,11 +119,11 @@ module.exports = class Query {
 				const definition = this._shiftSchema(path, false, false);
 				this._validate(definition, parsed, value);
 
-				this._writeValue(parsed, value);
+				this._writeValue(parsed, definition.cast(value));
 			} else {
 				this._validate(this._definition, this.parsed, path);
 
-				this._writeValue(this.parsed, path);
+				this._writeValue(this.parsed, this._definition.cast(path));
 			}
 			return this;
 		} catch (err) {
@@ -160,7 +165,7 @@ module.exports = class Query {
 
 			this._writeValue(`${this.parsed}${this._parseForString(ID)}`, obj);
 		} else if (this._definition.isArray) {
-			this._push(this.prased, obj);
+			this._push(this.parsed, obj);
 		}
 
 		return this;
@@ -168,6 +173,44 @@ module.exports = class Query {
 
 	pull () {
 		// TODO: Write Query#pull()
+	}
+
+	remove () {
+		// TODO: Write Query#remove()
+	}
+
+	/**
+	 * Increments the value at the given path by a given amount
+	 * @param {string|number} path
+	 * @param {number} [amount]
+	 * @returns {module.Query}
+	 */
+	inc (path, amount) {
+		if (amount === undefined && typeof path === "string") amount = 1;
+		if (path === undefined && amount === undefined) path = 1;
+
+		if (amount !== undefined) {
+			const parsed = this.parsed + this._parseForString(path);
+			const value = mpath.get(parsed, this._doc) + amount;
+			if (isNaN(value)) return this;
+
+			const definition = this._shiftSchema(path, false, false);
+			this._validate(definition, parsed, value);
+
+			this._inc(parsed, amount);
+		} else {
+			const value = mpath.get(this.parsed, this._doc) + path;
+			if (isNaN(value)) return this;
+
+			this._validate(this._definition, this.parsed, value);
+
+			this._inc(this.parsed, path);
+		}
+		return this;
+	}
+
+	get clone () {
+		return new Query(this._doc, this.parsed);
 	}
 
 	/**
@@ -223,7 +266,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_writeValue (path, val) {
-		val = this._definition.cast(val);
+		val = this._definition.cast ? this._definition.cast(val) : val;
 		mpath.set(path, val, this._doc._doc);
 		mpath.set(path, val, this._doc);
 		this._doc._setAtomic(path, val, "$set");
@@ -240,6 +283,23 @@ module.exports = class Query {
 		mpath.get(path, this._doc._doc).push(val);
 		mpath.get(path, this._doc).push(val);
 		this._doc._setAtomic(path, val, "$push");
+	}
+
+	_pull () {
+		// TODO: Write Query#_pull
+	}
+
+	/**
+	 * Internal function to increment a value at the specified path
+	 * @param {string} path
+	 * @param {number} amount
+	 * @private
+	 */
+	_inc (path, amount) {
+		const value = mpath.get(path, this._doc._doc);
+		mpath.set(path, value + amount, this._doc._doc);
+		mpath.set(path, value + amount, this._doc._doc);
+		this._doc._setAtomic(path, amount, "$inc");
 	}
 
 	/**

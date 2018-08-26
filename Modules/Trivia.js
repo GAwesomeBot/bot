@@ -205,9 +205,11 @@ module.exports = class Trivia {
 	}
 
 	static async end (client, svr, serverDocument, ch, channelDocument, msg) {
+		const queryDocument = serverDocument.query.id("channels", channelDocument._id);
+
 		if (channelDocument.trivia.isOngoing) {
-			channelDocument.trivia.isOngoing = false;
-			channelDocument.trivia.current_question.answer = null;
+			queryDocument.set("trivia.isOngoing", false);
+			queryDocument.set("trivia.current_question.answer", null);
 			let info = `Y'all got a score of **${channelDocument.trivia.score}** out of ${channelDocument.trivia.past_questions.length}.`;
 
 			if (channelDocument.trivia.responders.length > 0) {

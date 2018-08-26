@@ -19,7 +19,7 @@ class AFKHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await this.client.cache.get(msg.guild.id);
+		this.serverDocument = await EServers.findOne(msg.guild.id);
 	}
 
 	async handle (msg) {
@@ -28,7 +28,7 @@ class AFKHandler extends BaseEvent {
 				if (![this.client.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
 					// Check if they have a server AFK message
 					// Takes priority over global AFK messages
-					const targetMemberDocument = this.serverDocument.members.id(member.id);
+					const targetMemberDocument = this.serverDocument.members[member.id];
 					if (targetMemberDocument && targetMemberDocument.afk_message) {
 						msg.channel.send({
 							embed: {
@@ -42,7 +42,7 @@ class AFKHandler extends BaseEvent {
 						});
 					} else {
 						// User doesn't have server AFK message, go for global one
-						const targetUserDocument = await Users.findOne({ _id: member.id }).exec().catch(err => {
+						const targetUserDocument = await EUsers.findOne(member.id).catch(err => {
 							winston.verbose(`Failed to find user document for global AFK message >.>`, err);
 						});
 						if (targetUserDocument && targetUserDocument.afk_message) {
@@ -60,6 +60,7 @@ class AFKHandler extends BaseEvent {
 					}
 				}
 			});
+			this.serverDocument.save();
 		}
 	}
 }

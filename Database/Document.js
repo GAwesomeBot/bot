@@ -136,6 +136,12 @@ module.exports = class Document {
 		if (atomic === "$push") {
 			if (!this._atomics.$push[path]) this._atomics.$push[path] = { $each: [] };
 			this._atomics.$push[path].$each.push(value);
+		} else if (atomic === "$pull") {
+			if (!this._atomics.$pull[path]) this._atomics.$pull[path] = { _id: { $in: [] } };
+			this._atomics.$pull[path]._id.$in.push(value);
+		} else if (atomic === "$inc") {
+			if (this._atomics[atomic][path]) this._atomics[atomic][path] += value;
+			else this._atomics[atomic][path] = value;
 		} else {
 			this._atomics[atomic][path] = value;
 		}
@@ -165,6 +171,14 @@ module.exports = class Document {
 			Object.keys(this._atomics.$push).forEach(key => {
 				const values = this._atomics.$push[key].$each;
 				this._modifyCache(key, mpath.get(key, this._cache).concat(values));
+			});
+		}
+
+		if (this._atomics.$pull) {
+			Object.keys(this._atomics.$pull).forEach(key => {
+				const values = this._atomics.$pull[key]._id.$in;
+				const array = mpath.get(key, this._cache);
+				values.forEach(id => array.splice(array.findIndex(a => a._id === id), 1));
 			});
 		}
 	}

@@ -152,7 +152,7 @@ client.IPC.on("createPublicInviteLink", async msg => {
 	const guild = client.guilds.get(guildID);
 	const serverDocument = await EServers.findOne(guild.id);
 	const channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
-	if (channel) {
+	if (channel && serverDocument) {
 		const invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
 		serverDocument.query.set("config.public_data.server_listing.invite_link", `https://discord.gg/${invite.code}`);
 		serverDocument.save();
@@ -163,6 +163,7 @@ client.IPC.on("deletePublicInviteLink", async msg => {
 	const guildID = msg.guild;
 	const guild = client.guilds.get(guildID);
 	const serverDocument = await EServers.findOne(guild.id);
+	if (!serverDocument) return;
 	const invites = await guild.fetchInvites();
 	const invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
 	if (invite) invite.delete("GAwesomeBot Public Server Listing");
@@ -256,19 +257,19 @@ client.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = await Servers.findOne({ _id: svr.id });
+			const serverDocument = await EServers.findOne({ _id: svr.id });
 			if (!serverDocument) return;
-			let channelDocument = serverDocument.query.prop("channels").id(ch.id).val;
+			let channelDocument = serverDocument.channels[ch.id];
 			if (!channelDocument) {
 				serverDocument.query.prop("channels").push({ _id: ch.id });
-				channelDocument = serverDocument.channels.id(ch.id);
+				channelDocument = serverDocument.channels[ch.id];
 			}
 			if (msg.action === "end") await Trivia.end(client, svr, serverDocument, ch, channelDocument);
 			try {
 				await serverDocument.save();
 				client.IPC.send("cacheUpdate", { guild: msg.guild });
 			} catch (err) {
-				winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+				winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, guild: svr.id });
 			}
 			break;
 		}
@@ -278,19 +279,19 @@ client.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			const serverDocument = await EServers.findOne({ _id: svr.id });
 			if (!serverDocument) return;
-			let channelDocument = serverDocument.channels.id(ch.id);
+			let channelDocument = serverDocument.channels[ch.id];
 			if (!channelDocument) {
-				serverDocument.channels.push({ _id: ch.id });
-				channelDocument = serverDocument.channels.id(ch.id);
+				serverDocument.query.prop("channels").push({ _id: ch.id });
+				channelDocument = serverDocument.channels[ch.id];
 			}
 			if (msg.action === "end") await Polls.end(serverDocument, ch, channelDocument);
 			try {
 				await serverDocument.save();
 				client.IPC.send("cacheUpdate", { guild: msg.guild });
 			} catch (err) {
-				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
+				winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, guild: svr.id });
 			}
 			break;
 		}
@@ -300,7 +301,7 @@ client.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			const serverDocument = await EServers.findOne({ _id: svr.id });
 			if (!serverDocument) return;
 			if (msg.action === "end") await Giveaways.end(client, svr, ch, serverDocument);
 			try {
@@ -317,12 +318,12 @@ client.IPC.on("modifyActivity", async msg => {
 
 			if (!ch) return;
 
-			const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+			const serverDocument = await EServers.findOne({ _id: svr.id });
 			if (!serverDocument) return;
-			let channelDocument = serverDocument.channels.id(ch.id);
+			let channelDocument = serverDocument.channels[ch.id];
 			if (!channelDocument) {
-				serverDocument.channels.push({ _id: ch.id });
-				channelDocument = serverDocument.channels.id(ch.id);
+				serverDocument.query.prop("channels").push({ _id: ch.id });
+				channelDocument = serverDocument.channels[ch.id];
 			}
 			if (msg.action === "end") await Lotteries.end(client, svr, serverDocument, ch, channelDocument);
 			try {
@@ -691,8 +692,8 @@ client.on("message", async msg => {
 		const proctime = process.hrtime();
 		if (!msg.author.bot) {
 			try {
-				const find = await Users.findOne({ _id: msg.author.id });
-				if (!find) await Users.create(new Users({ _id: msg.author.id }));
+				const find = await EUsers.findOne({ _id: msg.author.id });
+				if (!find) await (EUsers.new({ _id: msg.author.id })).save();
 			} catch (err) {
 				if (!/duplicate key/.test(err.message)) {
 					winston.warn(`Failed to create user document for ${msg.author.tag}`, { err });
@@ -704,14 +705,6 @@ client.on("message", async msg => {
 			if (msg.guild && !msg.guild.me) await msg.guild.members.fetch(client.user);
 			if (msg.guild && !msg.member && !msg.webhookID) await msg.guild.members.fetch(msg.author);
 			await client.events.onEvent("message", msg, proctime);
-			if (msg.guild) {
-				(await client.cache.get(msg.guild.id)).save().catch(async err => {
-					if (err.name === "VersionError") {
-						winston.verbose(`Cached document is out of sync! Updating...`, { oldV: (await client.cache.get(msg.guild.id)).__v, guild: msg.guild.id });
-						client.cache.update(msg.guild.id);
-					}
-				});
-			}
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
 		}

@@ -67,8 +67,10 @@ module.exports = {
 		};
 	},
 	end: async (serverDocument, ch, channelDocument) => {
+		const queryDocument = serverDocument.query.id("channels", channelDocument._id);
+
 		if (channelDocument.poll.isOngoing) {
-			channelDocument.poll.isOngoing = false;
+			queryDocument.prop("poll.isOngoing", false);
 			const results = await module.exports.getResults(channelDocument.poll);
 			const fields = channelDocument.poll.options.map(option => ({
 				name: option,

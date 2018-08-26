@@ -29,12 +29,13 @@ module.exports = class Giveaways {
 		}
 	}
 
-	static async end (client, server, channel, serverDoc) {
-		const serverDocument = serverDoc || await client.cache.get(server.id);
+	static async end (client, server, channel, serverDocument) {
 		if (serverDocument) {
-			const channelDocument = serverDocument.channels.id(channel.id);
-			if (channelDocument.giveaway.isOngoing) {
-				channelDocument.giveaway.isOngoing = false;
+			const queryDocument = serverDocument.query.id("channels", channel.id);
+
+			const channelDocument = serverDocument.channels[channel.id];
+			if (channelDocument && channelDocument.giveaway.isOngoing) {
+				queryDocument.set("giveaway.isOngoing", false);
 				let winner;
 				while (!winner && channelDocument.giveaway.participant_ids.length > 0) {
 					const i = Math.floor(Math.random() * channelDocument.giveaway.participant_ids.length);
@@ -45,13 +46,14 @@ module.exports = class Giveaways {
 						channelDocument.giveaway.participant_ids.splice(i, 1);
 					}
 				}
+				queryDocument.set("giveaway.participant_ids", []);
 				if (winner) {
 					channel.send({
 						embed: {
 							color: 0x00FF00,
 							description: `Congratulations **@${client.getName(serverDocument, winner)}**! 🎊`,
 							footer: {
-								text: `You won the giveaway "${channelDocument.giveaway.title}" out of ${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "person!" : "users!"}`,
+								text: `You won the giveaway "${channelDocument.giveaway.title}" out of ${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "user!" : "users!"}`,
 							},
 						},
 					});
@@ -59,7 +61,7 @@ module.exports = class Giveaways {
 						embed: {
 							color: 0x00FF00,
 							title: "Congratulations! 🎁😁",
-							description: `You won the giveaway in #${channel.name} on **${server}**!\n\nHere is what you won: \`\`\`${channelDocument.giveaway.secret}\`\`\``,
+							description: `You won the giveaway in #${channel.name} on **${server}**!\n\nHere is your prize: \`\`\`${channelDocument.giveaway.secret}\`\`\``,
 						},
 					});
 				}

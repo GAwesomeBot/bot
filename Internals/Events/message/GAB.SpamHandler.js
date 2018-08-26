@@ -11,11 +11,11 @@ class SpamHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await this.client.cache.get(msg.guild.id);
-		this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
+		this.serverDocument = await EServers.findOne(msg.guild.id);
+		this.channelDocument = this.serverDocument.channels[msg.channel.id];
 		if (!this.channelDocument) {
-			this.serverDocument.channels.push({ _id: msg.channel.id });
-			this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
+			this.serverDocument.query.prop("channels").push({ _id: msg.channel.id });
+			this.channelDocument = this.serverDocument.channels[msg.channel.id];
 		}
 	}
 
@@ -23,46 +23,48 @@ class SpamHandler extends BaseEvent {
 		if (this.serverDocument) {
 			const memberAdminLevel = this.client.getUserBotAdmin(msg.guild, this.serverDocument, msg.member);
 			// Get member data (for this server)
-			let memberDocument = this.serverDocument.members.id(msg.author.id);
+			let memberDocument = this.serverDocument.members[msg.author.id];
 			// Create member data if not found
 			if (!memberDocument) {
-				this.serverDocument.members.push({ _id: msg.author.id });
-				memberDocument = this.serverDocument.members.id(msg.author.id);
+				this.serverDocument.query.prop("members").push({ _id: msg.author.id });
+				memberDocument = this.serverDocument.members[msg.author.id];
 			}
 			if (this.serverDocument.config.moderation.isEnabled &&
 				this.serverDocument.config.moderation.filters.spam_filter.isEnabled &&
 				!this.serverDocument.config.moderation.filters.spam_filter.disabled_channel_ids.includes(msg.channel.id) &&
 				memberAdminLevel < 1) {
+
+				const channelQueryDocument = this.serverDocument.query.id("channels", this.channelDocument._id);
+
 				// Tracks spam with each new message (auto-delete after 45 seconds)
-				let spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
-				if (!spamDocument) {
-					this.channelDocument.spam_filter_data.push({ _id: msg.author.id });
-					spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
-					spamDocument.message_count++;
-					spamDocument.last_message_content = msg.cleanContent;
+				let spamDocument = channelQueryDocument.clone.id("spam_filter_data", msg.author.id);
+				if (!spamDocument.val) {
+					channelQueryDocument.prop("spam_filter_data").push({ _id: msg.author.id });
+					spamDocument = channelQueryDocument.id(msg.author.id);
+					spamDocument.set("message_count", spamDocument.val.message_count++);
+					spamDocument.set("last_message_content", msg.cleanContent);
 					this.client.setTimeout(async () => {
-						this.serverDocument = await Servers.findOne({ _id: msg.guild.id }).exec().catch(err => {
+						const serverDocument = await EServers.findOne(msg.guild.id).catch(err => {
 							winston.debug(`Failed to get server document for spam filter..`, err);
 						});
-						if (this.serverDocument) {
-							this.client.cache.set(this.serverDocument._id, this.serverDocument);
-							this.channelDocument = this.serverDocument.channels.id(msg.channel.id);
-							spamDocument = this.channelDocument.spam_filter_data.id(msg.author.id);
-							if (spamDocument) {
+						if (serverDocument) {
+							const channelDocument = serverDocument.query.id("channels", msg.channel.id);
+							spamDocument = channelDocument.id("spam_filter_data", msg.author.id);
+							if (spamDocument.val) {
 								spamDocument.remove();
-								(await this.client.cache.get(msg.guild.id)).save().catch(err => {
+								serverDocument.save().catch(err => {
 									winston.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
 								});
 							}
 						}
 					}, 45000);
 					// Add this message to spamDocument if similar to the last one
-				} else if (levenshtein.get(spamDocument.last_message_content, msg.cleanContent) < 3) {
-					spamDocument.message_count++;
-					spamDocument.last_message_content = msg.cleanContent;
+				} else if (levenshtein.get(spamDocument.val.last_message_content, msg.cleanContent) < 3) {
+					spamDocument.set("message_count", spamDocument.val.message_count++);
+					spamDocument.set("last_message_content", msg.cleanContent);
 
-					// First-time spaMm filter violation
-					if (spamDocument.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
+					// First-time spam filter violation
+					if (spamDocument.val.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
 						// eslint-disable-next-line max-len
 						winston.verbose(`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 						this.client.logMessage(this.serverDocument, LoggingLevels.INFO,
@@ -87,21 +89,22 @@ class SpamHandler extends BaseEvent {
 						// Deduct 25 GAwesomePoints if necessary
 						if (this.serverDocument.config.commands.points.isEnabled) {
 							// Get user data
-							const userDocument = await Users.findOne({ _id: msg.author.id });
+							const userDocument = await EUsers.findOne(msg.author.id);
 							if (userDocument) {
-								userDocument.points -= 25;
+								userDocument.query.set("points", userDocument.points - 25);
 								await userDocument.save().catch(err => {
 									winston.debug(`Failed to save user document...`, err);
 								});
 							}
 						}
 						// Add strike for user
-						memberDocument.strikes.push({
+						const queryDocument = this.serverDocument.query.id("members", memberDocument._id);
+						queryDocument.prop("strikes").push({
 							_id: this.client.user.id,
 							reason: `First-time spam violation in #${msg.channel.name} (${msg.channel})`,
 						});
 						// TODO: ModLog.create
-					} else if (spamDocument.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity * 2) {
+					} else if (spamDocument.val.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity * 2) {
 						// Second-time spam filter violation
 						// eslint-disable-next-line max-len
 						winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
@@ -115,7 +118,7 @@ class SpamHandler extends BaseEvent {
 								winston.debug(`Failed to fetch messages for spam filter..`, err);
 							});
 							foundMessages.size > 0 && foundMessages.forEach(foundMessage => {
-								if (foundMessage.author.id === msg.author.id && levenshtein.get(spamDocument.last_message_content, foundMessage.cleanContent) < 3) {
+								if (foundMessage.author.id === msg.author.id && levenshtein.get(spamDocument.val.last_message_content, foundMessage.cleanContent) < 3) {
 									filteredMessages.push(foundMessage);
 								}
 							});
@@ -130,7 +133,7 @@ class SpamHandler extends BaseEvent {
 						}
 
 						// Get user data
-						const userDocument = await Users.findOne({ _id: msg.author.id });
+						const userDocument = await EUsers.findOne(msg.author.id);
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;
@@ -149,6 +152,7 @@ class SpamHandler extends BaseEvent {
 					}
 				}
 			}
+			this.serverDocument.save();
 		}
 	}
 }

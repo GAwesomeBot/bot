@@ -2,7 +2,7 @@ const GetValue = require("./GetValue.js");
 
 /* eslint-disable max-len */
 module.exports = client => {
-	const properties = 9;
+	const properties = 10;
 	/**
 	 * Removes null objects from an array
 	 * @returns {Array} The array without the null objects
@@ -16,6 +16,12 @@ module.exports = client => {
 				}
 			}
 			return this;
+		},
+	});
+
+	Object.assign(Array.prototype, {
+		id (id) {
+			return this.find(a => a._id === id || a.id === id);
 		},
 	});
 
