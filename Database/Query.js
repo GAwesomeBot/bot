@@ -92,7 +92,7 @@ module.exports = class Query {
 	 */
 	id (path, id) {
 		try {
-			if (path !== undefined) this.prop(path);
+			if (id !== undefined) this.prop(path);
 			else id = path;
 
 			if (!this._canId()) return this.prop(id);
@@ -144,39 +144,103 @@ module.exports = class Query {
 
 	/**
 	 * Pushes a value to the currently selected array or map
+	 * @param {string|*} path The path of the array to be pushed to, or the value if the selected array should be used
 	 * @param {*} value The value to be pushed to the currently selected array or map
 	 * @returns {module.Query}
 	 */
-	push (value) {
-		if (!this._canId()) return this;
-
-		if (this._definition.isMap && !value._id) throw new Schema.ValidationError({ type: "required", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
-
-		if (this._definition.isArray ? this._findById(value._id) : this._current[value._id]) {
-			throw new Schema.ValidationError({ type: "duplicate", value: value._id, path: `${this.parsed}._id`, definition: this._definition });
+	push (path, value) {
+		let parsedPath = this.parsed;
+		let definition = this._definition;
+		if (value === undefined) {
+			value = path;
+		} else {
+			parsedPath = this.parsed + this._parseForString(path);
+			definition = this._shiftSchema(path, false, false);
 		}
 
-		const obj = this._definition.type.schema.build(value);
+		const targetObject = mpath.get(parsedPath, this._doc._doc);
 
-		this._validate(this._definition, this.parsed, obj, false);
+		if (!this._canId(targetObject)) return this;
 
-		if (this._definition.isMap) {
+		if (definition.isMap && value && !value._id) throw new Schema.ValidationError({ type: "required", value: value._id, path: `${parsedPath}._id`, definition });
+
+		if (value && (definition.isArray ? this._findById(value._id, targetObject) : targetObject[value._id])) {
+			throw new Schema.ValidationError({ type: "duplicate", value: value._id, path: `${parsedPath}._id`, definition });
+		}
+
+		const obj = definition.type.key === "schema" ? definition.type.schema.build(value) : value;
+
+		this._validate(definition, parsedPath, obj, false);
+
+		if (definition.isMap) {
 			const ID = obj._id;
 
-			this._writeValue(`${this.parsed}${this._parseForString(ID)}`, obj);
-		} else if (this._definition.isArray) {
-			this._push(this.parsed, obj);
+			this._writeValue(`${parsedPath}${this._parseForString(ID, parsedPath)}`, obj);
+		} else if (definition.isArray) {
+			this._push(parsedPath, obj);
 		}
 
 		return this;
 	}
 
-	pull () {
-		// TODO: Write Query#pull()
+	/**
+	 * Pulls a value from an array or map
+	 * @param {string} path
+	 * @param {string|number|object} idOrObject
+	 * @returns {module.Query}
+	 */
+	pull (path, idOrObject) {
+		let parsedPath = this.parsed;
+		let definition = this._definition;
+		if (idOrObject === undefined) {
+			idOrObject = path;
+		} else {
+			parsedPath = this.parsed + this._parseForString(path);
+			definition = this._shiftSchema(path, false, false);
+		}
+
+		if (idOrObject === undefined || idOrObject === null) return this;
+
+		const targetObject = mpath.get(parsedPath, this._doc._doc);
+
+		if (!this._canId(targetObject)) return this;
+
+		switch (definition.type.key) {
+			case "string":
+			case "number": {
+				const index = targetObject.findIndex(a => a === idOrObject);
+				if (index) this._unset(parsedPath + this._parseForString(String(index)));
+				break;
+			}
+			case "schema":
+			case "object":
+				if (idOrObject._id !== undefined) idOrObject = idOrObject._id;
+
+				if (definition.isArray) {
+					this._pull(parsedPath, idOrObject);
+				} else if (definition.isMap) {
+					this._unset(parsedPath + this._parseForString(String(idOrObject), parsedPath));
+				}
+				break;
+			default:
+				this._unset(parsedPath + this._parseForString(String(idOrObject), parsedPath));
+		}
+
+		return this;
 	}
 
-	remove () {
-		// TODO: Write Query#remove()
+	/**
+	 * Removes a value from the document
+	 * @param {string} [path]
+	 * @returns {module.Query}
+	 */
+	remove (path) {
+		let parsedPath = this.parsed;
+		if (path !== undefined) parsedPath = this.parsed + this._parseForString(path);
+
+		this._unset(parsedPath);
+
+		return this;
 	}
 
 	/**
@@ -240,7 +304,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_canId (obj = this._current) {
-		return obj && ((this._definition.isArray && Array.isArray(obj)) || (this._definition.isMap && obj.constructor === Object));
+		return obj && (Array.isArray(obj) || obj.constructor === Object);
 	}
 
 	/**
@@ -261,8 +325,8 @@ module.exports = class Query {
 
 	/**
 	 * Internal function to write a value to a specified path
-	 * @param {string} path
-	 * @param {*} val
+	 * @param {string} path The mpath string of the value to be set
+	 * @param {*} val The value to be set
 	 * @private
 	 */
 	_writeValue (path, val) {
@@ -274,19 +338,39 @@ module.exports = class Query {
 
 	/**
 	 * Internal function to push a value to an array at the specified path
-	 * @param {string} path
-	 * @param {*} val
+	 * @param {string} path The mpath string of the array the value is to be pushed to
+	 * @param {*} val The value to push to the array
 	 * @private
 	 */
 	_push (path, val) {
-		val = this._definition.cast(val);
+		val = this._definition.cast ? this._definition.cast(val) : val;
 		mpath.get(path, this._doc._doc).push(val);
 		mpath.get(path, this._doc).push(val);
 		this._doc._setAtomic(path, val, "$push");
 	}
 
-	_pull () {
-		// TODO: Write Query#_pull
+	/**
+	 * Internal function to pull a value with a specified ID from an array at the specified path
+	 * @param {string} path The mpath string of the array to pull the value from
+	 * @param {string} id The ID of the value to pull from the array
+	 * @private
+	 */
+	_pull (path, id) {
+		const array = mpath.get(path, this._doc._doc);
+		const indexOfID = array.findIndex(a => a._id === id);
+		if (indexOfID === -1) return;
+		array.splice(indexOfID, 1);
+		mpath.get(path, this._doc).splice(indexOfID, 1);
+		this._doc._setAtomic(path, id, "$pull");
+	}
+
+	_unset (path) {
+		const childPathSeparatorIndex = path.lastIndexOf(".");
+		const parentPath = path.substring(0, childPathSeparatorIndex);
+		const childPath = path.substring(childPathSeparatorIndex + 1);
+		delete mpath.get(parentPath, this._doc._doc)[childPath];
+		delete mpath.get(parentPath, this._doc)[childPath];
+		this._doc._setAtomic(path, "", "$unset");
 	}
 
 	/**

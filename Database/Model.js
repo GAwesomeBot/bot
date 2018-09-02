@@ -24,7 +24,8 @@ module.exports = class Model {
 	async findOne (query) {
 		if (typeof query === "string") query = { _id: query };
 
-		const raw = this._findCache(query) || await this._find(query);
+		// Cache enabled: const raw = this._findCache(query) || await this._find(query);
+		const raw = await this._find(query);
 		if (!raw) return null;
 
 		const doc = new Document(raw, this);

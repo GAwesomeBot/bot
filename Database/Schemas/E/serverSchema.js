@@ -14,8 +14,11 @@ module.exports = new Schema({
 	extensions: [require("./modulesSchema.js")],
 	members: require("./serverMembersSchema.js"),
 	games: [require("./serverGamesSchema.js")],
-	channels: require("./serverChannelsSchema"),
-	command_usage: Schema.Mixed,
+	channels: require("./serverChannelsSchema.js"),
+	command_usage: {
+		type: Object,
+		default: {},
+	},
 	messages_today: {
 		type: Number,
 		default: 0,

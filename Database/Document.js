@@ -58,7 +58,8 @@ module.exports = class Document {
 		 * @type {Object}
 		 * @private
 		 */
-		this._doc = deepClone(doc);
+		// Cache enabled: this._doc = deepClone(doc);
+		this._doc = doc;
 
 		Object.assign(this, this._doc);
 	}
@@ -73,6 +74,7 @@ module.exports = class Document {
 		let error;
 		if (this._new) error = this.validate();
 		if (error) throw error;
+		if (!this._new && !Object.keys(ops).length) return;
 		try {
 			(this._new ? this._setCache : this._handleAtomics).call(this);
 		} catch (err) {
@@ -152,11 +154,19 @@ module.exports = class Document {
 	 * @private
 	 */
 	_handleAtomics () {
-		// TODO: Handle atomics on save to update Model cache
 		if (this._atomics.$set) {
 			Object.keys(this._atomics.$set).forEach(key => {
 				const value = this._atomics.$set[key];
 				this._modifyCache(key, value);
+			});
+		}
+
+		if (this._atomics.$unset) {
+			Object.keys(this._atomics.$unset).forEach(key => {
+				const childPathSeparatorIndex = key.lastIndexOf(".");
+				const parentPath = key.substring(0, childPathSeparatorIndex);
+				const childPath = key.substring(childPathSeparatorIndex + 1);
+				delete mpath.get(parentPath, this._cache)[childPath];
 			});
 		}
 

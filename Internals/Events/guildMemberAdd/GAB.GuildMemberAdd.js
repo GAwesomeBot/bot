@@ -8,7 +8,7 @@ const { LoggingLevels } = require("../../Constants");
 class GuildMemberAdd extends BaseEvent {
 	async handle (member) {
 		// Get server data
-		const serverDocument = await this.client.cache.get(member.guild.id);
+		const serverDocument = await EServers.findOne(member.guild.id);
 		if (serverDocument) {
 			if (serverDocument.config.moderation.isEnabled) {
 				// Send new_member_message if necessary
@@ -16,7 +16,7 @@ class GuildMemberAdd extends BaseEvent {
 					winston.verbose(`Member "${member.user.tag}" joined server "${member.guild}"`, { svrid: member.guild.id, usrid: member.id });
 					const ch = member.guild.channels.get(serverDocument.config.moderation.status_messages.new_member_message.channel_id);
 					if (ch) {
-						const channelDocument = serverDocument.channels.id(ch.id);
+						const channelDocument = serverDocument.query.id("channels", ch.id);
 						if (!channelDocument || channelDocument.bot_enabled) {
 							const random = serverDocument.config.moderation.status_messages.new_member_message.messages.random.replaceAll("@user", `**@${this.client.getName(serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`);
 							if (random) {
@@ -64,25 +64,22 @@ class GuildMemberAdd extends BaseEvent {
 				}
 
 				// Add member to new_member_roles
-				const arrayOfRoles = [];
-				for (let i = 0; i < serverDocument.config.moderation.new_member_roles.length; i++) {
-					const role = member.guild.roles.get(serverDocument.config.moderation.new_member_roles[i]);
-					if (role) {
-						arrayOfRoles.push(role);
+				let exceptionOccurred = false;
+
+				await Promise.all(serverDocument.config.moderation.new_member_roles.map(async roleID => {
+					const role = member.guild.roles.get(roleID);
+					if (!role) return;
+					arrayOfRoles.push(role);
+
+					try {
+						await member.roles.add(role, "Added New Member Role(s) to this new member.");
+					} catch (err) {
+						winston.debug(`Failed to add new role to member`, { svrid: member.guild.id, userid: member.id, role: role.id }, err);
+						exceptionOccurred = true;
 					}
-				}
-				if (arrayOfRoles.length > 0) {
-					let x = 0;
-					for (const role of arrayOfRoles) {
-						try {
-							await member.roles.add(role, `Added new member role(s) to this member for joining the guild.`);
-							x++;
-						} catch (err) {
-							winston.verbose(`Failed to add new role to member`, { svrid: member.guild.id, usrid: member.id, role: role.id }, err);
-						}
-					}
-					(x === arrayOfRoles.length && this.client.logMessage(serverDocument, LoggingLevels.INFO, `Added new member roles to a new member.`, null, member.id)) || this.client.logMessage(serverDocument, LoggingLevels.ERROR, `I was unable to add some roles to a new member!`, null, member.id);
-				}
+				}));
+
+				(!exceptionOccurred && this.client.logMessage(serverDocument, LoggingLevels.INFO, `Added New Member Role(s) to a new member.`, null, member.id)) || this.client.logMessage(serverDocument, LoggingLevels.WARN, `I was unable to add New Member Role(s) to a new member!`, null, member.id);
 			}
 		}
 	}
