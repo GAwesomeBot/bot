@@ -39,7 +39,7 @@ class Ready extends BaseEvent {
 			const newServerDocuments = await this.ensureDocuments();
 			if (newServerDocuments && newServerDocuments.length > 0) {
 				winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-				await Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
+				await EServers.insert(newServerDocuments, { ordered: false }).catch(err => {
 					winston.warn(`Failed to insert new server documents..`, err);
 				}).then(async () => {
 					winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
@@ -57,21 +57,21 @@ class Ready extends BaseEvent {
 	async ensureDocuments () {
 		winston.debug("Ensuring all guilds have a serverDocument.");
 		const newServerDocuments = [];
+
 		const makeNewDocument = async guild => {
-			const serverDocument = await Servers.findOne({ _id: guild.id }).exec().catch(err => {
+			const serverDocument = await EServers.findOne(guild.id).catch(err => {
 				winston.debug(`Failed to find server data for server ${guild.id}!`, err);
 			});
 			if (serverDocument) {
-				const channelIDs = guild.channels.map(a => a.id);
-				for (let j = 0; j < serverDocument.channels.length; j++) {
-					if (!channelIDs.includes(serverDocument.channels[j]._id)) {
-						serverDocument.channels[j].remove();
-					}
-				}
+				const channelIDs = [...guild.channels.keys()];
+				Object.values(serverDocument.channels).forEach(ch => {
+					if (!channelIDs.includes(ch._id)) serverDocument.query.id("channels", ch._id).remove();
+				});
 			} else {
-				newServerDocuments.push(await getNewServerData(this.client, guild, new Servers({ _id: guild.id })));
+				newServerDocuments.push(await getNewServerData(this.client, guild, EServers.new({ _id: guild.id })));
 			}
 		};
+
 		const promiseArray = [];
 		this.client.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
 		await Promise.all(promiseArray);
@@ -80,15 +80,15 @@ class Ready extends BaseEvent {
 
 	// Delete data for old servers
 	async pruneServerData () {
-		winston.debug(`Deleting data for old servers...`);
-		Servers.find({
-			_id: {
-				$nin: await Utils.GetValue(this.client, "guilds.keys()", "arr", "Array.from"),
-			},
-		}).remove()
-			.exec()
-			.then(() => winston.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`))
-			.catch(err => winston.warn(`Failed to prune old server documents -_-`, err));
+		if (this.client.shardID === "0") {
+			winston.debug(`Deleting data for old servers...`);
+			EServers.delete({
+				_id: {
+					$nin: await Utils.GetValue(this.client, "guilds.keys()", "arr", "Array.from"),
+				},
+			}).then(() => winston.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`))
+				.catch(err => winston.warn(`Failed to prune old server documents -_-`, err));
+		}
 		await this.setBotActivity();
 	}
 
@@ -120,12 +120,12 @@ class Ready extends BaseEvent {
 	 */
 	async startMessageCount () {
 		winston.debug("Creating messages_today timers.");
-		await Servers.update({}, { messages_today: 0 }, { multi: true }).exec().catch(err => {
+		await EServers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
 		const clearMessageCount = () => {
 			winston.debug("Good new 24 hours! Clearing message counters.");
-			Servers.update({}, { messages_today: 0 }, { multi: true }).exec();
+			EServers.update({}, { $set: { messages_today: 0 } }, { multi: true });
 		};
 		this.client.setInterval(clearMessageCount, 86400000);
 		await Cache(this.client);
@@ -176,7 +176,7 @@ class Ready extends BaseEvent {
 	 * Start message of the day timer, this time with less bork.
 	 */
 	async startMessageOfTheDay () {
-		const serverDocuments = await Servers.find({
+		const serverDocuments = await EServers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -200,7 +200,6 @@ class Ready extends BaseEvent {
 
 	/**
 	 * Periodically check if people are streaming
-	 * Totally not stalking 👀 - Vlad
 	 */
 	async checkStreamers () {
 		winston.debug("Checking for streamers in servers.");
@@ -226,7 +225,7 @@ class Ready extends BaseEvent {
 	 * Start RSS streaming timers
 	 */
 	async startStreamingRSS () {
-		const serverDocuments = await Servers.find({
+		const serverDocuments = await EServers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -270,7 +269,7 @@ class Ready extends BaseEvent {
 	 */
 	async setGiveaways () {
 		const promiseArray = [];
-		const serverDocuments = await Servers.find({
+		const serverDocuments = await EServers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -288,7 +287,7 @@ class Ready extends BaseEvent {
 				const svr = this.client.guilds.get(serverDocument._id);
 				if (svr) {
 					winston.verbose(`Setting existing giveaways for server ${svr.id}.`, { svrid: svr.id });
-					serverDocument.channels.forEach(channelDocument => {
+					Object.values(serverDocument.channels).forEach(channelDocument => {
 						if (channelDocument.giveaway.isOngoing) {
 							const ch = svr.channels.get(channelDocument._id);
 							if (ch) {
@@ -307,7 +306,7 @@ class Ready extends BaseEvent {
 	 */
 	async setCountdowns () {
 		const promiseArray = [];
-		const serverDocuments = await Servers.find({
+		const serverDocuments = await EServers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -337,7 +336,7 @@ class Ready extends BaseEvent {
 	async setReminders () {
 		if (this.client.shardID !== "0") return;
 		const promiseArray = [];
-		const userDocuments = await Users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
+		const userDocuments = await EUsers.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
 		if (userDocuments) {
@@ -357,24 +356,25 @@ class Ready extends BaseEvent {
 	 */
 	async statsCollector () {
 		winston.debug("Collecting stats for servers.");
-		const clearStatsServerDocuments = await Servers.find({ stats_timestamp: { $lt: Date.now() - 604800000 } }).exec();
+		const clearStatsServerDocuments = await EServers.find({ stats_timestamp: { $lt: Date.now() - 604800000 } }).exec();
 		await Promise.all(clearStatsServerDocuments.map(serverDocument => clearStats(this.client, serverDocument)));
 
-		const autokickServerDocuments = await Servers.find({
+		const autokickServerDocuments = await EServers.find({
 			"config.moderation.isEnabled": true,
 			"config.moderation.autokick_members.isEnabled": true,
 		}).exec();
 		autokickServerDocuments.forEach(serverDocument => {
 			const guild = this.client.guilds.get(serverDocument._id);
 			if (!guild) return;
-			serverDocument.members.forEach(async memberDocument => {
+			Object.values(serverDocument.members).forEach(async memberDocument => {
 				const member = guild.members.get(memberDocument._id);
 				if (memberDocument && member && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(guild, serverDocument, member) === 0 && member.kickable) {
 					try {
 						await member.kick(`Kicked for inactivity on server.`);
 						winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${guild}"`, { svrid: guild.id, usrid: member.user.id });
 					} catch (err) {
-						memberDocument.cannotAutokick = true;
+						serverDocument.query.id("members", memberDocument._id).set("cannotAutokick", true);
+						serverDocument.save();
 						winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${guild}"`, { svrid: guild.id, usrid: member.user.id }, err);
 					}
 				}

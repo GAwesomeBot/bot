@@ -1,4 +1,5 @@
 const Document = require("./Document");
+const Cursor = require("./Cursor");
 const { Error: GABError } = require("../Internals/Errors");
 
 module.exports = class Model {
@@ -14,6 +15,18 @@ module.exports = class Model {
 		this._collection = collection;
 		this._client = client.collection(this._collection);
 		this._cache = new Map();
+	}
+
+	find (query, opts) {
+		const rawCursor = this._find(query, opts, true);
+
+		return new Cursor(rawCursor, this);
+	}
+
+	aggregate (pipeline, opts) {
+		const rawCursor = this._client.aggregate(pipeline, opts);
+
+		return new Cursor(rawCursor, this);
 	}
 
 	/**
@@ -33,23 +46,39 @@ module.exports = class Model {
 		return doc;
 	}
 
+	async update (query, operations, opts) {
+		try {
+			return await this._client[opts.multi ? "updateMany" : "updateOne"](query, operations, opts);
+		} catch (err) {
+			throw new GABError("MONGODB_ERROR", err);
+		}
+	}
+
 	async insert (data, opts) {
 		if (!data) throw new GABError("GADRIVER_INVALID_PARAMS");
 
 		let func = "insertOne";
-		if (data.constructor === Array) func = "insertMany";
-
-		const raw = this.schema.build(data);
+		if (Array.isArray(data)) {
+			func = "insertMany";
+			data = data.map(doc => {
+				if (doc.constructor === Document) return doc.toObject();
+				else return doc;
+			});
+		}
 
 		try {
-			await this._client[func](raw, opts);
+			return await this._client[func](data, opts);
 		} catch (err) {
 			throw new GABError("MONGODB_ERROR", err);
 		}
+	}
 
-		const doc = new Document(raw, this);
-		doc.cache();
-		return doc;
+	delete (query, options) {
+		try {
+			return this._client.deleteMany(query, options);
+		} catch (err) {
+			throw new GABError("MONGODB_ERROR", err);
+		}
 	}
 
 	new (data) {

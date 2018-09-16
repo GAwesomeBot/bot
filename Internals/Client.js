@@ -555,13 +555,15 @@ module.exports = class GABClient extends DJSClient {
 	 * Check if a user has leveled up a rank.
 	 * @param {Discord.Guild} server The guild containing the member.
 	 * @param {Document} serverDocument The database server document for the guild.
+	 * @param {Query} serverQueryDocument The Query Document
 	 * @param {Discord.GuildMember} member The GuildMember to check if he leveled up.
-	 * @param {Document} memberDocument The database member document from the guild.
+	 * @param {Object} memberDocument The database member document from the guild.
 	 * @param {Boolean} [override=false] A boolean that represents if the rank score should be calculated with the new scores or not.
 	 * @returns {?Promise<?String>} String containing the new role ID for leveling up.
 	 */
-	async checkRank (server, serverDocument, member, memberDocument, override = false) {
+	async checkRank (server, serverDocument, serverQueryDocument, member, memberDocument, override = false) {
 		if (member && member.id !== this.user.id && !member.user.bot && server) {
+			const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
 			const currentRankScore = memberDocument.rank_score + (override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice));
 			const ranks = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
 			let returnRank;
@@ -569,14 +571,14 @@ module.exports = class GABClient extends DJSClient {
 				if (returnRank) return;
 				if (currentRankScore <= rank.max_score || i === serverDocument.config.ranks_list.length - 1) {
 					if (memberDocument.rank !== rank._id && !override) {
-						memberDocument.rank = rank._id;
+						memberQueryDocument.set("rank", rank._id);
 						if (serverDocument.config.ranks_list) {
 							if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.status_messages.member_rank_updated_message.isEnabled) {
 								// Send member_rank_updated_message if necessary
 								if (serverDocument.config.moderation.status_messages.member_rank_updated_message.type === "message") {
 									const ch = server.channels.get(serverDocument.config.moderation.status_messages.member_rank_updated_message.channel_id);
 									if (ch) {
-										const channelDocument = serverDocument.channels.id(ch.id);
+										const channelDocument = serverQueryDocument.clone.id("channels", ch.id).val;
 										if (!channelDocument || channelDocument.bot_enabled) {
 											ch.send({
 												content: `${member},`,
@@ -598,10 +600,10 @@ module.exports = class GABClient extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								Users.findOne({ _id: member.id })
+								EUsers.findOne({ _id: member.id })
 									.then(async userDocument => {
 										if (userDocument) {
-											userDocument.points += 100;
+											userDocument.query.inc("points", 100);
 											await userDocument.save();
 										}
 									})
@@ -653,19 +655,23 @@ module.exports = class GABClient extends DJSClient {
 	 */
 	// TODO: Rewrite this to hell
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
+		const serverQueryDocument = serverDocument.query;
+		const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
+		const userQueryDocument = userDocument.query;
+
 		roleID = roleID.id || roleID;
 		this.logMessage(serverDocument, LoggingLevels.INFO, `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
 
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
-			userDocument.points -= 50;
+			userQueryDocument.inc("points", -50);
 			await userDocument.save().catch(userErr => {
 				winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
 			});
 		}
 
 		// Add a strike for the user
-		memberDocument.strikes.push({
+		memberQueryDocument.push("strikes", {
 			_id: this.user.id,
 			reason: strikeMessage,
 		});
@@ -684,7 +690,7 @@ module.exports = class GABClient extends DJSClient {
 
 		const blockMember = async failedAction => {
 			if (!serverDocument.config.blocked.includes(member.id)) {
-				serverDocument.config.blocked.push(member.id);
+				serverQueryDocument.push("config.blocked", member.id);
 			}
 			try {
 				await member.send({
@@ -991,8 +997,8 @@ module.exports = class GABClient extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
-				const logCount = (await Servers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]).exec())[0].logs;
-				Servers.update({ _id: serverDocument._id }, {
+				const logCount = (await EServers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]).exec())[0].logs;
+				EServers.update({ _id: serverDocument._id }, {
 					$push: {
 						logs: {
 							level: level,

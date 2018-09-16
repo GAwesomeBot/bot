@@ -18,7 +18,7 @@ module.exports = async (client, serverDocument) => {
 			const activityScore = memberDocument.messages + memberDocument.voice;
 			topMembers.push([member, activityScore]);
 			memberDocument.rank_score += activityScore / 10;
-			memberDocument.rank = await client.checkRank(server, serverDocument, member, memberDocument, true);
+			memberDocument.rank = await client.checkRank(server, serverDocument, serverDocument.query, member, memberDocument, true);
 			memberDocument.messages = 0;
 			memberDocument.voice = 0;
 		} else {

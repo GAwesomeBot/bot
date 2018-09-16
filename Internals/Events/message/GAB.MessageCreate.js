@@ -170,7 +170,7 @@ class MessageCreate extends BaseEvent {
 					// Set now as the last active time for member
 					memberQueryDocument.set("last_active", Date.now());
 					// Check if the user has leveled up a rank
-					this.client.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
+					this.client.checkRank(msg.guild, serverDocument, serverQueryDocument.clone, msg.member, memberDocument);
 				}
 
 				// Check for start command from server admin
