@@ -3,28 +3,30 @@
 /**
  * Clear activity stats for a server
  * @param client The client instance
- * @param {Guild} server The server which has its stats cleared
- * @param serverDocument The Server Document
+ * @param {Document} serverDocument The Server Document
  */
 module.exports = async (client, serverDocument) => {
+	const serverQueryDocument = serverDocument.query;
+
 	// Rank members by activity score for the week
 	const topMembers = [];
 	const server = client.guilds.get(serverDocument._id);
 	if (!server) return;
-	await Promise.all(serverDocument.members.map(async memberDocument => {
+	await Promise.all(Object.values(serverDocument.members).map(async memberDocument => {
 		if (!memberDocument) return;
 		const member = server.members.get(memberDocument._id);
+		const memberQueryDocument = serverQueryDocument.clone.id("members", member.id);
 		if (member && member.id !== client.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
 			topMembers.push([member, activityScore]);
-			memberDocument.rank_score += activityScore / 10;
-			memberDocument.rank = await client.checkRank(server, serverDocument, serverDocument.query, member, memberDocument, true);
-			memberDocument.messages = 0;
-			memberDocument.voice = 0;
+			memberQueryDocument.inc("rank_score", activityScore / 10);
+			memberQueryDocument.set("rank", await client.checkRank(server, serverDocument, serverDocument.query, member, memberDocument, true));
+			memberQueryDocument.set("messages", 0);
+			memberQueryDocument.set("voice", 0);
 		} else {
-			if (!memberDocument._id && member) memberDocument._id = member.id;
-			else if (!memberDocument._id) memberDocument._id = "UNKNOWN USER";
-			memberDocument.remove();
+			if (!memberDocument._id && member) memberQueryDocument.set("_id", member.id);
+			else if (!memberDocument._id) memberQueryDocument.set("_id", "UNKNOWN USER");
+			memberQueryDocument.remove();
 		}
 	}));
 	topMembers.sort((a, b) => a[1] - b[1]);
@@ -35,9 +37,9 @@ module.exports = async (client, serverDocument) => {
 	 * @param {Number} amount The amount of points to give the member
 	 */
 	const awardPoints = async (member, amount) => {
-		const userDocument = await Users.findOne({ _id: member.id });
+		const userDocument = await EUsers.findOne({ _id: member.id });
 		if (userDocument) {
-			userDocument.points += amount;
+			userDocument.query.inc("points", amount);
 			try {
 				await userDocument.save();
 			} catch (err) {
@@ -56,11 +58,10 @@ module.exports = async (client, serverDocument) => {
 	}
 
 	// Reset command data
-	serverDocument.command_usage = {};
-	serverDocument.markModified("command_usage");
+	serverDocument.set("command_usage", {});
 
 	// Reset stats timestamp
-	serverDocument.stats_timestamp = Date.now();
+	serverDocument.set("stats_timestamp", Date.now());
 
 	// Save changes to serverDocument
 	try {

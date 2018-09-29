@@ -9,6 +9,8 @@ const moment = require("moment");
  */
 /* eslint-disable require-await*/
 module.exports = async (client, server, serverDocument, feedDocument) => {
+	const feedQueryDocument = serverDocument.query.id("config.rss_feeds", feedDocument._id);
+
 	const articles = await getRSS(feedDocument.url, 100);
 	if (articles && articles.length > 0 && articles[0]) {
 		let info = [];
@@ -40,7 +42,7 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 		}
 
 		if (info.length > 0) {
-			feedDocument.streaming.last_article_title = articles[0].link;
+			feedQueryDocument.set("streaming.last_article_title", articles[0].link);
 			await serverDocument.save().catch(err => {
 				winston.warn(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, err);
 			});

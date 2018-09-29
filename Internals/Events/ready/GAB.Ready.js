@@ -191,7 +191,7 @@ class Ready extends BaseEvent {
 				const server = this.client.guilds.get(serverDocuments[i]._id);
 				if (server) {
 					winston.verbose(`Starting MOTD timer for server ${server}`, { svrid: server.id });
-					promiseArray.push(createMessageOfTheDay(this.client, server, serverDocuments[i].config.message_of_the_day));
+					promiseArray.push(createMessageOfTheDay(this.client, server, serverDocuments[i].config.message_of_the_day, serverDocuments[i].query));
 				}
 			}
 			await Promise.all(promiseArray);

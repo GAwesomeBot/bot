@@ -209,7 +209,7 @@ module.exports = class Query {
 			case "string":
 			case "number": {
 				const index = targetObject.findIndex(a => a === idOrObject);
-				if (index) this._unset(parsedPath + this._parseForString(String(index)));
+				if (index) this._unset(parsedPath + this._parseForString(String(index), parsedPath));
 				break;
 			}
 			case "schema":
@@ -368,9 +368,16 @@ module.exports = class Query {
 		const childPathSeparatorIndex = path.lastIndexOf(".");
 		const parentPath = path.substring(0, childPathSeparatorIndex);
 		const childPath = path.substring(childPathSeparatorIndex + 1);
-		delete mpath.get(parentPath, this._doc._doc)[childPath];
-		delete mpath.get(parentPath, this._doc)[childPath];
-		this._doc._setAtomic(path, "", "$unset");
+		const parent = mpath.get(parentPath, this._doc._doc);
+		if (Array.isArray(parent)) {
+			parent.splice(childPath, 1);
+			mpath.get(parentPath, this._doc).splice(childPath, 1);
+			this._doc._setAtomic(parentPath, childPath, "$unset");
+		} else {
+			delete parent[childPath];
+			delete mpath.get(parentPath, this._doc)[childPath];
+			this._doc._setAtomic(path, "", "$unset");
+		}
 	}
 
 	/**

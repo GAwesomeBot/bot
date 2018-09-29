@@ -19,10 +19,6 @@ module.exports = () => {
 				return defaultChannel;
 			}
 
-			get serverDocument () {
-				return this.client.cache.getSync(this.id);
-			}
-
 			get commandPrefix () {
 				return this.client.getCommandPrefix(this, this.serverDocument);
 			}
@@ -46,22 +42,30 @@ module.exports = () => {
 				this.responses = null;
 			}
 
-			_patch (data) {
-				super._patch(data);
+			async build () {
+				const content = this.content;
+
 				if (this.guild && this.client.isReady) {
-					this.client.checkCommandTag(data.content, this.guild.serverDocument)
+					const serverDocument = await EServers.findOne(this.guild.id);
+					this.client.checkCommandTag(content, serverDocument)
 						.then(object => {
-							Object.defineProperty(this, "_commandObject", {
-								enumerable: false,
-								value: object,
-							});
+							if (this._commandObject) {
+								this._commandObject.command = object.command;
+								this._commandObject.suffix = object.suffix;
+							} else {
+								Object.defineProperty(this, "_commandObject", {
+									enumerable: false,
+									value: object,
+									writable: true,
+								});
+							}
 						}).catch();
 				} else if (this.client.isReady) {
-					let command = data.content.toLowerCase().trim();
+					let command = content.toLowerCase().trim();
 					let suffix = null;
 					if (command.includes(" ")) {
 						command = command.split(/\s+/)[0].trim();
-						suffix = data.content.replace(/[\r\n\t]/g, match => {
+						suffix = content.replace(/[\r\n\t]/g, match => {
 							const escapes = {
 								"\r": "{r}",
 								"\n": "{n}",
@@ -74,65 +78,19 @@ module.exports = () => {
 							.format({ n: "\n", r: "\r", t: "\t" })
 							.trim();
 					}
-					Object.defineProperty(this, "_commandObject", {
-						enumerable: false,
-						value: {
-							command,
-							suffix,
-						},
-					});
-				}
-			}
-
-			patch (data) {
-				super.patch(data);
-				if ("content" in data) {
-					if (this.guild && this.client.isReady) {
-						this.client.checkCommandTag(data.content, this.guild.serverDocument)
-							.then(object => {
-								if (this._commandObject) {
-									this._commandObject.command = object.command;
-									this._commandObject.suffix = object.suffix;
-								} else {
-									Object.defineProperty(this, "_commandObject", {
-										enumerable: false,
-										value: object,
-										writable: true,
-									});
-								}
-							}).catch();
-					} else if (this.client.isReady) {
-						let command = data.content.toLowerCase().trim();
-						let suffix = null;
-						if (command.includes(" ")) {
-							command = command.split(/\s+/)[0].trim();
-							suffix = data.content.replace(/[\r\n\t]/g, match => {
-								const escapes = {
-									"\r": "{r}",
-									"\n": "{n}",
-									"\t": "{t}",
-								};
-								return escapes[match] || match;
-							}).split(/\s+/)
-								.splice(1)
-								.join(" ")
-								.format({ n: "\n", r: "\r", t: "\t" })
-								.trim();
-						}
-						if (this._commandObject) {
-							this._commandObject.command = command;
-							this._commandObject.suffix = suffix;
-						} else {
-							Object.defineProperty(this, "_commandObject", {
-								enumerable: false,
-								value: {
-									command,
-									suffix,
-								},
-								writable: true,
-								configurable: true,
-							});
-						}
+					if (this._commandObject) {
+						this._commandObject.command = command;
+						this._commandObject.suffix = suffix;
+					} else {
+						Object.defineProperty(this, "_commandObject", {
+							enumerable: false,
+							value: {
+								command,
+								suffix,
+							},
+							writable: true,
+							configurable: true,
+						});
 					}
 				}
 			}

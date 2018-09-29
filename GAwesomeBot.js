@@ -137,7 +137,7 @@ client.IPC.on("createMOTD", async msg => {
 		const guild = client.guilds.get(msg.guild);
 		const serverDocument = await EServers.findOne(guild.id);
 
-		MessageOfTheDay(client, guild, serverDocument.config.message_of_the_day);
+		MessageOfTheDay(client, guild, serverDocument.config.message_of_the_day, serverDocument.query);
 	} catch (err) {
 		winston.warn("Failed to create a MOTD timer for server!", { svrid: msg.guild });
 	}
@@ -693,7 +693,7 @@ client.on("message", async msg => {
 		if (!msg.author.bot) {
 			try {
 				const find = await EUsers.findOne({ _id: msg.author.id });
-				if (!find) await (EUsers.new({ _id: msg.author.id })).save();
+				if (!find) await EUsers.new({ _id: msg.author.id }).save();
 			} catch (err) {
 				if (!/duplicate key/.test(err.message)) {
 					winston.warn(`Failed to create user document for ${msg.author.tag}`, { err });
@@ -704,6 +704,7 @@ client.on("message", async msg => {
 		try {
 			if (msg.guild && !msg.guild.me) await msg.guild.members.fetch(client.user);
 			if (msg.guild && !msg.member && !msg.webhookID) await msg.guild.members.fetch(msg.author);
+			await msg.build();
 			await client.events.onEvent("message", msg, proctime);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
@@ -718,6 +719,7 @@ client.on("messageDelete", async msg => {
 	if (client.isReady) {
 		winston.silly("Received MESSAGE_DELETE event from Discord!", { message: msg.id });
 		try {
+			await msg.build;
 			await client.events.onEvent("messageDelete", msg);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE event! x.x\n`, err);
@@ -788,6 +790,8 @@ client.on("messageUpdate", async (oldMSG, newMSG) => {
 	if (client.isReady) {
 		winston.silly(`Received MESSAGE_UPDATE event from Discord!`, { message: newMSG.id });
 		try {
+			await newMSG.build();
+			await oldMSG.build();
 			await client.events.onEvent("messageUpdate", oldMSG, newMSG);
 		} catch (err) {
 			winston.error(`An unexpected error occurred while handling a MESSAGE_UPDATE event! x.x\n`, err);

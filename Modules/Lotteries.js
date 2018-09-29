@@ -11,21 +11,24 @@ module.exports = {
 	multipliers,
 	start: (client, svr, serverDocument, usr, ch, channelDocument, multiplier) => {
 		if (!channelDocument.lottery.isOngoing) {
-			channelDocument.lottery.isOngoing = true;
-			channelDocument.lottery.expiry_timestamp = Date.now() + 3600000;
-			channelDocument.lottery.creator_id = usr.id;
-			channelDocument.lottery.participant_ids = [];
-			channelDocument.lottery.multiplier = multiplier ? multiplier : 2;
+			const channelQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("lottery");
+
+			channelQueryDocument.set("isOngoing", true)
+				.set("expiry_timestamp", Date.now() + 3600000)
+				.set("creator_id", usr.id)
+				.set("participant_ids", [])
+				.set("multiplier", multiplier ? multiplier : 2);
 			setTimeout(() => {
-				module.exports.end(client, svr, serverDocument, ch, channelDocument);
+				const newServerDocument = EServers.findOne(serverDocument._id);
+				module.exports.end(client, svr, newServerDocument, ch, newServerDocument.channels[channelDocument._id]);
 			}, 3600000);
 		}
 	},
 	end: async (client, svr, serverDocument, ch, channelDocument) => {
-		const queryDocument = serverDocument.query.id("channels", channelDocument._id);
+		const channelQueryDocument = serverDocument.query.id("channels", channelDocument._id);
 
 		if (channelDocument.lottery.isOngoing) {
-			queryDocument.set("lottery.isOngoing", false);
+			channelQueryDocument.set("lottery.isOngoing", false);
 			let winner;
 			while (!winner && channelDocument.lottery.participant_ids.length > 1) {
 				const i = Math.floor(Math.random() * channelDocument.lottery.participant_ids.length);
@@ -36,7 +39,7 @@ module.exports = {
 					channelDocument.lottery.participant_ids.splice(i, 1);
 				}
 			}
-			queryDocument.set("lottery.participant_ids", []);
+			channelQueryDocument.set("lottery.participant_ids", []);
 			try {
 				if (winner) {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);

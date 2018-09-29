@@ -4,7 +4,7 @@ const moment = require("moment");
 module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandData) => {
 	const { userDocument } = msg.author;
 	if (msg.suffix) {
-		const result = await remind(client, userDocument, msg.suffix);
+		const result = await remind(client, userDocument, userDocument.query, msg.suffix);
 		if (result === "ERR") {
 			msg.channel.send({
 				embed: {

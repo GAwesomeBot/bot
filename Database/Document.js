@@ -144,6 +144,8 @@ module.exports = class Document {
 		} else if (atomic === "$inc") {
 			if (this._atomics[atomic][path]) this._atomics[atomic][path] += value;
 			else this._atomics[atomic][path] = value;
+		} else if (atomic === "$unset" && value && value !== "") {
+
 		} else {
 			this._atomics[atomic][path] = value;
 		}

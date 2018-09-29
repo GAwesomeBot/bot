@@ -1,7 +1,7 @@
 const Gist = require("./Utils/GitHubGist");
 
 class ManageCommands {
-	constructor ({ client, Constants: { Colors, Text, LoggingLevels } }, { serverDocument, channelDocument }, msg, commandData) {
+	constructor ({ client, Constants: { Colors, Text, LoggingLevels } }, { serverDocument, serverQueryDocument, channelDocument, channelQueryDocument }, msg, commandData) {
 		// Command stuff
 		this.msg = msg;
 		this.suffix = msg.suffix;
@@ -11,7 +11,9 @@ class ManageCommands {
 
 		// Documents
 		this.serverDocument = serverDocument;
+		this.serverQueryDocument = serverQueryDocument;
 		this.channelDocument = channelDocument;
+		this.channelQueryDocument = channelQueryDocument;
 
 		// New stuff
 		this.disableAll = [];
@@ -86,7 +88,7 @@ class ManageCommands {
 		this.disableInChannel.length && this.disableInChannel.forEach(cmd => {
 			if (this.serverDocument.config.commands.hasOwnProperty(cmd) && !this.serverDocument.config.commands[cmd].disabled_channel_ids.includes(this.channel.id)) {
 				disabledInCh.push(cmd);
-				this.serverDocument.config.commands[cmd].disabled_channel_ids.push(this.channel.id);
+				this.serverQueryDocument.push(`config.commands.${cmd}.disabled_channel_ids`, this.channel.id);
 			} else if (this.serverDocument.config.commands.hasOwnProperty(cmd) && this.serverDocument.config.commands[cmd].disabled_channel_ids.includes(this.channel.id)) {
 				alreadyDisabled.push(cmd);
 			} else if (!invalid.includes(cmd)) { invalid.push(cmd); }
@@ -94,7 +96,7 @@ class ManageCommands {
 		this.disableAll.length && this.disableAll.forEach(cmd => {
 			if (this.serverDocument.config.commands.hasOwnProperty(cmd)) {
 				disabledAll.push(cmd);
-				this.serverDocument.config.commands[cmd].disabled_channel_ids = Array.from(this.msg.guild.channels.filter(c => c.type === "text").keys());
+				this.serverQueryDocument.set(`config.commands.${cmd}.disabled_channel_ids`, Array.from(this.msg.guild.channels.filter(c => c.type === "text").keys()));
 			} else if (!invalid.includes(cmd)) { invalid.push(cmd); }
 		});
 		let color = this.Colors.SUCCESS;
@@ -128,7 +130,7 @@ class ManageCommands {
 	}
 
 	async listDisabled () {
-		const commandKeys = Object.keys(this.serverDocument.config.commands.toObject());
+		const commandKeys = Object.keys(this.serverDocument.config.commands);
 		const allTextChannels = Array.from(this.msg.guild.channels.filter(c => c.type === "text").keys());
 		const allCommands = Object.keys(require("../Configurations/commands").public);
 		const disabled = [], disabledAll = [];
@@ -167,7 +169,7 @@ class ManageCommands {
 		const enabledInCh = [], enabledAll = [], invalid = [], alreadyEnabled = [];
 		this.enableInChannel.length && this.enableInChannel.forEach(cmd => {
 			if (this.serverDocument.config.commands.hasOwnProperty(cmd)) {
-				this.serverDocument.config.commands[cmd].isEnabled = true;
+				this.serverQueryDocument.set(`config.commands.${cmd}.isEnabled`, true);
 				const index = this.serverDocument.config.commands[cmd].disabled_channel_ids.indexOf(this.channel.id);
 				if (~index) {
 					this.serverDocument.config.commands[cmd].disabled_channel_ids.splice(index, 1);

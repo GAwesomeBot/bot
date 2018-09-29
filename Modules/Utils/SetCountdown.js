@@ -19,10 +19,10 @@ module.exports = async (client, serverDocument, countdownDocument) => {
 				});
 				winston.info(`Countdown "${countdownDocument._id}" expired`, { svrid: svr.id, chid: ch.id });
 				try {
-					const newServerDoc = await client.cache.get(serverDocument._id);
-					const newCountdownDoc = newServerDoc.config.countdown_data.id(countdownDocument._id);
-					if (newCountdownDoc) newCountdownDoc.remove();
-					await newServerDoc.save();
+					const newServerDocument = await EServers.findOne(serverDocument._id);
+					const newCountdownQueryDocument = newServerDocument.query.id("config.countdown_data", countdownDocument._id);
+					if (newCountdownQueryDocument.val) newCountdownQueryDocument.remove();
+					await newServerDocument.save();
 				} catch (err) {
 					winston.info("Failed to save server data for countdown expiry", { svrid: svr.id }, err);
 				}
