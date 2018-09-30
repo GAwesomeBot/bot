@@ -145,7 +145,10 @@ module.exports = class Document {
 			if (this._atomics[atomic][path]) this._atomics[atomic][path] += value;
 			else this._atomics[atomic][path] = value;
 		} else if (atomic === "$unset" && value && value !== "") {
-
+			if (!this._atomics.$unset[path]) this._atomics.$unset[`${path}.${value}`] = "";
+			if (!this._atomics.$pull) this._atomics.$pull = {};
+			if (this._atomics.$pull[path]) this._atomics.$pull[path] = [this._atomics.$pull[path], null];
+			else this._atomics.$pull[path] = null;
 		} else {
 			this._atomics[atomic][path] = value;
 		}
