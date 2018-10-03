@@ -107,8 +107,12 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 		});
 
 		if (!scope.safeMode) {
-			const traffic = new Traffic(sharder.IPC, false);
-			traffic.init();
+			let traffic;
+			database.einitialize(configJS.database).then(() => {
+				traffic = new Traffic(sharder.IPC, false);
+			});
+
+			sharder.traffic = traffic;
 
 			// Sharder events
 			sharder.ready = 0;
