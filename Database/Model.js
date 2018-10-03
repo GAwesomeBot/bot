@@ -85,6 +85,11 @@ module.exports = class Model {
 		return Document.new(this.schema.build(data), this);
 	}
 
+	create (data) {
+		const document = this.new(data);
+		return this._client.insertOne(document.toObject());
+	}
+
 	_find (query, opts, multi) {
 		return this._client[multi ? "find" : "findOne"](query, opts);
 	}

@@ -2,7 +2,7 @@ const crypto = require("crypto");
 
 class Traffic {
 	constructor (IPC, isWorker) {
-		this.db = Database;
+		this.db = EDatabase;
 		this.IPC = IPC;
 		this.winston = winston;
 
@@ -29,13 +29,13 @@ class Traffic {
 
 	async flush () {
 		this.winston.verbose(`Flushing traffic data to DB`);
-		this.db.traffic.create({
+		await this.db.traffic.create({
 			_id: Date.now(),
 			pageViews: this.pageViews,
 			authViews: this.authViews,
 			uniqueUsers: this.uniqueUsers,
 		});
-		this.db.traffic.remove({ _id: { $lt: Date.now() - 2629746000 } }).exec();
+		await this.db.traffic.delete({ _id: { $lt: Date.now() - 2629746000 } });
 	}
 
 	async fetch () {
@@ -78,11 +78,6 @@ class Traffic {
 		});
 		data.week = Object.values(data.days).filter(traffic => (Date.now() - 604800000) < traffic._id);
 		return data;
-	}
-
-	// Temp
-	init () {
-		return true;
 	}
 }
 

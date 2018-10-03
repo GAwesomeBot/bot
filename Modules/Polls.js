@@ -3,13 +3,15 @@ const { Colors } = require("../Internals/Constants");
 
 module.exports = {
 	start: async (client, svr, serverDocument, usr, ch, channelDocument, title, options) => {
+		const pollQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("poll");
+
 		if (!channelDocument.poll.isOngoing) {
-			channelDocument.poll.isOngoing = true;
-			channelDocument.poll.created_timestamp = Date.now();
-			channelDocument.poll.creator_id = usr.id;
-			channelDocument.poll.title = title;
-			channelDocument.poll.options = options;
-			channelDocument.poll.responses = [];
+			pollQueryDocument.set("isOngoing", true)
+				.set("created_timestamp", Date.now())
+				.set("creator_id", usr.id)
+				.set("title", title)
+				.set("options", options)
+				.set("responses", []);
 
 			let map = options.map((option, i) => [
 				`» ${i + 1} «`,
@@ -67,10 +69,10 @@ module.exports = {
 		};
 	},
 	end: async (serverDocument, ch, channelDocument) => {
-		const queryDocument = serverDocument.query.id("channels", channelDocument._id);
+		const pollQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("poll");
 
 		if (channelDocument.poll.isOngoing) {
-			queryDocument.prop("poll.isOngoing", false);
+			pollQueryDocument.set("isOngoing", false);
 			const results = await module.exports.getResults(channelDocument.poll);
 			const fields = channelDocument.poll.options.map(option => ({
 				name: option,

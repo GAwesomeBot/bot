@@ -141,14 +141,11 @@ module.exports = class Document {
 		} else if (atomic === "$pull") {
 			if (!this._atomics.$pull[path]) this._atomics.$pull[path] = { _id: { $in: [] } };
 			this._atomics.$pull[path]._id.$in.push(value);
+		} else if (atomic === "$pullAll") {
+			if (!this._atomics[atomic][path]) this._atomics[atomic][path] = [];
+			this._atomics[atomic][path].push(value);
 		} else if (atomic === "$inc") {
 			if (this._atomics[atomic][path]) this._atomics[atomic][path] += value;
-			else this._atomics[atomic][path] = value;
-		} else if (atomic === "$unset" && value && value !== "") {
-			if (!this._atomics.$unset[path]) this._atomics.$unset[`${path}.${value}`] = "";
-			if (!this._atomics.$pull) this._atomics.$pull = {};
-			if (this._atomics.$pull[path]) this._atomics.$pull[path] = [this._atomics.$pull[path], null];
-			else this._atomics.$pull[path] = null;
 		} else {
 			this._atomics[atomic][path] = value;
 		}

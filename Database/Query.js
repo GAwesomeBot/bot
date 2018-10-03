@@ -208,8 +208,7 @@ module.exports = class Query {
 		switch (definition.type.key) {
 			case "string":
 			case "number": {
-				const index = targetObject.findIndex(a => a === idOrObject);
-				if (index) this._unset(parsedPath + this._parseForString(String(index), parsedPath));
+				this._pullAll(parsedPath, idOrObject);
 				break;
 			}
 			case "schema":
@@ -360,10 +359,23 @@ module.exports = class Query {
 		const indexOfID = array.findIndex(a => a._id === id);
 		if (indexOfID === -1) return;
 		array.splice(indexOfID, 1);
-		mpath.get(path, this._doc).splice(indexOfID, 1);
 		this._doc._setAtomic(path, id, "$pull");
 	}
 
+	_pullAll (path, value) {
+		const array = mpath.get(path, this._doc._doc);
+		if (!Array.isArray(array)) return;
+		const indexOfValue = array.indexOf(value);
+		if (indexOfValue === -1) return;
+		array.splice(indexOfValue, 1);
+		this._doc._setAtomic(path, value, "$pullAll");
+	}
+
+	/**
+	 * Internal function to remove a value from an object
+	 * @param {string} path
+	 * @private
+	 */
 	_unset (path) {
 		const childPathSeparatorIndex = path.lastIndexOf(".");
 		const parentPath = path.substring(0, childPathSeparatorIndex);
@@ -371,7 +383,6 @@ module.exports = class Query {
 		const parent = mpath.get(parentPath, this._doc._doc);
 		if (Array.isArray(parent)) {
 			parent.splice(childPath, 1);
-			mpath.get(parentPath, this._doc).splice(childPath, 1);
 			this._doc._setAtomic(parentPath, childPath, "$unset");
 		} else {
 			delete parent[childPath];

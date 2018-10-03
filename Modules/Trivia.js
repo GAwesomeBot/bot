@@ -18,6 +18,8 @@ const questionTitles = [
 
 module.exports = class Trivia {
 	static async start (client, svr, serverDocument, member, ch, channelDocument, set, msg) {
+		const triviaQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("trivia");
+
 		if (channelDocument.trivia.isOngoing) {
 			msg.send({
 				embed: {
@@ -32,7 +34,7 @@ module.exports = class Trivia {
 			if (set !== "default") {
 				const triviaSetDocument = serverDocument.config.trivia_sets.id(set);
 				if (triviaSetDocument) {
-					channelDocument.trivia.set_id = set;
+					triviaQueryDocument.set("set_id", set);
 				} else {
 					msg.send({
 						embed: {
@@ -46,12 +48,13 @@ module.exports = class Trivia {
 					return;
 				}
 			} else {
-				channelDocument.trivia.set_id = "default";
+				triviaQueryDocument.set("set_id", "default");
 			}
-			channelDocument.trivia.isOngoing = true;
-			channelDocument.trivia.past_questions = [];
-			channelDocument.trivia.score = 0;
-			channelDocument.trivia.responders = [];
+			triviaQueryDocument.set("isOngoing", true)
+				.set("past_questions", [])
+				.set("score", 0)
+				.set("responders", [])
+				.set("current_question", {});
 			client.logMessage(serverDocument, LoggingLevels.INFO, `User "${member.tag}" just started a trivia game in channel "${ch.name}"`, ch.id, member.id);
 			await msg.send({
 				embed: {
@@ -80,7 +83,7 @@ module.exports = class Trivia {
 					set = serverDocument.config.trivia_sets.id(channelDocument.trivia.set_id).items;
 				}
 				if (set) {
-					const question = this.question(set, channelDocument);
+					const question = this.question(set, channelDocument, serverDocument.query.id("channels", channelDocument._id).prop("trivia"));
 					if (question) {
 						ch.send({
 							embed: {
@@ -126,50 +129,55 @@ module.exports = class Trivia {
 		}
 	}
 
-	static question (set, channelDocument) {
+	static question (set, channelDocument, triviaQueryDocument) {
 		let question;
 		while ((!question || channelDocument.trivia.past_questions.includes(question.question)) && channelDocument.trivia.past_questions.length < set.length) {
 			question = set.random;
 		}
 		if (question) {
-			channelDocument.trivia.past_questions.push(question.question);
-			channelDocument.trivia.current_question.answer = question.answer;
-			channelDocument.trivia.current_question.attempts = 0;
+			triviaQueryDocument.push("past_questions", question.question)
+				.set("current_question.answer", question.answer)
+				.set("current_question.attempts", 0);
 		}
 		return question;
 	}
 
 	static async answer (client, svr, serverDocument, usr, ch, channelDocument, response, msg) {
 		if (channelDocument.trivia.isOngoing) {
-			channelDocument.trivia.attempts++;
+			const triviaQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("trivia");
+
+			triviaQueryDocument.inc("attempts");
 			let triviaResponderDocument = channelDocument.trivia.responders.id(usr.id);
 			if (!triviaResponderDocument) {
-				channelDocument.trivia.responders.push({ _id: usr.id });
+				triviaQueryDocument.push("responders", { _id: usr.id });
 				triviaResponderDocument = channelDocument.trivia.responders.id(usr.id);
 			}
+			const triviaResponderQueryDocument = triviaQueryDocument.clone.id("responders", usr.id);
 
 			if (await this.check(channelDocument.trivia.current_question.answer, response)) {
+				let pointsAwarded = false;
 				if (channelDocument.trivia.current_question.attempts <= 2) {
-					channelDocument.trivia.score++;
-					triviaResponderDocument.score++;
+					triviaQueryDocument.inc("score");
+					triviaResponderQueryDocument.inc("score");
 					if (serverDocument.config.commands.points.isEnabled && svr.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(ch.id)) {
-						const findDocument = await Users.findOne({ _id: usr.id });
-						if (findDocument) {
-							findDocument.points += 5;
-							await findDocument.save();
+						const userDocument = await EUsers.findOne(usr.id);
+						if (userDocument) {
+							userDocument.inc("points", 5);
+							await userDocument.save();
 						}
 					}
+					pointsAwarded = true;
 				}
 				await msg.send({
 					embed: {
 						color: 0x50ff60,
 						description: `${usr} got it right! 🎉 The answer was \`${channelDocument.trivia.current_question.answer}\`.`,
 						footer: {
-							text: "Get ready for the next one...",
+							text: pointsAwarded ? `They scored a point!` : `That wasn't worth any points, too bad!`,
 						},
 					},
 				});
-				channelDocument.trivia.current_question.answer = null;
+				triviaQueryDocument.set("current_question.answer", null);
 				this.next(client, svr, serverDocument, ch, channelDocument);
 			} else {
 				msg.send({
@@ -178,7 +186,7 @@ module.exports = class Trivia {
 						color: Colors.INVALID,
 						title: `Nope. 🕸`,
 						footer: {
-							text: `Try again! "${svr.commandPrefix}trivia answer"`,
+							text: `Try again! "${svr.commandPrefix}trivia <answer>"`,
 						},
 					},
 				});
@@ -205,11 +213,11 @@ module.exports = class Trivia {
 	}
 
 	static async end (client, svr, serverDocument, ch, channelDocument, msg) {
-		const queryDocument = serverDocument.query.id("channels", channelDocument._id);
+		const triviaQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("trivia");
 
 		if (channelDocument.trivia.isOngoing) {
-			queryDocument.set("trivia.isOngoing", false);
-			queryDocument.set("trivia.current_question.answer", null);
+			triviaQueryDocument.set("isOngoing", false);
+			triviaQueryDocument.set("current_question.answer", null);
 			let info = `Y'all got a score of **${channelDocument.trivia.score}** out of ${channelDocument.trivia.past_questions.length}.`;
 
 			if (channelDocument.trivia.responders.length > 0) {

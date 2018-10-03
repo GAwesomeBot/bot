@@ -23,7 +23,8 @@ module.exports = class ModLog {
 	}
 
 	static async create (guild, type, member, creator, reason = null) {
-		const { serverDocument } = guild;
+		const serverDocument = await EServers.findOne(guild.id);
+		const serverQueryDocument = serverDocument.query;
 		if (serverDocument && serverDocument.modlog.isEnabled && serverDocument.modlog.channel_id) {
 			const ch = guild.channels.get(serverDocument.modlog.channel_id);
 			if (ch && ch.type === "text") {
@@ -47,7 +48,7 @@ module.exports = class ModLog {
 					},
 				}).catch(() => null);
 				if (m) {
-					serverDocument.modlog.entries.push({
+					serverQueryDocument.push("modlog.entries", {
 						_id: serverDocument.modlog.current_id,
 						type,
 						affected_user: affectedUser,
