@@ -1,4 +1,4 @@
-const auth = {
+module.exports = {
 	discord: {
 		clientID: "",
 		clientSecret: "",
@@ -20,5 +20,3 @@ const auth = {
 		gistKey: "3f9044fa2ea8d19ae\u003102bd8161291af805dc7611",
 	},
 };
-
-module.exports = auth;
