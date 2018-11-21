@@ -344,7 +344,6 @@ module.exports = class Query {
 	_push (path, val) {
 		val = this._definition.cast ? this._definition.cast(val) : val;
 		mpath.get(path, this._doc._doc).push(val);
-		mpath.get(path, this._doc).push(val);
 		this._doc._setAtomic(path, val, "$push");
 	}
 

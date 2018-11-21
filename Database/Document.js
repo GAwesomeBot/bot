@@ -135,6 +135,7 @@ module.exports = class Document {
 	_setAtomic (path, value, atomic) {
 		if (!this._atomics) this._atomics = {};
 		if (!this._atomics[atomic]) this._atomics[atomic] = {};
+		if (this._mergeAtomics(path, value, atomic)) return;
 		if (atomic === "$push") {
 			if (!this._atomics.$push[path]) this._atomics.$push[path] = { $each: [] };
 			this._atomics.$push[path].$each.push(value);
@@ -149,6 +150,57 @@ module.exports = class Document {
 		} else {
 			this._atomics[atomic][path] = value;
 		}
+	}
+
+	_mergeAtomics (newPath, newValue, newAtomic) {
+		let atomicsMerged = false;
+		const modifyAtomics = ["$set", "$inc", "$unset"];
+		Object.keys(this._atomics).forEach(atomic => {
+			if (atomicsMerged) return;
+			const op = this._atomics[atomic];
+
+			Object.keys(op).forEach(path => {
+				if (atomicsMerged) return;
+				if (path === newPath) {
+					switch (newAtomic) {
+						case "$set":
+						case "$inc":
+						case "$unset":
+							delete op[path];
+							break;
+						case "$pull":
+						case "$pullAll":
+							if (modifyAtomics.includes(atomic)) atomicsMerged = true;
+							return;
+						default:
+							return;
+					}
+				} else if (path.startsWith(newPath)) {
+					switch (newAtomic) {
+						case "$set":
+						case "$inc":
+						case "$unset":
+							delete op[path];
+							break;
+						default:
+							return;
+					}
+				} else if (newPath.startsWith(path)) {
+					switch (atomic) {
+						case "$unset":
+						case "$pull":
+						case "$pullAll":
+							atomicsMerged = true;
+							return;
+						case "$set":
+						case "$push":
+							atomicsMerged = true;
+							return;
+					}
+				}
+			});
+		});
+		return atomicsMerged;
 	}
 
 	/**
