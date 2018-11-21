@@ -5,6 +5,10 @@ const IsObject = input => input && input.constructor === Object;
 module.exports = () => {
 	Structures.extend("Guild", Guild => {
 		class GABGuild extends Guild {
+			async populateDocument () {
+				this.serverDocument = await EServers.findOne(this.id);
+			}
+
 			get defaultChannel () {
 				if (this.channels.filter(c => c.type === "text").size === 0) return null;
 
@@ -46,7 +50,8 @@ module.exports = () => {
 				const content = this.content;
 
 				if (this.guild && this.client.isReady) {
-					const serverDocument = await EServers.findOne(this.guild.id);
+					await this.guild.populateDocument();
+					const { serverDocument } = this.guild;
 					this.client.checkCommandTag(content, serverDocument)
 						.then(object => {
 							if (this._commandObject) {

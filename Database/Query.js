@@ -52,6 +52,7 @@ module.exports = class Query {
 			this._shiftSchema(path);
 			return this;
 		} catch (err) {
+			console.log(err);
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
 		}
 	}
@@ -101,6 +102,7 @@ module.exports = class Query {
 			this._current = mpath.get(this.parsed, this._doc._doc);
 			return this;
 		} catch (err) {
+			console.log(err)
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
 		}
 	}
@@ -128,6 +130,7 @@ module.exports = class Query {
 			return this;
 		} catch (err) {
 			if (err.constructor === Schema.ValidationError) throw err;
+			console.log(err)
 			throw new GABError("GADRIVER_ERROR", "Could not set atomics or parse Query.");
 		}
 	}
@@ -413,16 +416,22 @@ module.exports = class Query {
 	 */
 	_shiftSchema (paths, absolute, mutate = true) {
 		let definition = this._definition;
+		let outofscope = false;
 		if (absolute) definition = this._doc._model._schema;
 
 		const parsedArray = paths.split(".");
 		parsedArray.forEach(path => {
+			if (definition && definition.type && definition.type.key === "object") {
+				outofscope = true;
+				return;
+			}
 			if (definition instanceof Schema) definition = definition._definitions.get(path);
 			else if (definition && definition.type.key === "schema") definition = definition.type.schema._definitions.get(path);
 			else definition = null;
 		});
 
 		if (mutate) this._definition = definition;
+		if (outofscope) definition.outofscopeflag = true;
 		return definition;
 	}
 
@@ -436,6 +445,7 @@ module.exports = class Query {
 	 * @private
 	 */
 	_validate (definition, path, value, absolute = true) {
+		if (definition.outofscopeflag) return;
 		const error = definition.validate(value, absolute);
 
 		if (error && (!Array.isArray(error) || error.length)) {
