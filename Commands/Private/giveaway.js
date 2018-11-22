@@ -81,7 +81,7 @@ module.exports = {
 						}
 						if (response.content) response = response.content;
 						if (main.configJS.yesStrings.includes(response.toLowerCase().trim())) {
-							await Giveaways.end(main.client, svr, ch);
+							await Giveaways.end(main.client, svr, ch, serverDocument);
 							serverDocument.save();
 						} else {
 							usrch.send({

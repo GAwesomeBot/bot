@@ -80,6 +80,9 @@ module.exports = class Document {
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", err);
 		}
+		Object.keys(ops).forEach(key => {
+			if (Object.keys(ops[key]).length === 0) delete ops[key];
+		});
 		try {
 			return await (this._new ? this._client.insertOne(this._doc, {}) : this._client.updateOne({ _id: this._id }, ops, { multi: true }));
 		} catch (err) {
@@ -172,6 +175,14 @@ module.exports = class Document {
 						case "$pullAll":
 							if (modifyAtomics.includes(atomic)) atomicsMerged = true;
 							return;
+						case "$inc":
+							if (atomic === "$set") {
+								op[path] += newValue;
+								atomicsMerged = true;
+							} else if (atomic !== "$inc") {
+								atomicsMerged = true;
+							}
+							break;
 						default:
 							return;
 					}
