@@ -474,22 +474,12 @@ class MessageCreate extends BaseEvent {
 									});
 								}
 							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.client.user.id) && serverDocument.config.tag_reaction.isEnabled && !this.client.getSharedCommand(msg.command)) {
-								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.client.getName(serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
+								const { random } = serverDocument.config.tag_reaction.messages;
 								if (random) {
+									const content = random.replaceAll("@user", `**@${this.client.getName(serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
 									msg.send({
-										content: random,
+										content,
 										disableEveryone: true,
-									});
-								} else {
-									msg.send({
-										embed: {
-											color: Colors.SOFT_ERR,
-											title: `Uh-oh`,
-											description: `Something went wrong! 😱`,
-											footer: {
-												text: `Contact your server Admins for more support.`,
-											},
-										},
 									});
 								}
 							}

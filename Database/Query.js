@@ -52,7 +52,6 @@ module.exports = class Query {
 			this._shiftSchema(path);
 			return this;
 		} catch (err) {
-			console.log(err);
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
 		}
 	}
@@ -102,7 +101,6 @@ module.exports = class Query {
 			this._current = mpath.get(this.parsed, this._doc._doc);
 			return this;
 		} catch (err) {
-			console.log(err)
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
 		}
 	}
@@ -130,7 +128,6 @@ module.exports = class Query {
 			return this;
 		} catch (err) {
 			if (err.constructor === Schema.ValidationError) throw err;
-			console.log(err)
 			throw new GABError("GADRIVER_ERROR", "Could not set atomics or parse Query.");
 		}
 	}

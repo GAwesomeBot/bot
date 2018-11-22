@@ -46,7 +46,7 @@ module.exports = class Model {
 		return doc;
 	}
 
-	async update (query, operations, opts) {
+	async update (query, operations, opts = {}) {
 		try {
 			return await this._client[opts.multi ? "updateMany" : "updateOne"](query, operations, opts);
 		} catch (err) {

@@ -147,6 +147,7 @@ module.exports = class Document {
 			this._atomics[atomic][path].push(value);
 		} else if (atomic === "$inc") {
 			if (this._atomics[atomic][path]) this._atomics[atomic][path] += value;
+			else this._atomics[atomic][path] = value;
 		} else {
 			this._atomics[atomic][path] = value;
 		}
@@ -164,7 +165,6 @@ module.exports = class Document {
 				if (path === newPath) {
 					switch (newAtomic) {
 						case "$set":
-						case "$inc":
 						case "$unset":
 							delete op[path];
 							break;
