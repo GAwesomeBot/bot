@@ -13,7 +13,7 @@ module.exports = {
 		server = main.client.guilds.get(filter.str);
 		if (checkServer(server)) return server.id;
 
-		const userDocument = await Users.findOne({ _id: filter.usrid }).exec();
+		const userDocument = await EUsers.findOne(filter.usrid);
 		if (userDocument) {
 			const svrnick = userDocument.server_nicks.id(filter.str.toLowerCase());
 			if (svrnick) {
@@ -31,7 +31,9 @@ module.exports = {
 
 			const svr = main.client.guilds.get(params.guildid);
 			const member = svr.members.get(usr.id);
+			await svr.populateDocument();
 			const { serverDocument } = svr;
+			const serverQueryDocument = serverDocument.query;
 
 			if (serverDocument.config.blocked.includes(usr.id)) return;
 
@@ -51,11 +53,12 @@ module.exports = {
 			}
 
 			if (ch && ch.type === "text") {
-				let channelDocument = serverDocument.channels.id(ch.id);
+				let channelDocument = serverDocument.channels[ch.id];
 				if (!channelDocument) {
-					serverDocument.channels.push({ _id: ch.id });
-					channelDocument = serverDocument.channels.id(ch.id);
+					serverQueryDocument.push("channels", { _id: ch.id });
+					channelDocument = serverDocument.channels[ch.id];
 				}
+				const channelQueryDocument = serverQueryDocument.clone.id("channels", ch.id);
 				if (channelDocument.poll.isOngoing) {
 					if (channelDocument.poll.creator_id === usr.id) {
 						initMsg = await initMsg.edit({
@@ -113,7 +116,7 @@ module.exports = {
 							}
 							if (response && response.content) response = response.content;
 							if (response && main.configJS.yesStrings.includes(response.toLowerCase().trim())) {
-								voteDocument.remove();
+								channelQueryDocument.pull("poll.responses", voteDocument._id);
 								serverDocument.save();
 								usrch.send({
 									embed: {
@@ -172,7 +175,7 @@ module.exports = {
 							if (response.content) response = response.content;
 							let vote = parseInt(response.trim());
 							vote--;
-							channelDocument.poll.responses.push({
+							channelQueryDocument.push("poll.responses", {
 								_id: usr.id,
 								vote,
 							});
