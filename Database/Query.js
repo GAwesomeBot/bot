@@ -418,7 +418,7 @@ module.exports = class Query {
 
 		const parsedArray = paths.split(".");
 		parsedArray.forEach(path => {
-			if (definition && definition.type && definition.type.key === "object") {
+			if (definition && definition.type && (definition.type.key === "object" || definition.type.key === "mixed")) {
 				outofscope = true;
 				return;
 			}

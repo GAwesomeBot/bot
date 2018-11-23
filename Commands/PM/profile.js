@@ -144,15 +144,15 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 				changes.Bio = message.content.trim();
 			}
 		}
-		msg.author.userDocument.isProfilePublic = changes.isProfilePublic;
-		msg.author.userDocument.profile_background_image = changes.profile_background_image;
-		if (!msg.author.userDocument.profile_fields) msg.author.userDocument.profile_fields = {};
+		const userQueryDocument = msg.author.userDocument.query;
+		userQueryDocument.set("isProfilePublic", changes.isProfilePublic)
+			.set("profile_background_image", changes.profile_background_image);
+		if (!msg.author.userDocument.profile_fields) userQueryDocument.set("profile_fields", {});
 		if (changes.Bio === "delete") {
-			delete msg.author.userDocument.profile_fields.Bio;
+			userQueryDocument.delete("profile_fields.Bio");
 		} else if (changes.Bio) {
-			msg.author.userDocument.profile_fields.Bio = changes.Bio;
+			userQueryDocument.set("profile_fields.Bio", changes.Bio);
 		}
-		msg.author.userDocument.markModified("profile_fields");
 		await msg.author.userDocument.save().catch(err => {
 			winston.warn(`Failed to save user data for profile setup`, err);
 		});
