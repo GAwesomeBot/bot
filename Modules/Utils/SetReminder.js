@@ -14,14 +14,14 @@ module.exports = async (client, userDocument, reminderDocument) => {
 	if (!usr) usr = await client.users.fetch(userDocument._id, true);
 	if (usr) {
 		client.setTimeout(async () => {
-			const newUserDocument = await EUsers.findOne(userDocument._id).exec();
+			const newUserDocument = await EUsers.findOne(userDocument._id);
 			const newReminderQueryDocument = newUserDocument.query.id("reminders", reminderDocument._id);
 			const newReminderDocument = newReminderQueryDocument.val;
 			usr.send({
 				embed: {
 					color: 0x3669FA,
 					title: `Hey, here's the reminder you set!`,
-					description: `${newReminderDocument.val.name}`,
+					description: `${newReminderDocument.name}`,
 				},
 			});
 			newReminderQueryDocument.remove();

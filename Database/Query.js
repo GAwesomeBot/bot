@@ -237,7 +237,11 @@ module.exports = class Query {
 		let parsedPath = this.parsed;
 		if (path !== undefined) parsedPath = this.parsed + this._parseForString(path);
 
-		this._unset(parsedPath);
+		if (path === undefined && this.val._id) {
+			this._pull(parsedPath.substring(0, parsedPath.lastIndexOf(".")), this.val._id);
+		} else {
+			this._unset(parsedPath);
+		}
 
 		return this;
 	}

@@ -1,5 +1,6 @@
 const { SetReminder } = require("../Utils/");
 const parseDuration = require("parse-duration");
+const { ObjectID } = require("mongodb");
 
 // Set a reminder from a remindme command suffix
 module.exports = async (client, userDocument, userQueryDocument, str) => {
@@ -16,6 +17,7 @@ module.exports = async (client, userDocument, userQueryDocument, str) => {
 	const time = parseDuration(timestr);
 	if (time > 0 && remind) {
 		userQueryDocument.push("reminders", {
+			_id: ObjectID().toString(),
 			name: remind,
 			expiry_timestamp: Date.now() + time,
 		});
