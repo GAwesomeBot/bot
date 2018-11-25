@@ -3,7 +3,7 @@ const duration = require("../../Modules/MessageUtils/DurationParser");
 const setCountdown = require("../../Modules/Utils/SetCountdown");
 const moment = require("moment");
 
-module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocument, serverQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix.includes("|") || msg.suffix.indexOf(" in ") > -1) {
 			const res = await duration(msg.suffix);
@@ -29,7 +29,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 				});
 			} else {
 				const expiry = Date.now() + time;
-				serverDocument.config.countdown_data.push({
+				serverQueryDocument.push("config.countdown_data", {
 					_id: event.toLowerCase().trim(),
 					channel_id: msg.channel.id,
 					expiry_timestamp: expiry,

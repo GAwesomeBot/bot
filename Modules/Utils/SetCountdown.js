@@ -21,7 +21,7 @@ module.exports = async (client, serverDocument, countdownDocument) => {
 				try {
 					const newServerDocument = await EServers.findOne(serverDocument._id);
 					const newCountdownQueryDocument = newServerDocument.query.id("config.countdown_data", countdownDocument._id);
-					if (newCountdownQueryDocument.val) newCountdownQueryDocument.remove();
+					if (newCountdownQueryDocument.val && newCountdownQueryDocument.val._id) newCountdownQueryDocument.remove();
 					await newServerDocument.save();
 				} catch (err) {
 					winston.info("Failed to save server data for countdown expiry", { svrid: svr.id }, err);
