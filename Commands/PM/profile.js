@@ -149,7 +149,7 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 			.set("profile_background_image", changes.profile_background_image);
 		if (!msg.author.userDocument.profile_fields) userQueryDocument.set("profile_fields", {});
 		if (changes.Bio === "delete") {
-			userQueryDocument.delete("profile_fields.Bio");
+			userQueryDocument.remove("profile_fields.Bio");
 		} else if (changes.Bio) {
 			userQueryDocument.set("profile_fields.Bio", changes.Bio);
 		}
