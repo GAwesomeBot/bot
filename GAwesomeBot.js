@@ -34,6 +34,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 		messageSweepInterval: 900,
 		messageCacheMaxSize: 1000,
 		restTimeOffset: 50,
+		debugMode: process.env.NODE_ENV !== "production",
 	});
 
 	ObjectDefines(client);

@@ -78,7 +78,10 @@ exports.Colors = {
 
 // Should all be functions for consistency, even if the string is hardcoded.
 exports.Text = {
-	COMMAND_ERR: () => "Something went wrong! 😱",
+	ERROR_TITLE: () => "Something went wrong! 😱",
+	ERROR_BODY: (cmd, stack) => `Something went wrong while executing \`${cmd}\`!${stack ? `\n**Error Message**: \`\`\`js\n${stack}\`\`\`` : ""}`,
+	ERROR_FOOTER: () => "Contact your GAB maintainer for more support.",
+	OWO_ERROR_BODY: () => "OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!",
 	INVALID_USAGE: (commandData, prefix = null) => `🗯 Correct usage is: \`${prefix ? prefix : ""}${commandData.name} ${commandData.usage}\``,
 	MISSING_PERMS: serverName => `🔐 You don't have permission to use this command${serverName ? ` on ${serverName}` : "."}`,
 	NSFW_INVALID: () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`,

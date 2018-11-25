@@ -1,3 +1,5 @@
+const { Text, Colors } = require("../../Internals/Constants");
+const Gag = require("./Gag");
 const { Structures, splitMessage, MessageAttachment, MessageEmbed } = require("discord.js");
 
 const IsObject = input => input && input.constructor === Object;
@@ -132,6 +134,20 @@ module.exports = () => {
 
 				this.responses = await Promise.all(promises);
 				return this.responses.length === 1 ? this.responses[0] : this.responses;
+			}
+
+			sendError (cmd, stack) {
+				if (!this.client.debugMode) stack = "";
+				return this.send({
+					embed: {
+						color: Colors.ERROR,
+						title: Text.ERROR_TITLE(),
+						description: !Gag(process.argv.slice(2)).owo ? Text.ERROR_BODY(cmd, stack) : Text.OWO_ERROR_BODY(),
+						footer: {
+							text: `Contact your GAB maintainer for more support.`,
+						},
+					},
+				});
 			}
 
 			static combineContentOptions (content, options) {

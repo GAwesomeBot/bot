@@ -32,6 +32,8 @@ module.exports = class GABClient extends DJSClient {
 		// Value set once READY triggers
 		this.isReady = false;
 
+		this.debugMode = options.debugMode || false;
+
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Collection();
 
@@ -110,7 +112,8 @@ module.exports = class GABClient extends DJSClient {
 
 			this.messageListeners[channel.id][user.id] = entry;
 
-			this.setTimeout(() => {
+			if (this.messageListeners[channel.id][user.id].timeout) this.clearTimeout(this.messageListeners[channel.id][user.id].timeout);
+			this.messageListeners[channel.id][user.id].timeout = this.setTimeout(() => {
 				if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
 					this.deleteAwaitPMMessage(channel, user);
 				}
@@ -907,8 +910,8 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	/**
- 	 * Mutes a member of a server in a channel
- 	 * @param {Discord.TextChannel} channel The channel to mute in
+	 * Mutes a member of a server in a channel
+	 * @param {Discord.TextChannel} channel The channel to mute in
 	 * @param {Discord.GuildMember} member The member to mute
 	 * @param {String} [reason] Optional reason for the mute
 	 */
@@ -926,8 +929,8 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	/**
- 	 * Unmute a member of a server in a channel
- 	 * @param {Discord.GuildChannel} channel The channel to unmute in
+	 * Unmute a member of a server in a channel
+	 * @param {Discord.GuildChannel} channel The channel to unmute in
 	 * @param {Discord.GuildMember} member The member to unmute
 	 * @param {String} [reason] Optional reason for the unmute
 	 */
