@@ -273,7 +273,7 @@ exports.NSFWEmbed = {
 		title: `I'm sorry, but I can't let you do that! 🙄`,
 		description: `You'll have to run this command in a channel that is marked **NSFW**!`,
 		footer: {
-			text: `Ask an Admin to edit this channel and make it NSFW. Then you can use this command as much as you like`,
+			text: `Ask an Admin to edit this channel and mark it as NSFW.`,
 		},
 	},
 };

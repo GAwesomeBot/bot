@@ -27,11 +27,11 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 				Accept: "application/json",
 				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
 			});
-			if (body && statusCode === 200) {
+			if (body && statusCode === 200 && body.length) {
 				const unparsed = [], descriptions = [], fields = [], images = [];
 				for (let i = 0; i < num; i++) {
 					const random = Math.floor(Math.random() * body.length);
-					unparsed.push(body[random]);
+					if (body[random] && !unparsed.includes(body[random])) unparsed.push(body[random]);
 				}
 				for (let i = 0; i < unparsed.length; i++) {
 					const tempDesc = [
