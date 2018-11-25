@@ -157,7 +157,7 @@ class MessageCreate extends BaseEvent {
 				// Count server stats if enabled in this channel
 				if (channelDocument.isStatsEnabled) {
 					// Increment this week's message count for member
-					if (!msg.editedAt) serverQueryDocument.inc("messages");
+					if (!msg.editedAt) memberQueryDocument.inc("messages");
 					// Set now as the last active time for member
 					memberQueryDocument.set("last_active", Date.now());
 					// Check if the user has leveled up a rank

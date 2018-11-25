@@ -176,10 +176,10 @@ module.exports = () => {
 	Structures.extend("GuildMember", GuildMember => {
 		class GABGuildMember extends GuildMember {
 			get memberDocument () {
-				let doc = this.guild.serverDocument.members.id(this.id);
+				let doc = this.guild.serverDocument.members[this.id];
 				if (!doc) {
-					this.guild.serverDocument.members.push({ _id: this.id });
-					doc = this.guild.serverDocument.members.id(this.id);
+					this.guild.serverDocument.query.push("members", { _id: this.id });
+					doc = this.guild.serverDocument.members[this.id];
 				}
 				return doc;
 			}
