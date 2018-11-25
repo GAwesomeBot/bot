@@ -59,7 +59,7 @@ module.exports = class extends BaseMenu {
 	}
 
 	async _handleNumberInput (reaction) {
-		this.collector.stop("manual");
+		this.collector.stop("updateChoice");
 		switch (reaction.emoji.name) {
 			case "1⃣": {
 				this._updateChoice(0);

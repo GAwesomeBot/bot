@@ -15,8 +15,11 @@ module.exports = async (main, documents, msg, commandData) => {
 	 * @param documents Object containing all documents you need.
 	 * Available documents:
 	 * * serverDocument
+	 * * serverQueryDocument
 	 * * channelDocument
+	 * * channelQueryDocument
 	 * * memberDocument
+	 * * memberQueryDocument
 	 * * userDocument
 	 */
 	/**

@@ -65,19 +65,21 @@ class BaseReactionMenu extends EventEmitter {
 		this.collector.once("end", this._handleEnd.bind(this));
 	}
 
-	async _handleEnd () {
+	async _handleEnd (_, reason) {
 		try {
 			await this.msg.reactions.removeAll();
 		} catch (err) {
 			winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
 			this.msg.reactions.forEach(r => r.users.remove());
 		}
-		this.msg.edit({
-			embed: {
-				color: Colors.LIGHT_ORANGE,
-				description: `You've exited the menu or the menu expired.`,
-			},
-		});
+		if (reason !== "updateChoice") {
+			this.msg.edit({
+				embed: {
+					color: Colors.LIGHT_ORANGE,
+					description: `You've exited the menu or the menu expired.`,
+				},
+			});
+		}
 
 		// Null out the collector
 		this.collector = null;
