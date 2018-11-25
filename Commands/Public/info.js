@@ -21,7 +21,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 	});
 	const serverConfigs = [
 		`🛠 Command Prefix: **${serverDocument.config.command_prefix}**`,
-		`👀 Bot Admins: **${serverDocument.config.admins.length}**`,
+		`🛡 Bot Admins: **${serverDocument.config.admins.length}**`,
 		`🗃 Server Category: **${publicData.server_listing.category}**`,
 	];
 	if (!configJSON.activityBlocklist.includes(guild.id) && publicData.isShown && publicData.server_listing.isEnabled) {
