@@ -9,7 +9,7 @@ const multipliers = {
 const { Lotteries } = require("../../Modules/");
 const moment = require("moment");
 
-module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, userDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, channelQueryDocument, userDocument, userQueryDocument }, msg, commandData) => {
 	const notOngoing = () => {
 		msg.channel.send({
 			embed: {
@@ -118,7 +118,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 						default:
 							multiplier = 2;
 					}
-					if (userDocument.points < multiplier && (userDocument.points !== 0 || multiplier === 1)) {
+					if (userDocument.points < multiplier && (userDocument.points !== 0 || multiplier !== 1)) {
 						return msg.channel.send({
 							embed: {
 								color: Colors.SOFT_ERR,
@@ -158,8 +158,8 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 								},
 							});
 						} else {
-							userDocument.points -= ticketPrice;
-							channelDocument.lottery.participant_ids.push(msg.author.id);
+							userQueryDocument.inc("points", -ticketPrice);
+							channelQueryDocument.push("lottery.participant_ids", msg.author.id);
 							msg.channel.send({
 								embed: {
 									color: Colors.SUCCESS,

@@ -44,7 +44,7 @@ module.exports = {
 				if (winner) {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
 					const userDocument = await EUsers.findOne({ _id: winner.id });
-					userDocument.query.set("points", userDocument.points + prize);
+					userDocument.query.inc("points", prize);
 					try {
 						await userDocument.save();
 					} catch (_) {
