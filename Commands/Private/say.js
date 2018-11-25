@@ -32,6 +32,7 @@ module.exports = {
 
 			const svr = main.client.guilds.get(guildid);
 			const member = svr.members.get(usr.id);
+			await svr.populateDocument();
 			const { serverDocument } = svr;
 
 			if (serverDocument.config.blocked.includes(usr.id)) return;
