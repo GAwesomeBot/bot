@@ -28,7 +28,7 @@ const commands = {
 			usage: `<server> | <channel>`,
 		},
 		servernick: {
-			usage: `[<nick>] [ | <server>]`,
+			usage: `[<nick>] [ | <server ID>]`,
 		},
 	},
 	public: {

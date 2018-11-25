@@ -6,16 +6,16 @@ module.exports = async ({ client, configJS, Constants: { Colors } }, msg, comman
 			const nick = params[0].trim();
 			const svrid = params[1].trim();
 			if (nick) {
-				const serverNickDocument = userDocument.server_nicks.id(nick);
+				const serverNickQueryDocument = userDocument.query.id("server_nicks", nick);
 				let svrname;
 				try {
 					svrname = (await client.api.guilds[svrid].get()).name;
 				} catch (err) {
 					svrname = null;
 				}
-				if (serverNickDocument) {
+				if (serverNickQueryDocument.val && serverNickQueryDocument.val._id) {
 					if (!svrid || svrid === ".") {
-						serverNickDocument.remove();
+						serverNickQueryDocument.remove();
 						msg.channel.send({
 							embed: {
 								color: Colors.SUCCESS,
@@ -25,7 +25,7 @@ module.exports = async ({ client, configJS, Constants: { Colors } }, msg, comman
 					} else if (svrname) {
 						await msg.channel.send({
 							embed: {
-								color: Colors.INFO,
+								color: Colors.PROMPT,
 								description: `The nick \`${nick}\` already exists. Do you want to overwrite it?`,
 								footer: {
 									text: "You have 1 minute to respond.",
@@ -40,7 +40,7 @@ module.exports = async ({ client, configJS, Constants: { Colors } }, msg, comman
 						}
 						response = response.content;
 						if (configJS.yesStrings.includes(response.toLowerCase().trim())) {
-							serverNickDocument.server_id = svrid;
+							serverNickQueryDocument.set("server_id", svrid);
 							msg.channel.send({
 								embed: {
 									color: Colors.SUCCESS,
@@ -57,14 +57,14 @@ module.exports = async ({ client, configJS, Constants: { Colors } }, msg, comman
 						});
 					}
 				} else if (svrname) {
-					userDocument.server_nicks.push({
+					userDocument.query.push("server_nicks", {
 						_id: nick,
 						server_id: svrid,
 					});
 					msg.channel.send({
 						embed: {
 							color: Colors.SUCCESS,
-							description: `You can now use \`${nick}\` in commands like \`config\` instead of **${svrname}**! ✨`,
+							description: `You can now use \`${nick}\` in commands like \`say\` instead of **${svrname}**! ✨`,
 						},
 					});
 				} else {
