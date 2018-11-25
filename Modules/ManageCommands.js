@@ -172,7 +172,7 @@ class ManageCommands {
 				this.serverQueryDocument.set(`config.commands.${cmd}.isEnabled`, true);
 				const index = this.serverDocument.config.commands[cmd].disabled_channel_ids.indexOf(this.channel.id);
 				if (~index) {
-					this.serverDocument.config.commands[cmd].disabled_channel_ids.splice(index, 1);
+					this.serverQueryDocument.pull(`config.commands.${cmd}.disabled_channel_ids`, this.channel.id);
 					enabledInCh.push(cmd);
 				} else {
 					alreadyEnabled.push(cmd);
@@ -181,8 +181,8 @@ class ManageCommands {
 		});
 		this.enableAll.length && this.enableAll.forEach(cmd => {
 			if (this.serverDocument.config.commands.hasOwnProperty(cmd)) {
-				this.serverDocument.config.commands[cmd].isEnabled = true;
-				this.serverDocument.config.commands[cmd].disabled_channel_ids = [];
+				this.serverQueryDocument.set(`config.commands.${cmd}.isEnabled`, true);
+				this.serverQueryDocument.set(`config.commands.${cmd}.disabled_channel_ids`, []);
 				enabledAll.push(cmd);
 			} else if (!invalid.includes(cmd)) { invalid.push(cmd); }
 		});
@@ -217,7 +217,7 @@ class ManageCommands {
 	}
 
 	async listEnabled () {
-		const commandKeys = Object.keys(this.serverDocument.config.commands.toObject());
+		const commandKeys = Object.keys(this.serverDocument.config.commands);
 		const allCommands = Object.keys(require("../Configurations/commands").public);
 		const enabled = [], enabledAll = [];
 		commandKeys.forEach(command => {
