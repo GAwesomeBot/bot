@@ -50,14 +50,19 @@ class WorkerManager {
 	}
 
 	async safeSend (command, d) {
-		try {
-			const res = await this.worker.send(command, d);
-			return res;
-		} catch (e) {
-			if (e.code === "ERR_IPC_CHANNEL_CLOSED") {
-				await this.startWorker();
-				return this.safeSend(command, d);
+		if (this.worker.process.connected) {
+			try {
+				const res = await this.worker.send(command, d);
+				return res;
+			} catch (e) {
+				if (e.code === "ERR_IPC_CHANNEL_CLOSED") {
+					await this.startWorker();
+					return this.safeSend(command, d);
+				}
 			}
+		} else {
+			await this.startWorker();
+			return this.safeSend(command, d);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocument, serverQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		const createCount = async name => {
 			const prompt = await msg.channel.send({
@@ -21,7 +21,7 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 				}
 			}
 			if (response && configJS.yesStrings.includes(response.content.toLowerCase().trim())) {
-				serverDocument.config.count_data.push({ _id: name });
+				serverQueryDocument.push("config.count_data", { _id: name });
 				prompt.edit({
 					embed: {
 						color: Colors.SUCCESS,
@@ -36,13 +36,14 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 		if (msg.suffix.includes("|")) {
 			const params = msg.suffix.split("|").trimAll();
 			if (params.length === 2 && params[0] && (!params[1] || [".", "+1", "++", "-1", "--", "-", "+"].includes(params[1]))) {
-				const countDocument = serverDocument.config.count_data.id(params[0].toLowerCase().trim());
+				const countQueryDocument = serverQueryDocument.id("config.count_data", params[0].toLowerCase().trim());
+				const countDocument = countQueryDocument.val;
 				if (countDocument) {
 					let action;
 					switch (params[1]) {
 						case "":
 						case ".":
-							countDocument.remove();
+							countQueryDocument.remove();
 							msg.send({
 								embed: {
 									color: Colors.SUCCESS,
@@ -55,14 +56,14 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 						case "++":
 						case "+":
 							action = "📈";
-							countDocument.value++;
+							countQueryDocument.inc("value");
 							break;
 						case "-1":
 						case "--":
 						case "-":
 							if (countDocument.value > 0) {
 								action = "📉";
-								countDocument.value--;
+								countQueryDocument.inc("value", -1);
 								break;
 							} else {
 								msg.send({
@@ -105,7 +106,7 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 					},
 				});
 			} else {
-				createCount(msg.suffix.toLowerCase().trim());
+				await createCount(msg.suffix.toLowerCase().trim());
 			}
 		}
 	} else {
