@@ -1,13 +1,13 @@
 <script>
 GAwesomeUtil.searchServers = (query) => {
-	Turbolinks.visit("/activity/servers?q=" + encodeURIComponent(query) + "&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>");
+	Turbolinks.visit("/activity/servers?q=" + encodeURIComponent(query) + "&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>");
 };
 
 GAwesomeUtil.showActivitySelections = () => {
-	document.getElementById("category-select").value = "<%= data.selectedCategory %>";
-	document.getElementById("public-select").value = "<%= data.isPublicOnly %>";
-	document.getElementById("sort-select").value = "<%= data.sortOrder %>";
-	document.getElementById("count-select").value = "<%= data.itemsPerPage %>";
+	document.getElementById("category-select").value = "<%= pageData.selectedCategory %>";
+	document.getElementById("public-select").value = "<%= pageData.isPublicOnly %>";
+	document.getElementById("sort-select").value = "<%= pageData.sortOrder %>";
+	document.getElementById("count-select").value = "<%= pageData.itemsPerPage %>";
 };
 </script>
 
@@ -15,7 +15,7 @@ GAwesomeUtil.showActivitySelections = () => {
 	<div class="level-left">
 		<div class="level-item">
 			<span class="select is-primary">
-				<select id="category-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=' + this.value + '&publiconly=<%= data.isPublicOnly %>');">
+				<select id="category-select" onchange="Turbolinks.visit('/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>&sort=<%= pageData.sortOrder %>&category=' + this.value + '&publiconly=<%= pageData.isPublicOnly %>');">
 					<option value="All">All Categories</option>
 					<option>Gaming</option>
 					<option>Tech</option>
@@ -28,7 +28,7 @@ GAwesomeUtil.showActivitySelections = () => {
 		</div>
 		<div class="level-item">
 			<span class="select is-primary">
-				<select id="public-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=' + this.value);">
+				<select id="public-select" onchange="Turbolinks.visit('/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=' + this.value);">
 					<option value="false">Show All Servers</option>
 					<option value="true">Public Listings Only</option>
 				</select>
@@ -38,7 +38,7 @@ GAwesomeUtil.showActivitySelections = () => {
 	<div class="level-right">
 		<div class="level-item">
 			<span class="select is-primary">
-				<select id="sort-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=' + this.value + '&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>');">
+				<select id="sort-select" onchange="Turbolinks.visit('/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>&sort=' + this.value + '&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>');">
 					<option value="messages-asc">Messages Today (ascending)</option>
 					<option value="messages-des">Messages Today (descending)</option>
 					<option value="members-asc">Members (ascending)</option>
@@ -68,7 +68,7 @@ GAwesomeUtil.showActivitySelections = () => {
 		</div>
 		<div class="level-item">
 			<span class="select is-primary">
-				<select id="count-select" onchange="Turbolinks.visit('/activity/servers?q=<%= activeSearchQuery %>&count=' + this.value + '&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>');">
+				<select id="count-select" onchange="Turbolinks.visit('/activity/servers?q=<%= pageData.activeSearchQuery %>&count=' + this.value + '&page=1&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>');">
 					<option value="0">All Items</option>
 					<option value="8">8 items/page</option>
 					<option value="16">16 items/page</option>
@@ -82,47 +82,47 @@ GAwesomeUtil.showActivitySelections = () => {
 	</div>
 </nav>
 <div id="grid-layout" class="container is-hidden">
-	<% if(data.serverData.length>0) { %>
+	<% if (pageData.serverData.length > 0) { %>
 		<br>
 		<div class="columns">
-			<% for(var i=0; i<data.serverData.length; i++) { %>
+			<% pageData.serverData.forEach((server, i) => { %>
 				<div class="column is-one-quarter">
 					<center>
 						<div class="card" style="text-align: left;">
 							<div class="card-image">
 								<figure class="image is-square">
-									<img src="<%= data.serverData[i].icon %>" alt=":(">
+									<img src="<%= server.icon %>" alt=":(">
 								</figure>
 							</div>
-							<div id="cardContent-<%= data.serverData[i].id %>" class="card-content" style="max-height: 255px;overflow-y: scroll;">
+							<div id="cardContent-<%= server.id %>" class="card-content" style="max-height: 255px;overflow-y: scroll;">
 								<div class="columns">
 									<div class="column">
-									<h5 class="title is-5"><%= data.serverData[i].name %></h5>
-										<h5 class="subtitle is-5"><%= data.serverData[i].category %></h5>
+									<h5 class="title is-5"><%= server.name %></h5>
+										<h5 class="subtitle is-5"><%= server.category %></h5>
 									</div>
 									<% if (isMaintainer) { %>
-									<div class="column is-one-fifth">
-										<button class="delete is-pulled-right" onclick="GAwesomeUtil.activityBanGuild('<%= data.serverData[i].id %>');" title='Remove "<%= data.serverData[i].name %>" from the activity page'></button>
-									</div>
+										<div class="column is-one-fifth">
+											<button class="delete is-pulled-right" onclick="GAwesomeUtil.activityBanGuild('<%= server.id %>');" title='Remove "<%= server.name %>" from the activity page'></button>
+										</div>
 									<% } %>
 								</div>
 								<div class="level is-mobile">
 									<div class="level-item has-text-centered">
 										<div>
 											<p class="heading">Members</p>
-											<p class="title"><%= data.serverData[i].members %></p>
+											<p class="title"><%= server.members %></p>
 										</div>
 									</div>
 									<div class="level-item has-text-centered">
 										<div>
-											<p class="heading">Message<%= data.serverData[i].messages==1 ? "" : "s" %></p>
-											<p class="title"><%= data.serverData[i].messages %></p>
+											<p class="heading">Message<%= server.messages === 1 ? "" : "s" %></p>
+											<p class="title"><%= server.messages %></p>
 										</div>
 									</div>
 									<div class="level-item has-text-centered">
 										<div>
 											<p class="heading">Created</p>
-											<p class="title" title="<%= data.serverData[i].rawCreated %>"><%= data.serverData[i].relativeCreated %>d</p>
+											<p class="title" title="<%= server.rawCreated %>"><%= server.relativeCreated %>d</p>
 										</div>
 									</div>
 								</div>
@@ -130,46 +130,46 @@ GAwesomeUtil.showActivitySelections = () => {
 								<div class="media">
 									<div class="media-left">
 										<figure class="image is-32x32">
-											<img src="<%= data.serverData[i].owner.avatar %>" alt="<%= data.serverData[i].owner.id %>">
+											<img src="<%= server.owner.avatar %>" alt="<%= server.owner.id %>">
 										</figure>
 									</div>
 									<div class="media-content">
-										<p class="title is-5"><%= data.serverData[i].owner.name %></p>
-										<p class="subtitle is-6">@<%= data.serverData[i].owner.username %></p>
+										<p class="title is-5"><%= server.owner.name %></p>
+										<p class="subtitle is-6">@<%= server.owner.username %></p>
 									</div>
 								</div>
 
 								<div class="content">
-									<% if(data.serverData[i].description) { %>
-										<%- data.serverData[i].description %>
+									<% if (server.description) { %>
+										<%- server.description %>
 									<% } %>
 								</div>
 
-								<% if(data.serverData[i].invite_link) { %>
+								<% if (server.invite_link) { %>
 									<div class="content">
-										Use <code><%= data.serverData[i].command_prefix %>help</code> to learn how to use GAwesomeBot on <%= data.serverData[i].name %>
+										Use <code><%= server.command_prefix %>help</code> to learn how to use GAwesomeBot on <%= server.name %>
 									</div>
 								<% } %>
 							</div>
-							<% if(data.serverData[i].invite_link) { %>
+							<% if (server.invite_link) { %>
 								<footer class="card-footer">
-									<a class="card-footer-item" href="<%= data.serverData[i].invite_link %>">Join Server</a>
+									<a class="card-footer-item" href="<%= server.invite_link %>">Join Server</a>
 								</footer>
 							<% } %>
 						</div>
 					</center>
 				</div>
 
-				<% if(i % 4==3 && i!=data.serverData.length-1 && i!=0) { %>
+				<% if (i % 4 === 3 && i !== pageData.serverData.length - 1 && i !== 0) { %>
 					</div>
 					<div class="columns">
 				<% } %>
-			<% } %>
+			<% }); %>
 		</div>
 	<% } %>
 </div>
 <div id="list-layout" class="container is-hidden">
-	<% if(data.serverData.length>0) { %>
+	<% if (pageData.serverData.length > 0) { %>
 		<div style="overflow-x: scroll;">
 			<table class="table is-fullwidth is-hoverable is-striped">
 				<thead>
@@ -181,13 +181,13 @@ GAwesomeUtil.showActivitySelections = () => {
 					</tr>
 				</thead>
 				<tbody>
-					<% for(var i=0; i<data.serverData.length; i++) { %>
-						<tr class="modal-button" data-target="#server-<%= i %>-modal">
+					<% pageData.serverData.forEach(server => { %>
+						<tr class="modal-button" data-target="#server-<%= server.id %>-modal">
 							<td>
-								<img class="image is-24x24" src="<%= data.serverData[i].icon %>" alt="<%= data.serverData[i].id %>" style="border-radius: 100%;float:left;">
+								<img class="image is-24x24" src="<%= server.icon %>" alt="<%= server.id %>" style="border-radius: 100%; float: left;">
 								&nbsp;
-								<%= data.serverData[i].name %>
-								<% if(data.serverData[i].invite_link) { %>
+								<%= server.name %>
+								<% if (server.invite_link) { %>
 									&nbsp;
 									<span class="tag is-primary" title="Click to learn more">
 										Public
@@ -195,18 +195,18 @@ GAwesomeUtil.showActivitySelections = () => {
 								<% } %>
 							</td>
 							<td>
-								<%= data.serverData[i].members %>
+								<%= server.members %>
 							</td>
 							<td>
-								<%= data.serverData[i].messages %>
+								<%= server.messages %>
 							</td>
 							<td>
-								<img class="image is-24x24" src="<%= data.serverData[i].owner.avatar %>" alt="<%= data.serverData[i].owner.id %>" style="border-radius: 100%;float:left;">
+								<img class="image is-24x24" src="<%= server.owner.avatar %>" alt="<%= server.owner.id %>" style="border-radius: 100%; float: left;">
 								&nbsp;
-								@<%= data.serverData[i].owner.username %>
+								@<%= server.owner.username %>
 							</td>
 						</tr>
-						<div id="server-<%= i %>-modal" class="modal">
+						<div id="server-<%= server.id %>-modal" class="modal">
 							<div class="modal-background"></div>
 							<div class="modal-container">
 								<div class="modal-content">
@@ -214,26 +214,26 @@ GAwesomeUtil.showActivitySelections = () => {
 										<article class="media">
 											<div class="media-left">
 												<figure class="image is-96x96">
-													<img src="<%= data.serverData[i].icon %>" alt="<%= data.serverData[i].id %>">
+													<img src="<%= server.icon %>" alt="<%= server.id %>">
 												</figure>
 											</div>
 											<div class="media-content">
 												<div class="content">
 													<h4 class="title is-4">
-														<%= data.serverData[i].name %> <small class="subtitle is-5"><%= data.serverData[i].category %></small>
+														<%= server.name %> <small class="subtitle is-5"><%= server.category %></small>
 													</h4>
 													<h6 class="subtitle is-6">
-														Owned by @<%= data.serverData[i].owner.username %>, created <span title="<%= data.serverData[i].rawCreated %>"><%= data.serverData[i].relativeCreated %> day<%= data.serverData[i].relativeCreated==1 ? "" : "s" %> ago</span>
+														Owned by @<%= server.owner.username %>, created <span title="<%= server.rawCreated %>"><%= server.relativeCreated %> day<%= server.relativeCreated === 1 ? "" : "s" %> ago</span>
 													</h6>
-													<% if(data.serverData[i].description) { %>
-														<%- data.serverData[i].description %>
+													<% if (server.description) { %>
+														<%- server.description %>
 													<% } %>
-													<% if(data.serverData[i].invite_link) { %>
-														Use <code><%= data.serverData[i].command_prefix %>help</code> to learn how to use GAwesomeBot on <%= data.serverData[i].name %>
+													<% if (server.invite_link) { %>
+														Use <code><%= server.command_prefix %>help</code> to learn how to use GAwesomeBot on <%= server.name %>
 													<% } %>
 												</div>
-												<% if(data.serverData[i].invite_link) { %>
-													<a class="button is-primary" href="<%= data.serverData[i].invite_link %>">
+												<% if (server.invite_link) { %>
+													<a class="button is-primary" href="<%= server.invite_link %>">
 														Join Server
 													</a>
 												<% } %>
@@ -244,60 +244,60 @@ GAwesomeUtil.showActivitySelections = () => {
 							</div>
 							<button class="modal-close"></button>
 						</div>
-					<% } %>
+					<% }); %>
 				</tbody>
 			</table>
 		</div>
 	<% } %>
 </div>
-<% if(data.serverData.length==0) { %>
-	<% var resetUrl = "/activity/servers?q=&count=" + data.itemsPerPage + "&page=1&sort=" + data.sortOrder + "&category=All&publiconly=false"; %>
-	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode }) %>
+<% if (pageData.serverData.length === 0) { %>
+	<% const resetUrl = "/activity/servers?q=&count=" + pageData.itemsPerPage + "&page=1&sort=" + pageData.sortOrder + "&category=All&publiconly=false"; %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery: pageData.activeSearchQuery, resetUrl, mode: pageData.mode }) %>
 <% } %>
-<% if(data.numPages>1) { %>
+<% if (pageData.numPages > 1) { %>
 	<br>
 	<nav class="pagination is-centered">
 		<ul class="pagination-list">
-			<% if(data.currentPage>2) { %>
+			<% if (pageData.currentPage > 2) { %>
 				<li>
-					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=1&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
+					<a class="button pagination-link" href="/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=1&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>">
 						1
 					</a>
 				</li>
 			<% } %>
-			<% if(data.currentPage>3) { %>
+			<% if (pageData.currentPage > 3) { %>
 				<li>
 					<span class="pagination-ellipsis">&hellip;</span>
 				</li>
 			<% } %>
-			<% if(data.currentPage>1) { %>
+			<% if (pageData.currentPage > 1) { %>
 				<li>
-					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage-1 %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
-						<%= data.currentPage-1 %>
+					<a class="button pagination-link" href="/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage - 1 %>&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>">
+						<%= pageData.currentPage - 1 %>
 					</a>
 				</li>
 			<% } %>
 			<li>
-				<a class="button is-primary pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
-					<%= data.currentPage %>
+				<a class="button is-primary pagination-link" href="/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>">
+					<%= pageData.currentPage %>
 				</a>
 			</li>
-			<% if(data.currentPage<data.numPages) { %>
+			<% if (pageData.currentPage < pageData.numPages) { %>
 				<li>
-					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.currentPage+1 %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
-						<%= data.currentPage+1 %>
+					<a class="button pagination-link" href="/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage+1 %>&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>">
+						<%= pageData.currentPage + 1 %>
 					</a>
 				</li>
 			<% } %>
-			<% if(data.currentPage<data.numPages-2) { %>
+			<% if (pageData.currentPage < pageData.numPages - 2) { %>
 				<li>
 					<span class="pagination-ellipsis">&hellip;</span>
 				</li>
 			<% } %>
-			<% if(data.currentPage<data.numPages-1) { %>
+			<% if (pageData.currentPage < pageData.numPages - 1) { %>
 				<li>
-					<a class="button pagination-link" href="/activity/servers?q=<%= activeSearchQuery %>&count=<%= data.itemsPerPage %>&page=<%= data.numPages %>&sort=<%= data.sortOrder %>&category=<%= data.selectedCategory %>&publiconly=<%= data.isPublicOnly %>">
-						<%= data.numPages %>
+					<a class="button pagination-link" href="/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.numPages %>&sort=<%= pageData.sortOrder %>&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>">
+						<%= pageData.numPages %>
 					</a>
 				</li>
 			<% } %>

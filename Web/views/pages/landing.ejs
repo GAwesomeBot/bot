@@ -60,9 +60,9 @@
 				</p>
 				<br>
 
-				<% if(bannerMessage) { %>
+				<% if (pageData.bannerMessage) { %>
 					<br><br>
-					<h3 class="subtitle is-3"><%- bannerMessage %></h3>
+					<h3 class="subtitle is-3"><%- pageData.bannerMessage %></h3>
 				<% } %>
 			</div>
 		</div>
@@ -219,20 +219,20 @@
 				<nav class="level is-mobile">
 					<div class="level-item has-text-centered">
 						<div>
-							<p class="heading">Server<%= rawServerCount==1 ? "" : "s" %></p>
-							<p class="subtitle is-2"><%= rawServerCount %></p>
+							<p class="heading">Server<%= pageData.rawServerCount === 1 ? "" : "s" %></p>
+							<p class="subtitle is-2"><%= pageData.rawServerCount %></p>
 						</div>
 					</div>
 					<div class="level-item has-text-centered">
 						<div>
-							<p class="heading">User<%= rawUserCount==1 ? "" : "s" %></p>
-							<p class="subtitle is-2"><%= rawUserCount %></p>
+							<p class="heading">User<%= pageData.rawUserCount === 1 ? "" : "s" %></p>
+							<p class="subtitle is-2"><%= pageData.rawUserCount %></p>
 						</div>
 					</div>
-					<div class="level-item has-text-centered" title="<%= rawUptime %>">
+					<div class="level-item has-text-centered" title="<%= pageData.rawUptime %>">
 						<div>
 							<p class="heading">Uptime</p>
-							<p class="subtitle is-2"><%= roundedUptime %></p>
+							<p class="subtitle is-2"><%= pageData.roundedUptime %></p>
 						</div>
 					</div>
 				</nav>
@@ -374,8 +374,8 @@
 		<div class="hero-body">
 			<div class="container has-text-centered">
 				<h2 class="subtitle is-2">
-					<% if (roundedServerCount === 0) {roundedServerCount = rawServerCount} %>
-					There's a reason over <strong><%= roundedServerCount %></strong> servers trust GAwesomeBot.
+					<% if (pageData.roundedServerCount === 0) { pageData.roundedServerCount = pageData.rawServerCount } %>
+					There's a reason over <strong><%= pageData.roundedServerCount %></strong> servers trust GAwesomeBot.
 				</h2>
 				<h3 class="title is-4">
 					It's fun, easy-to-use, and feature-packed.

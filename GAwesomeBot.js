@@ -17,7 +17,7 @@ global.configJSON = require("./Configurations/config.json");
 const auth = require("./Configurations/auth.js");
 
 const scope = { disabledEvents: ["TYPING_START"] };
-Boot({ configJS, configJSON, auth }, scope).then(() => {
+Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	if (scope.safeMode) return;
 
 	const database = require("./Database/Driver.js");
@@ -41,7 +41,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 	global.ThatClientThatDoesCaching = client;
 
 	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
-	database.einitialize(configJS.database);
+	await database.einitialize(configJS.database);
 	database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL, global.ThatClientThatDoesCaching).catch(err => {
 		winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 		process.exit(1);

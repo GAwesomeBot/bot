@@ -10,6 +10,7 @@ class Route {
 		this.isStatic = type === "static";
 		this.state = "open";
 		this.parentRoute = parent;
+		if (!["static", "auth", "special"].includes(type)) this.advanced = true;
 
 		// Create wrapper for error handling
 		this.wrapper = async (req, res, next) => {

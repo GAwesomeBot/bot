@@ -84,7 +84,8 @@ const { addToGlobal } = require("../Modules/Utils/GlobalDefines.js");
  * @returns {Promise<Object>}
  */
 exports.einitialize = async config => {
-	const mongoClient = await MongoClient.connect(config.URL, config.options);
+	const mongoClient = new MongoClient(config.URL, config.options);
+	await mongoClient.connect();
 	const db = mongoClient.db(config.db);
 	const [
 		Servers,

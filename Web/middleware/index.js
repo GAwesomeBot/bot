@@ -7,11 +7,20 @@ class GABResponse {
 		this.template = {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
-			isMaintainer: true,
-			isSudoMaintainer: req.level === 2,
-			isHost: req.level === 0,
-			accessPrivileges: fetchMaintainerPrivileges(req.user.id),
 		};
+
+		if (req.perm) {
+			Object.assign(this.template, {
+				isMaintainer: true,
+				isSudoMaintainer: req.level === 2,
+				isHost: req.level === 0,
+				accessPrivileges: fetchMaintainerPrivileges(req.user.id),
+			});
+		} else {
+			Object.assign(this.template, {
+				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
+			});
+		}
 
 		this.serverData = {
 			name: req.app.client.user.username,
@@ -43,6 +52,15 @@ class GABResponse {
 			this.pageData = key;
 		} else {
 			this.pageData[key] = data;
+		}
+		return this;
+	}
+
+	setServerData (key, data) {
+		if (!data && typeof key === "object") {
+			this.serverData = key;
+		} else {
+			this.serverData[key] = data;
 		}
 		return this;
 	}

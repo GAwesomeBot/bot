@@ -29,21 +29,21 @@
                         <h2 class="title is-2 has-text-centered">
                             <strong>Thank you</strong> for your support!
                         </h2>
-						<% if(charities.length>0) { %>
+						<% if (configData.charities.length > 0) { %>
 	                        <h5 class="subtitle is-5">
-								<%-donate_subtitle%>
+								<%- configData.donateSubtitle %>
 	                        </h5>
-							<% for(var i=0; i<charities.length; i++) { %>
-		                        <a class="level is-mobile arrow-link" href="<%= charities[i].donate_url %>">
+							<% configData.charities.forEach(charity => { %>
+		                        <a class="level is-mobile arrow-link" href="<%= charity.donate_url %>">
 		                            <div class="level-left">
 										<div class="level-item">
-											<img class="image is-32x32" src="<%= charities[i].icon_url %>">
+											<img class="image is-32x32" src="<%= charity.icon_url %>">
 										</div>
 										<div class="level-item">
 											<p class="title is-3">
-                                                <%= charities[i].name %>
-                                                <% if(charities[i].country) { %>
-												<span class="tag is-rounded is-light"><%= charities[i].country %></span>
+                                                <%= charity.name %>
+                                                <% if (charity.country) { %>
+												<span class="tag is-rounded is-light"><%= charity.country %></span>
                                                 <% } %>
 											</p>
 										</div>
@@ -56,7 +56,7 @@
 										</div>
 		                            </div>
 		                        </a>
-							<% } %>
+							<% }); %>
 						<% } %>
 						<div style="display: none;" id="auttaja">
 							<h5 class="subtitle is-5">

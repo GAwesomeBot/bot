@@ -1,6 +1,6 @@
 <form id="form" onsubmit="return false;">
 	<div style="overflow-x: scroll;">
-		<% if(extensions.length>0) { %>
+		<% if (pageData.extensions.length > 0) { %>
 			<table class="table is-fullwidth">
 				<thead>
 					<tr>
@@ -13,52 +13,52 @@
 					</tr>
 				</thead>
 				<tbody>
-					<% for(var i=0; i<extensions.length; i++) { %>
+					<% pageData.extensions.forEach(extension => { %>
 						<tr>
 							<td>
-								<%= extensions[i].name %>
+								<%= extension.name %>
 							</td>
 							<td>
-								<%= extensions[i]._id %>
+								<%= extension._id %>
 							</td>
 							<td>
-								<%= extensions[i].type.charAt(0).toUpperCase() + extensions[i].type.slice(1) %>
+								<%= extension.type.charAt(0).toUpperCase() + extension.type.slice(1) %>
 							</td>
 							<td>
-								<% if(extensions[i].state=="gallery") { %>
+								<% if (extension.state === "gallery") { %>
 									Published
-								<% } else if(extensions[i].state=="queue") { %>
+								<% } else if (extension.state === "queue") { %>
 									In Queue
 								<% } else { %>
 									Saved
 								<% } %>
 							</td>
 							<td>
-								<%= extensions[i].points %>
+								<%= extension.points %>
 							</td>
 							<td>
-								<% if (extensions[i].state !== "saved") { %>
-								<a class="button is-small" href="/extensions/<%= extensions[i].state %>?id=<%= extensions[i]._id %>">
+								<% if (extension.state !== "saved") { %>
+								<a class="button is-small" href="/extensions/<%= extension.state %>?id=<%= extension._id %>">
 									<span class="icon is-small">
 										<i class="fa fa-eye"></i>
 									</span>
 									<span>View</span>
 								</a>
 								<% } else { %>
-								<button id="publish-<%= extensions[i]._id %>" class="button is-small" onclick="GAwesomeUtil.publishExtension('<%= extensions[i]._id %>'); return false;">
+								<button id="publish-<%= extension._id %>" class="button is-small" onclick="GAwesomeUtil.publishExtension('<%= extension._id %>'); return false;">
 									<span class="icon is-small">
 										<i class="fa fa-share-alt"></i>
 									</span>
 									<span>Publish</span>
 								</button>
 								<% } %>
-								<a class="button is-small is-primary" href="/extensions/builder?extid=<%= extensions[i]._id %>">
+								<a class="button is-small is-primary" href="/extensions/builder?extid=<%= extension._id %>">
 									<span class="icon is-small">
 										<i class="fa fa-pencil"></i>
 									</span>
 									<span>Edit</span>
 								</a>
-								<button id="delete-<%= extensions[i]._id %>" class="button is-small is-danger" onclick="GAwesomeUtil.deleteExtension('<%= extensions[i]._id %>'); return false;">
+								<button id="delete-<%= extension._id %>" class="button is-small is-danger" onclick="GAwesomeUtil.deleteExtension('<%= extension._id %>'); return false;">
 									<span>Delete</span>
 									<span class="icon is-small">
 										<i class="fa fa-trash"></i>
@@ -66,7 +66,7 @@
 								</button>
 							</td>
 						</tr>
-					<% } %>
+					<% }); %>
 				</tbody>
 			</table>
 		<% } else { %>

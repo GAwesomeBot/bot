@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title><%= pageTitle %></title>
+	<title><%= pageData.pageTitle %></title>
 	<% include ../partials/head %>
 </head>
 <body>
-	<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
+	<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image'); background-size: cover;">
 		<div class="hero-head">
 			<% include ../partials/header %>
 		</div>
@@ -17,13 +17,13 @@
                     </span>
 					Extensions for <strong>everyone</strong>.
 				</h1>
-				<% if(['my', 'builder'].indexOf(mode)==-1) { %>
+				<% if (!['my', 'builder'].includes(pageData.mode)) { %>
 					<div class="columns">
 						<div class="column is-8 is-offset-2">
 							<form onsubmit="return false;">
 								<div class="field has-addons has-addons-centered">
 									<div class="control is-expanded">
-									<input id="search-input" class="input is-primary header-search-box is-large" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
+									<input id="search-input" class="input is-primary header-search-box is-large" type="text" placeholder="I'm looking for..." value="<%= pageData.activeSearchQuery %>">
 									</div>
 									<div class="control">
 									<button id="search-button" onclick="Turbolinks.visit(`?q=${$('#search-input').val()}`); return false;" class="button is-primary is-large header-search-box">
@@ -44,49 +44,49 @@
 			<nav class="tabs is-boxed is-centered">
 				<div class="container">
 					<ul>
-						<li class="<%= mode=='gallery' ? 'is-active' : '' %>">
+						<li class="<%= pageData.mode === 'gallery' ? 'is-active' : '' %>">
 							<a href="/extensions/gallery">
 								<span class="icon">
 									<i class="fa fa-fa"></i>
 								</span>
-								<% if(mode=="gallery") { %>
+								<% if (pageData.mode === "gallery") { %>
 									Gallery
 									&nbsp;
 									<span class="tag is-small is-primary">
-										<%= rawCount %>
+										<%= pageData.rawCount %>
 									</span>
 								<% } else { %>
 									<span>Gallery</span>
 								<% } %>
 							</a>
 						</li>
-						<li class="<%= mode=='queue' ? 'is-active' : '' %>">
+						<li class="<%= pageData.mode === 'queue' ? 'is-active' : '' %>">
 							<a href="/extensions/queue">
 								<span class="icon">
 									<i class="fa fa-clock-o"></i>
 								</span>
-								<% if(mode=="queue") { %>
+								<% if (pageData.mode === "queue") { %>
 									Queue
 									&nbsp;
 									<span class="tag is-small is-primary">
-										<%= rawCount %>
+										<%= pageData.rawCount %>
 									</span>
 								<% } else { %>
 									<span>Queue</span>
 								<% } %>
 							</a>
 						</li>
-						<% if(authUser) { %>
-							<li class="<%= ['my', 'builder'].indexOf(mode)>-1 ? 'is-active' : '' %>">
+						<% if (authUser) { %>
+							<li class="<%= ['my', 'builder'].includes(pageData.mode) ? 'is-active' : '' %>">
 								<a href="/extensions/my">
 									<span class="icon">
 										<i class="fa fa-dashboard"></i>
 									</span>
-									<% if(mode=="my") { %>
+									<% if (pageData.mode === "my") { %>
 										My Extensions
 										&nbsp;
 										<span class="tag is-small is-primary">
-											<%= rawCount %>
+											<%= pageData.rawCount %>
 										</span>
 									<% } else { %>
 										<span>My Extensions</span>
@@ -102,14 +102,14 @@
 
 	<section id="frame"	class="section is-white">
 		<div class="container">
-			<% if (["gallery", "queue"].includes(mode)) { %>
+			<% if (["gallery", "queue"].includes(pageData.mode)) { %>
 				<% include ../partials/extension-gallery %>
 			<% } else { %>
 				<% include ../partials/dashboard-socket-updates %>
-				<% if (mode === "my") { %>
+				<% if (pageData.mode === "my") { %>
 					<% include ../partials/my-extensions %>
-				<% } else if (mode === "builder") { %>
-					<% var isGallery = true; %>
+				<% } else if (pageData.mode === "builder") { %>
+					<% const isGallery = true; %>
 					<% include ../partials/extension-builder %>
 				<% } %>
 			<% } %>

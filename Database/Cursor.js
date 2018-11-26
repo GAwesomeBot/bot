@@ -26,6 +26,11 @@ class Cursor {
 		return this;
 	}
 
+	sort (val) {
+		this._cursor.sort(val);
+		return this;
+	}
+
 	async exec () {
 		const rawArray = await this._cursor.toArray();
 

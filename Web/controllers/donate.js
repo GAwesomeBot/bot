@@ -1,9 +1,10 @@
-const { parseAuthUser } = require("../helpers");
-
-module.exports = (req, res) => {
-	res.render("pages/donate.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+module.exports = (req, { res }) => {
+	res.setConfigData({
 		charities: configJS.donateCharities,
-		donate_subtitle: configJS.donateSubtitle,
+		donateSubtitle: configJS.donateSubtitle,
 	});
+
+	res.setPageData("page", "donate.ejs");
+
+	res.render();
 };

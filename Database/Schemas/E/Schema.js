@@ -64,7 +64,7 @@ class ValidationError extends Error {
 		/* { SINGLE_ERROR } */
 		if (errors.constructor === Object) errors = [errors];
 		/* ![{ ERROR }, { ERROR }, ...] */
-		else if (!Array.isArray(errors)) throw GABError("GADRIVER_INVALID_PARAMS");
+		else if (!Array.isArray(errors)) throw new GABError("GADRIVER_INVALID_PARAMS");
 
 		this.message = `${document && document._id ? `Document with ID ${document._id}` : `A Document${document ? " without ID" : ""}`} contains illegal values:`;
 		this.name = "ValidationError";
@@ -72,7 +72,16 @@ class ValidationError extends Error {
 		this.errors = [];
 		this.document = document;
 
-		for (const error of errors) {
+		let parsedErrors = [];
+		errors.forEach(error => {
+			if (error.constructor === this.constructor) {
+				parsedErrors = [...parsedErrors, ...error.errors];
+			} else {
+				parsedErrors.push(error);
+			}
+		});
+
+		for (const error of parsedErrors) {
 			if (error.constructor !== Object) continue;
 			const obj = {};
 			const { definition } = error;

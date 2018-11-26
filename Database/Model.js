@@ -24,9 +24,11 @@ module.exports = class Model {
 	}
 
 	aggregate (pipeline, opts) {
-		const rawCursor = this._client.aggregate(pipeline, opts);
+		return this._client.aggregate(pipeline, opts).toArray();
+	}
 
-		return new Cursor(rawCursor, this);
+	count (query, opts) {
+		return this._client.countDocuments(query, opts);
 	}
 
 	/**

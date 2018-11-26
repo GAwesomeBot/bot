@@ -90,6 +90,10 @@
     border-bottom-color: rgba(255, 255, 255, 0.1);
     border-bottom-style: solid;
     border-bottom-width: 3px;
+    transition: border-bottom-color .30s ease-in-out;
+}
+.navbar-item:hover {
+    border-bottom-color: hsl(171, 100%, 41%);
 }
 .navbar-item.is-tab.is-active {
     border-bottom-color: hsl(171, 100%, 41%);
