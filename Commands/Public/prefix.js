@@ -10,7 +10,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, comm
 				},
 			});
 		}
-		serverDocument.config.command_prefix = suffix;
+		serverDocument.set("config.command_prefix", suffix);
 		return msg.send({
 			embed: {
 				color: Colors.SUCCESS,
