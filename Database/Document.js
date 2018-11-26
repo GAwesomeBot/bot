@@ -183,6 +183,9 @@ module.exports = class Document {
 								atomicsMerged = true;
 							}
 							break;
+						case "$push":
+							if (atomic === "$set") atomicsMerged = true;
+							break;
 						default:
 							return;
 					}

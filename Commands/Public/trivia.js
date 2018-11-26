@@ -28,10 +28,10 @@ module.exports = async (main, { serverDocument, channelDocument }, msg, commandD
 				break;
 			case "skip":
 			case "next":
-				Trivia.next(main.client, msg.guild, serverDocument, msg.channel, channelDocument, msg);
+				await Trivia.next(main.client, msg.guild, serverDocument, msg.channel, channelDocument, msg);
 				break;
 			default:
-				Trivia.answer(main.client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, msg.suffix, msg);
+				await Trivia.answer(main.client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, msg.suffix, msg);
 				break;
 		}
 	} else if (channelDocument.trivia.isOngoing) {

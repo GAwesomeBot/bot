@@ -27,7 +27,7 @@ module.exports = class Query {
 		 */
 		this._current = path ? mpath.get(path, this._doc._doc) : this._doc._doc;
 		this._definition = this._doc._model.schema;
-		if (path) this._shiftSchema(path, true);
+		if (path) this._shiftSchema(path, true, true);
 	}
 
 	/**
@@ -418,7 +418,7 @@ module.exports = class Query {
 	_shiftSchema (paths, absolute, mutate = true) {
 		let definition = this._definition;
 		let outofscope = false;
-		if (absolute) definition = this._doc._model._schema;
+		if (absolute) definition = this._doc._model.schema;
 
 		const parsedArray = paths.split(".");
 		parsedArray.forEach(path => {
@@ -427,8 +427,8 @@ module.exports = class Query {
 				return;
 			}
 			if (definition instanceof Schema) definition = definition._definitions.get(path);
-			else if (definition && definition.type.key === "schema") definition = definition.type.schema._definitions.get(path);
-			else definition = null;
+			else if (definition && definition.type.key === "schema" && definition.type.schema._definitions.has(path)) definition = definition.type.schema._definitions.get(path);
+			else if (!definition || (!definition.isMap && !definition.isArray)) definition = null;
 		});
 
 		if (mutate) this._definition = definition;

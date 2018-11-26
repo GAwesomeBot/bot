@@ -71,19 +71,19 @@ module.exports = class Trivia {
 					},
 				},
 			});
-			this.next(client, svr, serverDocument, ch, channelDocument);
+			await this.next(client, svr, serverDocument, ch, channelDocument);
 		}
 	}
 
 	static async next (client, svr, serverDocument, ch, channelDocument, msg) {
 		if (channelDocument.trivia.isOngoing) {
-			const doNext = () => {
+			const doNext = async () => {
 				let set = defaultTriviaSet;
 				if (channelDocument.trivia.set_id !== "default") {
 					set = serverDocument.config.trivia_sets.id(channelDocument.trivia.set_id).items;
 				}
 				if (set) {
-					const question = this.question(set, channelDocument, serverDocument.query.id("channels", channelDocument._id).prop("trivia"));
+					const question = await this.question(set, channelDocument, serverDocument.query.id("channels", channelDocument._id).prop("trivia"));
 					if (question) {
 						ch.send({
 							embed: {
@@ -105,10 +105,10 @@ module.exports = class Trivia {
 							},
 						});
 					} else {
-						this.end(client, svr, serverDocument, ch, channelDocument);
+						await this.end(client, svr, serverDocument, ch, channelDocument);
 					}
 				} else {
-					this.end(client, svr, serverDocument, ch, channelDocument);
+					await this.end(client, svr, serverDocument, ch, channelDocument);
 				}
 			};
 
@@ -122,9 +122,9 @@ module.exports = class Trivia {
 						},
 					},
 				});
-				doNext();
+				await doNext();
 			} else {
-				doNext();
+				await doNext();
 			}
 		}
 	}
@@ -162,7 +162,7 @@ module.exports = class Trivia {
 					if (serverDocument.config.commands.points.isEnabled && svr.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(ch.id)) {
 						const userDocument = await EUsers.findOne(usr.id);
 						if (userDocument) {
-							userDocument.inc("points", 5);
+							userDocument.query.inc("points", 5);
 							await userDocument.save();
 						}
 					}
@@ -178,7 +178,7 @@ module.exports = class Trivia {
 					},
 				});
 				triviaQueryDocument.set("current_question.answer", null);
-				this.next(client, svr, serverDocument, ch, channelDocument);
+				await this.next(client, svr, serverDocument, ch, channelDocument);
 			} else {
 				msg.send({
 					content: `${usr},`,
