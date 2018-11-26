@@ -103,12 +103,12 @@ class VoteHandler extends BaseEvent {
 				const message = fetchedMessages && fetchedMessages.first();
 				if (message && ![this.client.user.id, msg.author.id].includes(message.author.id) && !message.author.bot) {
 					// Get target user data
-					const targetUserDocument = await Users.findOne({ _id: message.author.id });
+					const targetUserDocument = await EUsers.findOne(message.author.id);
 					if (targetUserDocument) {
 						winston.info(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 
 						// Increment points
-						targetUserDocument.points++;
+						targetUserDocument.query.inc("points");
 
 						// Save changes to targetUserDocument2
 						await targetUserDocument.save().catch(err => {

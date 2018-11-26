@@ -1012,7 +1012,7 @@ module.exports = class GABClient extends DJSClient {
 					},
 				});
 				if (logCount >= 200) {
-					await Servers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } });
+					await EServers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } });
 				}
 			}
 		} catch (err) {
