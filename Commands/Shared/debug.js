@@ -28,12 +28,6 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				name: "--no-general",
 				value: "Hide general debug information and only show data requested via arguments",
 			}];
-			if (msg.guild) {
-				fields.push({
-					name: "-c, --cache",
-					value: "Perform a Cache Health Check and include the results (this might lag the debug response)",
-				});
-			}
 			fields.push({
 				name: "-h, --help",
 				value: "Display this help message, overrides any other arguments passed",
@@ -134,14 +128,6 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 									\n⚡ Your permissions:\n\t${perms.join("\n\t")}`,
 					});
 				}
-			}
-			if (args.includes("-c") || args.includes("--cache")) {
-				const cacheV = client.cache.get(msg.guild.id);
-				const dbV = Servers.findOne({ _id: msg.guild.id }).exec();
-				fields.push({
-					name: "Cache Health Test",
-					value: `${(await cacheV).__v === (await dbV).__v ? `❤ Cache health check **passed** (Documents are synced at version **${(await dbV).__v}**)` : `❗ Cache health check **failed** (Documents are out of sync; Cache: **${(await cacheV).__v}**, DB: **${(await dbV).__v}**)`}`,
-				});
 			}
 
 			msg.send({

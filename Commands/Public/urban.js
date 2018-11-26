@@ -1,7 +1,7 @@
 const { get } = require("snekfetch");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, commandData) => {
 	const { body, statusCode, statusText } = await get(APIs.URBAN(msg.suffix || null));
 	if (statusCode === 200 && body) {
 		if (!body.list.length) {

@@ -12,7 +12,7 @@ module.exports = {
 		server = main.client.guilds.get(filter.str);
 		if (checkServer(server)) return server.id;
 
-		const userDocument = await Users.findOne({ _id: filter.usrid }).exec();
+		const userDocument = await EUsers.findOne(filter.usrid);
 		if (userDocument) {
 			const svrnick = userDocument.server_nicks.id(filter.str.toLowerCase());
 			if (svrnick) {
