@@ -1,7 +1,7 @@
 const { Polls } = require("../../Modules/");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors } }, { channelDocument, channelQueryDocument }, msg, commandData) => {
 	if (channelDocument.poll.isOngoing) {
 		if (msg.suffix) {
 			const voteDocument = channelDocument.poll.responses.id(msg.author.id);
@@ -26,7 +26,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocu
 				}
 
 				if (vote || vote === 0) {
-					channelDocument.poll.responses.push({
+					channelQueryDocument.push("poll.responses", {
 						_id: msg.author.id,
 						vote,
 					});
