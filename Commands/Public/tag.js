@@ -3,7 +3,7 @@ const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 const Gist = require("../../Modules/Utils/GitHubGist");
 
 class TagCommand {
-	constructor ({ client, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
+	constructor ({ client, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument, serverQueryDocument }, msg, commandData) {
 		// Command Data
 		this.suffix = msg.suffix;
 		this.channel = msg.channel;
@@ -14,6 +14,7 @@ class TagCommand {
 
 		// User/Server Data
 		this.serverDocument = serverDocument;
+		this.serverQueryDocument = serverQueryDocument;
 		this.isAdmin = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
 
 		// New Tag Data
@@ -126,11 +127,11 @@ class TagCommand {
 	// Show a tag
 	async show (tag) {
 		const data = this.get(tag);
-		if (data) {
+		if (data.val) {
 			this.msg.send({
 				embed: {
 					color: this.Colors.RESPONSE,
-					description: data.content,
+					description: data.val.content,
 				},
 			});
 		} else {
@@ -170,7 +171,7 @@ class TagCommand {
 			}
 		}
 		if (response && this.confirmAction(response)) {
-			this.serverDocument.config.tags.list = [];
+			this.serverQueryDocument.set("config.tags.list", []);
 			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
 			this.msg.send({
 				embed: {
@@ -184,7 +185,7 @@ class TagCommand {
 	// Delete given tag
 	deleteTag () {
 		const data = this.get();
-		if (!data) {
+		if (!data.val) {
 			return this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
@@ -193,7 +194,7 @@ class TagCommand {
 			});
 		}
 
-		if (this.checkPerms(data.isCommand ? "deleteCommand" : "delete")) {
+		if (this.checkPerms(data.val.isCommand ? "deleteCommand" : "delete")) {
 			data.remove();
 			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
 			this.msg.send({
@@ -215,9 +216,9 @@ class TagCommand {
 	// Save tag data
 	async update () {
 		const data = this.get();
-		if (!data) {
+		if (!data.val) {
 			if (this.checkPerms(this.isCommand ? "createCommand" : "create")) {
-				this.serverDocument.config.tags.list.push({
+				this.serverQueryDocument.push("config.tags.list", {
 					_id: this.tag,
 					content: this.value,
 					isCommand: this.isCommand,
@@ -257,9 +258,9 @@ class TagCommand {
 				}
 			}
 			if (response && this.confirmAction(response)) {
-				data.content = this.value;
-				data.isCommand = this.isCommand;
-				data.isLocked = this.isLocked;
+				data.set("content", this.value)
+					.set("isCommand", this.isCommand)
+					.set("isLocked", this.isLocked);
 				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
 				this.msg.send({
 					embed: {
@@ -281,7 +282,7 @@ class TagCommand {
 	// Get tag data
 	get (tag) {
 		tag = tag || this.tag;
-		return this.serverDocument.config.tags.list.id(tag);
+		return this.serverQueryDocument.clone.id("config.tags.list", tag);
 	}
 
 	// Confirm a prompt response
@@ -297,21 +298,21 @@ class TagCommand {
 			case "list":
 				return this.isAdmin || !this.serverDocument.config.tags.listIsAdminOnly;
 			case "delete":
-				return this.isAdmin || (!this.serverDocument.config.tags.removingIsAdminOnly && !this.get().isLocked);
+				return this.isAdmin || (!this.serverDocument.config.tags.removingIsAdminOnly && !this.get().val.isLocked);
 			case "deleteCommand":
-				return this.isAdmin || (!this.serverDocument.config.tags.removingCommandIsAdminOnly && !this.get().isLocked);
+				return this.isAdmin || (!this.serverDocument.config.tags.removingCommandIsAdminOnly && !this.get().val.isLocked);
 			case "create":
 				return this.isAdmin || !this.serverDocument.config.tags.addingIsAdminOnly;
 			case "createCommand":
 				return this.isAdmin || !this.serverDocument.config.tags.addingCommandIsAdminOnly;
 			case "update":
-				return this.isAdmin || !this.get().isLocked;
+				return this.isAdmin || !this.get().val.isLocked;
 		}
 	}
 
 	// Load default tags
 	loadDefaults () {
-		this.serverDocument.config.tags.list = defaultTags;
+		this.serverQueryDocument.set("config.tags.list", defaultTags);
 		this.msg.send({
 			embed: {
 				color: this.Colors.SUCCESS,

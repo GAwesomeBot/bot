@@ -2,7 +2,7 @@ const moment = require("moment");
 const { get } = require("snekfetch");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, documents, msg, commandData) => {
 	let subreddit = msg.suffix;
 	if (!subreddit) {
 		subreddit = "all";

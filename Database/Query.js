@@ -98,7 +98,7 @@ module.exports = class Query {
 			if (!this._canId()) return this.prop(id);
 			const index = this._definition.isMap ? id : this._findById(id);
 			this.parsed += this._parseForString(index);
-			this._current = mpath.get(this.parsed, this._doc._doc);
+			this._current = index === null ? undefined : mpath.get(this.parsed, this._doc._doc);
 			return this;
 		} catch (err) {
 			throw new GABError("GADRIVER_ERROR", "Could not parse Query.");
@@ -286,7 +286,7 @@ module.exports = class Query {
 	 * @readonly
 	 */
 	get val () {
-		return mpath.get(this.parsed, this._doc._doc);
+		return this._current === undefined ? undefined : mpath.get(this.parsed, this._doc._doc);
 	}
 
 	/**
