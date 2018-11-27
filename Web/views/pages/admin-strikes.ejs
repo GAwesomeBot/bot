@@ -226,10 +226,10 @@
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control">
-										<input id="new-strike-member" class="input is-primary user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-strike-member" class="input is-primary user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control is-expanded">
-										<input id="new-strike-reason" class="input is-primary" type="text" placeholder="Reason" onkeypress="return event.keyCode != 13;">
+										<input id="new-strike-reason" class="input is-primary" type="text" placeholder="Reason" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<a class="button is-primary" onclick="newStrike();">

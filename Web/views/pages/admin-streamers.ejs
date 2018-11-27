@@ -56,7 +56,7 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="command-items">
-						<% var commandData = configData.commands.streamers;commandData.name = "streamers";commandData.description = commandDescriptions.streamers;commandData.category = commandCategories.streamers; %>
+						<% const commandData = configData.commands.streamers; commandData.name = "streamers"; commandData.description = pageData.commandDescriptions.streamers; commandData.category = pageData.commandCategories.streamers; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field" style="overflow-x: scroll;">
@@ -72,33 +72,33 @@
 										</tr>
 									</thead>
 									<tbody>
-									<% for(var i=0; i<configData.streamers_data.length; i++) { %>
+									<% configData.streamers_data.forEach(streamer => { %>
 										<tr>
 											<td class="is-icon">
-												<% if(configData.streamers_data[i].type=="twitch") { %>
+												<% if (streamer.type === "twitch") { %>
 													<i class="fa fa-twitch"></i>
-												<% } else if(configData.streamers_data[i].type=="ytg") { %>
+												<% } else if (streamer.type === "ytg") { %>
 													<i class="fa fa-youtube"></i>
 												<% } %>
 											</td>
 											<td>
-												<%= configData.streamers_data[i]._id %>
+												<%= streamer._id %>
 											</td>
 											<td>
 												<span class="select is-primary is-small">
-													<select name="streamer-<%= configData.streamers_data[i]._id %>-channel_id">
+													<select name="streamer-<%= streamer._id %>-channel_id">
 														<option value="">None</option>
-														<% for(var j=0; j<channelData.length; j++) { %>
-															<option value="<%= channelData[j].id %>" <%= configData.streamers_data[i].channel_id==channelData[j].id ? "selected" : "" %>>#<%= channelData[j].name %></option>
-														<% } %>
+														<% pageData.channelData.forEach(channel => { %>
+															<option value="<%= channel.id %>"<%= streamer.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+														<% }); %>
 													</select>
 												</span>
 											</td>
 											<td>
-												<%= configData.streamers_data[i].live_state ? "Live!" : "Offline" %>
+												<%= streamer.live_state ? "Live!" : "Offline" %>
 											</td>
 											<td>
-												<button class="button is-small is-danger" name="<%= configData.streamers_data[i]._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+												<button class="button is-small is-danger" name="<%= streamer._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
 													<span>Remove</span>
 													<span class="icon is-small">
 														<i class="fa fa-times"></i>
@@ -106,7 +106,7 @@
 												</button>
 											</td>
 										</tr>
-									<% } %>
+									<% }); %>
 									</tbody>
 								</table>
 							</div>
@@ -114,7 +114,7 @@
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-streamer-name" class="input is-primary" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+											<input id="new-streamer-name" class="input is-primary" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
 											<span class="help">For YouTube Gaming streams, use <a href="http://johnnythetank.github.io/youtube-channel-name-converter">this website</a> to get the corresponding channel ID for a channel name or username.</span>
 										</div>
 										<div class="control">

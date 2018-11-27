@@ -153,30 +153,23 @@ controllers.rss.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.streamers = async (req, res) => {
+controllers.streamers = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-streamers.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			streamers_data: serverDocument.config.streamers_data,
-			commands: {
-				streamers: serverDocument.config.commands.streamers,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
+	res.setConfigData({
+		streamers_data: serverDocument.config.streamers_data,
+		commands: {
+			streamers: serverDocument.config.commands.streamers,
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia.isEnabled,
 			},
 		},
+	});
+	res.setPageData({
+		page: "admin-streamers.ejs",
+		channelData: getChannelData(svr),
 		commandDescriptions: {
 			streamers: client.getPublicCommandMetadata("streamers").description,
 		},
@@ -184,20 +177,23 @@ controllers.streamers = async (req, res) => {
 			streamers: client.getPublicCommandMetadata("streamers").category,
 		},
 	});
+	res.render();
 };
 controllers.streamers.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-type"] && !serverDocument.config.streamers_data.id(req.body["new-name"])) {
-		serverDocument.config.streamers_data.push({
+		serverQueryDocument.push("config.streamers_data", {
 			_id: req.body["new-name"],
 			type: req.body["new-type"],
 		});
 	} else {
 		parsers.commandOptions(req, "streamers", req.body);
-		for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
-			serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
-		}
+		serverDocument.config.streamers_data.forEach(streamerDocument => {
+			const streamerQueryDocument = serverQueryDocument.clone.id("config.streamers_data", streamerDocument._id)
+			if (req.body[`streamer-${streamerDocument._id}-channel_id`]) streamerQueryDocument.set("channel_id", req.body[`streamer-${streamerDocument._id}-channel_id`]);
+		});
 	}
 
 	save(req, res, true);

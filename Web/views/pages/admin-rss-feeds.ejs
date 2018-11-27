@@ -150,7 +150,7 @@
 							</div>
 							<div class="field is-grouped">
 								<div class="control is-expanded">
-									<input id="new-rss-url" class="input is-primary" type="url" placeholder="RSS URL" onkeypress="return event.keyCode != 13;">
+									<input id="new-rss-url" class="input is-primary" type="url" placeholder="RSS URL" onkeypress="return event.keyCode !== 13;">
 								</div>
 								<div class="field has-addons">
 									<div class="control">
@@ -183,7 +183,7 @@
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-rss-name" class="input is-primary" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode != 13;">
+											<input id="new-rss-name" class="input is-primary" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 										</div>
 										<div class="control">
 											<a class="button is-primary" onclick="newRss();">
