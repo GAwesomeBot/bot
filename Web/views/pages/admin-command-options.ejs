@@ -50,15 +50,15 @@
 								<span class="select is-primary">
 									<select name="command_cooldown">
 										<option value="0" <%= !configData.command_cooldown ? "selected" : "" %>>None</option>
-										<option value="2000" <%= configData.command_cooldown==2000 ? "selected" : "" %>>2 seconds</option>
-	                                    <option value="3000" <%= configData.command_cooldown==3000 ? "selected" : "" %>>3 seconds</option>
-	                                    <option value="5000" <%= configData.command_cooldown==5000 ? "selected" : "" %>>5 seconds</option>
-	                                    <option value="10000" <%= configData.command_cooldown==10000 ? "selected" : "" %>>10 seconds</option>
-	                                    <option value="15000" <%= configData.command_cooldown==15000 ? "selected" : "" %>>15 seconds</option>
-	                                    <option value="30000" <%= configData.command_cooldown==30000 ? "selected" : "" %>>30 seconds</option>
-	                                    <option value="45000" <%= configData.command_cooldown==45000 ? "selected" : "" %>>45 seconds</option>
-	                                    <option value="60000" <%= configData.command_cooldown==60000 ? "selected" : "" %>>1 minute</option>
-	                                    <option value="120000" <%= configData.command_cooldown==120000 ? "selected" : "" %>>2 minutes</option>
+										<option value="2000" <%= configData.command_cooldown === 2000 ? "selected" : "" %>>2 seconds</option>
+	                                    <option value="3000" <%= configData.command_cooldown === 3000 ? "selected" : "" %>>3 seconds</option>
+	                                    <option value="5000" <%= configData.command_cooldown === 5000 ? "selected" : "" %>>5 seconds</option>
+	                                    <option value="10000" <%= configData.command_cooldown === 10000 ? "selected" : "" %>>10 seconds</option>
+	                                    <option value="15000" <%= configData.command_cooldown === 15000 ? "selected" : "" %>>15 seconds</option>
+	                                    <option value="30000" <%= configData.command_cooldown === 30000 ? "selected" : "" %>>30 seconds</option>
+	                                    <option value="45000" <%= configData.command_cooldown === 45000 ? "selected" : "" %>>45 seconds</option>
+	                                    <option value="60000" <%= configData.command_cooldown === 60000 ? "selected" : "" %>>1 minute</option>
+	                                    <option value="120000" <%= configData.command_cooldown === 120000 ? "selected" : "" %>>2 minutes</option>
 									</select>
 								</span>
 								<span class="help">During this time after the use of any command, users won't be able to use other commands in the channel. Does not apply to admins. Can be overridden per-channel by the <code><%= configData.command_prefix %>cool</code> command.</span>
@@ -72,18 +72,18 @@
 									onclick="$('#chatterbot_enabled_channel_ids-options').toggleClass('is-hidden');">
 									Allow members to converse with GAwesomeBot
 								</label>
-								<span class="help">The <a href="http://www.program-o.com/">Program-O</a> chatbot will be used if the bot is mentioned and a command is not being used, e.g. <code><strong>@<%= botName %></strong> Hello! How are you?</code>.</span>
+								<span class="help">The <a href="http://www.program-o.com/">Program-O</a> chatbot will be used if the bot is mentioned and a command is not being used, e.g. <code><strong>@<%= pageData.botName %></strong> Hello! How are you?</code>.</span>
 								<span id="chatterbot_enabled_channel_ids-options"
 									class="<%= configData.chatterbot.isEnabled ? '' : 'is-hidden' %>">
 									<br>
-									<% for (var i = 0; i < channelData.length; i++) { %>
+									<% pageData.channelData.forEach(channel => { %>
 										<label class="checkbox">
-										<input name="chatterbot_enabled_channel_ids-<%= channelData[i].id %>"
-											type="checkbox" <%= configData.chatterbot.disabled_channel_ids.indexOf(channelData[i].id) === -1 ? "checked" : "" %>>
-											#<%= channelData[i].name %>
+										<input name="chatterbot_enabled_channel_ids-<%= channel.id %>"
+											type="checkbox" <%= !configData.chatterbot.disabled_channel_ids.includes(channel.id) ? "checked" : "" %>>
+											#<%= channel.name %>
 										</label>
 										<br>
-									<% } %>
+									<% }); %>
 								</span>
 							</p>
 						</div>

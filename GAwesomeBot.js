@@ -236,7 +236,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		if (!data.isFrozen) {
 			data.users = client.users.size;
 			data.guilds = client.guilds.size;
-			data.ping = Math.floor(client.ping);
+			data.ping = Math.floor(client.ws.ping);
 		}
 		data.rss = Math.floor((process.memoryUsage().rss / 1024) / 1024);
 		data.uptime = Math.round(((process.uptime() / 60) / 60) * 10) / 10;

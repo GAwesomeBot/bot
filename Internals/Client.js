@@ -1000,7 +1000,7 @@ module.exports = class GABClient extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
-				const logCount = (await EServers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]).exec())[0].logs;
+				const logCount = (await EServers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]))[0].logs;
 				EServers.update({ _id: serverDocument._id }, {
 					$push: {
 						logs: {

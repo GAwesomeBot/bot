@@ -58,12 +58,11 @@ module.exports = {
 	},
 
 	saveAdminConsoleOptions: async (req, res, isAPI) => {
-		if (req.svr.document.validateSync()) return module.exports.renderError(res, "Your request is malformed.", null, 400);
+		if (req.svr.document.validate()) return module.exports.renderError(res, "Your request is malformed.", null, 400);
 		try {
 			req.app.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path.replace(`/${req.svr.id}`, "")}.`, null, req.consolemember.user.id);
 			module.exports.dashboardUpdate(req, `/dashboard${req.path}`, req.svr.id);
 			await req.svr.document.save();
-			req.app.client.IPC.send("cacheUpdate", { guild: req.svr.document._id });
 			if (isAPI) {
 				res.sendStatus(200);
 			} else {

@@ -1,57 +1,52 @@
-const { parseAuthUser, getChannelData, saveAdminConsoleOptions: save, renderError, findQueryUser } = require("../../helpers");
+const { getChannelData, saveAdminConsoleOptions: save, renderError, findQueryUser } = require("../../helpers");
 const parsers = require("../../parsers");
 
 const controllers = module.exports;
 
-controllers.options = async (req, res) => {
+controllers.options = async (req, { res }) => {
 	await req.svr.fetchCollection("channels");
-	res.render("pages/admin-command-options.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: req.svr.name,
-			id: req.svr.id,
-			icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			chatterbot: req.svr.document.config.chatterbot,
-			command_cooldown: req.svr.document.config.command_cooldown,
-			command_fetch_properties: req.svr.document.config.command_fetch_properties,
-			command_prefix: req.svr.document.config.command_prefix,
-			delete_command_messages: req.svr.document.config.delete_command_messages,
-			ban_gif: req.svr.document.config.ban_gif,
-		},
+
+	res.setConfigData({
+		chatterbot: req.svr.document.config.chatterbot,
+		command_cooldown: req.svr.document.config.command_cooldown,
+		command_fetch_properties: req.svr.document.config.command_fetch_properties,
+		command_prefix: req.svr.document.config.command_prefix,
+		delete_command_messages: req.svr.document.config.delete_command_messages,
+		ban_gif: req.svr.document.config.ban_gif,
+	});
+	res.setPageData({
+		page: "admin-command-options.ejs",
 		channelData: getChannelData(req.svr),
 		botName: req.svr.members[req.app.client.user.id].nickname || req.app.client.user.username,
 	});
+	res.render();
 };
 controllers.options.post = async (req, res) => {
 	if (req.body.command_prefix !== req.app.client.getCommandPrefix(req.svr, req.svr.document)) {
-		req.svr.document.config.command_prefix = req.body.command_prefix;
+		req.svr.queryDocument.set("config.command_prefix", req.body.command_prefix);
 	}
 
-	req.svr.document.config.delete_command_messages = req.body.delete_command_messages === "on";
-	req.svr.document.config.chatterbot.isEnabled = req.body["chatterbot-isEnabled"] === "on";
-	req.svr.document.config.ban_gif = req.body.ban_gif;
+	req.svr.queryDocument.set("config.delete_command_messages", req.body.delete_command_messages === "on")
+		.set("config.chatterbot.isEnabled", req.body["chatterbot-isEnabled"] === "on")
+		.set("config.ban_gif", req.body.ban_gif);
 
-	if (req.body.ban_gif === "Default") req.svr.document.config.ban_gif = "https://imgur.com/3QPLumg.gif";
+	if (req.body.ban_gif === "Default") req.svr.queryDocument.set("config.ban_gif", "https://imgur.com/3QPLumg.gif");
 	if (req.body["chatterbot-isEnabled"] === "on") {
 		const channels = getChannelData(req.svr).map(ch => ch.id);
 		const enabledChannels = Object.keys(req.body).filter(key => key.startsWith("chatterbot_enabled_channel_ids")).map(chstring => chstring.split("-")[1]);
 		channels.forEach(ch => {
 			if (!enabledChannels.some(id => ch === id)) {
-				req.svr.document.config.chatterbot.disabled_channel_ids.push(ch);
-			} else if (req.svr.document.config.chatterbot.disabled_channel_ids.indexOf(ch) > -1) {
-				req.svr.document.config.chatterbot.disabled_channel_ids = req.svr.document.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch);
+				req.svr.queryDocument.push("config.chatterbot.disabled_channel_ids", ch);
+			} else if (req.svr.document.config.chatterbot.disabled_channel_ids.includes(ch)) {
+				req.svr.queryDocument.set("config.chatterbot.disabled_channel_ids", req.svr.document.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch));
 			}
 		});
 	}
 
-	req.svr.document.config.command_cooldown = parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown);
+	req.svr.queryDocument.set("config.command_cooldown", parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown));
 	const defaultCount = req.svr.document.config.command_fetch_properties.default_count;
-	req.svr.document.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? defaultCount : parseInt(req.body.default_count);
-	req.svr.document.config.command_fetch_properties.max_count = isNaN(parseInt(req.body.max_count)) ? req.svr.document.config.command_fetch_properties.max_count : parseInt(req.body.max_count);
+	req.svr.queryDocument.set("config.command_fetch_properties.default_count", isNaN(parseInt(req.body.default_count)) ? defaultCount : parseInt(req.body.default_count))
+		.set("config.command_fetch_properties.max_count", isNaN(parseInt(req.body.max_count)) ? req.svr.document.config.command_fetch_properties.max_count : parseInt(req.body.max_count));
 
 	save(req, res, true);
 };

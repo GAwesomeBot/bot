@@ -63,7 +63,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				fields.push({
 					name: "Bot User Information",
 					value: `🆔 GAwesomeBot is using the bot account **${client.user.tag}**, with ID **${client.user.id}**
-								\n🔌 Connected to Discord with **${Math.floor(client.ping)}ms** latency, for **${Math.floor(client.uptime / 3600000)} hours** so far`,
+								\n🔌 Connected to Discord with **${Math.floor(client.ws.ping)}ms** latency, for **${Math.floor(client.uptime / 3600000)} hours** so far`,
 				});
 			}
 			if (args.includes("-m") || args.includes("--master")) {
@@ -136,7 +136,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 					title: `GAwesomeBot Debug Information`,
 					description: showDefault ? `Currently on shard with ID ${client.shardID}, out of ${process.env.SHARD_COUNT} shards total.
 											\nShard's ${process.release.name} process is using ${Math.ceil(process.memoryUsage().heapTotal / 1000000)}MB RAM, with PID ${process.pid}.
-											\nShard has been connected to Discord for ${Math.floor(client.uptime / 3600000)} hours, and manages ${client.guilds.size} guild${client.guilds.size === 1 ? "" : "s"} with a ping of ${Math.floor(client.ping)}ms.` : null,
+											\nShard has been connected to Discord for ${Math.floor(client.uptime / 3600000)} hours, and manages ${client.guilds.size} guild${client.guilds.size === 1 ? "" : "s"} with a ping of ${Math.floor(client.ws.ping)}ms.` : null,
 					footer: {
 						text: "Use argument '-h' to learn more about debug",
 					},
@@ -151,7 +151,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				title: `${client.user.tag} running ${version !== 404 ? `GAwesomeBot version ${version.config.name}` : "an unknown GAwesomeBot version"}`,
 				description: `Currently on shard with ID ${client.shardID}, out of ${process.env.SHARD_COUNT} shards total.
 											\nShard's ${process.release.name} process is using ${Math.ceil(process.memoryUsage().heapTotal / 1000000)}MB RAM, with PID ${process.pid}.
-											\nShard has been connected to Discord for ${Math.floor(client.uptime / 3600000)} hours, and manages ${client.guilds.size} guild${client.guilds.size === 1 ? "" : "s"} with a ping of ${Math.floor(client.ping)}ms.`,
+											\nShard has been connected to Discord for ${Math.floor(client.uptime / 3600000)} hours, and manages ${client.guilds.size} guild${client.guilds.size === 1 ? "" : "s"} with a ping of ${Math.floor(client.ws.ping)}ms.`,
 				footer: {
 					text: "Use argument '-h' to learn more about debug",
 				},
