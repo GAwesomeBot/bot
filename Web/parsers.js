@@ -186,7 +186,7 @@ parsers.blogData = async (req, blogDocument) => {
 	}
 	const avatarURL = (await req.app.client.users.fetch(blogDocument.author_id, true)).avatarURL();
 	return {
-		id: blogDocument._id,
+		id: blogDocument._id.toString(),
 		title: blogDocument.title,
 		author: {
 			name: author.username,

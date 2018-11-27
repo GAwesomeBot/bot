@@ -1,11 +1,11 @@
-<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
+<section id="header" class="main-header-section hero is-primary is-small is-bold">
 	<div class="hero-head">
 		<% include ../partials/header %>
 	</div>
 	<div class="hero-body">
 		<div class="container has-text-centered">
 			<h1 id="dashboard-title" class="title is-1">
-				<img id="dashboard-icon" src="<%= serverData.icon %>" style="border-radius: 100%;width: 48px;vertical-align: bottom;" alt="<%=serverData.id %>"> 
+				<img id="dashboard-icon" src="<%= serverData.icon %>" style="border-radius: 100%;width: 48px;vertical-align: bottom;" alt="<%=serverData.id %>">
 				<strong><%= serverData.name %></strong> <%= serverData.isMaintainer ? "Maintainer" : "Admin" %> Console
 			</h1>
 		</div>

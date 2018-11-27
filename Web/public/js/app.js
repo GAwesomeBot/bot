@@ -21,12 +21,37 @@ GAwesomeData.activity = { guildData: {} };
 GAwesomeData.blog = { editor: {} };
 GAwesomeData.wiki = { bookmarks: JSON.parse(localStorage.getItem("wiki-bookmarks")) || [], editor: {} };
 GAwesomeData.extensions = {};
+GAwesomeData.timers = [];
 GAwesomeData.dashboard = { servers: {} };
 GAwesomeUtil.dashboard = {};
 
 GAwesomeData.config = {
 	debug: localStorage.getItem("gab:debug") || false,
 };
+
+GAwesomeData.blog.subtitles = [
+	"Dolphin Musings",
+	"The fault in our syntax",
+	"How to go viral",
+	"I wish I were a GAB",
+	"A robot's memoir",
+	"Why do we exist?",
+	"What is love?",
+	"Updating GAB; my story",
+	"What did I ever do to you?",
+	"BitQuote made this happen",
+	"I didn't want this either",
+	"The tragic story",
+	"Developer Vs. Bot",
+	"What did we mess up today?",
+	"Where are your fingers?",
+	"Beautiful Duwang",
+	"Nominated for best GAB-related blog",
+	"Add to bookmarks, but only if you want to",
+	"New posts every randomized time period!",
+	"It's like free education",
+	"These really aren't funny",
+];
 
 GAwesomeData.extensions.html = {
 	start: {
@@ -105,6 +130,12 @@ GAwesomeData.extensions.html = {
 		"#installer-continue": () => "Install",
 		"#installer-subtitle": () => "Confirmation",
 	},
+};
+
+GAwesomeUtil.setInterval = (...args) => {
+	const timer = setInterval(...args)
+	GAwesomeData.timers.push(timer);
+	return timer;
 };
 
 GAwesomeUtil.reload = () => window.location.reload(true);
@@ -590,6 +621,15 @@ GAwesomePaths["extensions"] = () => {
 	}
 };
 
+GAwesomeUtil.updateBlogSubtitle = () => {
+	const headerSubtitle = $("#blog-header-subtitle");
+	const newSubtitle = GAwesomeData.blog.subtitles[Math.floor(Math.random() * GAwesomeData.blog.subtitles.length)];
+	headerSubtitle.fadeOut({ duration: 500 }).queue(next => {
+		headerSubtitle.html(newSubtitle);
+		next();
+	}).fadeIn({ duration: 500 });
+};
+
 GAwesomeUtil.dashboardWrapper = func => {
 	if (window.location.pathname.split("/")[1] !== "dashboard") {
 		return "This function can only be executed within the dashboard.";
@@ -748,6 +788,10 @@ GAwesomePaths["blog"] = () => {
 	setTimeout(function() {
 		saveFormState();
 	}, 0);
+	const headerSubtitle = $("#blog-header-subtitle");
+	if (headerSubtitle[0]) {
+		GAwesomeUtil.setInterval(GAwesomeUtil.updateBlogSubtitle, 60000);
+	}
 	if (!window.location.toString().endsWith("/compose") && !window.location.toString().endsWith("/new")) return;
 	const converter = new showdown.Converter({
 		tables: true,
@@ -852,6 +896,12 @@ document.addEventListener("turbolinks:load", () => {
 
 		// Prepare Bulma Javascript Listeners
 		bulma();
+
+		// Clear old timers
+		GAwesomeData.timers.forEach((timer, index) => {
+			clearTimeout(timer);
+			GAwesomeData.timers.splice(index, 1);
+		});
 
 		// Initialize forms
 		hide_update_modal = false;

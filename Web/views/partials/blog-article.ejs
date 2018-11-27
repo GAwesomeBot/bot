@@ -15,7 +15,7 @@
             By <strong><%= blogPost.author.name %></strong>, published <span title="<%= blogPost.rawPublished %>"><%= blogPost.roundedPublished %></span>
         </h2>
     </div>
-    <% if(!blogPost.isPreview) { %>
+    <% if (!blogPost.isPreview) { %>
         <script>
         function addReaction(value) {
             $.ajax({
@@ -84,7 +84,7 @@
             <% } %>
         </div>
     </div>
-    <% if(isMaintainer) { %>
+    <% if (isMaintainer) { %>
         <div class="level-right">
             <div class="level-item">
                 <a class="button is-info is-outlined" href="/blog/<%= blogPost.id %>/compose">

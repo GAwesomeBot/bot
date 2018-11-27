@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title><%= pageTitle %></title>
+	<title><%= pageData.pageTitle %></title>
     <% include ../partials/head %>
     <script src="/static/js/form-change-listener.js"></script>
 </head>
 <body>
-	<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
+	<section id="header" class="main-header-section hero is-primary is-small is-bold">
 		<div class="hero-head">
 			<% include ../partials/header %>
 		</div>
@@ -18,10 +18,10 @@
                     </span>
                     GAwesomeBot blog
 				</h1>
-                <h3 class="subtitle is-3">
+                <h3 id="blog-header-subtitle" class="subtitle is-3">
                     Dolphin Musings
                 </h3>
-                <% if(isMaintainer) { %>
+                <% if (isMaintainer) { %>
                 <a class="button is-white is-outlined" href="/blog/new">
                     <span class="icon is-small">
                         <i class="fa fa-plus"></i>
@@ -34,16 +34,16 @@
 	</section>
 	<section class="section is-white">
 		<div class="container">
-            <% if(mode=="article") { %>
+            <% if (pageData.mode === "article") { %>
+                <% const { blogPost } = pageData; %>
                 <% include ../partials/blog-article %>
-            <% } else if(mode=="list") { %>
-                <% if(data.length>0) { %>
-                    <% for(var i=0; i<data.length; i++) { %>
+            <% } else if (pageData.mode === "list") { %>
+                <% if (pageData.data.length > 0) { %>
+                    <% pageData.data.forEach(blogPost => { %>
 						<div class="box">
-	                        <% var blogPost = data[i]; %>
 	                        <% include ../partials/blog-article %>
 						</div>
-                    <% } %>
+                    <% }); %>
                 <% } else { %>
                     <% var activeSearchQuery, mode = "blog"; %>
                     <%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl: null, mode }) %>
@@ -51,8 +51,8 @@
 
                 <nav class="level is-mobile arrow-link">
                     <div class="level-left">
-                        <% if(currentPage<numPages) { %>
-                            <a class="button" href="/blog?page=<%= currentPage + 1 %>">
+                        <% if (pageData.currentPage < pageData.numPages) { %>
+                            <a class="button" href="/blog?page=<%= pageData.currentPage + 1 %>">
                                 <span class="icon is-small">
                                     <i class="fa fa-chevron-left"></i>
                                 </span>
@@ -61,9 +61,9 @@
                         <% } %>
                     </div>
                     <div class="level-right">
-                        <% if(currentPage>1) { %>
+                        <% if (pageData.currentPage > 1) { %>
                             <div class="level-item">
-                                <a class="button" href="/blog?page=<%= currentPage - 1 %>">
+                                <a class="button" href="/blog?page=<%= pageData.currentPage - 1 %>">
                                     <span>Newer Posts</span>
                                     <span class="icon is-small">
                                         <i class="fa fa-chevron-right"></i>
@@ -73,7 +73,7 @@
                         <% } %>
                     </div>
                 </nav>
-            <% } else if(mode=="compose") { %>
+            <% } else if (pageData.mode === "compose") { %>
                 <% include ../partials/blog-composer %>
             <% } %>
 		</div>

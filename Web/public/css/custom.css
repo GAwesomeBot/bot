@@ -100,6 +100,11 @@
     padding-bottom: calc(.5rem - 1px);
 }
 
+.main-header-section {
+    background: url('/header-image')!important;
+    background-size: cover!important;
+}
+
 .arrow-link {
     color: hsl(0, 0%, 96%) !important;
 }

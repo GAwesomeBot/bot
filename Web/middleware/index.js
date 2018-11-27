@@ -19,6 +19,7 @@ class GABResponse {
 		} else {
 			Object.assign(this.template, {
 				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
+				isSudoMaintainer: req.isAuthenticated() ? configJSON.sudoMaintainers.includes(parseAuthUser(req.user).id) : false,
 			});
 		}
 
