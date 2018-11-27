@@ -1,9 +1,9 @@
 const { GetGuild } = require("../../../Modules").getGuild;
-const { parseAuthUser, canDo } = require("../../helpers");
+const { canDo } = require("../../helpers");
 
 const controllers = module.exports;
 
-controllers.home = async (req, res) => {
+controllers.home = async (req, { res }) => {
 	if (!req.isAuthenticated()) {
 		res.redirect("/login");
 	} else {
@@ -26,7 +26,7 @@ controllers.home = async (req, res) => {
 					isAdmin: false,
 				};
 				if (svr.success) {
-					const serverDocument = await Servers.findOne({ _id: req.user.guilds[i].id }).exec();
+					const serverDocument = await EServers.findOne(req.user.guilds[i].id);
 					if (serverDocument) {
 						const member = svr.members[usr.id];
 						if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3 || canDo("sudo", usr.id)) {
@@ -54,16 +54,18 @@ controllers.home = async (req, res) => {
 					isAdmin: true,
 				});
 			}
-			res.render("pages/dashboard.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				serverData,
+
+			res.setServerData(serverData);
+			res.setPageData({
+				page: "dashboard.ejs",
 				rawJoinLink: `https://discordapp.com/oauth2/authorize?&client_id=${req.app.auth.discord.clientID}&scope=bot&permissions=470019135`,
 			});
+			res.render();
 		});
 	}
 };
 
-controllers.overview = async (req, res) => {
+controllers.overview = async (req, { res }) => {
 	// Redirect to maintainer console if necessary
 	if (!req.svr && req.isAuthorized) {
 		res.redirect("/dashboard/maintainer/maintainer");
@@ -77,11 +79,11 @@ controllers.overview = async (req, res) => {
 			}
 		}
 
-		const topMemberID = req.svr.document.members.sort((a, b) => b.messages - a.messages)[0];
+		const topMemberID = Object.values(req.svr.document.members).sort((a, b) => b.messages - a.messages)[0];
 		let topMember = topMemberID ? topMemberID._id : null;
 		const memberIDs = Object.keys(req.svr.members);
 
-		const userDocuments = await Users.find({
+		const userDocuments = await EUsers.find({
 			_id: {
 				$in: memberIDs,
 			},
@@ -97,20 +99,9 @@ controllers.overview = async (req, res) => {
 		await req.svr.fetchMember([richestMember ? richestMember : undefined, topMember ? topMember : undefined]);
 		richestMember = req.svr.members[richestMember];
 		topMember = req.svr.members[topMember];
-		res.render("pages/admin-overview.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			sudo: req.isSudo,
-			serverData: {
-				name: req.svr.name,
-				id: req.svr.id,
-				icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
-				owner: {
-					username: req.svr.members[req.svr.ownerID].user.username,
-					id: req.svr.members[req.svr.ownerID].user.id,
-					avatar: req.app.client.getAvatarURL(req.svr.members[req.svr.ownerID].user.id, req.svr.members[req.svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
-				},
-			},
-			currentPage: `${req.baseUrl}${req.path}`,
+
+		res.setPageData({
+			page: "admin-overview.ejs",
 			messagesToday: req.svr.document.messages_today,
 			topCommand,
 			memberCount: req.svr.memberCount,
@@ -125,6 +116,8 @@ controllers.overview = async (req, res) => {
 				avatar: req.app.client.getAvatarURL(richestMember.user.id, richestMember.user.avatar) || "/static/img/discord-icon.png",
 			} : null,
 		});
+
+		res.render();
 	}
 };
 

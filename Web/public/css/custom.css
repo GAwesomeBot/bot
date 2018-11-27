@@ -70,6 +70,10 @@
     align-items: center;
 }
 
+.is-danger-colored {
+    color: #ff3860;
+}
+
 /* Customisations/Custom classes */
 .navbar {
     box-shadow: none;

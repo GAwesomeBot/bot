@@ -31,7 +31,7 @@
         <div class="media-right">
             <nav class="level">
                 <div class="level-item">
-                    <a class="button is-small <%= (authUser && blogPost.userReaction.value==-1) ? 'is-dark' : 'is-light' %> <%= !authUser ? 'is-disabled' : '' %>" onclick="addReaction(-1);" title="Reaction: thumbs down">
+                    <a class="button is-small <%= (authUser && blogPost.userReaction.value === -1) ? 'is-dark' : 'is-light' %>" onclick="addReaction(-1);" title="Reaction: thumbs down"<%= !authUser ? ' disabled' : '' %>>
                         <span class="icon is-small">
                             <i class="fa fa-thumbs-o-down"></i>
                         </span>
@@ -40,7 +40,7 @@
                     &nbsp;
                 </div>
                 <div class="level-item">
-                    <a class="button is-small <%= (authUser && blogPost.userReaction.value==0) ? 'is-dark' : 'is-light' %> <%= !authUser ? 'is-disabled' : '' %>" onclick="addReaction(0);" title="Reaction: meh">
+                    <a class="button is-small <%= (authUser && blogPost.userReaction.value === 0) ? 'is-dark' : 'is-light' %>" onclick="addReaction(0);" title="Reaction: meh"<%= !authUser ? ' disabled' : '' %>>
                         <span class="icon is-small">
                             <i class="fa fa-meh-o"></i>
                         </span>
@@ -49,7 +49,8 @@
                     &nbsp;
                 </div>
                 <div class="level-item">
-                    <a class="button is-small <%= (authUser && blogPost.userReaction.value==1) ? 'is-dark' : 'is-light' %> <%= !authUser ? 'is-disabled' : '' %>" onclick="addReaction(1);" title="Reaction: thumbs up">
+                    <% console.log(!authUser) %>
+                    <a class="button is-small <%= (authUser && blogPost.userReaction.value === 1) ? 'is-dark' : 'is-light' %>" onclick="addReaction(1);" title="Reaction: thumbs up"<%= !authUser ? ' disabled' : '' %>>
                         <span class="icon is-small">
                             <i class="fa fa-thumbs-o-up"></i>
                         </span>

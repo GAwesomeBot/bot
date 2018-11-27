@@ -2,28 +2,11 @@ const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
 
 class GABResponse {
 	constructor (req, res, page) {
-		if (!req.user) req.user = {};
-
 		this.template = {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
 		};
 
-		if (req.perm) {
-			Object.assign(this.template, {
-				isContributor: true,
-				isMaintainer: true,
-				isSudoMaintainer: req.level === 2,
-				isHost: req.level === 0,
-				accessPrivileges: fetchMaintainerPrivileges(req.user.id),
-			});
-		} else {
-			Object.assign(this.template, {
-				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
-				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
-				isSudoMaintainer: req.isAuthenticated() ? configJSON.sudoMaintainers.includes(parseAuthUser(req.user).id) : false,
-			});
-		}
 
 		this.serverData = {
 			name: req.app.client.user.username,
@@ -32,6 +15,23 @@ class GABResponse {
 		};
 		this.configData = {};
 		this.pageData = {};
+
+		if (req.perm) {
+			Object.assign(this.template, {
+				isContributor: true,
+				isMaintainer: true,
+				isSudoMaintainer: req.level === 2 || req.level === 0,
+				isHost: req.level === 0,
+				accessPrivileges: fetchMaintainerPrivileges(req.user.id),
+			});
+			this.serverData.isMaintainer = true;
+		} else {
+			Object.assign(this.template, {
+				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
+				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
+				isSudoMaintainer: req.isAuthenticated() ? configJSON.sudoMaintainers.includes(parseAuthUser(req.user).id) : false,
+			});
+		}
 
 		this._client = req.app.client;
 		this._page = page;
@@ -78,6 +78,20 @@ class GABResponse {
 			pageData: this.pageData,
 		});
 		return this;
+	}
+
+	populateDashboard (req) {
+		this.serverData = {
+			name: req.svr.name,
+			id: req.svr.id,
+			icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
+			owner: {
+				username: req.svr.members[req.svr.ownerID].user.username,
+				id: req.svr.members[req.svr.ownerID].user.id,
+				avatar: req.app.client.getAvatarURL(req.svr.members[req.svr.ownerID].user.id, req.svr.members[req.svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
+			},
+		};
+		this.template.sudo = req.isSudo;
 	}
 }
 

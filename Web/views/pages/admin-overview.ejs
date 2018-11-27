@@ -26,7 +26,7 @@
 						<div class="hero-body">
 							<div class="has-text-centered">
 								<h1 class="title">
-									<strong><%= memberCount %></strong>
+									<strong><%= pageData.memberCount %></strong>
 								</h1>
 								<h2 class="subtitle">
 									<span class="icon">
@@ -48,20 +48,20 @@
 							<br>
 							<div class="has-text-centered">
 								<h1 class="title">
-									<strong><%= messagesToday %></strong>
+									<strong><%= pageData.messagesToday %></strong>
 								</h1>
 								<h2 class="subtitle">
 									<span class="icon">
 					                    <i class="fa fa-comments-o"></i>
 					                </span>
-									message<%= messagesToday==1 ? "" : "s" %> today
+									message<%= pageData.messagesToday === 1 ? "" : "s" %> today
 								</h2>
 							</div>
-							<% if(topCommand) { %>
+							<% if (pageData.topCommand) { %>
 								<br>
 								<div class="has-text-centered">
 									<h1 class="title">
-										<strong><%= topCommand %></strong>
+										<strong><%= pageData.topCommand %></strong>
 									</h1>
 									<h2 class="subtitle">
 										<span class="icon">
@@ -71,26 +71,26 @@
 									</h2>
 								</div>
 							<% } %>
-							<% if(topMember) { %>
+							<% if (pageData.topMember) { %>
 								<br>
 								<div class="has-text-centered">
 									<h1 class="title">
-										@<strong><%= topMember.username %></strong>
+										@<strong><%= pageData.topMember.username %></strong>
 									</h1>
 									<h2 class="subtitle">
-										<img src="<%= topMember.avatar %>" style="border-radius: 100%;width: 24px;vertical-align: middle;" alt="<%= topMember.id %>">
+										<img src="<%= pageData.topMember.avatar %>" style="border-radius: 100%;width: 24px;vertical-align: middle;" alt="<%= pageData.topMember.id %>">
 										top member
 									</h2>
 								</div>
 							<% } %>
-							<% if(richestMember) { %>
+							<% if (pageData.richestMember) { %>
 								<br>
 								<div class="has-text-centered">
 									<h1 class="title">
-										@<strong><%= richestMember.username %></strong>
+										@<strong><%= pageData.richestMember.username %></strong>
 									</h1>
 									<h2 class="subtitle">
-										<img src="<%= richestMember.avatar %>" style="border-radius: 100%;width: 24px;vertical-align: middle;" alt="<%= richestMember.id %>">
+										<img src="<%= pageData.richestMember.avatar %>" style="border-radius: 100%;width: 24px;vertical-align: middle;" alt="<%= pageData.richestMember.id %>">
 										richest member
 									</h2>
 								</div>

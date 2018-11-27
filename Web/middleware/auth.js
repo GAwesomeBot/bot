@@ -23,7 +23,7 @@ module.exports = middleware => {
 					// Get server data from Database
 					let serverDocument;
 					try {
-						serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+						serverDocument = await EServers.findOne(svr.id);
 					} catch (err) {
 						if (req.isAPI) return res.sendStatus(500);
 						renderError(res, "Something went wrong while fetching your server data.");
@@ -44,6 +44,8 @@ module.exports = middleware => {
 							req.consolemember.level = adminLevel;
 							req.svr = svr;
 							req.svr.document = serverDocument;
+							req.svr.queryDocument = serverDocument.query;
+							res.res.populateDashboard(req);
 							return next();
 						} catch (err) {
 							winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, {

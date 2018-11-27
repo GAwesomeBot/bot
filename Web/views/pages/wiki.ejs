@@ -110,7 +110,7 @@
 								<div class="level-item">
 									<div class="field has-addons">
 										<p class="control">
-											<a class="button <%= (authUser && pageData.userReaction.value === -1) ? 'is-dark' : 'is-light' %> <%= !authUser ? 'is-disabled' : '' %>" onclick="addReaction(-1);" title="This page was not helpful">
+											<a class="button <%= (authUser && pageData.userReaction.value === -1) ? 'is-dark' : 'is-light' %>" onclick="addReaction(-1);" title="This page was not helpful"<%= !authUser ? ' disabled' : '' %>>
 												<span class="icon is-small">
 													<i class="fa fa-thumbs-o-down"></i>
 												</span>
@@ -118,7 +118,7 @@
 											</a>
 										</p>
 										<p class="control">
-											<a class="button <%= (authUser && pageData.userReaction.value === 1) ? 'is-dark' : 'is-light' %> <%= !authUser ? 'is-disabled' : '' %>" onclick="addReaction(1);" title="This page was helpful">
+											<a class="button <%= (authUser && pageData.userReaction.value === 1) ? 'is-dark' : 'is-light' %>" onclick="addReaction(1);" title="This page was helpful"<%= !authUser ? ' disabled' : '' %>>
 												<span class="icon is-small">
 													<i class="fa fa-thumbs-o-up"></i>
 												</span>
