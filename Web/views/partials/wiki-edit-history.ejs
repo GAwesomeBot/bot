@@ -12,24 +12,24 @@ del {
 }
 </style>
 
-<% for(var i=data.updates.length-1; i>=0; i--) { %>
+<% pageData.updates.forEach((revision, i) => { %>
     <article class="media">
         <div class="media-left">
-            <img class="image is-48x48" src="<%= data.updates[i].responsibleUser.avatar %>" alt="<%= data.updates[i].responsibleUser.id %>">
+            <img class="image is-48x48" src="<%= revision.responsibleUser.avatar %>" alt="<%= revision.responsibleUser.id %>">
         </div>
         <div class="media-content">
-            <p class="title is-4">@<%= data.updates[i].responsibleUser.name %></p>
-            <p class="subtitle" title="<%= data.updates[i].rawTimestamp %>" style="margin-bottom: 0px;"><%= data.updates[i].relativeTimestamp %></p>
+            <p class="title is-4">@<%= revision.responsibleUser.name %></p>
+            <p class="subtitle" title="<%= revision.rawTimestamp %>" style="margin-bottom: 0px;"><%= revision.relativeTimestamp %></p>
             <code id="page-update-<%= i %>-diff" class="box" style="display: none;margin-top: 10px;">
-                <%- data.updates[i].diffHtml || "Page created. No diff available." %>
+                <%- revision.diffHtml || "Page created. No diff available." %>
             </code>
         </div>
         <div class="media-right">
             <a onclick="$('#page-update-<%= i %>-diff').slideToggle(86);">
                 <span class="icon is-large">
-                    <i class="fa fa-<%= data.updates[i].diffHtml ? 'info-circle' : 'pencil' %> fa-2x"></i>
+                    <i class="fa fa-<%= revision.diffHtml ? 'info-circle' : 'pencil' %> fa-2x"></i>
                 </span>
             </a>
         </div>
     </article>
-<% } %>
+<% }); %>

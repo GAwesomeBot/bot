@@ -11,6 +11,7 @@ class GABResponse {
 
 		if (req.perm) {
 			Object.assign(this.template, {
+				isContributor: true,
 				isMaintainer: true,
 				isSudoMaintainer: req.level === 2,
 				isHost: req.level === 0,
@@ -18,6 +19,7 @@ class GABResponse {
 			});
 		} else {
 			Object.assign(this.template, {
+				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
 				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
 				isSudoMaintainer: req.isAuthenticated() ? configJSON.sudoMaintainers.includes(parseAuthUser(req.user).id) : false,
 			});

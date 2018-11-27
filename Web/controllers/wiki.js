@@ -13,118 +13,116 @@ const textDiff = require("text-diff");
 const diff = new textDiff();
 const moment = require("moment");
 
-const { renderError, parseAuthUser } = require("../helpers");
+const { renderError } = require("../helpers");
 
-module.exports = (req, res) => {
-	Wiki.find({}).sort({
+module.exports = async (req, { res }) => {
+	const wikiDocuments = await EWiki.find({}).sort({
 		_id: 1,
-	}).exec((err, wikiDocuments) => {
-		if (err || !wikiDocuments) {
-			renderError(res, "An error occurred while fetching wiki documents.");
-		} else if (req.query.q) {
-			req.query.q = req.query.q.toLowerCase().trim();
+	}).exec();
 
-			const searchResults = [];
-			wikiDocuments.forEach(wikiDocument => {
-				const titleMatch = wikiDocument._id.toLowerCase().indexOf(req.query.q);
-				const content = removeMd(wikiDocument.content);
-				const contentMatch = content.toLowerCase().indexOf(req.query.q);
+	if (!wikiDocuments) {
+		renderError(res, "An error occurred while fetching wiki documents.");
+	} else if (req.query.q) {
+		req.query.q = req.query.q.toLowerCase().trim();
 
-				if (titleMatch > -1 || contentMatch > -1) {
-					let matchText;
-					if (contentMatch) {
-						const startIndex = contentMatch < 300 ? 0 : contentMatch - 300;
-						const endIndex = contentMatch > content.length - 300 ? content.length : contentMatch + 300;
-						// eslint-disable-next-line max-len
-						matchText = `${content.substring(startIndex, contentMatch)}<strong>${content.substring(contentMatch, contentMatch + req.query.q.length)}</strong>${content.substring(contentMatch + req.query.q.length, endIndex)}`;
-						if (startIndex > 0) {
-							matchText = `...${matchText}`;
-						}
-						if (endIndex < content.length) {
-							matchText += "...";
-						}
-					} else {
-						matchText = content.slice(0, 300);
-						if (content.length > 300) {
-							matchText += "...";
-						}
+		const searchResults = [];
+		wikiDocuments.forEach(wikiDocument => {
+			const titleMatch = wikiDocument._id.toLowerCase().indexOf(req.query.q);
+			const content = removeMd(wikiDocument.content);
+			const contentMatch = content.toLowerCase().indexOf(req.query.q);
+
+			if (titleMatch > -1 || contentMatch > -1) {
+				let matchText;
+				if (contentMatch) {
+					const startIndex = contentMatch < 300 ? 0 : contentMatch - 300;
+					const endIndex = contentMatch > content.length - 300 ? content.length : contentMatch + 300;
+					// eslint-disable-next-line max-len
+					matchText = `${content.substring(startIndex, contentMatch)}<strong>${content.substring(contentMatch, contentMatch + req.query.q.length)}</strong>${content.substring(contentMatch + req.query.q.length, endIndex)}`;
+					if (startIndex > 0) {
+						matchText = `...${matchText}`;
 					}
-					searchResults.push({
-						title: wikiDocument._id,
-						matchText,
-					});
+					if (endIndex < content.length) {
+						matchText += "...";
+					}
+				} else {
+					matchText = content.slice(0, 300);
+					if (content.length > 300) {
+						matchText += "...";
+					}
 				}
-			});
-
-			res.render("pages/wiki.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
-				pageTitle: `Search for "${req.query.q}" - GAwesomeBot Wiki`,
-				pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
-				mode: "search",
-				data: {
-					title: req.query.q ? `Search for "${req.query.q}"` : "List of all pages",
-					activeSearchQuery: req.query.q,
-					searchResults,
-				},
-			});
-		} else {
-			res.redirect("/wiki/Home");
-		}
-	});
-};
-
-module.exports.readArticle = (req, res) => {
-	Wiki.find({}).sort({
-		_id: 1,
-	}).exec((err, wikiDocuments) => {
-		if (err || !wikiDocuments) {
-			renderError(res, "Failed to fetch wiki pages!");
-		} else {
-			const page = wikiDocuments.find(wikiDocument => wikiDocument._id === req.params.id) || {
-				_id: req.params.id,
-			};
-			const getReactionCount = value => page.reactions.reduce((count, reactionDocument) => count + (reactionDocument.value === value), 0);
-			let reactions, userReaction;
-			if (page.updates && page.reactions) {
-				reactions = {
-					"-1": getReactionCount(-1),
-					1: getReactionCount(1),
-				};
-				if (req.isAuthenticated()) {
-					userReaction = page.reactions.id(req.user.id) || {};
-				}
+				searchResults.push({
+					title: wikiDocument._id,
+					matchText,
+				});
 			}
-			res.render("pages/wiki.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
-				pageTitle: `${page._id} - GAwesomeBot Wiki`,
-				pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
-				mode: "page",
-				data: {
-					title: page._id,
-					content: md.makeHtml(page.content),
-					reactions,
-					userReaction,
-				},
-			});
-		}
-	});
+		});
+
+		res.setPageData({
+			page: "wiki.ejs",
+			pageTitle: `Search for "${req.query.q}" - GAwesomeBot Wiki`,
+			pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
+			mode: "search",
+			title: req.query.q ? `Search for "${req.query.q}"` : "List of all pages",
+			activeSearchQuery: req.query.q,
+			searchResults,
+		});
+
+		res.render();
+	} else {
+		res.redirect("/wiki/Home");
+	}
 };
 
-module.exports.edit = async (req, res) => {
+module.exports.readArticle = async (req, { res }) => {
+	const wikiDocuments = await EWiki.find({}).sort({
+		_id: 1,
+	}).exec();
+	if (!wikiDocuments) {
+		renderError(res, "Failed to fetch wiki pages!");
+	} else {
+		const page = wikiDocuments.find(wikiDocument => wikiDocument._id === req.params.id) || {
+			_id: req.params.id,
+		};
+		const getReactionCount = value => page.reactions.reduce((count, reactionDocument) => count + (reactionDocument.value === value), 0);
+		let reactions, userReaction;
+		if (page.updates && page.reactions) {
+			reactions = {
+				"-1": getReactionCount(-1),
+				1: getReactionCount(1),
+			};
+			if (req.isAuthenticated()) {
+				userReaction = page.reactions.id(req.user.id) || {};
+			}
+		}
+		res.setPageData({
+			page: "wiki.ejs",
+			pageTitle: `${page._id} - GAwesomeBot Wiki`,
+			pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
+			mode: "page",
+			title: page._id,
+			content: md.makeHtml(page.content),
+			reactions,
+			userReaction,
+		});
+		res.render();
+	}
+};
+
+module.exports.edit = async (req, { res }) => {
 	const renderPage = data => {
-		res.render("pages/wiki.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
+		res.setPageData({
+			page: "wiki.ejs",
 			pageTitle: `${data.title ? `Edit ${data.title}` : "New Page"} - GAwesomeBot Wiki`,
 			mode: "edit",
-			data,
+			...data,
 		});
+
+		res.render();
 	};
 
 	if (req.params.id) {
 		try {
-			const wikiDocument = await Wiki.findOne({ _id: req.params.id }).exec();
+			const wikiDocument = await EWiki.findOne(req.params.id);
 			renderPage({
 				title: wikiDocument._id || req.query.id,
 				content: wikiDocument.content || "",
@@ -140,38 +138,35 @@ module.exports.edit = async (req, res) => {
 module.exports.edit.post = async (req, res) => {
 	if (req.params.id) {
 		try {
-			const wikiDocument = await Wiki.findOne({ _id: req.params.id }).exec();
+			const wikiDocument = await EWiki.findOne(req.params.id);
 			if (!wikiDocument) return renderError(res, "That article does not exist!");
 			const history = diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0);
 			diff.cleanupSemantic(history);
-			wikiDocument.updates.push({
+			wikiDocument.query.push("updates", {
 				_id: req.user.id,
 				diff: diff.prettyHtml(history),
-			});
-			wikiDocument.content = req.body.content;
+			}).set("content", req.body.content);
 
-			wikiDocument.save(() => {
-				res.redirect(`/wiki/${wikiDocument._id}`);
-			});
+			await wikiDocument.save();
+			res.redirect(`/wiki/${wikiDocument._id}`);
 		} catch (err) {
 			renderError(res, "An error occurred while saving wiki documents!");
 		}
 	} else {
-		const wikiDocument = new Wiki({
+		const wikiDocument = EWiki.new({
 			_id: req.body.title,
 			content: req.body.content,
 			updates: [{
 				_id: req.user.id,
 			}],
 		});
-		wikiDocument.save(() => {
-			res.redirect(`/wiki/${wikiDocument._id}`);
-		});
+		await wikiDocument.save();
+		res.redirect(`/wiki/${wikiDocument._id}`);
 	}
 };
 
-module.exports.history = async (req, res) => {
-	const wikiDocuments = await Wiki.find({}).sort({
+module.exports.history = async (req, { res }) => {
+	const wikiDocuments = await EWiki.find({}).sort({
 		_id: 1,
 	}).exec();
 	if (!wikiDocuments) {
@@ -198,47 +193,46 @@ module.exports.history = async (req, res) => {
 					diffHtml: updateDocument.diff,
 				};
 			});
-			updates = await Promise.all(updates);
+			updates = (await Promise.all(updates)).reverse();
 		}
-		res.render("pages/wiki.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
+		res.setPageData({
+			page: "wiki.ejs",
 			pageTitle: `Edit history for ${page._id} - GAwesomeBot Wiki`,
 			pageList: wikiDocuments.map(wikiDocument => wikiDocument._id),
 			mode: "history",
-			data: {
-				title: `Edit history for ${page._id}`,
-				updates,
-			},
+			title: `Edit history for ${page._id}`,
+			updates,
 		});
+
+		res.render();
 	}
 };
 
 module.exports.react = async (req, res) => {
 	if (req.isAuthenticated()) {
-		const wikiDocument = await Wiki.findOne({ _id: req.params.id }).exec();
+		const wikiDocument = await EWiki.findOne(req.params.id);
 		if (!wikiDocument) {
 			res.sendStatus(404);
 		} else {
 			req.query.value = parseInt(req.query.value);
 
-			const userReactionDocument = wikiDocument.reactions.id(req.user.id);
-			if (userReactionDocument) {
-				if (userReactionDocument.value === req.query.value) {
-					userReactionDocument.remove();
+			const userReactionQueryDocument = wikiDocument.query.id("reactions", req.user.id);
+			if (userReactionQueryDocument.val) {
+				if (userReactionQueryDocument.val.value === req.query.value) {
+					userReactionQueryDocument.remove();
 				} else {
-					userReactionDocument.value = req.query.value;
+					userReactionQueryDocument.set("value", req.query.value);
 				}
 			} else {
-				wikiDocument.reactions.push({
+				wikiDocument.query.push("reactions", {
 					_id: req.user.id,
 					value: req.query.value,
 				});
 			}
 
-			wikiDocument.save(err => {
-				res.sendStatus(err ? 500 : 200);
-			});
+			wikiDocument.save().then(() => {
+				res.sendStatus(200);
+			}).catch(() => res.sendStatus(500));
 		}
 	} else {
 		res.sendStatus(403);
@@ -246,7 +240,7 @@ module.exports.react = async (req, res) => {
 };
 
 module.exports.delete = (req, res) => {
-	Wiki.findByIdAndRemove(req.params.id, err => {
-		res.sendStatus(err ? 500 : 200);
-	});
+	EWiki.delete({ _id: req.params.id }).then(() => {
+		res.sendStatus(200);
+	}).catch(() => res.sendStatus(500));
 };
