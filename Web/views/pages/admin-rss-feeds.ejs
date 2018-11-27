@@ -78,7 +78,7 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="command-items">
-						<% var commandData = configData.commands.rss;commandData.name = "rss";commandData.description = commandDescriptions.rss;commandData.category = commandCategories.rss; %>
+						<% const commandData = configData.commands.rss; commandData.name = "rss"; commandData.description = pageData.commandDescriptions.rss; commandData.category = pageData.commandCategories.rss; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field" style="overflow-x: scroll;">
@@ -92,49 +92,49 @@
 										</tr>
 									</thead>
 									<tbody>
-										<% for(var i=0; i<configData.rss_feeds.length; i++) { %>
+										<% configData.rss_feeds.forEach(feed => { %>
 											<tr>
 												<td>
-													<%= configData.rss_feeds[i]._id %>
+													<%= feed._id %>
 												</td>
 												<td>
-													<%= configData.rss_feeds[i].url %>
+													<%= feed.url %>
 												</td>
 												<td>
-													<a class="button modal-button is-small is-primary" data-target="#rss-<%= configData.rss_feeds[i]._id.replace(/\s/g, "") %>-updates-modal">
+													<a class="button modal-button is-small is-primary" data-target="#rss-<%= feed._id.replace(/\s/g, "") %>-updates-modal">
 														<span class="icon is-small">
 															<i class="fa fa-refresh"></i>
 														</span>
 														<span>Updates</span>
 													</a>
-													<button class="button is-small is-danger" name="<%= configData.rss_feeds[i]._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+													<button class="button is-small is-danger" name="<%= feed._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
 														</span>
 													</button>
-													<div id="rss-<%= configData.rss_feeds[i]._id.replace(/\s/g, "") %>-updates-modal" class="modal">
+													<div id="rss-<%= feed._id.replace(/\s/g, "") %>-updates-modal" class="modal">
 														<div class="modal-background"></div>
 														<div class="modal-container">
 															<div class="modal-content">
 																<div class="box">
 																	<h4 class="subtitle is-4">
-																		RSS feed <strong><%= configData.rss_feeds[i]._id %></strong>
+																		RSS feed <strong><%= feed._id %></strong>
 																	</h4>
 																	<p class="control">
 																		<label class="checkbox">
-																			<input name="rss-<%= configData.rss_feeds[i]._id %>-streaming-isEnabled" type="checkbox" onclick="$('#rss-<%= configData.rss_feeds[i]._id.replace(/\s/g, "") %>-streaming-options').toggleClass('is-hidden');" <%= configData.rss_feeds[i].streaming.isEnabled ? "checked" : "" %>>
+																			<input name="rss-<%= feed._id %>-streaming-isEnabled" type="checkbox" onclick="$('#rss-<%= feed._id.replace(/\s/g, "") %>-streaming-options').toggleClass('is-hidden');" <%= feed.streaming.isEnabled ? "checked" : "" %>>
 																			Send <strong>streaming RSS updates</strong> in these channels:
 																		</label>
-																		<span id="rss-<%= configData.rss_feeds[i]._id.replace(/\s/g, "") %>-streaming-options" class="<%= configData.rss_feeds[i].streaming.isEnabled ? '' : 'is-hidden' %>">
-                                                                            <% for(var j=0; j<channelData.length; j++) { %>
+																		<span id="rss-<%= feed._id.replace(/\s/g, "") %>-streaming-options" class="<%= feed.streaming.isEnabled ? '' : 'is-hidden' %>">
+                                                                            <% pageData.channelData.forEach(channel => { %>
 																			<br>
 																		&nbsp;&nbsp;&nbsp;
 																		<label class="checkbox">
-																			<input name="rss-<%= configData.rss_feeds[i]._id %>-streaming-enabled_channel_ids-<%= channelData[j].id %>" type="checkbox" <%= configData.rss_feeds[i].streaming.enabled_channel_ids.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-																			#<%= channelData[j].name %>
+																			<input name="rss-<%= feed._id %>-streaming-enabled_channel_ids-<%= channel.id %>" type="checkbox" <%= feed.streaming.enabled_channel_ids.indexOf(channel.id)>-1 ? "checked" : "" %>>
+																			#<%= channel.name %>
 																		</label>
-                                                                            <% } %>
+                                                                            <% }); %>
 																		</span>
 																	</p>
 																</div>
@@ -144,7 +144,7 @@
 													</div>
 												</td>
 											</tr>
-											<% } %>
+											<% }); %>
 										</tbody>
 									</table>
 							</div>

@@ -100,30 +100,23 @@ controllers.list.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.rss = async (req, res) => {
+controllers.rss = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-rss-feeds.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			rss_feeds: serverDocument.config.rss_feeds,
-			commands: {
-				rss: serverDocument.config.commands.rss,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia ? serverDocument.config.commands.trivia.isEnabled : null,
-				},
+	res.setConfigData({
+		rss_feeds: serverDocument.config.rss_feeds,
+		commands: {
+			rss: serverDocument.config.commands.rss,
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia ? serverDocument.config.commands.trivia.isEnabled : null,
 			},
 		},
+	});
+	res.setPageData({
+		page: "admin-rss-feeds.ejs",
+		channelData: getChannelData(svr),
 		commandDescriptions: {
 			rss: client.getPublicCommandMetadata("rss").description,
 		},
@@ -131,28 +124,30 @@ controllers.rss = async (req, res) => {
 			rss: client.getPublicCommandMetadata("rss").category,
 		},
 	});
+	res.render();
 };
 controllers.rss.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"].replace(/\s/g, ""))) {
-		serverDocument.config.rss_feeds.push({
+		serverQueryDocument.push("config.rss_feeds", {
 			_id: req.body["new-name"],
 			url: req.body["new-url"],
 		});
 	} else {
 		parsers.commandOptions(req, "rss", req.body);
-		for (let i = 0; i < serverDocument.config.rss_feeds.length; i++) {
-			serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
-			serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
+		serverDocument.config.rss_feeds.forEach((feedDocument, i) => {
+			serverQueryDocument.set(`config.rss_feeds.${i}.streaming.isEnabled`, req.body[`rss-${feedDocument._id}-streaming-isEnabled`] === "on");
+			serverQueryDocument.set(`config.rss_feeds.${i}.streaming.enabled_channel_ids`, []);
 			req.svr.channels.forEach(ch => {
 				if (ch.type === "text") {
-					if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
-						serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
+					if (req.body[`rss-${feedDocument._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
+						serverQueryDocument.push(`config.rss_feeds.${i}.streaming.enabled_channel_ids`, ch.id);
 					}
 				}
 			});
-		}
+		});
 	}
 
 	save(req, res, true);
