@@ -67,13 +67,13 @@
 										</div>
 										<div class="field">
 											<label class="label">Channel(s)</label>
-											<% for(var i=0; i<channelData.length; i++) { %>
+											<% pageData.channelData.forEach(channel => { %>
 												<label class="checkbox">
-												<input name="preset-disabled_channel_ids-<%= channelData[i].id %>" class="preset-disabled_channel_ids" type="checkbox" checked>
-													#<%= channelData[i].name %>
+												<input name="preset-disabled_channel_ids-<%= channel.id %>" class="preset-disabled_channel_ids" type="checkbox" checked>
+													#<%= channel.name %>
 												</label>
 												<br>
-											<% } %>
+											<% }); %>
 										</div>
 										<div class="field">
 											<div class="control has-addons">
@@ -98,12 +98,12 @@
 							</div>
 							<a class="modal-close"></a>
 						</div>
-							<% for (var category in commandCategories) { %>
+							<% for (var category in pageData.commandCategories) { %>
 								<div class="is-divider" data-content="<%= category %>"></div>
 								<div class="command-items">
-									<% for (let command of commandCategories[category]) { %>
+									<% for (let command of pageData.commandCategories[category]) { %>
 										<% if (command.name !== "stats") { %>
-											<% var commandData = configData.commands[command.name];commandData.name = command.name;commandData.description = command.description;commandData.category = command.category; %>
+											<% const commandData = configData.commands[command.name]; commandData.name = command.name; commandData.description = command.description; commandData.category = command.category; %>
 											<% include ../partials/admin-command-item %>
 										<% } %>
 									<% } %>

@@ -203,20 +203,21 @@ parsers.blogData = async (req, blogDocument) => {
 
 parsers.commandOptions = (req, command, data) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	const commandData = req.app.client.getPublicCommandMetadata(command);
 	if (commandData) {
 		if (!serverDocument.config.commands[command]) {
-			serverDocument.config.commands[command] = {};
+			serverQueryDocument.set(`config.commands.${command}`, {});
 		}
 		if (commandData.defaults.adminLevel < 4) {
-			serverDocument.config.commands[command].isEnabled = data[`${command}-isEnabled`] === "on";
-			serverDocument.config.commands[command].admin_level = data[`${command}-adminLevel`] || 0;
-			serverDocument.config.commands[command].disabled_channel_ids = [];
+			serverQueryDocument.set(`config.commands.${command}.isEnabled`, data[`${command}-isEnabled`] === "on")
+				.set(`config.commands.${command}.admin_level`, parseInt(data[`${command}-adminLevel`]) || 0)
+				.set(`config.commands.${command}.disabled_channel_ids`, []);
 			Object.values(req.svr.channels).forEach(ch => {
 				if (ch.type === "text") {
 					if (!data[`${command}-disabled_channel_ids-${ch.id}`]) {
-						serverDocument.config.commands[command].disabled_channel_ids.push(ch.id);
+						serverQueryDocument.push(`config.commands.${command}.disabled_channel_ids`, ch.id);
 					}
 				}
 			});

@@ -51,7 +51,7 @@ controllers.options.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.list = async (req, res) => {
+controllers.list = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
@@ -63,24 +63,19 @@ controllers.list = async (req, res) => {
 		if (!commandCategories[commandData.category]) commandCategories[commandData.category] = [];
 		commandCategories[commandData.category].push(data);
 	});
-	res.render("pages/admin-command-list.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+
+	res.setConfigData({
+		commands: serverDocument.config.commands,
+	});
+	res.setPageData({
+		page: "admin-command-list.ejs",
 		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			commands: serverDocument.toObject().config.commands,
-		},
 		commandCategories,
 	});
+	res.render();
 };
 controllers.list.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const { document: serverDocument, queryDocument: serverQueryDocument } = req.svr;
 
 	if (req.body["preset-applied"]) {
 		const disabled_channel_ids = [];
@@ -91,13 +86,13 @@ controllers.list.post = async (req, res) => {
 				}
 			}
 		});
-		for (const command in serverDocument.toObject().config.commands) {
+		for (const command in serverDocument.config.commands) {
 			if (!serverDocument.config.commands[command]) continue;
-			serverDocument.config.commands[command].admin_level = req.body["preset-admin_level"] || 0;
-			serverDocument.config.commands[command].disabled_channel_ids = disabled_channel_ids;
+			serverQueryDocument.set(`config.commands.${command}.admin_level`, parseInt(req.body["preset-admin_level"]) || 0);
+			serverQueryDocument.set(`config.commands.${command}.disabled_channel_ids`, disabled_channel_ids);
 		}
 	} else {
-		for (const command in serverDocument.toObject().config.commands) {
+		for (const command in serverDocument.config.commands) {
 			parsers.commandOptions(req, command, req.body);
 		}
 	}

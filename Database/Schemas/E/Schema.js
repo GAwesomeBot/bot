@@ -26,7 +26,7 @@ const Types = {
 		key: "object",
 	},
 	number: {
-		validator: val => !isNaN(val),
+		validator: val => typeof val === "number",
 		key: "number",
 	},
 	boolean: {

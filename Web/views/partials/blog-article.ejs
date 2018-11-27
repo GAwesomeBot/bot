@@ -49,7 +49,6 @@
                     &nbsp;
                 </div>
                 <div class="level-item">
-                    <% console.log(!authUser) %>
                     <a class="button is-small <%= (authUser && blogPost.userReaction.value === 1) ? 'is-dark' : 'is-light' %>" onclick="addReaction(1);" title="Reaction: thumbs up"<%= !authUser ? ' disabled' : '' %>>
                         <span class="icon is-small">
                             <i class="fa fa-thumbs-o-up"></i>
