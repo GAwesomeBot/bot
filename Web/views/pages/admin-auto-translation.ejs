@@ -30,12 +30,13 @@
 				data: {
 					"new-member": newTranslatedMember.val(),
 					"new-source_language": newTranslatedLanguage.val(),
-					<% for(var i=0; i<channelData.length; i++) { %>
-						"new-enabled_channel_ids-<%= channelData[i].id %>": document.getElementById("new-translated-enabled_channel_ids-<%= channelData[i].id %>").checked,
-					<% } %>
+					<% pageData.channelData.forEach(channel => { %>
+						"new-enabled_channel_ids-<%= channel.id %>": document.getElementById("new-translated-enabled_channel_ids-<%= channel.id %>").checked,
+					<% }); %>
 				},
 				success: function() {
-									Turbolinks.visit('');				}
+				  Turbolinks.visit('');
+				}
 			});
 		}
 	}
@@ -86,13 +87,13 @@
 												<%= autoTranslationDocument.source_language.toUpperCase() %>
 											</td>
 											<td>
-												<% for(var j=0; j<channelData.length; j++) { %>
+												<% pageData.channelData.forEach(channel => { %>
 													<label class="checkbox">
-														<input name="translated_messages-<%= autoTranslationDocument._id %>-enabled_channel_ids-<%= channelData[j].id %>" type="checkbox" <%= autoTranslationDocument.enabled_channel_ids.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-														#<%= channelData[j].name %>
+														<input name="translated_messages-<%= autoTranslationDocument._id %>-enabled_channel_ids-<%= channel.id %>" type="checkbox"<%= autoTranslationDocument.enabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+														#<%= channel.name %>
 													</label>
 												<br>
-												<% } %>
+												<% }); %>
 											</td>
 											<td>
 												<button class="button is-small is-danger" name="<%= autoTranslationDocument._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
@@ -103,7 +104,7 @@
 												</button>
 											</td>
 										</tr>
-									<% }) %>
+									<% }); %>
 								</tbody>
 							</table>
 						</div>
@@ -111,13 +112,13 @@
 						<div class="columns">
 							<div id="new-translated-enabled_channel_ids" class="column is-narrow">
 								<div class="field">
-									<% for(var i=0; i<channelData.length; i++) { %>
+									<% pageData.channelData.forEach(channel => { %>
 										<label class="checkbox">
-										<input id="new-translated-enabled_channel_ids-<%= channelData[i].id %>" type="checkbox">
-											#<%= channelData[i].name %>
+										<input id="new-translated-enabled_channel_ids-<%= channel.id %>" type="checkbox">
+											#<%= channel.name %>
 										</label>
 										<br>
-									<% } %>
+									<% }); %>
 								</div>
 							</div>
 							<div class="column">

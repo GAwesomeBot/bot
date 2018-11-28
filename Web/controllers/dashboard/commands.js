@@ -292,39 +292,36 @@ controllers.tags.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.translation = async (req, res) => {
+controllers.translation = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	const data = {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			translated_messages: serverDocument.config.translated_messages,
-			commands: {
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
+	const configData = {
+		translated_messages: serverDocument.config.translated_messages,
+		commands: {
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia.isEnabled,
 			},
 		},
 	};
-	for (let i = 0; i < data.configData.translated_messages.length; i++) {
-		const usr = await req.app.client.users.fetch(data.configData.translated_messages[i]._id);
-		data.configData.translated_messages[i].username = usr.username;
-		data.configData.translated_messages[i].avatar = client.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png";
-	}
-	res.render("pages/admin-auto-translation.ejs", data);
+	res.setPageData({
+		page: "admin-auto-translation.ejs",
+		channelData: getChannelData(svr),
+	});
+
+	await Promise.all(configData.translated_messages.map(async translatedMessage => {
+		const usr = await req.app.client.users.fetch(translatedMessage._id);
+		translatedMessage.username = usr.username;
+		translatedMessage.avatar = client.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png";
+	}));
+
+	res.setConfigData(configData);
+	res.render();
 };
 controllers.translation.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-member"] && req.body["new-source_language"]) {
 		const member = await findQueryUser(req.body["new-member"], req.svr);
@@ -338,7 +335,7 @@ controllers.translation.post = async (req, res) => {
 				}
 			});
 
-			serverDocument.config.translated_messages.push({
+			serverQueryDocument.push("config.translated_messages", {
 				_id: member.userID,
 				source_language: req.body["new-source_language"],
 				enabled_channel_ids: enabled_channel_ids,
@@ -346,11 +343,12 @@ controllers.translation.post = async (req, res) => {
 		}
 	} else {
 		serverDocument.config.translated_messages.forEach(autoTranslateDocument => {
-			autoTranslateDocument.enabled_channel_ids = [];
+			const autoTranslateQueryDocument = serverQueryDocument.clone.id("config.translated_messages", autoTranslateDocument._id);
+			autoTranslateQueryDocument.set("enabled_channel_ids", []);
 			req.svr.channels.forEach(ch => {
 				if (ch.type === "text") {
 					if (req.body[`translated_messages-${autoTranslateDocument._id}-enabled_channel_ids-${ch.id}`] === "on") {
-						autoTranslateDocument.enabled_channel_ids.push(ch.id);
+						autoTranslateQueryDocument.push("enabled_channel_ids", ch.id);
 					}
 				}
 			});
