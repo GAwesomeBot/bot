@@ -199,37 +199,30 @@ controllers.streamers.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.tags = async (req, res) => {
+controllers.tags = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	const data = {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			tags: serverDocument.config.tags,
-			commands: {
-				tag: serverDocument.config.commands.tag,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
+	const configData = {
+		tags: serverDocument.config.tags,
+		commands: {
+			tag: serverDocument.config.commands.tag,
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia.isEnabled,
 			},
 		},
+	};
+	res.setPageData({
+		page: "admin-tags.ejs",
+		channelData: getChannelData(svr),
 		commandDescriptions: {
 			tag: client.getPublicCommandMetadata("tag").description,
 		},
 		commandCategories: {
 			tag: client.getPublicCommandMetadata("tag").category,
 		},
-	};
+	});
 
 	const cleanTag = async content => {
 		let cleanContent = "";
@@ -263,32 +256,36 @@ controllers.tags = async (req, res) => {
 		return cleanContent;
 	};
 
-	for (let i = 0; i < data.configData.tags.list.length; i++) {
-		data.configData.tags.list[i].content = await cleanTag(data.configData.tags.list[i].content);
-		data.configData.tags.list[i].index = i;
+	for (let i = 0; i < configData.tags.list.length; i++) {
+		configData.tags.list[i].content = await cleanTag(configData.tags.list[i].content);
+		configData.tags.list[i].index = i;
 	}
-	data.configData.tags.list.sort((a, b) => a._id.localeCompare(b._id));
-	res.render("pages/admin-tags.ejs", data);
+	configData.tags.list.sort((a, b) => a._id.localeCompare(b._id));
+
+	res.setConfigData(configData);
+	res.render();
 };
 controllers.tags.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-type"] && req.body["new-content"] && !serverDocument.config.tags.list.id(req.body["new-name"])) {
-		serverDocument.config.tags.list.push({
+		serverQueryDocument.push("config.tags.list", {
 			_id: req.body["new-name"],
 			content: req.body["new-content"],
 			isCommand: req.body["new-type"] === "command",
 		});
 	} else {
 		parsers.commandOptions(req, "tag", req.body);
-		serverDocument.config.tags.listIsAdminOnly = req.body.listIsAdminOnly === "true";
-		serverDocument.config.tags.addingIsAdminOnly = req.body.addingIsAdminOnly === "true";
-		serverDocument.config.tags.addingCommandIsAdminOnly = req.body.addingCommandIsAdminOnly === "true";
-		serverDocument.config.tags.removingIsAdminOnly = req.body.removingIsAdminOnly === "true";
-		serverDocument.config.tags.removingCommandIsAdminOnly = req.body.removingCommandIsAdminOnly === "true";
+		serverQueryDocument.set("config.tags.listIsAdminOnly", req.body.listIsAdminOnly === "true")
+			.set("config.tags.addingIsAdminOnly", req.body.addingIsAdminOnly === "true")
+			.set("config.tags.addingCommandIsAdminOnly", req.body.addingCommandIsAdminOnly === "true")
+			.set("config.tags.removingIsAdminOnly", req.body.removingIsAdminOnly === "true")
+			.set("config.tags.removingCommandIsAdminOnly", req.body.removingCommandIsAdminOnly === "true");
 		serverDocument.config.tags.list.forEach(tag => {
-			tag.isCommand = req.body[`tag-${tag._id}-isCommand`] === "command";
-			tag.isLocked = req.body[`tag-${tag._id}-isLocked`] === "on";
+			serverQueryDocument.clone.id("config.tags.list", tag._id)
+				.set("isCommand", req.body[`tag-${tag._id}-isCommand`] === "command")
+				.set("isLocked", req.body[`tag-${tag._id}-isLocked`] === "on");
 		});
 	}
 

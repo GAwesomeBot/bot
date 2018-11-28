@@ -65,7 +65,7 @@
 							General
 						</h4>
 						<div class="command-items">
-						<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
+						<% const commandData = configData.commands.tag; commandData.name = "tag"; commandData.description = pageData.commandDescriptions.tag; commandData.category = pageData.commandCategories.tag; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
@@ -73,8 +73,8 @@
 									List all tags:
 									<div class="select is-primary is-small">
 										<select name="listIsAdminOnly">
-											<option value="false" <%= configData.tags.listIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.listIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.listIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.listIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</div>
 								</div>
@@ -82,8 +82,8 @@
 									Add tags:
 									<div class="select is-primary is-small">
 										<select name="addingIsAdminOnly">
-											<option value="false" <%= configData.tags.addingIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.addingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.addingIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.addingIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</div>
 								</div>
@@ -91,8 +91,8 @@
 									Add tag commands:
 									<span class="select is-primary is-small">
 										<select name="addingCommandIsAdminOnly">
-											<option value="false" <%= configData.tags.addingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.addingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.addingCommandIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.addingCommandIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -100,8 +100,8 @@
 									Remove tags:
 									<span class="select is-primary is-small">
 										<select name="removingIsAdminOnly">
-											<option value="false" <%= configData.tags.removingIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.removingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.removingIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.removingIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -109,8 +109,8 @@
 									Remove tag commands:
 									<span class="select is-primary is-small">
 										<select name="removingCommandIsAdminOnly">
-											<option value="false" <%= configData.tags.removingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.removingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.removingCommandIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.removingCommandIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -132,20 +132,20 @@
 										</tr>
 									</thead>
 									<tbody>
-										<% for(var i=0; i<configData.tags.list.length; i++) { %>
+										<% configData.tags.list.forEach(tag => { %>
 											<tr>
 												<td>
-													<%= configData.tags.list[i]._id %>
+													<%= tag._id %>
 												</td>
 												<td>
-													<%- configData.tags.list[i].content %>
+													<%- tag.content %>
 												</td>
 												<td>
 													<p class="control">
 														<span class="select is-primary is-small">
-															<select name="tag-<%= configData.tags.list[i]._id %>-isCommand">
-																<option value="text" <%= configData.tags.list[i].isCommand ? "" : "selected" %>>Text</option>
-																<option value="command" <%= configData.tags.list[i].isCommand ? "selected" : "" %>>Command</option>
+															<select name="tag-<%= tag._id %>-isCommand">
+																<option value="text"<%= tag.isCommand ? "" : " selected" %>>Text</option>
+																<option value="command"<%= tag.isCommand ? " selected" : "" %>>Command</option>
 															</select>
 														</span>
 													</p>
@@ -153,12 +153,12 @@
 												<td>
 													<p class="control">
 														<label class="checkbox">
-															<input name="tag-<%= configData.tags.list[i]._id %>-isLocked" type="checkbox" <%= configData.tags.list[i].isLocked ? "checked" : "" %>>
+															<input name="tag-<%= tag._id %>-isLocked" type="checkbox"<%= tag.isLocked ? " checked" : "" %>>
 														</label>
 													</p>
 												</td>
 												<td>
-													<button class="button is-small is-danger" name="<%= configData.tags.list[i]._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+													<button class="button is-small is-danger" name="<%= tag._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
@@ -166,7 +166,7 @@
 													</button>
 												</td>
 											</tr>
-										<% } %>
+										<% }); %>
 									</tbody>
 								</table>
 							</div>
