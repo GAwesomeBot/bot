@@ -34,9 +34,9 @@
 					success: function() {
 						saveFormState();
 						$("#form").submit();
-					  Turbolinks.visit('');
+						Turbolinks.visit('');
 					}
-				}).fail(data => location.href = "/error?err=json")
+				}).fail(() => location.href = "/error?err=json")
             };
 	        reader.readAsText(newTriviaFile);
 		}

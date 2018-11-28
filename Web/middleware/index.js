@@ -38,6 +38,7 @@ class GABResponse {
 		this.sendStatus = res.sendStatus.bind(res);
 		this.status = res.status.bind(res);
 		this.redirect = res.redirect.bind(res);
+		this.json = res.json.bind(res);
 		this._render = res.render.bind(res);
 	}
 
@@ -69,8 +70,8 @@ class GABResponse {
 	}
 
 	async render (page, template) {
+		if (!page && !this.pageData.page) return this.sendStatus(500);
 		if (!page) page = `pages/${this.pageData.page}`;
-		if (!this.pageData.page) return this.sendStatus(500);
 		this._render(page, template || {
 			...this.template,
 			serverData: this.serverData,

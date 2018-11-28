@@ -357,9 +357,7 @@ controllers.translation.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.trivia = async (req, res) => {
-	const { client } = req.app;
-	const { svr } = req;
+controllers.trivia = async (req, { res }) => {
 	const serverDocument = req.svr.document;
 
 	if (req.query.i) {
@@ -370,37 +368,29 @@ controllers.trivia = async (req, res) => {
 			renderError(res, "Are you sure that trivia set exists?", null, 404);
 		}
 	} else {
-		res.render("pages/admin-trivia-sets.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			sudo: req.isSudo,
-			serverData: {
-				name: svr.name,
-				id: svr.id,
-				icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-			},
-			currentPage: `${req.baseUrl}${req.path}`,
-			configData: {
-				trivia_sets: serverDocument.config.trivia_sets,
-				commands: {
-					trivia: {
-						isEnabled: serverDocument.config.commands.trivia.isEnabled,
-					},
+		res.setConfigData({
+			trivia_sets: serverDocument.config.trivia_sets,
+			commands: {
+				trivia: {
+					isEnabled: serverDocument.config.commands.trivia.isEnabled,
 				},
 			},
 		});
+		res.render("pages/admin-trivia-sets.ejs");
 	}
 };
 controllers.trivia.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-items"] && !serverDocument.config.trivia_sets.id(req.body["new-name"])) {
 		try {
-			serverDocument.config.trivia_sets.push({
+			serverQueryDocument.push("config.trivia_sets", {
 				_id: req.body["new-name"],
 				items: JSON.parse(req.body["new-items"]),
 			});
 		} catch (err) {
-			renderError(res, "That doesn't look like valid JSON to me!", null, 400);
+			renderError(res, "That doesn't look like a valid trivia set to me!", null, 400);
 			return;
 		}
 	}
@@ -408,66 +398,40 @@ controllers.trivia.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.APIKeys = async (req, res) => {
-	const { client } = req.app;
-	const { svr } = req;
+controllers.APIKeys = async (req, { res }) => {
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-api-keys.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			custom_api_keys: serverDocument.config.custom_api_keys || {},
-		},
-	});
+	res.setConfigData("custom_api_keys", serverDocument.config.custom_api_keys || {});
+	res.render("pages/admin-api-keys.ejs");
 };
 controllers.APIKeys.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
-	serverDocument.config.custom_api_keys.google_api_key = req.body.google_api_key;
-	serverDocument.config.custom_api_keys.google_cse_id = req.body.google_cse_id;
+	serverQueryDocument.set("config.custom_api_keys.google_api_key", req.body.google_api_key);
+	serverQueryDocument.set("config.custom_api_keys.google_cse_id", req.body.google_cse_id);
 
 	save(req, res, true);
 };
 
-controllers.reaction = async (req, res) => {
-	const { client } = req.app;
-	const { svr } = req;
+controllers.reaction = async (req, { res }) => {
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-tag-reaction.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			tag_reaction: serverDocument.config.tag_reaction,
-		},
-	});
+	res.setConfigData("tag_reaction", serverDocument.config.tag_reaction);
+	res.render("pages/admin-tag-reaction.ejs");
 };
 controllers.reaction.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-message"] && req.body["new-message"].length <= 2000) {
-		serverDocument.config.tag_reaction.messages.push(req.body["new-message"]);
+		serverQueryDocument.push("config.tag_reaction.messages", req.body["new-message"]);
 	} else {
-		serverDocument.config.tag_reaction.isEnabled = req.body.isEnabled === "on";
-		for (let i = 0; i < serverDocument.config.tag_reaction.messages.length; i++) {
+		serverQueryDocument.set("config.tag_reaction.isEnabled", req.body.isEnabled === "on");
+		serverDocument.config.tag_reaction.messages.forEach((message, i) => {
 			if (req.body[`tag_reaction-${i}-removed`]) {
-				serverDocument.config.tag_reaction.messages[i] = null;
+				serverQueryDocument.pull("config.tag_reaction.messages", message);
 			}
-		}
-		serverDocument.config.tag_reaction.messages.spliceNullElements();
+		});
 	}
 
 	save(req, res, true);

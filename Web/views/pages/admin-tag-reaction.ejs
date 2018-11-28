@@ -59,7 +59,7 @@
 								</label>
 							</p>
 							<ul id="tag_reaction-options" class="<%= configData.tag_reaction.isEnabled ? '' : 'is-hidden' %>">
-								<% for(var i=0; i<configData.tag_reaction.messages.length; i++) { %>
+								<% configData.tag_reaction.messages.forEach((message, i) => { %>
 									<li>
                                         <input type="checkbox" id="tag_reaction-<%= i %>-removed" name="tag_reaction-<%= i %>-removed" style="display: none;">
                                         <button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="$('#tag_reaction-<%= i %>-removed').attr('checked', true); saveFormState(); Turbolinks.visit('');">
@@ -67,9 +67,9 @@
 												<i class="fa fa-times"></i>
 											</span>
 										</button>
-										<%- configData.tag_reaction.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+										<%- message.replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
 									</li>
-								<% } %>
+								<% }); %>
 							</ul>
 						</div>
 						<div class="field is-horizontal">
