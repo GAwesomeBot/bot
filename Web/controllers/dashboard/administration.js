@@ -51,52 +51,45 @@ controllers.admins.post = (req, res) => {
 	save(req, res);
 };
 
-controllers.moderation = async (req, res) => {
-	const { client } = req.app;
+controllers.moderation = async (req, { res }) => {
 	const svr = await req.svr.fetchCollection("roles");
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-moderation.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+	res.setPageData({
+		page: "admin-moderation.ejs",
 		channelData: getChannelData(svr),
 		roleData: getRoleData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			moderation: {
-				isEnabled: serverDocument.config.moderation.isEnabled,
-				autokick_members: serverDocument.config.moderation.autokick_members,
-				new_member_roles: serverDocument.config.moderation.new_member_roles,
-			},
-			modlog: {
-				isEnabled: serverDocument.modlog.isEnabled,
-				channel_id: serverDocument.modlog.channel_id,
-			},
+	})
+	res.setConfigData({
+		moderation: {
+			isEnabled: serverDocument.config.moderation.isEnabled,
+			autokick_members: serverDocument.config.moderation.autokick_members,
+			new_member_roles: serverDocument.config.moderation.new_member_roles,
+		},
+		modlog: {
+			isEnabled: serverDocument.modlog.isEnabled,
+			channel_id: serverDocument.modlog.channel_id,
 		},
 	});
+	res.render();
 };
 controllers.moderation.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 	await req.svr.fetchCollection("roles");
 
-	serverDocument.config.moderation.isEnabled = req.body.isEnabled === "on";
-	serverDocument.config.moderation.autokick_members.isEnabled = req.body["autokick_members-isEnabled"] === "on";
-	serverDocument.config.moderation.autokick_members.max_inactivity = parseInt(req.body["autokick_members-max_inactivity"]);
-	serverDocument.config.moderation.new_member_roles = [];
+	serverQueryDocument.set("config.moderation.isEnabled", req.body.isEnabled === "on")
+		.set("config.moderation.autokick_members.isEnabled", req.body["autokick_members-isEnabled"] === "on")
+		.set("config.moderation.autokick_members.max_inactivity", parseInt(req.body["autokick_members-max_inactivity"]))
+		.set("config.moderation.new_member_roles", []);
 	req.svr.roles.forEach(role => {
 		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 			if (req.body[`new_member_roles-${role.id}`] === "on") {
-				serverDocument.config.moderation.new_member_roles.push(role.id);
+				serverQueryDocument.push("config.moderation.new_member_roles", role.id);
 			}
 		}
 	});
-	serverDocument.modlog.isEnabled = req.body["modlog-isEnabled"] === "on";
-	serverDocument.modlog.channel_id = req.body["modlog-channel_id"];
+	serverQueryDocument.set("modlog.isEnabled", req.body["modlog-isEnabled"] === "on")
+		.set("modlog.channel_id", req.body["modlog-channel_id"]);
 
 	save(req, res, true);
 };
