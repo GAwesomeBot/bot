@@ -108,16 +108,16 @@
 								</tbody>
 							</table>
 						</div>
-						<% if(roleData.length>0) { %>
+						<% if (pageData.roleData.length > 0) { %>
 							<div class="field is-horizontal">
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control">
 											<span class="select is-primary">
 												<select id="new-admin-role_id">
-													<% for(var i=0; i<roleData.length; i++) { %>
-														<option value="<%= roleData[i].id %>"><%= roleData[i].name %></option>
-													<% } %>
+													<% pageData.roleData.forEach( role => { %>
+														<option value="<%= role.id %>"><%= role.name %></option>
+													<% }); %>
 												</select>
 											</span>
 										</div>

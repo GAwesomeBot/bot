@@ -11,49 +11,41 @@ const md = new showdown.Converter({
 });
 md.setFlavor("github");
 
-const { saveAdminConsoleOptions: save, parseAuthUser, getChannelData, getRoleData, findQueryUser, createMessageOfTheDay, renderError } = require("../../helpers");
+const { saveAdminConsoleOptions: save, getChannelData, getRoleData, findQueryUser, createMessageOfTheDay, renderError } = require("../../helpers");
 const parsers = require("../../parsers");
 
 const controllers = module.exports;
 
-controllers.admins = async (req, res) => {
+controllers.admins = async (req, { res }) => {
 	const adminDocuments = req.svr.document.config.admins.filter(adminDocument => req.svr.roles.includes(adminDocument._id));
 	await req.svr.fetchCollection("roles");
-	res.render("pages/admin-admins.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: req.svr.name,
-			id: req.svr.id,
-			icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(req.svr),
-		roleData: getRoleData(req.svr).filter(role => req.svr.document.config.admins.id(role.id) === null),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			admins: adminDocuments.map(adminDocument => {
-				adminDocument.name = req.svr.roles.find(role => role.id === adminDocument._id).name;
-				return adminDocument;
-			}),
-			auto_add_admins: req.svr.document.config.auto_add_admins,
-		},
+
+	res.setPageData({
+		page: "admin-admins.ejs",
+		roleData: getRoleData(req.svr).filter(role => req.svr.document.config.admins.id(role.id) === undefined),
 	});
+	res.setConfigData({
+		admins: adminDocuments.map(adminDocument => {
+			adminDocument.name = req.svr.roles.find(role => role.id === adminDocument._id).name;
+			return adminDocument;
+		}),
+	});
+	res.render();
 };
 controllers.admins.post = (req, res) => {
 	if (req.body["new-role_id"] && req.body["new-level"] && !req.svr.document.config.admins.id(req.body["new-role_id"])) {
 		let level = parseInt(req.body["new-level"]);
 		if (isNaN(level) || level > 3 || level < 1) level = 1;
-		req.svr.document.config.admins.push({
+		req.svr.queryDocument.push("config.admins", {
 			_id: req.body["new-role_id"],
-			level: level,
+			level,
 		});
 	} else {
 		req.svr.document.config.admins.forEach(admin => {
 			if (req.body[`admin-${admin._id}-removed`]) {
-				req.svr.document.config.admins.pull(admin);
+				req.svr.queryDocument.pull("config.admins", admin);
 			}
 		});
-		req.svr.document.config.admins.spliceNullElements();
 	}
 
 	save(req, res);
