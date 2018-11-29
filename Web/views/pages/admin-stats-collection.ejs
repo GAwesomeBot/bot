@@ -27,9 +27,9 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="command-items">
-						<% var commandData = configData.commands.stats;commandData.name = "stats";commandData.description = commandDescriptions.stats;commandData.category = commandCategories.stats; %>
+						<% var commandData = configData.commands.stats; commandData.name = "stats"; commandData.description = pageData.commandDescriptions.stats; commandData.category = pageData.commandCategories.stats; %>
 						<% include ../partials/admin-command-item %>
-						<% var commandData = configData.commands.messages;commandData.name = "messages";commandData.description = commandDescriptions.messages;commandData.category = commandCategories.messages; %>
+						<% commandData = configData.commands.messages; commandData.name = "messages"; commandData.description = pageData.commandDescriptions.messages; commandData.category = pageData.commandCategories.messages; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 						<br>

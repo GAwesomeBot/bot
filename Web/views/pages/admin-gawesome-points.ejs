@@ -27,9 +27,9 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); return false;">
 						<div class="command-items">
-						<% var commandData = configData.commands.points;commandData.name = "points";commandData.description = commandDescriptions.points;commandData.category = commandCategories.points; %>
+						<% var commandData = configData.commands.points; commandData.name = "points"; commandData.description = pageData.commandDescriptions.points; commandData.category = pageData.commandCategories.points; %>
 						<% include ../partials/admin-command-item %>
-						<% var commandData = configData.commands.lottery;commandData.name = "lottery";commandData.description = commandDescriptions.lottery;commandData.category = commandCategories.lottery; %>
+						<% commandData = configData.commands.lottery; commandData.name = "lottery"; commandData.description = pageData.commandDescriptions.lottery; commandData.category = pageData.commandCategories.lottery; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 						<br>

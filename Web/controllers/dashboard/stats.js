@@ -3,27 +3,14 @@ const parsers = require("../../parsers");
 
 const controllers = module.exports;
 
-controllers.collection = async (req, res) => {
+controllers.collection = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-stats-collection.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+	res.setPageData({
+		page: "admin-stats-collection.ejs",
 		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			commands: {
-				messages: serverDocument.config.commands.messages,
-				stats: serverDocument.config.commands.stats,
-			},
-		},
 		commandDescriptions: {
 			games: client.getPublicCommandMetadata("games").description,
 			messages: client.getPublicCommandMetadata("messages").description,
@@ -35,6 +22,13 @@ controllers.collection = async (req, res) => {
 			stats: client.getPublicCommandMetadata("stats").category,
 		},
 	});
+	res.setConfigData({
+		commands: {
+			messages: serverDocument.config.commands.messages,
+			stats: serverDocument.config.commands.stats,
+		},
+	});
+	res.render();
 };
 controllers.collection.post = async (req, res) => {
 	parsers.commandOptions(req, "stats", req.body);
@@ -44,78 +38,59 @@ controllers.collection.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.ranks = async (req, res) => {
-	const { client } = req.app;
+controllers.ranks = async (req, { res }) => {
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
-	res.render("pages/admin-ranks.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
+	res.setPageData({
+		page: "admin-ranks.ejs",
 		roleData: getRoleData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			ranks_list: serverDocument.config.ranks_list.map(a => {
-				a.members = serverDocument.members.filter(memberDocument => memberDocument.rank === a._id).length;
-				return a;
-			}),
-		},
 	});
+	res.setConfigData({
+		ranks_list: serverDocument.config.ranks_list.map(a => {
+			a.members = Object.values(serverDocument.members).filter(memberDocument => memberDocument.rank === a._id).length;
+			return a;
+		}),
+	});
+	res.render();
 };
 controllers.ranks.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-max_score"] && !serverDocument.config.ranks_list.id(req.body["new-name"])) {
-		serverDocument.config.ranks_list.push({
+		serverQueryDocument.push("config.ranks_list", {
 			_id: req.body["new-name"],
-			max_score: req.body["new-max_score"],
+			max_score: parseInt(req.body["new-max_score"]),
 			role_id: req.body["new-role_id"] || null,
 		});
 	} else if (req.body["ranks_list-reset"]) {
-		serverDocument.members.forEach(member => {
-			member.rank = "No Rank";
+		Object.values(serverDocument.members).forEach(member => {
+			serverQueryDocument.set(`members.${member._id}.rank`, "No Rank");
 		});
 	} else {
 		serverDocument.config.ranks_list.forEach(rankDocument => {
-			rankDocument.max_score = parseInt(req.body[`rank-${rankDocument._id}-max_score`]);
+			const rankQueryDocument = serverQueryDocument.clone.id("config.ranks_list", rankDocument._id);
+			rankQueryDocument.set("max_score", parseInt(req.body[`rank-${rankDocument._id}-max_score`]));
 			if (rankDocument.role_id || req.body[`rank-${rankDocument._id}-role_id`]) {
-				rankDocument.role_id = req.body[`rank-${rankDocument._id}-role_id`];
+				rankQueryDocument.set("role_id", req.body[`rank-${rankDocument._id}-role_id`]);
 			}
 		});
 	}
-	serverDocument.config.ranks_list = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
+	serverQueryDocument.set("config.ranks_list", serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score));
 
 	save(req, res, true);
 };
 
-controllers.points = async (req, res) => {
+controllers.points = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-gawesome-points.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+	res.setPageData({
+		page: "admin-gawesome-points.ejs",
 		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			commands: {
-				points: serverDocument.config.commands.points,
-				lottery: serverDocument.config.commands.lottery,
-			},
-		},
 		commandDescriptions: {
 			points: client.getPublicCommandMetadata("points").description,
 			lottery: client.getPublicCommandMetadata("lottery").description,
@@ -125,6 +100,13 @@ controllers.points = async (req, res) => {
 			lottery: client.getPublicCommandMetadata("lottery").category,
 		},
 	});
+	res.setConfigData({
+		commands: {
+			points: serverDocument.config.commands.points,
+			lottery: serverDocument.config.commands.lottery,
+		},
+	});
+	res.render();
 };
 controllers.points.post = async (req, res) => {
 	parsers.commandOptions(req, "points", req.body);

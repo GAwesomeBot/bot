@@ -88,9 +88,9 @@
 												<span class="select is-primary is-small">
 													<select name="rank-<%= rankDocument._id %>-role_id">
 														<option value="">None</option>
-														<% for(var j=0; j<roleData.length; j++) { %>
-															<option value="<%= roleData[j].id %>" <%= rankDocument.role_id==roleData[j].id ? "selected" : "" %>><%= roleData[j].name %></option>
-														<% } %>
+														<% pageData.roleData.forEach( role => { %>
+															<option value="<%= role.id %>"<%= rankDocument.role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+														<% }); %>
 													</select>
 												</span>
 											</p>
@@ -133,9 +133,9 @@
 										<span class="select is-primary">
 											<select id="new-rank-role_id">
 												<option value="">No Role</option>
-												<% for(var i=0; i<roleData.length; i++) { %>
-													<option value="<%= roleData[i].id %>"><%= roleData[i].name %></option>
-												<% } %>
+												<% pageData.roleData.forEach( role => { %>
+													<option value="<%= role.id %>"><%= role.name %></option>
+												<% }); %>
 											</select>
 										</span>
 									</div>
