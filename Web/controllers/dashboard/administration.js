@@ -603,13 +603,12 @@ controllers.roles.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.logs = async (req, res) => {
-	const { client } = req.app;
+controllers.logs = async (req, { res }) => {
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
 	try {
-		let serverLogs = serverDocument.logs.length > 200 ? serverDocument.logs.toObject().slice(serverDocument.logs.length - 200) : serverDocument.logs.toObject();
+		let serverLogs = serverDocument.logs.length > 200 ? serverDocument.logs.slice(serverDocument.logs.length - 200) : serverDocument.logs;
 		serverLogs = serverLogs.filter(serverLog => (!req.query.q || serverLog.content.toLowerCase().includes(req.query.q.toLowerCase())) && (!req.query.chid || serverLog.channelid === req.query.chid));
 		const fetchList = [];
 		serverLogs.forEach(serverLog => svr.members[serverLog.userid] || fetchList.push(serverLog.userid));
@@ -649,20 +648,14 @@ controllers.logs = async (req, res) => {
 			return serverLog;
 		});
 
-		res.render("pages/admin-logs.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			sudo: req.isSudo,
-			serverData: {
-				name: svr.name,
-				id: svr.id,
-				icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-			},
+		res.setPageData({
+			page: "admin-logs.ejs",
 			channelData: getChannelData(svr),
-			currentPage: `${req.baseUrl}${req.path}`,
 			logData: serverLogs.reverse(),
 			searchQuery: req.query.q,
 			channelQuery: req.query.chid,
 		});
+		res.render();
 	} catch (err) {
 		winston.warn(`Failed to fetch logs for server ${svr.name} (*-*)\n`, err);
 		renderError(res, "Failed to fetch all the trees and their logs.");
