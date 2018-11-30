@@ -46,26 +46,26 @@
 								<p class="control">
 									<span class="select is-primary">
 										<select name="channel_id">
-											<% for(var i=0; i<channelData.length; i++) { %>
-											<option value="<%= channelData[i].id %>" <%= configData.message_of_the_day.channel_id==channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-											<% } %>
+											<% pageData.channelData.forEach(channel => { %>
+											<option value="<%= channel.id %>"<%= configData.message_of_the_day.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+											<% }); %>
 										</select>
 									</span>
 								</p>
 								<p class="control">
 									<span class="select is-primary">
 										<select name="interval">
-											<option value="300000" <%= configData.message_of_the_day.interval==300000 ? "selected" : "" %>>5 minutes</option>
-											<option value="600000" <%= configData.message_of_the_day.interval==600000 ? "selected" : "" %>>10 minutes</option>
-											<option value="900000" <%= configData.message_of_the_day.interval==900000 ? "selected" : "" %>>15 minutes</option>
-											<option value="3600000" <%= configData.message_of_the_day.interval==3600000 ? "selected" : "" %>>1 hour</option>
-											<option value="7200000" <%= configData.message_of_the_day.interval==7200000 ? "selected" : "" %>>2 hours</option>
-											<option value="10800000" <%= configData.message_of_the_day.interval==10800000 ? "selected" : "" %>>3 hours</option>
-											<option value="21600000" <%= configData.message_of_the_day.interval==21600000 ? "selected" : "" %>>6 hours</option>
-											<option value="32400000" <%= configData.message_of_the_day.interval==32400000 ? "selected" : "" %>>9 hours</option>
-											<option value="43200000" <%= configData.message_of_the_day.interval==43200000 ? "selected" : "" %>>12 hours</option>
-											<option value="86400000" <%= configData.message_of_the_day.interval==86400000 ? "selected" : "" %>>1 day</option>
-											<option value="172800000" <%= configData.message_of_the_day.interval==172800000 ? "selected" : "" %>>2 days</option>
+											<option value="300000" <%= configData.message_of_the_day.interval === 300000 ? "selected" : "" %>>5 minutes</option>
+											<option value="600000" <%= configData.message_of_the_day.interval === 600000 ? "selected" : "" %>>10 minutes</option>
+											<option value="900000" <%= configData.message_of_the_day.interval ===900000 ? "selected" : "" %>>15 minutes</option>
+											<option value="3600000" <%= configData.message_of_the_day.interval === 3600000 ? "selected" : "" %>>1 hour</option>
+											<option value="7200000" <%= configData.message_of_the_day.interval === 7200000 ? "selected" : "" %>>2 hours</option>
+											<option value="10800000" <%= configData.message_of_the_day.interval === 10800000 ? "selected" : "" %>>3 hours</option>
+											<option value="21600000" <%= configData.message_of_the_day.interval === 21600000 ? "selected" : "" %>>6 hours</option>
+											<option value="32400000" <%= configData.message_of_the_day.interval === 32400000 ? "selected" : "" %>>9 hours</option>
+											<option value="43200000" <%= configData.message_of_the_day.interval === 43200000 ? "selected" : "" %>>12 hours</option>
+											<option value="86400000" <%= configData.message_of_the_day.interval === 86400000 ? "selected" : "" %>>1 day</option>
+											<option value="172800000" <%= configData.message_of_the_day.interval === 172800000 ? "selected" : "" %>>2 days</option>
 										</select>
 									</span>
 								</p>

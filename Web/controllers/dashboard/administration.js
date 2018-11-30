@@ -493,36 +493,30 @@ controllers.filters.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.MOTD = async (req, res) => {
-	const { client } = req.app;
+controllers.MOTD = async (req, { res }) => {
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
-	res.render("pages/admin-message-of-the-day.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+	res.setPageData({
+		page: "admin-message-of-the-day.ejs",
 		channelData: getChannelData(svr),
 		roleData: getRoleData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			message_of_the_day: serverDocument.config.message_of_the_day,
-		},
 	});
+	res.setConfigData({
+		message_of_the_day: serverDocument.config.message_of_the_day,
+	})
+	res.render();
 };
 controllers.MOTD.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	const alreadyEnabled = serverDocument.config.message_of_the_day.isEnabled;
-	serverDocument.config.message_of_the_day.isEnabled = req.body.isEnabled === "on";
-	serverDocument.config.message_of_the_day.message_content = req.body.message_content;
-	serverDocument.config.message_of_the_day.channel_id = req.body.channel_id;
-	serverDocument.config.message_of_the_day.interval = parseInt(req.body.interval);
+	serverQueryDocument.set("config.message_of_the_day.isEnabled", req.body.isEnabled === "on")
+		.set("config.message_of_the_day.message_content", req.body.message_content)
+		.set("config.message_of_the_day.channel_id", req.body.channel_id)
+		.set("config.message_of_the_day.interval", parseInt(req.body.interval));
 
 	save(req, res, true);
 
@@ -532,24 +526,17 @@ controllers.MOTD.post = async (req, res) => {
 };
 
 controllers.voicetext = async (req, res) => {
-	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-voicetext-channels.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+	res.setPageData({
+		page: "admin-voicetext-channels.ejs",
 		voiceChannelData: getChannelData(svr, "voice"),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			voicetext_channels: serverDocument.config.voicetext_channels,
-		},
 	});
+	res.setConfigData({
+		voicetext_channels: serverDocument.config.voicetext_channels,
+	});
+	res.render();
 };
 controllers.voicetext.post = async (req, res) => {
 	const serverDocument = req.svr.document;
