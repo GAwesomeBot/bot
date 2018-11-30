@@ -3,34 +3,27 @@ const { saveAdminConsoleOptions: save, parseAuthUser } = require("../../helpers"
 
 const controllers = module.exports;
 
-controllers.nameDisplay = async (req, res) => {
+controllers.nameDisplay = async (req, { res }) => {
 	const { client } = req.app;
-	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-name-display.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			name_display: serverDocument.config.name_display,
-		},
+	res.setPageData({
+		page: "admin-name-display.ejs",
 		exampleUsername: req.consolemember.user.username,
 		exampleNickname: req.consolemember.nickname,
 		exampleDiscriminator: req.consolemember.user.discriminator,
 		currentExample: client.getName(serverDocument, req.consolemember),
 	});
+	res.setConfigData({
+		name_display: serverDocument.config.name_display,
+	});
+	res.render();
 };
 controllers.nameDisplay.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
-	serverDocument.config.name_display.use_nick = req.body["name_display-use_nick"] === "on";
-	serverDocument.config.name_display.show_discriminator = req.body["name_display-show_discriminator"] === "on";
+	serverQueryDocument.set("config.name_display.use_nick", req.body["name_display-use_nick"] === "on")
+		.set("config.name_display.show_discriminator", req.body["name_display-show_discriminator"] === "on");
 
 	save(req, res, true);
 };

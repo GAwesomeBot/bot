@@ -5,9 +5,9 @@
 	<% include ../partials/head %>
 
 	<script>
-		GAwesomeData.username = "<%= exampleUsername%>";
-		GAwesomeData.nickname = "<%= exampleNickname %>";
-		GAwesomeData.discriminator = "<%= exampleDiscriminator %>";
+		GAwesomeData.username = "<%= pageData.exampleUsername %>";
+		GAwesomeData.nickname = "<%= pageData.exampleNickname %>";
+		GAwesomeData.discriminator = "<%= pageData.exampleDiscriminator %>";
 	</script>
 </head>
 <body onload="saveFormState();">
@@ -38,7 +38,7 @@
 									<h2 class="subtitle">
 										Example with current settings:
 									</h2>
-									<h1 class="title" id="currentExample"><%= currentExample %></h1>
+									<h1 class="title" id="currentExample"><%= pageData.currentExample %></h1>
 								</div>
 							</div>
 						</div>
