@@ -525,7 +525,7 @@ controllers.MOTD.post = async (req, res) => {
 	}
 };
 
-controllers.voicetext = async (req, res) => {
+controllers.voicetext = async (req, { res }) => {
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
@@ -539,13 +539,13 @@ controllers.voicetext = async (req, res) => {
 	res.render();
 };
 controllers.voicetext.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
-	serverDocument.config.voicetext_channels = [];
+	serverQueryDocument.set("config.voicetext_channels", []);
 	req.svr.channels.forEach(ch => {
 		if (ch.type === "voice") {
 			if (req.body[`voicetext_channels-${ch.id}`] === "on") {
-				serverDocument.config.voicetext_channels.push(ch.id);
+				serverQueryDocument.push("config.voicetext_channels", ch.id);
 			}
 		}
 	});
@@ -553,31 +553,16 @@ controllers.voicetext.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.roles = async (req, res) => {
+controllers.roles = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 	await svr.fetchCollection("roles");
 
-	res.render("pages/admin-roles.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+	res.setPageData({
+		page: "admin-roles.ejs",
 		channelData: getChannelData(svr),
 		roleData: getRoleData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			commands: {
-				perms: serverDocument.config.commands.perms,
-				role: serverDocument.config.commands.role,
-				roleinfo: serverDocument.config.commands.roleinfo,
-			},
-			custom_roles: serverDocument.config.custom_roles,
-		},
 		commandDescriptions: {
 			perms: client.getPublicCommandMetadata("perms").description,
 			role: client.getPublicCommandMetadata("role").description,
@@ -589,18 +574,27 @@ controllers.roles = async (req, res) => {
 			roleinfo: client.getPublicCommandMetadata("roleinfo").category,
 		},
 	});
+	res.setConfigData({
+		commands: {
+			perms: serverDocument.config.commands.perms,
+			role: serverDocument.config.commands.role,
+			roleinfo: serverDocument.config.commands.roleinfo,
+		},
+		custom_roles: serverDocument.config.custom_roles,
+	});
+	res.render();
 };
 controllers.roles.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 	await req.svr.fetchCollection("roles");
 
 	parsers.commandOptions(req, "roleinfo", req.body);
 	parsers.commandOptions(req, "role", req.body);
-	serverDocument.config.custom_roles = [];
+	serverQueryDocument.set("config.custom_roles", []);
 	req.svr.roles.forEach(role => {
 		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 			if (req.body[`custom_roles-${role.id}`] === "on") {
-				serverDocument.config.custom_roles.push(role.id);
+				serverQueryDocument.push("config.custom_roles", role.id);
 			}
 		}
 	});
