@@ -28,7 +28,7 @@ controllers.nameDisplay.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.activities = async (req, res) => {
+controllers.activities = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
@@ -39,15 +39,15 @@ controllers.activities = async (req, res) => {
 	const ongoingLotteries = [];
 	const fetchList = [];
 
-	serverDocument.channels.forEach(channelDocument => {
+	Object.values(serverDocument.channels).forEach(channelDocument => {
 		if (channelDocument.poll.isOngoing) fetchList.push(channelDocument.poll.creator_id);
 		if (channelDocument.lottery.isOngoing) fetchList.push(channelDocument.lottery.creator_id);
 		if (channelDocument.giveaway.isOngoing) fetchList.push(channelDocument.giveaway.creator_id);
 	});
 	await svr.fetchMember(fetchList);
 
-	serverDocument.channels.forEach(channelDocument => {
-		const ch = svr.channels[channelDocument._id];
+	Object.values(serverDocument.channels).forEach(channelDocument => {
+		const ch = svr.channels.id(channelDocument._id);
 		if (ch) {
 			if (channelDocument.trivia.isOngoing) {
 				ongoingTrivia.push({
@@ -115,22 +115,16 @@ controllers.activities = async (req, res) => {
 			.sort((a, b) => a.rawPosition - b.rawPosition);
 	}
 
-	res.render("pages/admin-ongoing-activities.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-			defaultChannel: defaultChannel.name,
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
+	res.setPageData({
+		page: "admin-ongoing-activities.ejs",
 		trivia: ongoingTrivia,
 		polls: ongoingPolls,
 		giveaways: ongoingGiveaways,
 		lotteries: ongoingLotteries,
 		commandPrefix: client.getCommandPrefix(svr, serverDocument),
 	});
+	res.setServerData("defaultChannel", defaultChannel.name);
+	res.render();
 };
 controllers.activities.post = async (req, res) => {
 	if (req.body["end-type"] && req.body["end-id"]) {

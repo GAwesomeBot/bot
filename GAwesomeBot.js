@@ -260,7 +260,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 					serverDocument.query.prop("channels").push({ _id: ch.id });
 					channelDocument = serverDocument.channels[ch.id];
 				}
-				if (msg.action === "end") await Trivia.end(client, svr, serverDocument, ch, channelDocument);
+				await svr.populateDocument();
+				if (msg.action === "end") await Trivia.end(client, svr, serverDocument, ch, channelDocument, ch);
 				try {
 					await serverDocument.save();
 					client.IPC.send("cacheUpdate", { guild: msg.guild });
