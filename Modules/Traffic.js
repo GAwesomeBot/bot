@@ -62,8 +62,7 @@ class Traffic {
 	async data () {
 		const data = {};
 		data.hour = this.pageViews;
-		if (!this.db.traffic) this.db = this.db.get();
-		const rawData = await this.db.traffic.find().exec();
+		const rawData = await this.db.traffic.find({});
 		data.day = rawData.filter(traffic => (Date.now() - 86400000) < traffic._id);
 		data.days = {};
 		rawData.forEach(traffic => {

@@ -19,7 +19,7 @@ const { GetGuild } = require("../../Modules").getGuild;
 const controllers = module.exports;
 
 controllers.maintainer = async (req, { res }) => {
-	const result = await Servers.aggregate([{
+	const result = await EServers.aggregate([{
 		$group: {
 			_id: null,
 			total: {
@@ -28,7 +28,7 @@ controllers.maintainer = async (req, { res }) => {
 				},
 			},
 		},
-	}]).exec();
+	}]);
 	let messageCount = 0;
 	if (result) {
 		messageCount = result[0].total;
