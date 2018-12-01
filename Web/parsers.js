@@ -16,7 +16,7 @@ const { GetGuild } = require("../Modules").getGuild;
 const parsers = module.exports;
 
 parsers.serverData = async (req, serverDocument, webp = false) => {
-	let data;
+	let data = null;
 	const svr = new GetGuild(req.app.client, serverDocument._id);
 	await svr.initialize(["OWNER", req.app.client.user.id]);
 	await svr.fetchProperty("createdAt");

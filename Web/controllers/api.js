@@ -21,15 +21,18 @@ controllers.servers = async (req, res) => {
 		params._id = req.query.id;
 	}
 	const webp = req.accepts("image/webp") !== false;
-	Servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
-		.exec(async (err, serverDocuments) => {
-			if (!err && serverDocuments && serverDocuments.length) {
+	EServers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
+		.exec()
+		.then(async serverDocuments => {
+			if (serverDocuments && serverDocuments.length) {
 				const data = await Promise.all(serverDocuments.map(serverDocument => parsers.serverData(req, serverDocument, webp) || serverDocument._id));
+				data.spliceNullElements();
 				res.json(APIResponses.servers.success(data));
 			} else {
 				res.status(404).json(APIResponses.servers.notFound());
 			}
-		});
+		})
+		.catch(() => res.status(500).json(APIResponses.servers.internalError()));
 };
 
 controllers.servers.channels = async (req, res) => res.json(req.svr.channels);
@@ -50,8 +53,8 @@ controllers.users = async (req, res) => {
 		if (!user) user = await req.app.client.users.fetch(req.query.id, true);
 
 		if (user) {
-			let userDocument = await Users.findOne({ _id: user.id });
-			if (!userDocument) userDocument = await Users.create(new Users({ _id: user.id }));
+			let userDocument = await EUsers.findOne(user.id);
+			if (!userDocument) userDocument = await EUsers.create({ _id: user.id });
 			res.json(APIResponses.users.success(await parsers.userData(req, user, userDocument)));
 		} else {
 			res.status(404).json(APIResponses.users.notFound());
@@ -66,19 +69,18 @@ controllers.users.list = async (req, res) => {
 		await req.svr.fetchMember(req.svr.memberList);
 		res.json(getUserList(Object.values(req.svr.members).map(member => member.user)));
 	} else {
-		Users.aggregate([{
+		const userDocuments = await EUsers.aggregate([{
 			$project: {
 				username: 1,
 			},
-		}], (err, users) => {
-			if (!err && users) {
-				const response = users.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
-				response.spliceNullElements();
-				res.json(response);
-			} else {
-				res.status(500);
-			}
-		});
+		}]);
+		if (userDocuments) {
+			const response = userDocuments.map(usr => usr.username || null).filter(u => u !== null && u.split("#")[1] !== "0000").sort();
+			response.spliceNullElements();
+			res.json(response);
+		} else {
+			res.status(500);
+		}
 	}
 };
 
@@ -99,21 +101,22 @@ controllers.extensions = async (req, res) => {
 	if (req.query.owner) {
 		params.owner_id = req.query.owner;
 	}
-	Gallery.count(params, async (err, rawCount) => {
-		if (err || rawCount === null) {
-			rawCount = 0;
+
+	let rawCount = await EGallery.count(params);
+	if (rawCount === null) {
+		rawCount = 0;
+	}
+
+	try {
+		const galleryDocuments = await EGallery.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : rawCount)
+			.exec();
+		if (galleryDocuments && galleryDocuments.length) {
+			const data = await Promise.all(galleryDocuments.map(galleryDocument => parsers.extensionData(req, galleryDocument)));
+			res.status(200).json(APIResponses.extensions.success(data));
+		} else {
+			res.status(404).json(APIResponses.extensions.notFound());
 		}
-		try {
-			const galleryDocuments = await Gallery.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : rawCount)
-				.exec();
-			if (galleryDocuments && galleryDocuments.length) {
-				const data = await Promise.all(galleryDocuments.map(galleryDocument => parsers.extensionData(req, galleryDocument)));
-				res.status(200).json(APIResponses.extensions.success(data));
-			} else {
-				res.status(404).json(APIResponses.extensions.notFound());
-			}
-		} catch (_) {
-			res.status(500).json(APIResponses.extensions.internalError());
-		}
-	});
+	} catch (_) {
+		res.status(500).json(APIResponses.extensions.internalError());
+	}
 };

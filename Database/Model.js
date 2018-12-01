@@ -87,9 +87,11 @@ module.exports = class Model {
 		return Document.new(this.schema.build(data), this);
 	}
 
-	create (data) {
+	async create (data) {
 		const document = this.new(data);
-		return this._client.insertOne(document.toObject());
+		await this._client.insertOne(document.toObject());
+		document._new = false;
+		return document;
 	}
 
 	_find (query, opts, multi) {

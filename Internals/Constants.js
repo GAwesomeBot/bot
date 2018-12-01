@@ -282,6 +282,7 @@ exports.APIResponses = {
 	servers: {
 		success: data => ({ err: null, data }),
 		notFound: () => ({ err: "Server not found", data: null }),
+		internalError: () => ({ err: "Internal server error", data: null }),
 	},
 	users: {
 		success: data => ({ err: null, data }),
