@@ -53,7 +53,7 @@ controllers.gallery = async (req, { res }) => {
 	const renderPage = async (upvotedData, serverData) => {
 		const extensionState = req.path.substring(req.path.lastIndexOf("/") + 1);
 		try {
-			let rawCount = await EGallery.count({
+			let rawCount = await Gallery.count({
 				state: extensionState,
 			});
 			if (!rawCount) {
@@ -71,7 +71,7 @@ controllers.gallery = async (req, { res }) => {
 				};
 			}
 
-			const galleryDocuments = await EGallery.find(matchCriteria).sort({ featured: -1, points: -1, last_updated: -1 }).skip(count * (page - 1))
+			const galleryDocuments = await Gallery.find(matchCriteria).sort({ featured: -1, points: -1, last_updated: -1 }).skip(count * (page - 1))
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
@@ -107,7 +107,7 @@ controllers.gallery = async (req, { res }) => {
 				await svr.initialize(usr.id);
 				if (svr.success) {
 					try {
-						const serverDocument = await EServers.findOne(svr.id);
+						const serverDocument = await Servers.findOne(svr.id);
 						if (serverDocument) {
 							const member = svr.members[usr.id];
 							if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
@@ -136,7 +136,7 @@ controllers.gallery = async (req, { res }) => {
 		};
 		addServerData(0, async () => {
 			serverData.sort((a, b) => a.name.localeCompare(b.name));
-			const userDocument = await EUsers.findOne(req.user.id);
+			const userDocument = await Users.findOne(req.user.id);
 			if (userDocument) {
 				renderPage(userDocument.upvoted_gallery_extensions, serverData);
 			} else {
@@ -151,7 +151,7 @@ controllers.gallery = async (req, { res }) => {
 controllers.my = async (req, { res }) => {
 	if (req.isAuthenticated()) {
 		try {
-			const galleryDocuments = await EGallery.find({
+			const galleryDocuments = await Gallery.find({
 				owner_id: req.user.id,
 			}).exec();
 
@@ -194,7 +194,7 @@ controllers.builder = async (req, { res }) => {
 
 		if (req.query.extid) {
 			try {
-				const galleryDocument = await EGallery.findOne({
+				const galleryDocument = await Gallery.findOne({
 					_id: new ObjectID(req.query.extid),
 					owner_id: req.user.id,
 				});
@@ -274,17 +274,17 @@ controllers.builder.post = async (req, res) => {
 			};
 
 			if (req.query.extid) {
-				const galleryDocument = await EGallery.findOne({
+				const galleryDocument = await Gallery.findOne({
 					_id: new ObjectID(req.query.extid),
 					owner_id: req.user.id,
 				});
 				if (galleryDocument) {
 					saveExtensionData(galleryDocument, true);
 				} else {
-					saveExtensionData(await EGallery.new(), false);
+					saveExtensionData(await Gallery.new(), false);
 				}
 			} else {
-				saveExtensionData(await EGallery.new(), false);
+				saveExtensionData(await Gallery.new(), false);
 			}
 		} else {
 			renderError(res, "Failed to verify extension data!", undefined, 400);
@@ -297,7 +297,7 @@ controllers.builder.post = async (req, res) => {
 controllers.download = async (req, res) => {
 	let extensionDocument;
 	try {
-		extensionDocument = await EGallery.findOne(new ObjectID(req.params.extid));
+		extensionDocument = await Gallery.findOne(new ObjectID(req.params.extid));
 	} catch (err) {
 		return res.sendStatus(500);
 	}
@@ -327,7 +327,7 @@ controllers.gallery.modify = async (req, res) => {
 			const getGalleryDocument = async () => {
 				let doc;
 				try {
-					doc = await EGallery.findOne(new ObjectID(req.params.extid));
+					doc = await Gallery.findOne(new ObjectID(req.params.extid));
 				} catch (err) {
 					res.sendStatus(500);
 					return null;
@@ -339,12 +339,12 @@ controllers.gallery.modify = async (req, res) => {
 				return doc;
 			};
 			const getUserDocument = async () => {
-				let userDocument = await EUsers.findOne(req.user.id);
+				let userDocument = await Users.findOne(req.user.id);
 				if (userDocument) {
 					return userDocument;
 				} else {
 					try {
-						userDocument = await EUsers.new({ _id: req.user.id });
+						userDocument = await Users.new({ _id: req.user.id });
 					} catch (err) {
 						res.sendStatus(500);
 						return null;
@@ -380,8 +380,8 @@ controllers.gallery.modify = async (req, res) => {
 					await galleryDocument.save();
 					await userDocument.save();
 
-					let ownerUserDocument = await EUsers.findOne(galleryDocument.owner_id);
-					if (!ownerUserDocument) ownerUserDocument = await EUsers.new({ _id: galleryDocument.owner_id });
+					let ownerUserDocument = await Users.findOne(galleryDocument.owner_id);
+					if (!ownerUserDocument) ownerUserDocument = await Users.new({ _id: galleryDocument.owner_id });
 					ownerUserDocument.query.inc("points", vote * 10);
 					await ownerUserDocument.save();
 
@@ -398,7 +398,7 @@ controllers.gallery.modify = async (req, res) => {
 					}
 					res.sendStatus(200);
 
-					const serverDocuments = await EServers.find({
+					const serverDocuments = await Servers.find({
 						extensions: {
 							$elemMatch: {
 								_id: galleryDocument._id,
@@ -441,7 +441,7 @@ controllers.gallery.modify = async (req, res) => {
 					break;
 				case "reject":
 				case "remove": {
-					const ownerUserDocument2 = await EUsers.findOne(galleryDocument.owner_id);
+					const ownerUserDocument2 = await Users.findOne(galleryDocument.owner_id);
 					if (ownerUserDocument2) {
 						ownerUserDocument2.query.inc("points", -(galleryDocument.points * 10));
 						await ownerUserDocument2.save();
@@ -473,7 +473,7 @@ controllers.gallery.modify = async (req, res) => {
 				case "delete":
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
 
-					await EGallery.delete({ _id: galleryDocument._id });
+					await Gallery.delete({ _id: galleryDocument._id });
 					dashboardUpdate(req, req.path, req.user.id);
 
 					try {

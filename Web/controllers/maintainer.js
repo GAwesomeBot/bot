@@ -19,7 +19,7 @@ const { GetGuild } = require("../../Modules").getGuild;
 const controllers = module.exports;
 
 controllers.maintainer = async (req, { res }) => {
-	const result = await EServers.aggregate([{
+	const result = await Servers.aggregate([{
 		$group: {
 			_id: null,
 			total: {
@@ -144,7 +144,7 @@ controllers.options.blocklist = async (req, { res }) => {
 };
 controllers.options.blocklist.post = async (req, res) => {
 	if (req.body["new-user"]) {
-		let usr = await EUsers.findOne({ username: req.body["new-user"] });
+		let usr = await Users.findOne({ username: req.body["new-user"] });
 		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
 
 		if (usr && !configJSON.userBlocklist.includes(usr.id ? usr.id : usr._id) && !configJSON.maintainers.includes(usr.id ? usr.id : usr._id)) {
@@ -238,7 +238,7 @@ controllers.options.contributors = async (req, { res }) => {
 };
 controllers.options.contributors.post = async (req, res) => {
 	if (req.body["new-user"]) {
-		let usr = await EUsers.findOne({ username: req.body["new-user"] });
+		let usr = await Users.findOne({ username: req.body["new-user"] });
 		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
 		if (!usr.id) usr.id = usr._id;
 		if (usr && !configJSON.wikiContributors.includes(usr.id)) {
@@ -274,7 +274,7 @@ controllers.management.maintainers = async (req, { res }) => {
 controllers.management.maintainers.post = async (req, res) => {
 	if (req.level !== 2 && req.level !== 0) return res.sendStatus(403);
 	if (req.body["new-user"]) {
-		let usr = await EUsers.findOne({ username: req.body["new-user"] });
+		let usr = await Users.findOne({ username: req.body["new-user"] });
 		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
 		if (!usr.id) usr.id = usr._id;
 

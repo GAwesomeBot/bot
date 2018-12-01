@@ -12,7 +12,7 @@ class GuildCreate extends BaseEvent {
 			await Promise.all([guild.members.fetch(), PostShardedData(this.client)]);
 			let serverDocument, shouldMakeDocument = false;
 			try {
-				serverDocument = await EServers.findOne(guild.id);
+				serverDocument = await Servers.findOne(guild.id);
 			} catch (err) {
 				shouldMakeDocument = true;
 			}
@@ -22,12 +22,12 @@ class GuildCreate extends BaseEvent {
 			} else if (shouldMakeDocument || !serverDocument) {
 				winston.info(`Joined server ${guild}`, { svrid: guild.id });
 				try {
-					const newServerDocument = await getNewServerData(this.client, guild, EServers.new(guild.id));
+					const newServerDocument = await getNewServerData(this.client, guild, Servers.new(guild.id));
 					await newServerDocument.save();
 				} catch (err) {
 					winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
 				}
-				this.client.logMessage(await EServers.findOne(guild.id), LoggingLevels.INFO, "I've been added to your server! (^-^)");
+				this.client.logMessage(await Servers.findOne(guild.id), LoggingLevels.INFO, "I've been added to your server! (^-^)");
 			}
 		}
 	}

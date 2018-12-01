@@ -4,7 +4,6 @@ const {
 	NewServer: getNewServerData,
 	PostShardedData,
 	Utils,
-	Cache,
 	Giveaways,
 } = require("../../../Modules/");
 const {
@@ -39,7 +38,7 @@ class Ready extends BaseEvent {
 			const newServerDocuments = await this.ensureDocuments();
 			if (newServerDocuments && newServerDocuments.length > 0) {
 				winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-				await EServers.insert(newServerDocuments, { ordered: false }).catch(err => {
+				await Servers.insert(newServerDocuments, { ordered: false }).catch(err => {
 					winston.warn(`Failed to insert new server documents..`, err);
 				}).then(async () => {
 					winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
@@ -59,7 +58,7 @@ class Ready extends BaseEvent {
 		const newServerDocuments = [];
 
 		const makeNewDocument = async guild => {
-			const serverDocument = await EServers.findOne(guild.id).catch(err => {
+			const serverDocument = await Servers.findOne(guild.id).catch(err => {
 				winston.debug(`Failed to find server data for server ${guild.id}!`, err);
 			});
 			if (serverDocument) {
@@ -68,7 +67,7 @@ class Ready extends BaseEvent {
 					if (!channelIDs.includes(ch._id)) serverDocument.query.id("channels", ch._id).remove();
 				});
 			} else {
-				newServerDocuments.push(await getNewServerData(this.client, guild, EServers.new({ _id: guild.id })));
+				newServerDocuments.push(await getNewServerData(this.client, guild, Servers.new({ _id: guild.id })));
 			}
 		};
 
@@ -82,7 +81,7 @@ class Ready extends BaseEvent {
 	async pruneServerData () {
 		if (this.client.shardID === "0") {
 			winston.debug(`Deleting data for old servers...`);
-			EServers.delete({
+			Servers.delete({
 				_id: {
 					$nin: await Utils.GetValue(this.client, "guilds.keys()", "arr", "Array.from"),
 				},
@@ -120,15 +119,14 @@ class Ready extends BaseEvent {
 	 */
 	async startMessageCount () {
 		winston.debug("Creating messages_today timers.");
-		await EServers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
+		await Servers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
 			winston.warn(`Failed to start message counter.. >->`, err);
 		});
 		const clearMessageCount = () => {
 			winston.debug("Good new 24 hours! Clearing message counters.");
-			EServers.update({}, { $set: { messages_today: 0 } }, { multi: true });
+			Servers.update({}, { $set: { messages_today: 0 } }, { multi: true });
 		};
 		this.client.setInterval(clearMessageCount, 86400000);
-		await Cache(this.client);
 		// TODO: Add to array this.startTimerExtensions()
 		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay()]);
 		await winston.debug("Posting stats data to Discord Bot listings.");
@@ -176,7 +174,7 @@ class Ready extends BaseEvent {
 	 * Start message of the day timer, this time with less bork.
 	 */
 	async startMessageOfTheDay () {
-		const serverDocuments = await EServers.find({
+		const serverDocuments = await Servers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -203,7 +201,8 @@ class Ready extends BaseEvent {
 	 */
 	async checkStreamers () {
 		winston.debug("Checking for streamers in servers.");
-		for (const serverDocument of this.client.cache) {
+		const serverDocuments = await Servers.find({ "config.streamers_data.0": { $exists: true } }).exec();
+		for (const serverDocument of serverDocuments) {
 			const guild = this.client.guilds.get(serverDocument._id);
 			if (guild) {
 				winston.verbose(`Checking for streamers in server ${guild}`, { svrid: guild.id });
@@ -225,7 +224,7 @@ class Ready extends BaseEvent {
 	 * Start RSS streaming timers
 	 */
 	async startStreamingRSS () {
-		const serverDocuments = await EServers.find({
+		const serverDocuments = await Servers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -269,7 +268,7 @@ class Ready extends BaseEvent {
 	 */
 	async setGiveaways () {
 		const promiseArray = [];
-		const serverDocuments = await EServers.find({
+		const serverDocuments = await Servers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -306,7 +305,7 @@ class Ready extends BaseEvent {
 	 */
 	async setCountdowns () {
 		const promiseArray = [];
-		const serverDocuments = await EServers.find({
+		const serverDocuments = await Servers.find({
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
@@ -336,7 +335,7 @@ class Ready extends BaseEvent {
 	async setReminders () {
 		if (this.client.shardID !== "0") return;
 		const promiseArray = [];
-		const userDocuments = await EUsers.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
+		const userDocuments = await Users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
 			winston.warn(`Failed to get reminders from db (-_-*)`, err);
 		});
 		if (userDocuments) {
@@ -356,10 +355,10 @@ class Ready extends BaseEvent {
 	 */
 	async statsCollector () {
 		winston.debug("Collecting stats for servers.");
-		const clearStatsServerDocuments = await EServers.find({ stats_timestamp: { $lt: Date.now() - 604800000 } }).exec();
+		const clearStatsServerDocuments = await Servers.find({ stats_timestamp: { $lt: Date.now() - 604800000 } }).exec();
 		await Promise.all(clearStatsServerDocuments.map(serverDocument => clearStats(this.client, serverDocument)));
 
-		const autokickServerDocuments = await EServers.find({
+		const autokickServerDocuments = await Servers.find({
 			"config.moderation.isEnabled": true,
 			"config.moderation.autokick_members.isEnabled": true,
 		}).exec();

@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
+const { ObjectID } = require("mongodb");
+const Schema = require("./Schema");
 
-module.exports = new mongoose.Schema({
+module.exports = Schema.Map({
 	_id: {
 		type: String,
 		required: true,
@@ -30,9 +31,12 @@ module.exports = new mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
-	strikes: [new mongoose.Schema({
-		// User ID
+	strikes: [new Schema({
 		_id: {
+			type: String,
+			default: () => new ObjectID().toString(),
+		},
+		admin: {
 			type: String,
 			required: true,
 		},
@@ -49,8 +53,8 @@ module.exports = new mongoose.Schema({
 			type: Number,
 		},
 	})],
-	profile_fields: mongoose.Schema.Types.Mixed,
-	muted: [new mongoose.Schema({
+	profile_fields: Schema.Mixed,
+	muted: [new Schema({
 		_id: {
 			type: String,
 			required: true,

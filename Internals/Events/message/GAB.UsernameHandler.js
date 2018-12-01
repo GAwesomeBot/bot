@@ -9,7 +9,7 @@ class UsernameHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.userDocument = await EUsers.findOne(msg.author.id);
+		this.userDocument = await Users.findOne(msg.author.id);
 	}
 
 	async handle (msg) {

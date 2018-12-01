@@ -4,7 +4,7 @@ const { GetGuild } = getGuild;
 const parsers = require("../parsers");
 
 module.exports = async (req, { res }) => {
-	const result = await EServers.aggregate([{
+	const result = await Servers.aggregate([{
 		$group: {
 			_id: null,
 			total: {
@@ -122,12 +122,12 @@ module.exports = async (req, { res }) => {
 				break;
 		}
 
-		let rawCount = await EServers.count(matchCriteria);
+		let rawCount = await Servers.count(matchCriteria);
 		if (rawCount === null) {
 			rawCount = guildAmount;
 		}
 
-		const serverDocuments = await EServers.aggregate([
+		const serverDocuments = await Servers.aggregate([
 			{
 				$match: matchCriteria,
 			},
@@ -178,7 +178,7 @@ module.exports = async (req, { res }) => {
 			req.query.q = "";
 		}
 		if (req.query.q) {
-			const userDocument = await EUsers.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] });
+			const userDocument = await Users.findOne({ $or: [{ _id: req.query.q }, { username: req.query.q }] });
 			if (userDocument) {
 				const usr = await req.app.client.users.fetch(userDocument._id, true);
 				const userProfile = await parsers.userData(req, usr, userDocument);
@@ -190,7 +190,7 @@ module.exports = async (req, { res }) => {
 				renderPage({ pageTitle: `Lookup for user "${req.query.q}"` });
 			}
 		} else {
-			const userResult = await EUsers.aggregate([{
+			const userResult = await Users.aggregate([{
 				$group: {
 					_id: null,
 					totalPoints: {

@@ -1,6 +1,5 @@
 module.exports = {
 	Boot: require("./Boot"),
-	Cache: require("./Cache/"),
 	Console: require("./Console"),
 	Constants: require("./Constants"),
 	Errors: require("./Errors/"),

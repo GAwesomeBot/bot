@@ -16,7 +16,7 @@ const moment = require("moment");
 const { renderError } = require("../helpers");
 
 module.exports = async (req, { res }) => {
-	const wikiDocuments = await EWiki.find({}).sort({
+	const wikiDocuments = await Wiki.find({}).sort({
 		_id: 1,
 	}).exec();
 
@@ -74,7 +74,7 @@ module.exports = async (req, { res }) => {
 };
 
 module.exports.readArticle = async (req, { res }) => {
-	const wikiDocuments = await EWiki.find({}).sort({
+	const wikiDocuments = await Wiki.find({}).sort({
 		_id: 1,
 	}).exec();
 	if (!wikiDocuments) {
@@ -122,7 +122,7 @@ module.exports.edit = async (req, { res }) => {
 
 	if (req.params.id) {
 		try {
-			const wikiDocument = await EWiki.findOne(req.params.id);
+			const wikiDocument = await Wiki.findOne(req.params.id);
 			renderPage({
 				title: wikiDocument._id || req.query.id,
 				content: wikiDocument.content || "",
@@ -138,7 +138,7 @@ module.exports.edit = async (req, { res }) => {
 module.exports.edit.post = async (req, res) => {
 	if (req.params.id) {
 		try {
-			const wikiDocument = await EWiki.findOne(req.params.id);
+			const wikiDocument = await Wiki.findOne(req.params.id);
 			if (!wikiDocument) return renderError(res, "That article does not exist!");
 			const history = diff.main(wikiDocument.content, req.body.content).filter(a => a[0] !== 0);
 			diff.cleanupSemantic(history);
@@ -153,7 +153,7 @@ module.exports.edit.post = async (req, res) => {
 			renderError(res, "An error occurred while saving wiki documents!");
 		}
 	} else {
-		const wikiDocument = EWiki.new({
+		const wikiDocument = Wiki.new({
 			_id: req.body.title,
 			content: req.body.content,
 			updates: [{
@@ -166,7 +166,7 @@ module.exports.edit.post = async (req, res) => {
 };
 
 module.exports.history = async (req, { res }) => {
-	const wikiDocuments = await EWiki.find({}).sort({
+	const wikiDocuments = await Wiki.find({}).sort({
 		_id: 1,
 	}).exec();
 	if (!wikiDocuments) {
@@ -210,7 +210,7 @@ module.exports.history = async (req, { res }) => {
 
 module.exports.react = async (req, res) => {
 	if (req.isAuthenticated()) {
-		const wikiDocument = await EWiki.findOne(req.params.id);
+		const wikiDocument = await Wiki.findOne(req.params.id);
 		if (!wikiDocument) {
 			res.sendStatus(404);
 		} else {
@@ -240,7 +240,7 @@ module.exports.react = async (req, res) => {
 };
 
 module.exports.delete = (req, res) => {
-	EWiki.delete({ _id: req.params.id }).then(() => {
+	Wiki.delete({ _id: req.params.id }).then(() => {
 		res.sendStatus(200);
 	}).catch(() => res.sendStatus(500));
 };

@@ -11,7 +11,7 @@ class SpamHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await EServers.findOne(msg.guild.id);
+		this.serverDocument = await Servers.findOne(msg.guild.id);
 		this.channelDocument = this.serverDocument.channels[msg.channel.id];
 		if (!this.channelDocument) {
 			this.serverDocument.query.prop("channels").push({ _id: msg.channel.id });
@@ -43,7 +43,7 @@ class SpamHandler extends BaseEvent {
 						.inc("message_count")
 						.set("last_message_content", msg.cleanContent);
 					this.client.setTimeout(async () => {
-						const serverDocument = await EServers.findOne(msg.guild.id).catch(err => {
+						const serverDocument = await Servers.findOne(msg.guild.id).catch(err => {
 							winston.debug(`Failed to get server document for spam filter..`, err);
 						});
 						if (serverDocument) {
@@ -87,7 +87,7 @@ class SpamHandler extends BaseEvent {
 						// Deduct 25 GAwesomePoints if necessary
 						if (this.serverDocument.config.commands.points.isEnabled) {
 							// Get user data
-							const userDocument = await EUsers.findOne(msg.author.id);
+							const userDocument = await Users.findOne(msg.author.id);
 							if (userDocument) {
 								userDocument.query.inc("points", -25);
 								await userDocument.save().catch(err => {
@@ -131,7 +131,7 @@ class SpamHandler extends BaseEvent {
 						}
 
 						// Get user data
-						const userDocument = await EUsers.findOne(msg.author.id);
+						const userDocument = await Users.findOne(msg.author.id);
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;

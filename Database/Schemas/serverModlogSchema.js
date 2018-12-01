@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 
-module.exports = {
+module.exports = new Schema({
 	isEnabled: {
 		type: Boolean,
 		default: false,
@@ -10,7 +10,7 @@ module.exports = {
 		type: Number,
 		default: 0,
 	},
-	entries: [new mongoose.Schema({
+	entries: [new Schema({
 		_id: {
 			// Based off current_id
 			type: Number,
@@ -71,5 +71,5 @@ module.exports = {
 			type: Boolean,
 			default: true,
 		},
-	}, { usePushEach: true })],
-};
+	})],
+});

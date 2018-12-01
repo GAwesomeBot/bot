@@ -30,7 +30,7 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 				client.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
 			}
 			client.setTimeout(async () => {
-				const newServerDocument = await EServers.findOne(server.id).exec().catch(err => {
+				const newServerDocument = await Servers.findOne(server.id).exec().catch(err => {
 					winston.warn(`Failed to set timeout for MOTD... (*-*)\n`, err);
 				});
 				await sendMOTD(newServerDocument);
@@ -41,7 +41,7 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 	if (motdDocument.isEnabled) {
 		if (client.MOTDTimers.has(server.id)) client.clearTimeout(client.MOTDTimers.get(server.id));
 		client.MOTDTimers.set(server.id, client.setTimeout(async () => {
-			const serverDocument = await EServers.findOne(server.id).exec().catch(err => {
+			const serverDocument = await Servers.findOne(server.id).exec().catch(err => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});
 			await sendMOTD(serverDocument);

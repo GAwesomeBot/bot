@@ -23,7 +23,7 @@ module.exports = class ModLog {
 	}
 
 	static async create (guild, type, member, creator, reason = null) {
-		const serverDocument = await EServers.findOne(guild.id);
+		const serverDocument = await Servers.findOne(guild.id);
 		const serverQueryDocument = serverDocument.query;
 		if (serverDocument && serverDocument.modlog.isEnabled && serverDocument.modlog.channel_id) {
 			const ch = guild.channels.get(serverDocument.modlog.channel_id);

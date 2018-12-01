@@ -65,7 +65,7 @@ const safeMode = async (val, configJS, configJSON, auth, scope) => {
 	// Because WebServer is not loaded, the primary way to interact with GAwesomeBot is through hooking into the Node.JS runtime with for example the Chrome Debugger.
 	winston.warn("--- SAFE --- Connecting to Database --- SAFE ---");
 	const database = require("../Database/Driver.js");
-	await database.einitialize(configJS.database).catch(err => {
+	await database.initialize(configJS.database).catch(err => {
 		winston.warn("--- SAFE --- Connection to Database failed --- SAFE ---", err);
 	});
 	winston.warn("--- SAFE --- Successfully connected to Database --- SAFE ---");

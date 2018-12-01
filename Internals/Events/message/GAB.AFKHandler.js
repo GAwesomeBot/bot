@@ -19,7 +19,7 @@ class AFKHandler extends BaseEvent {
 	}
 
 	async prerequisite (msg) {
-		this.serverDocument = await EServers.findOne(msg.guild.id);
+		this.serverDocument = await Servers.findOne(msg.guild.id);
 	}
 
 	async handle (msg) {
@@ -42,7 +42,7 @@ class AFKHandler extends BaseEvent {
 						});
 					} else {
 						// User doesn't have server AFK message, go for global one
-						const targetUserDocument = await EUsers.findOne(member.id).catch(err => {
+						const targetUserDocument = await Users.findOne(member.id).catch(err => {
 							winston.verbose(`Failed to find user document for global AFK message >.>`, err);
 						});
 						if (targetUserDocument && targetUserDocument.afk_message) {

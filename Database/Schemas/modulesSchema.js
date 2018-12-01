@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 const { AllowedEvents } = require("../../Internals/Constants");
 
 /*
  * Schema for commands, keywords, and timers (third-party and gallery)
  */
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	name: {
 		type: String,
 		minlength: 2,
@@ -56,7 +56,7 @@ module.exports = new mongoose.Schema({
 		maxlength: 1000,
 	},
 	last_run: Date,
-	store: mongoose.Schema.Types.Mixed,
+	store: Schema.Mixed,
 	updates_available: {
 		type: Number,
 		min: 0,
@@ -84,7 +84,7 @@ module.exports = new mongoose.Schema({
 	},
 	code_id: String,
 	versions: [
-		new mongoose.Schema({
+		new Schema({
 			_id: {
 				type: String,
 				required: true,
@@ -104,7 +104,7 @@ module.exports = new mongoose.Schema({
 		max: 10000,
 	},
 	fields: [
-		new mongoose.Schema({
+		new Schema({
 			_id: {
 				type: String,
 				required: true,
@@ -113,4 +113,4 @@ module.exports = new mongoose.Schema({
 			value: String,
 		}),
 	],
-}, { usePushEach: true });
+});

@@ -1,5 +1,5 @@
 /* eslint-disable max-len*/
-const { Error: GABError } = require("../../../Internals/Errors");
+const { Error: GABError } = require("../../Internals/Errors");
 
 const MapSymbol = Symbol("map");
 

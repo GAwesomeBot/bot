@@ -8,7 +8,7 @@ const { LoggingLevels } = require("../../Constants");
 class GuildMemberAdd extends BaseEvent {
 	async handle (member) {
 		// Get server data
-		const serverDocument = await EServers.findOne(member.guild.id);
+		const serverDocument = await Servers.findOne(member.guild.id);
 		if (serverDocument) {
 			if (serverDocument.config.moderation.isEnabled) {
 				// Send new_member_message if necessary

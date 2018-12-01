@@ -160,7 +160,7 @@ module.exports = class Trivia {
 					triviaQueryDocument.inc("score");
 					triviaResponderQueryDocument.inc("score");
 					if (serverDocument.config.commands.points.isEnabled && svr.members.size > 2 && !serverDocument.config.commands.points.disabled_channel_ids.includes(ch.id)) {
-						const userDocument = await EUsers.findOne(usr.id);
+						const userDocument = await Users.findOne(usr.id);
 						if (userDocument) {
 							userDocument.query.inc("points", 5);
 							await userDocument.save();

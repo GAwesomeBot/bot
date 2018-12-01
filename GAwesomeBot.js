@@ -5,9 +5,6 @@ const { handler: getGuildMessageHandler } = getGuild;
 const { ObjectDefines, MessageOfTheDay } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
 const {
-	Cache: {
-		ServerDocumentCache,
-	},
 	EventHandler,
 	Boot,
 } = require("./Internals/index");
@@ -38,48 +35,17 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	});
 
 	ObjectDefines(client);
-	global.ThatClientThatDoesCaching = client;
 
 	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
-	await database.einitialize(configJS.database);
-	database.initialize(process.argv.indexOf("--db") > -1 ? process.argv[process.argv.indexOf("--db") + 1] : configJS.databaseURL, global.ThatClientThatDoesCaching).catch(err => {
+	await database.initialize(configJS.database).catch(err => {
 		winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 		process.exit(1);
-	}).then(async () => {
-		winston.info("Successfully connected to MongoDB!");
-		winston.debug("Initializing Discord Events.");
-		client.events = new EventHandler(client, configJS);
-		await client.events.init();
-		// Store server documents by ID
-		client.cache = new ServerDocumentCache();
-		client.traffic = new Traffic(client.IPC, true);
-
-		winston.debug("Logging in to Discord Gateway.");
-		try {
-			await client.init();
-			client.IPC.send("ready", { id: client.shard.id });
-		} catch (err) {
-			if (err.code === "TOKEN_INVALID") {
-				winston.error(`The token you provided in auth.js could not be used to login into Discord.`);
-				client.IPC.send("shutdown", { soft: false, err: true });
-			} else {
-				winston.error(`Failed to connect to Discord :/`);
-				// eslint-disable-next-line no-console
-				console.error(err);
-				process.exit(1);
-			}
-		}
-	})
-		.catch();
-
-	process.on("unhandledRejection", reason => {
-		winston.error(`An unexpected error occurred, and we failed to handle it. x.x\n`, reason);
 	});
-
-	process.on("uncaughtException", err => {
-		winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
-		process.exit(1);
-	});
+	winston.info("Successfully connected to MongoDB!");
+	winston.debug("Initializing Discord Events.");
+	client.events = new EventHandler(client, configJS);
+	await client.events.init();
+	client.traffic = new Traffic(client.IPC, true);
 
 	client.IPC.on("getGuild", async (msg, callback) => {
 		if (msg.target === "*") {
@@ -131,7 +97,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	client.IPC.on("createMOTD", async msg => {
 		try {
 			const guild = client.guilds.get(msg.guild);
-			const serverDocument = await EServers.findOne(guild.id);
+			const serverDocument = await Servers.findOne(guild.id);
 
 			MessageOfTheDay(client, guild, serverDocument.config.message_of_the_day, serverDocument.query);
 		} catch (err) {
@@ -146,7 +112,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	client.IPC.on("createPublicInviteLink", async msg => {
 		const guildID = msg.guild;
 		const guild = client.guilds.get(guildID);
-		const serverDocument = await EServers.findOne(guild.id);
+		const serverDocument = await Servers.findOne(guild.id);
 		const channel = guild.defaultChannel ? guild.defaultChannel : guild.channels.filter(c => c.type === "text").first();
 		if (channel && serverDocument) {
 			const invite = await channel.createInvite({ maxAge: 0 }, "GAwesomeBot Public Server Listing");
@@ -158,7 +124,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	client.IPC.on("deletePublicInviteLink", async msg => {
 		const guildID = msg.guild;
 		const guild = client.guilds.get(guildID);
-		const serverDocument = await EServers.findOne(guild.id);
+		const serverDocument = await Servers.findOne(guild.id);
 		if (!serverDocument) return;
 		const invites = await guild.fetchInvites();
 		const invite = invites.get(serverDocument.config.public_data.server_listing.invite_link.replace("https://discord.gg/", ""));
@@ -253,7 +219,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 
 				if (!ch) return;
 
-				const serverDocument = await EServers.findOne({ _id: svr.id });
+				const serverDocument = await Servers.findOne({ _id: svr.id });
 				if (!serverDocument) return;
 				let channelDocument = serverDocument.channels[ch.id];
 				if (!channelDocument) {
@@ -276,7 +242,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 
 				if (!ch) return;
 
-				const serverDocument = await EServers.findOne({ _id: svr.id });
+				const serverDocument = await Servers.findOne({ _id: svr.id });
 				if (!serverDocument) return;
 				let channelDocument = serverDocument.channels[ch.id];
 				if (!channelDocument) {
@@ -298,7 +264,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 
 				if (!ch) return;
 
-				const serverDocument = await EServers.findOne({ _id: svr.id });
+				const serverDocument = await Servers.findOne({ _id: svr.id });
 				if (!serverDocument) return;
 				if (msg.action === "end") await Giveaways.end(client, svr, ch, serverDocument);
 				try {
@@ -315,7 +281,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 
 				if (!ch) return;
 
-				const serverDocument = await EServers.findOne({ _id: svr.id });
+				const serverDocument = await Servers.findOne({ _id: svr.id });
 				if (!serverDocument) return;
 				let channelDocument = serverDocument.channels[ch.id];
 				if (!channelDocument) {
@@ -689,8 +655,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			const proctime = process.hrtime();
 			if (!msg.author.bot) {
 				try {
-					const find = await EUsers.findOne({ _id: msg.author.id });
-					if (!find) await EUsers.new({ _id: msg.author.id }).save();
+					const find = await Users.findOne({ _id: msg.author.id });
+					if (!find) await Users.new({ _id: msg.author.id }).save();
 				} catch (err) {
 					if (!/duplicate key/.test(err.message)) {
 						winston.warn(`Failed to create user document for ${msg.author.tag}`, { err });
@@ -834,7 +800,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			await winston.silly("Running webserver");
 			WebServer.open(client, auth, configJS, winston);
 			client.isReady = true;
-			global.ThatClientThatDoesCaching = client;
 		} catch (err) {
 			winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
 			process.exit(1);
@@ -935,6 +900,31 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	 */
 	client.on("warn", async info => {
 		winston.warn(`Received WARN event from Discord.js!`, { info });
+	});
+
+	winston.debug("Logging in to Discord Gateway.");
+	try {
+		await client.init();
+		client.IPC.send("ready", { id: client.shard.id });
+	} catch (err) {
+		if (err.code === "TOKEN_INVALID") {
+			winston.error(`The token you provided in auth.js could not be used to login into Discord.`);
+			client.IPC.send("shutdown", { soft: false, err: true });
+		} else {
+			winston.error(`Failed to connect to Discord :/`);
+			// eslint-disable-next-line no-console
+			console.error(err);
+			process.exit(1);
+		}
+	}
+
+	process.on("unhandledRejection", reason => {
+		winston.error(`An unexpected error occurred, and we failed to handle it. x.x\n`, reason);
+	});
+
+	process.on("uncaughtException", err => {
+		winston.error(`An unexpected and unknown error occurred, and we failed to handle it. x.x\n`, err);
+		process.exit(1);
 	});
 }).catch(err => {
 	throw err;

@@ -26,7 +26,7 @@ controllers.home = async (req, { res }) => {
 					isAdmin: false,
 				};
 				if (svr.success) {
-					const serverDocument = await EServers.findOne(req.user.guilds[i].id);
+					const serverDocument = await Servers.findOne(req.user.guilds[i].id);
 					if (serverDocument) {
 						const member = svr.members[usr.id];
 						if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3 || canDo("sudo", usr.id)) {
@@ -83,7 +83,7 @@ controllers.overview = async (req, { res }) => {
 		let topMember = topMemberID ? topMemberID._id : null;
 		const memberIDs = Object.keys(req.svr.members);
 
-		const userDocuments = await EUsers.find({
+		const userDocuments = await Users.find({
 			_id: {
 				$in: memberIDs,
 			},

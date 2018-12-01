@@ -8,7 +8,7 @@ module.exports = () => {
 	Structures.extend("Guild", Guild => {
 		class GABGuild extends Guild {
 			async populateDocument () {
-				this.serverDocument = await EServers.findOne(this.id);
+				this.serverDocument = await Servers.findOne(this.id);
 			}
 
 			get defaultChannel () {

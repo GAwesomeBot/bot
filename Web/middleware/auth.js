@@ -23,7 +23,7 @@ module.exports = middleware => {
 					// Get server data from Database
 					let serverDocument;
 					try {
-						serverDocument = await EServers.findOne(svr.id);
+						serverDocument = await Servers.findOne(svr.id);
 					} catch (err) {
 						if (req.isAPI) return res.sendStatus(500);
 						renderError(res, "Something went wrong while fetching your server data.");

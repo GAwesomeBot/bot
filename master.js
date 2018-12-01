@@ -23,7 +23,7 @@ const scope = { safeMode: false };
 Boot({ configJS, configJSON, auth }, scope).then(() => {
 	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
-	database.einitialize(configJS.database).catch(err => {
+	database.initialize(configJS.database).catch(err => {
 		winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 		process.exit(1);
 	}).then(async () => {

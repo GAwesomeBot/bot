@@ -19,7 +19,7 @@ module.exports = {
 				.set("participant_ids", [])
 				.set("multiplier", multiplier ? multiplier : 2);
 			setTimeout(() => {
-				const newServerDocument = EServers.findOne(serverDocument._id);
+				const newServerDocument = Servers.findOne(serverDocument._id);
 				module.exports.end(client, svr, newServerDocument, ch, newServerDocument.channels[channelDocument._id]);
 			}, 3600000);
 		}
@@ -43,7 +43,7 @@ module.exports = {
 			try {
 				if (winner) {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
-					const userDocument = await EUsers.findOne({ _id: winner.id });
+					const userDocument = await Users.findOne({ _id: winner.id });
 					userDocument.query.inc("points", prize);
 					try {
 						await userDocument.save();

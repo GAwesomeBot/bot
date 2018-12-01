@@ -120,7 +120,7 @@ exports.open = async (client, auth, configJS, winston) => {
 	});
 
 	const sessionStore = new mongoSessionStore({
-		db: EDatabase.client,
+		db: Database.client,
 	});
 
 	app.use(session({

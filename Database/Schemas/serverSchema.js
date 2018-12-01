@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 
 // Server Schema
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	_id: {
 		type: String,
 		required: true,
@@ -12,10 +12,13 @@ module.exports = new mongoose.Schema({
 	},
 	config: require("./serverConfigSchema.js"),
 	extensions: [require("./modulesSchema.js")],
-	members: [require("./serverMembersSchema.js")],
+	members: require("./serverMembersSchema.js"),
 	games: [require("./serverGamesSchema.js")],
-	channels: [require("./serverChannelsSchema")],
-	command_usage: mongoose.Schema.Types.Mixed,
+	channels: require("./serverChannelsSchema.js"),
+	command_usage: {
+		type: Object,
+		default: {},
+	},
 	messages_today: {
 		type: Number,
 		default: 0,
@@ -24,7 +27,7 @@ module.exports = new mongoose.Schema({
 		type: Date,
 		default: Date.now,
 	},
-	voice_data: [new mongoose.Schema({
+	voice_data: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -33,8 +36,8 @@ module.exports = new mongoose.Schema({
 			type: Date,
 			required: true,
 		},
-	}, { usePushEach: true })],
-	logs: [new mongoose.Schema({
+	})],
+	logs: [new Schema({
 		timestamp: {
 			type: Date,
 			required: false,
@@ -56,6 +59,6 @@ module.exports = new mongoose.Schema({
 			type: String,
 			required: false,
 		},
-	}, { _id: false, usePushEach: true })],
+	}, { _id: false })],
 	modlog: require("./serverModlogSchema.js"),
-}, { usePushEach: true });
+});

@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 
 // Traffic Schema
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	_id: {
 		type: Number,
 		default: Date.now,
@@ -18,4 +18,4 @@ module.exports = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
-}, { usePushEach: true });
+});

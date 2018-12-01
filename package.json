@@ -14,7 +14,7 @@
     "test": "npm run lint",
     "lint": "eslint .",
     "preinstall": "node ./Internals/NPMScripts/WarnPreInstallWindows.js",
-    "dev:update-latest": "npm i async-dl-github-repo@latest body-parser@latest kyranet/canvasConstructor canvas-prebuilt@next circular-json@latest compression@latest connect-mongo@latest convert-units@latest cookie-parser@latest dblposter@latest discordjs/discord.js ejs@latest discordapp/erlpack express@latest express-rate-limit@latest express-session@latest fast-levenshtein@latest feed-read@latest fs-nextra@latest gifwrap@latest jimp@latest mathjs@latest moment@latest moment-timezone@latest money@latest mongoose@latest mstranslator@latest object-sizeof@latest parse-duration@latest passport@latest passport-discord@latest passport.socketio@latest process-as-promised@latest remove-markdown@latest require-reload@latest showdown@latest snekfetch@latest socket.io@latest text-diff@latest toobusy-js@latest urban@latest uuid@latest vm2@latest wikijs@latest winston@latest winston-daily-rotate-file@latest wolfram-node@latest xml-parser@latest xss-filters@latest zlib-sync@latest && npm i -D active-handles@latest clean-css-cli@latest eslint@latest uglify-es@latest"
+    "dev:update-latest": "npm i async-dl-github-repo@latest body-parser@latest kyranet/canvasConstructor canvas-prebuilt@next circular-json@latest compression@latest connect-mongo@latest convert-units@latest cookie-parser@latest dblposter@latest discordjs/discord.js ejs@latest discordapp/erlpack express@latest express-rate-limit@latest express-session@latest fast-levenshtein@latest feed-read@latest fs-nextra@latest gifwrap@latest jimp@latest mathjs@latest mongodb@latest moment@latest moment-timezone@latest money@latest mstranslator@latest object-sizeof@latest parse-duration@latest passport@latest passport-discord@latest passport.socketio@latest process-as-promised@latest remove-markdown@latest require-reload@latest showdown@latest snekfetch@latest socket.io@latest text-diff@latest toobusy-js@latest urban@latest uuid@latest vm2@latest wikijs@latest winston@latest winston-daily-rotate-file@latest wolfram-node@latest xml-parser@latest xss-filters@latest zlib-sync@latest && npm i -D active-handles@latest clean-css-cli@latest eslint@latest uglify-es@latest"
   },
   "dependencies": {
     "async-dl-github-repo": "^2.0.0",
@@ -44,7 +44,6 @@
     "moment-timezone": "^0.5.21",
     "money": "^0.2.0",
     "mongodb": "^3.1.10",
-    "mongoose": "^5.1.4",
     "mpath": "^0.4.1",
     "mstranslator": "^3.0.0",
     "object-sizeof": "^1.2.0",

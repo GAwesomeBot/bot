@@ -603,7 +603,7 @@ module.exports = class GABClient extends DJSClient {
 							}
 							// Add 100 GAwesomePoints as reward
 							if (serverDocument.config.commands.points.isEnabled && server.members.size > 2) {
-								EUsers.findOne({ _id: member.id })
+								Users.findOne({ _id: member.id })
 									.then(async userDocument => {
 										if (userDocument) {
 											userDocument.query.inc("points", 100);
@@ -1000,8 +1000,8 @@ module.exports = class GABClient extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
-				const logCount = (await EServers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]))[0].logs;
-				EServers.update({ _id: serverDocument._id }, {
+				const logCount = (await Servers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]))[0].logs;
+				Servers.update({ _id: serverDocument._id }, {
 					$push: {
 						logs: {
 							level: level,
@@ -1012,7 +1012,7 @@ module.exports = class GABClient extends DJSClient {
 					},
 				});
 				if (logCount >= 200) {
-					await EServers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } });
+					await Servers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } });
 				}
 			}
 		} catch (err) {

@@ -16,7 +16,7 @@ class VoteHandler extends BaseEvent {
 		return true;
 	}
 	async prerequisite (msg) {
-		this.serverDocument = await EServers.findOne(msg.guild.id);
+		this.serverDocument = await Servers.findOne(msg.guild.id);
 	}
 
 	async handle (msg) {
@@ -33,7 +33,7 @@ class VoteHandler extends BaseEvent {
 			}
 			const voteString = msg.content.split(/\s+/).slice(1).join(" ");
 			if (member && ![this.client.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
-				const targetUserDocument = await EUsers.findOne(member.id);
+				const targetUserDocument = await Users.findOne(member.id);
 				if (targetUserDocument) {
 					let voteAction = null;
 
@@ -65,7 +65,7 @@ class VoteHandler extends BaseEvent {
 
 						if (voteAction === "gilded") {
 							// Get author data
-							const authorDocument = await EUsers.findOne(msg.author.id);
+							const authorDocument = await Users.findOne(msg.author.id);
 							if (authorDocument) {
 								if (authorDocument.points > 10) {
 									authorDocument.query.inc("points", -10);
@@ -103,7 +103,7 @@ class VoteHandler extends BaseEvent {
 				const message = fetchedMessages && fetchedMessages.first();
 				if (message && ![this.client.user.id, msg.author.id].includes(message.author.id) && !message.author.bot) {
 					// Get target user data
-					const targetUserDocument = await EUsers.findOne(message.author.id);
+					const targetUserDocument = await Users.findOne(message.author.id);
 					if (targetUserDocument) {
 						winston.info(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 

@@ -1,5 +1,5 @@
 const { Error: GABError } = require("../Internals/Errors");
-const Schema = require("./Schemas/E/Schema");
+const Schema = require("./Schemas/Schema");
 
 const mpath = require("mpath");
 

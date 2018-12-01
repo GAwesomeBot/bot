@@ -78,7 +78,7 @@ class MessageCreate extends BaseEvent {
 			}
 			const commandFunction = this.client.getPMCommand(msg.command);
 			if (commandFunction) {
-				msg.author.userDocument = await EUsers.findOne(msg.author.id);
+				msg.author.userDocument = await Users.findOne(msg.author.id);
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
 				try {
 					await commandFunction({
@@ -132,7 +132,7 @@ class MessageCreate extends BaseEvent {
 			}
 		} else {
 			// Handle public messages
-			const serverDocument = await EServers.findOne(msg.guild.id);
+			const serverDocument = await Servers.findOne(msg.guild.id);
 			if (serverDocument) {
 				const serverQueryDocument = serverDocument.query;
 				// Get channel data
@@ -199,7 +199,7 @@ class MessageCreate extends BaseEvent {
 						}
 					}
 					// Get user data
-					const userDocument = await EUsers.findOne(msg.author.id);
+					const userDocument = await Users.findOne(msg.author.id);
 					if (userDocument) {
 						// Handle this as a violation
 						let violatorRoleID = null;
@@ -232,7 +232,7 @@ class MessageCreate extends BaseEvent {
 						}
 
 						// Get user data
-						const userDocument = await EUsers.findOne(msg.author.id);
+						const userDocument = await Users.findOne(msg.author.id);
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;
@@ -297,7 +297,7 @@ class MessageCreate extends BaseEvent {
 							// Increment command usage count
 							this.incrementCommandUsage(serverDocument, cmd);
 							// Get User data
-							const userDocument = await EUsers.findOne(msg.author.id);
+							const userDocument = await Users.findOne(msg.author.id);
 							if (userDocument) {
 								// NSFW filter for command suffix
 								if (memberBotAdminLevel < 1 && metadata.defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
@@ -534,7 +534,7 @@ class MessageCreate extends BaseEvent {
 			channelQueryDocument.set("isCommandCooldownOngoing", true);
 			// End cooldown after interval (favor channel config over server)
 			this.client.setTimeout(async () => {
-				const newServerDocument = await EServers.findOne(serverDocument._id);
+				const newServerDocument = await Servers.findOne(serverDocument._id);
 				const newChannelDocument = newServerDocument.query.id("channels", channelDocument._id);
 				newChannelDocument.set("isCommandCooldownOngoing", false);
 				await newServerDocument.save().catch(err => {

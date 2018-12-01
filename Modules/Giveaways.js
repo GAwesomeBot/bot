@@ -27,7 +27,7 @@ module.exports = class Giveaways {
 				},
 			});
 			client.setTimeout(async () => {
-				this.end(client, server, channel, await EServers.findOne(serverDocument._id));
+				this.end(client, server, channel, await Servers.findOne(serverDocument._id));
 			}, duration);
 		}
 	}
@@ -84,7 +84,7 @@ module.exports = class Giveaways {
 
 	static async endTimedGiveaway (client, server, channel, timer) {
 		client.setTimeout(async () => {
-			const serverDocument = await EServers.findOne(server.id);
+			const serverDocument = await Servers.findOne(server.id);
 			await this.end(client, server, channel, serverDocument);
 			serverDocument.save();
 		}, timer - Date.now());

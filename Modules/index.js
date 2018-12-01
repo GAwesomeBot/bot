@@ -1,5 +1,4 @@
 module.exports = {
-	Cache: require("./Cache.js"),
 	ConversionHandler: require("./ConversionHandler.js"),
 	Encryption: require("./Encryption"),
 	ExtensionRunner: require("./ExtensionRunner.js"),

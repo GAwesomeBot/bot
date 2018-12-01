@@ -37,7 +37,7 @@ module.exports = async (client, serverDocument) => {
 	 * @param {Number} amount The amount of points to give the member
 	 */
 	const awardPoints = async (member, amount) => {
-		const userDocument = await EUsers.findOne({ _id: member.id });
+		const userDocument = await Users.findOne({ _id: member.id });
 		if (userDocument) {
 			userDocument.query.inc("points", amount);
 			try {

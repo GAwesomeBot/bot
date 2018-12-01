@@ -6,8 +6,8 @@ class UsernameUpdater extends BaseEvent {
 	}
 
 	async handle (oldUser, newUser) {
-		let userDocument = await EUsers.findOne(oldUser.id);
-		if (!userDocument) userDocument = await EUsers.new({ _id: oldUser.id });
+		let userDocument = await Users.findOne(oldUser.id);
+		if (!userDocument) userDocument = await Users.new({ _id: oldUser.id });
 		userDocument.query.set("username", newUser.tag);
 		userDocument.save();
 	}

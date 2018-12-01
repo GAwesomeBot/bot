@@ -21,7 +21,7 @@ controllers.servers = async (req, res) => {
 		params._id = req.query.id;
 	}
 	const webp = req.accepts("image/webp") !== false;
-	EServers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
+	Servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
 		.exec()
 		.then(async serverDocuments => {
 			if (serverDocuments && serverDocuments.length) {
@@ -53,8 +53,8 @@ controllers.users = async (req, res) => {
 		if (!user) user = await req.app.client.users.fetch(req.query.id, true);
 
 		if (user) {
-			let userDocument = await EUsers.findOne(user.id);
-			if (!userDocument) userDocument = await EUsers.create({ _id: user.id });
+			let userDocument = await Users.findOne(user.id);
+			if (!userDocument) userDocument = await Users.create({ _id: user.id });
 			res.json(APIResponses.users.success(await parsers.userData(req, user, userDocument)));
 		} else {
 			res.status(404).json(APIResponses.users.notFound());
@@ -69,7 +69,7 @@ controllers.users.list = async (req, res) => {
 		await req.svr.fetchMember(req.svr.memberList);
 		res.json(getUserList(Object.values(req.svr.members).map(member => member.user)));
 	} else {
-		const userDocuments = await EUsers.aggregate([{
+		const userDocuments = await Users.aggregate([{
 			$project: {
 				username: 1,
 			},
@@ -102,13 +102,13 @@ controllers.extensions = async (req, res) => {
 		params.owner_id = req.query.owner;
 	}
 
-	let rawCount = await EGallery.count(params);
+	let rawCount = await Gallery.count(params);
 	if (rawCount === null) {
 		rawCount = 0;
 	}
 
 	try {
-		const galleryDocuments = await EGallery.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : rawCount)
+		const galleryDocuments = await Gallery.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : rawCount)
 			.exec();
 		if (galleryDocuments && galleryDocuments.length) {
 			const data = await Promise.all(galleryDocuments.map(galleryDocument => parsers.extensionData(req, galleryDocument)));

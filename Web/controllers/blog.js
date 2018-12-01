@@ -30,12 +30,12 @@ controllers.index = async (req, { res }) => {
 	}
 
 	try {
-		let rawCount = await EBlog.count({});
+		let rawCount = await Blog.count({});
 		if (!rawCount) {
 			rawCount = 0;
 		}
 
-		const blogDocuments = await EBlog.find({}).sort({ published_timestamp: -1 }).skip(count * (page - 1))
+		const blogDocuments = await Blog.find({}).sort({ published_timestamp: -1 }).skip(count * (page - 1))
 			.limit(count)
 			.exec();
 		let blogPosts = [];
@@ -66,7 +66,7 @@ controllers.index = async (req, { res }) => {
 };
 
 controllers.article = async (req, { res }) => {
-	const blogDocument = await EBlog.findOne(new ObjectID(req.params.id));
+	const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 	if (!blogDocument) {
 		renderError(res, "Sorry, that blog doesn't exist!");
 	} else {
@@ -104,7 +104,7 @@ controllers.article.compose = async (req, { res }) => {
 	};
 
 	if (req.params.id) {
-		const blogDocument = await EBlog.findOne(new ObjectID(req.params.id));
+		const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 		if (!blogDocument) {
 			renderPage({});
 		} else {
@@ -122,7 +122,7 @@ controllers.article.compose = async (req, { res }) => {
 
 controllers.article.compose.post = async (req, res) => {
 	if (req.params.id) {
-		const blogDocument = await EBlog.findOne(new ObjectID(req.params.id));
+		const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 		if (!blogDocument) {
 			renderError(res, "Sorry, that blog post was not found.");
 		} else {
@@ -135,7 +135,7 @@ controllers.article.compose.post = async (req, res) => {
 			}).catch(() => res.sendStatus(500));
 		}
 	} else {
-		const blogDocument = EBlog.new({
+		const blogDocument = Blog.new({
 			title: req.body.title,
 			author_id: req.user.id,
 			category: req.body.category,
@@ -149,7 +149,7 @@ controllers.article.compose.post = async (req, res) => {
 
 controllers.article.react = async (req, res) => {
 	if (req.isAuthenticated()) {
-		const blogDocument = await EBlog.findOne(new ObjectID(req.params.id));
+		const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 		if (!blogDocument) {
 			res.sendStatus(404);
 		} else {
@@ -179,7 +179,7 @@ controllers.article.react = async (req, res) => {
 };
 
 controllers.article.delete = (req, res) => {
-	EBlog.delete({ _id: new ObjectID(req.params.id) }).then(() => {
+	Blog.delete({ _id: new ObjectID(req.params.id) }).then(() => {
 		res.sendStatus(200);
 	}).catch(() => res.sendStatus(500));
 };
