@@ -26,6 +26,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	winston.silly("Creating Discord.js client.");
 	const GABClient = require("./Internals/Client");
 	const client = new GABClient({
+		shards: parseInt(process.env.SHARD_ID),
+		totalShardCount: parseInt(process.env.SHARD_COUNT),
 		disabledEvents: scope.disabledEvents,
 		messageCacheLifetime: 1800,
 		messageSweepInterval: 900,

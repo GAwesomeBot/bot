@@ -1089,7 +1089,7 @@ module.exports = class GABClient extends DJSClient {
 		for (const i of this._intervals) Timeouts.clearInterval(i);
 		this._timeouts.clear();
 		this._intervals.clear();
-		return this.manager.destroy();
+		return super.destroy();
 	}
 
 	async init () {

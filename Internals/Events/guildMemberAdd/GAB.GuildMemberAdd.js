@@ -69,7 +69,6 @@ class GuildMemberAdd extends BaseEvent {
 				await Promise.all(serverDocument.config.moderation.new_member_roles.map(async roleID => {
 					const role = member.guild.roles.get(roleID);
 					if (!role) return;
-					arrayOfRoles.push(role);
 
 					try {
 						await member.roles.add(role, "Added New Member Role(s) to this new member.");

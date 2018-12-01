@@ -15,7 +15,7 @@ module.exports = async ({ client, Constants: { Colors } }, documents, msg, comma
 		embed: {
 			color: Colors.LIGHT_GREEN,
 			title: "Pong! 🏓",
-			description: `Sending this message took **${Math.round(sendPing / 2)}**ms. The average hearbeat ping is **${Math.floor(client.ws.ping)}**ms`,
+			description: `Sending this message took **${Math.round(sendPing / 2)}**ms. The average heartbeat ping is **${Math.floor(client.ws.ping)}**ms`,
 			footer: {
 				text: `This server is on shard ${client.shardID}.`,
 			},
