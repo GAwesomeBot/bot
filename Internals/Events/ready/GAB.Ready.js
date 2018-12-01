@@ -241,7 +241,7 @@ class Ready extends BaseEvent {
 						winston.verbose(`Setting streaming RSS timers for server ${server}`, { svrid: server.id });
 						const sendStreamingRSSFeed = async j => {
 							if (j < serverDocument.config.rss_feeds.length) {
-								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
+								if (serverDocument.config.rss_feeds[j].streaming && serverDocument.config.rss_feeds[j].streaming.isEnabled) {
 									await sendStreamingRSSUpdates(this.client, server, serverDocument, serverDocument.config.rss_feeds[j]);
 									await sendStreamingRSSFeed(++j);
 								} else {
