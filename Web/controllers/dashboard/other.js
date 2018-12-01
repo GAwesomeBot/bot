@@ -148,46 +148,38 @@ controllers.activities.post = async (req, res) => {
 	}
 };
 
-controllers.public = async (req, res) => {
-	const { client } = req.app;
+controllers.public = async (req, { res }) => {
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-public-data.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons"),
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			public_data: serverDocument.config.public_data,
-			isBanned: configJSON.activityBlocklist.includes(svr.id),
-			canUnban: configJSON.maintainers.includes(req.consolemember.user.id) || process.env.GAB_HOST === req.consolemember.user.id,
-		},
+	res.setPageData({
+		page: "admin-public-data.ejs",
+		canUnban: configJSON.maintainers.includes(req.consolemember.user.id) || process.env.GAB_HOST === req.consolemember.user.id,
 	});
+	res.setConfigData({
+		public_data: serverDocument.config.public_data,
+		isBanned: configJSON.activityBlocklist.includes(svr.id),
+	});
+	res.render();
 };
 controllers.public.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
-	serverDocument.config.public_data.isShown = req.body.isShown === "on";
+	serverQueryDocument.set("config.public_data.isShown", req.body.isShown === "on");
 	let createInvite = false;
 	if (!serverDocument.config.public_data.server_listing.isEnabled && req.body["server_listing-isEnabled"] === "on") {
 		createInvite = true;
 	}
-	serverDocument.config.public_data.server_listing.isEnabled = req.body["server_listing-isEnabled"] === "on";
-	serverDocument.config.public_data.server_listing.category = req.body["server_listing-category"];
-	serverDocument.config.public_data.server_listing.description = req.body["server_listing-description"];
+	serverQueryDocument.set("config.public_data.server_listing.isEnabled", req.body["server_listing-isEnabled"] === "on");
+	serverQueryDocument.set("config.public_data.server_listing.category", req.body["server_listing-category"]);
+	serverQueryDocument.set("config.public_data.server_listing.description", req.body["server_listing-description"]);
+
+	save(req, res, true);
 	if (createInvite) {
-		save(req, res, true);
 		req.app.client.IPC.send("createPublicInviteLink", { guild: req.svr.id });
 	} else if (!req.body["server_listing-isEnabled"] && serverDocument.config.public_data.server_listing.invite_link) {
-		save(req, res, true);
 		req.app.client.IPC.send("deletePublicInviteLink", { guild: req.svr.id });
-	} else {
-		save(req, res, true);
 	}
 };
 
@@ -196,5 +188,5 @@ controllers.extensions = async (req, res) => {
 };
 
 controllers.export = async (req, res) => {
-	res.json(req.svr.document.toObject().config);
+	res.json(req.svr.document.config);
 };

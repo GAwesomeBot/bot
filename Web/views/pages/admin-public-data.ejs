@@ -3,15 +3,15 @@
 <head>
 	<title><%= serverData.name %> Public Data - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<% if (configData.canUnban) { %>
-	<script>
-		function unbanGuild(svrid) {
-			$("#unbanGuild").addClass("is-loading");
-			$.post("/dashboard/maintainer/servers/server-list", { unbanFromActivity: svrid }).done(() => {
-				$(`#unbanGuild`).removeClass("is-loading").html("<span class='icon'><i class='fa fa-check'></i></span> &nbsp; Unbanned");
-			});
-		}
-	</script>
+	<% if (pageData.canUnban) { %>
+		<script>
+		  function unbanGuild(svrid) {
+		  	$("#unbanGuild").addClass("is-loading");
+		  	$.post("/dashboard/maintainer/servers/server-list", { unbanFromActivity: svrid }).done(() => {
+			  $(`#unbanGuild`).removeClass("is-loading").html("<span class='icon'><i class='fa fa-check'></i></span> &nbsp; Unbanned");
+		  	});
+		  }
+		</script>
 	<% } %>
 
 	<script src="/static/js/form-change-listener.js"></script>
@@ -42,7 +42,7 @@
 						<div class="field">
 							<p class="control">
 								<label class="checkbox">
-								<input name="isShown" type="checkbox" onclick="$('#public_data-options').toggleClass('is-hidden');" <%= configData.public_data.isShown ? "checked" : "" %>>
+								<input name="isShown" type="checkbox" onclick="$('#public_data-options').toggleClass('is-hidden');"<%= configData.public_data.isShown ? " checked" : "" %>>
 									Show <%= serverData.name %> on the <a href="/activity/servers">server listings page</a>
 								</label>
 							</p>
@@ -51,7 +51,7 @@
 							<div class="field">
 								<p class="control">
 									<label class="checkbox">
-									<input name="server_listing-isEnabled" type="checkbox" onclick="$('#server_listing-options').toggleClass('is-hidden');" <%= configData.public_data.server_listing.isEnabled ? "checked" : "" %>>
+									<input name="server_listing-isEnabled" type="checkbox" onclick="$('#server_listing-options').toggleClass('is-hidden');"<%= configData.public_data.server_listing.isEnabled ? " checked" : "" %>>
 										Allow anyone to join <%= serverData.name %> from the server listings page
 									</label>
 								</p>
@@ -72,12 +72,12 @@
 									<p class="control">
 										<span class="select is-primary">
 											<select name="server_listing-category">
-												<option value="Gaming" <%= configData.public_data.server_listing.category=="Gaming" ? "selected" : "" %>>Gaming</option>
-												<option value="Tech" <%= configData.public_data.server_listing.category=="Tech" ? "selected" : "" %>>Tech</option>
-												<option value="Programming" <%= configData.public_data.server_listing.category=="Programming" ? "selected" : "" %>>Programming</option>
-												<option value="Community" <%= configData.public_data.server_listing.category=="Community" ? "selected" : "" %>>Community</option>
-												<option value="Bots" <%= configData.public_data.server_listing.category=="Bots" ? "selected" : "" %>>Bots</option>
-												<option value="Other" <%= configData.public_data.server_listing.category=="Other" ? "selected" : "" %>>Other</option>
+												<option value="Gaming"<%= configData.public_data.server_listing.category === "Gaming" ? " selected" : "" %>>Gaming</option>
+												<option value="Tech"<%= configData.public_data.server_listing.category === "Tech" ? " selected" : "" %>>Tech</option>
+												<option value="Programming"<%= configData.public_data.server_listing.category === "Programming" ? " selected" : "" %>>Programming</option>
+												<option value="Community"<%= configData.public_data.server_listing.category === "Community" ? " selected" : "" %>>Community</option>
+												<option value="Bots"<%= configData.public_data.server_listing.category === "Bots" ? " selected" : "" %>>Bots</option>
+												<option value="Other"<%= configData.public_data.server_listing.category === "Other" ? " selected" : "" %>>Other</option>
 											</select>
 										</span>
 									</p>
@@ -111,7 +111,7 @@
 							</div>
 						</div>
 					</article>
-					<% if (configData.canUnban) { %>
+					<% if (pageData.canUnban) { %>
 					<article class="message is-warning">
 						<div class="message-body">
 							<div class="content">
@@ -124,7 +124,7 @@
 								</span>
 								&nbsp;
 								Unban
-							</a>		
+							</a>
 							</div>
 						</div>
 					</article>
