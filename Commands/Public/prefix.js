@@ -1,4 +1,4 @@
-module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors } }, { serverQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		let { suffix } = msg;
 		if (msg.suffix.startsWith(`"`) && msg.suffix.endsWith(`"`)) suffix = msg.suffix.slice(1, msg.suffix.length - 1);
@@ -10,7 +10,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument }, msg, comm
 				},
 			});
 		}
-		serverDocument.set("config.command_prefix", suffix);
+		serverQueryDocument.set("config.command_prefix", suffix);
 		return msg.send({
 			embed: {
 				color: Colors.SUCCESS,
