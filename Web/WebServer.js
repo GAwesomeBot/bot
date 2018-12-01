@@ -24,16 +24,16 @@ const app = express();
 const listen = async configJS => {
 	const servers = {};
 
-	if (global.configJS.cert && configJS.privKey && configJS.httpsPort) {
+	if (configJS.cert && configJS.privateKey && configJS.httpsPort) {
 		if (configJS.httpsRedirect) {
 			app.use(middleware.enforceProtocol);
 		}
 		let credentials;
 		try {
-			const privKey = await fsn.readFile(configJS.privKey, "utf8");
+			const privateKey = await fsn.readFile(configJS.privateKey, "utf8");
 			const cert = await fsn.readFile(configJS.cert, "utf8");
 			credentials = {
-				key: privKey,
+				key: privateKey,
 				cert: cert,
 			};
 		} catch (err) {
