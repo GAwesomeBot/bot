@@ -10,7 +10,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		const descriptions = [];
 		for (let i = 0; i < guildRoles.length; i += rolesPerPage) {
 			const roleSegment = guildRoles.slice(i, i + rolesPerPage).join("\n");
-			descriptions.push(`These are the roles on this server:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < guildRoles.length ? `\n...and ${guildRoles.length - i - rolesPerPage} more` : ""}`,);
+			descriptions.push(`These are the roles on this server:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < guildRoles.length ? `\n...and ${guildRoles.length - i - rolesPerPage} more` : ""}`);
 		}
 
 		const memberRoles = [...msg.member.roles.values()].sort((a, b) => b.position - a.position);
@@ -33,16 +33,14 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 			});
 		}
 
-		const menu = new PaginatedEmbed(msg, {
+		await new PaginatedEmbed(msg, {
 			color: Colors.INFO,
 			title: `This guild has ${guildRoles.length} roles:`,
 			description: `{description}`,
 			footer: `Page {currentPage} out of {totalPages}`,
 		}, {
 			descriptions,
-		});
-		// 450 chars to display all permissions
-		await menu.init();
+		}).init();
 	} else {
 		let role;
 		try {
@@ -81,7 +79,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		elements.push(`👌 Permissions:${permissions.length ? `\n\`\`\`${TitlecasePermissions(permissions)}\`\`\`` : " This role does not grant any additional permissions"}`);
 		return msg.send({
 			embed: {
-				title: `Information for role ${role.name} :: ${role.id}`,
+				title: `Data about role ${role.name} :: ${role.id}`,
 				color: role.color || null,
 				description: elements.join("\n"),
 			},
