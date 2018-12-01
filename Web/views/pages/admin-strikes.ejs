@@ -92,7 +92,7 @@
 					</article>
 					<form id="form" onsubmit="submitForm(); Turbolinks.visit(''); return false;">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(strikes.length>0) { %>
+							<% if (configData.strikes.length > 0) { %>
 							<table class="table is-fullwidth">
 								<thead>
 								<tr>
@@ -103,21 +103,21 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<strikes.length; i++) { %>
+								<% configData.strikes.forEach(strike => { %>
 								<tr>
 									<td>
-										<img class="image is-24x24" src="<%= strikes[i].avatar %>" alt="<%= strikes[i].id %>">
+										<img class="image is-24x24" src="<%= strike.avatar %>" alt="<%= strike.id %>">
 									</td>
 									<td>
-										<%= strikes[i].name %>
+										<%= strike.name %>
 									</td>
 									<td>
-										<%= strikes[i].id %>
+										<%= strike.id %>
 									</td>
 									<td>
 										<div class="field is-grouped">
 											<div class="control">
-											<a class="button modal-button is-small" data-target="#strikes-<%= i %>-modal">
+											<a class="button modal-button is-small" data-target="#strikes-<%= strike.id %>-modal">
 												<span class="icon is-small">
 													<i class="fa fa-eye"></i>
 												</span>
@@ -125,7 +125,7 @@
 											</a>
 											</div>
 											<div class="control">
-											<a class="button modal-button is-small is-primary" data-target="#strikes-<%= i %>-add-modal">
+											<a class="button modal-button is-small is-primary" data-target="#strikes-<%= strike.id %>-add-modal">
 												<span class="icon is-small">
 													<i class="fa fa-plus"></i>
 												</span>
@@ -133,8 +133,8 @@
 											</a>
 											</div>
 											<div class="control">
-											<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
-											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState();">
+											<input type="checkbox" id="strikes-<%= strike.id %>-removeall" name="strikes-<%= strike.id %>-removeall" style="display: none;">
+											<button class="button is-small is-danger" name="strikes-<%= strike.id %>-removeall" onclick="$('#strikes-<%= strike.id %>-removeall').attr('checked', true); saveFormState();">
 												<span>Remove All</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>
@@ -144,51 +144,51 @@
 										</div>
 									</td>
 								</tr>
-								<div id="strikes-<%= i %>-modal" class="modal">
+								<div id="strikes-<%= strike.id %>-modal" class="modal">
 									<div class="modal-background"></div>
 									<div class="modal-content">
 										<div class="box">
 												<h4 class="subtitle is-4">
-													Strikes for <strong>@<%= strikes[i].name %></strong>
+													Strikes for <strong>@<%= strike.name %></strong>
 												</h4>
-												<% for(var j=0; j<strikes[i].strikes.length; j++) { %>
+												<% strike.strikes.forEach(subStrike => { %>
 												<article class="media">
 													<div class="media-left">
-														<img class="image is-64x64" src="<%= strikes[i].strikes[j].creator.avatar %>" alt="<%= strikes[i].strikes[j].creator.id %>">
+														<img class="image is-64x64" src="<%= subStrike.creator.avatar %>" alt="<%= subStrike.creator.id %>">
 													</div>
 													<div class="media-content">
 														<div class="content">
-															<h5 class="title is-5" title="<%= strikes[i].strikes[j].rawDate %>"><%= strikes[i].strikes[j].relativeDate %></h5>
-															<h6 class="subtitle is-6" style="-webkit-margin-after: 0.5em;">Added by <strong>@<%= strikes[i].strikes[j].creator.name %></strong></h6>
-															<%- strikes[i].strikes[j].reason %>
+															<h5 class="title is-5" title="<%= subStrike.rawDate %>"><%= subStrike.relativeDate %></h5>
+															<h6 class="subtitle is-6" style="-webkit-margin-after: 0.5em;">Added by <strong>@<%= subStrike.creator.name %></strong></h6>
+															<%- subStrike.reason %>
 														</div>
 													</div>
 													<div class="media-right">
-														<span class="strikes-<%= strikes[i].id %>" id="removestrike-<%= strikes[i].id %>-<%= j %>">
+														<span class="strikes-<%= strike.id %>" id="removestrike-<%= strike.id %>-<%= subStrike.id %>">
 															<button class="delete is-medium" onclick="removeStrike(this.parentNode); return false"></button>
 														</span>
 													</div>
 												</article>
-												<% } %>
+												<% }); %>
 											</div>
 										</div>
 									<button class="modal-close is-large"></button>
 								</div>
-								<div id="strikes-<%= i %>-add-modal" class="modal">
+								<div id="strikes-<%= strike.id %>-add-modal" class="modal">
 									<div class="modal-background"></div>
 									<div class="modal-content">
 										<div class="box">
 											<h4 class="subtitle is-4">
-												Add a strike for <strong>@<%= strikes[i].name %></strong>
+												Add a strike for <strong>@<%= strike.name %></strong>
 											</h4>
 											<div class="field is-horizontal">
 												<div class="field-body">
 													<div class="field is-grouped">
 														<div class="control is-expanded">
-															<input id="<%= strikes[i].id %>-strike-reason" class="input is-primary" type="text" placeholder="Reason" minlength="1" maxlength="2000">
+															<input id="<%= strike.id %>-strike-reason" class="input is-primary" type="text" placeholder="Reason" minlength="1" maxlength="2000">
 														</div>
 														<div class="control">
-															<a class="button is-primary" onclick="newStrike('<%= strikes[i].id %>');">
+															<a class="button is-primary" onclick="newStrike('<%= strike.id %>');">
 																<span class="icon">
 																	<i class="fa fa-plus"></i>
 																</span>
@@ -202,7 +202,7 @@
 									</div>
 									<button class="modal-close is-large"></button>
 								</div>
-								<% } %>
+								<% }); %>
 								</tbody>
 							</table>
 							<% } else { %>

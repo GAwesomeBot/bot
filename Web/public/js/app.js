@@ -646,9 +646,9 @@ GAwesomeUtil.dashboard.connect = () => {
 		}
 		GAwesomeUtil.log("Opening new Dashboard socket");
 		GAwesomeData.dashboard.socket = io(window.location.pathname, { transports: ["websocket"] });
-		GAwesomeData.dashboard.socket.on("update", function(data) {
-			GAwesomeUtil.log(`Received Socket data: ${data}`);
-			if (!hide_update_modal && GAwesomeData.dashboard.svrid === data && localStorage.getItem("dashboardUpdates") !== "none") {
+		GAwesomeData.dashboard.socket.on("update", data => {
+			GAwesomeUtil.log(`Received Socket data: ${JSON.stringify(data)}`);
+			if (!hide_update_modal && GAwesomeData.dashboard.svrid === data.location && localStorage.getItem("dashboardUpdates") !== "none") {
 				$("html").addClass("is-clipped");
 				$("#update-modal").addClass("is-active");
 			}

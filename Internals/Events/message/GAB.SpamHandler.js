@@ -33,16 +33,15 @@ class SpamHandler extends BaseEvent {
 				this.serverDocument.config.moderation.filters.spam_filter.isEnabled &&
 				!this.serverDocument.config.moderation.filters.spam_filter.disabled_channel_ids.includes(msg.channel.id) &&
 				memberAdminLevel < 1) {
-
 				const channelQueryDocument = this.serverDocument.query.id("channels", this.channelDocument._id);
 
 				// Tracks spam with each new message (auto-delete after 45 seconds)
 				let spamDocument = channelQueryDocument.clone.id("spam_filter_data", msg.author.id);
 				if (!spamDocument.val) {
 					channelQueryDocument.prop("spam_filter_data").push({ _id: msg.author.id });
-					spamDocument = channelQueryDocument.id(msg.author.id);
-					spamDocument.set("message_count", spamDocument.val.message_count++);
-					spamDocument.set("last_message_content", msg.cleanContent);
+					spamDocument = channelQueryDocument.id(msg.author.id)
+						.inc("message_count")
+						.set("last_message_content", msg.cleanContent);
 					this.client.setTimeout(async () => {
 						const serverDocument = await EServers.findOne(msg.guild.id).catch(err => {
 							winston.debug(`Failed to get server document for spam filter..`, err);
@@ -60,8 +59,7 @@ class SpamHandler extends BaseEvent {
 					}, 45000);
 					// Add this message to spamDocument if similar to the last one
 				} else if (levenshtein.get(spamDocument.val.last_message_content, msg.cleanContent) < 3) {
-					spamDocument.set("message_count", spamDocument.val.message_count++);
-					spamDocument.set("last_message_content", msg.cleanContent);
+					spamDocument.inc("message_count").set("last_message_content", msg.cleanContent);
 
 					// First-time spam filter violation
 					if (spamDocument.val.message_count === this.serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
@@ -91,7 +89,7 @@ class SpamHandler extends BaseEvent {
 							// Get user data
 							const userDocument = await EUsers.findOne(msg.author.id);
 							if (userDocument) {
-								userDocument.query.set("points", userDocument.points - 25);
+								userDocument.query.inc("points", -25);
 								await userDocument.save().catch(err => {
 									winston.debug(`Failed to save user document...`, err);
 								});
@@ -100,7 +98,7 @@ class SpamHandler extends BaseEvent {
 						// Add strike for user
 						const queryDocument = this.serverDocument.query.id("members", memberDocument._id);
 						queryDocument.prop("strikes").push({
-							_id: this.client.user.id,
+							admin: this.client.user.id,
 							reason: `First-time spam violation in #${msg.channel.name} (${msg.channel})`,
 						});
 						// TODO: ModLog.create

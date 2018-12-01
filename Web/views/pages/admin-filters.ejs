@@ -34,32 +34,32 @@
 						<div class="field">
 							<div class="control">
 								<label class="checkbox">
-								<input name="spam_filter-isEnabled" type="checkbox" onclick="$('#spam_filter-options').toggleClass('is-hidden');" <%= configData.moderation.filters.spam_filter.isEnabled ? "checked" : "" %>>
+								<input name="spam_filter-isEnabled" type="checkbox" onclick="$('#spam_filter-options').toggleClass('is-hidden');"<%= configData.moderation.filters.spam_filter.isEnabled ? " checked" : "" %>>
 									Filter repeated identical/similar messages
 								</label>
 							</div>
 						</div>
-						<div id="spam_filter-options" class="<%= configData.moderation.filters.spam_filter.isEnabled ? '' : 'is-hidden' %>">
+						<div id="spam_filter-options"<%= configData.moderation.filters.spam_filter.isEnabled ? '' : ' class="is-hidden"' %>>
 							<div class="field">
 								<label class="label">Enabled in these channel(s)</label>
-								<% for(var i=0; i<channelData.length; i++) { %>
+								<% pageData.channelData.forEach(channel => { %>
 									<label class="checkbox">
-									<input name="spam_filter-disabled_channel_ids-<%= channelData[i].id %>" type="checkbox" <%= configData.moderation.filters.spam_filter.disabled_channel_ids.indexOf(channelData[i].id)==-1 ? "checked" : "" %>>
-										#<%= channelData[i].name %>
+									<input name="spam_filter-disabled_channel_ids-<%= channel.id %>" type="checkbox"<%= !configData.moderation.filters.spam_filter.disabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+										#<%= channel.name %>
 									</label>
 								<br>
-								<% } %>
+								<% }); %>
 							</div>
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<div class="control">
 									<span class="select is-primary">
 										<select name="spam_filter-action">
-											<option value="none" <%= configData.moderation.filters.spam_filter.action=="none" ? "selected" : "" %>>Nothing</option>
-											<option value="block" <%= configData.moderation.filters.spam_filter.action=="block" ? "selected" : "" %>>Block</option>
-		                                    <option value="mute" <%= configData.moderation.filters.spam_filter.action=="mute" ? "selected" : "" %>>Mute</option>
-		                                    <option value="kick" <%= configData.moderation.filters.spam_filter.action=="kick" ? "selected" : "" %>>Kick</option>
-		                                    <option value="ban" <%= configData.moderation.filters.spam_filter.action=="ban" ? "selected" : "" %>>Ban</option>
+											<option value="none"<%= configData.moderation.filters.spam_filter.action === "none" ? " selected" : "" %>>Nothing</option>
+											<option value="block"<%= configData.moderation.filters.spam_filter.action === "block" ? " selected" : "" %>>Block</option>
+		                                    <option value="mute"<%= configData.moderation.filters.spam_filter.action === "mute" ? " selected" : "" %>>Mute</option>
+		                                    <option value="kick"<%= configData.moderation.filters.spam_filter.action === "kick" ? " selected" : "" %>>Kick</option>
+		                                    <option value="ban"<%= configData.moderation.filters.spam_filter.action === "ban" ? " selected" : "" %>>Ban</option>
 										</select>
 									</span>
 								</div>
@@ -69,9 +69,9 @@
 								<p class="control">
 									<span class="select is-primary">
 										<select name="spam_filter-message_sensitivity">
-											<option value="10" <%= configData.moderation.filters.spam_filter.message_sensitivity==10 ? "selected" : "" %>>Low: requires a lot of spam to filter</option>
-											<option value="5" <%= configData.moderation.filters.spam_filter.message_sensitivity==5 ? "selected" : "" %>>Medium: should work for most servers</option>
-		                                    <option value="3" <%= configData.moderation.filters.spam_filter.message_sensitivity==3 ? "selected" : "" %>>High: no spammer gets past this</option>
+											<option value="10"<%= configData.moderation.filters.spam_filter.message_sensitivity === 10 ? " selected" : "" %>>Low: requires a lot of spam to filter</option>
+											<option value="5"<%= configData.moderation.filters.spam_filter.message_sensitivity === 5 ? " selected" : "" %>>Medium: should work for most servers</option>
+		                                    <option value="3"<%= configData.moderation.filters.spam_filter.message_sensitivity === 3 ? " selected" : "" %>>High: no spammer gets past this</option>
 										</select>
 									</span>
 								</p>
@@ -79,7 +79,7 @@
 							<div class="field">
 								<p class="control">
 									<label class="checkbox">
-									<input name="spam_filter-delete_messages" type="checkbox" <%= configData.moderation.filters.spam_filter.delete_messages ? "checked" : "" %>>
+									<input name="spam_filter-delete_messages" type="checkbox"<%= configData.moderation.filters.spam_filter.delete_messages ? " checked" : "" %>>
 										Delete spam messages
 									</label>
 								</p>
@@ -90,9 +90,9 @@
 									<span class="select is-primary">
 										<select name="spam_filter-violator_role_id">
 											<option value="">None</option>
-											<% for(var i=0; i<roleData.length; i++) { %>
-												<option value="<%= roleData[i].id %>" <%= configData.moderation.filters.spam_filter.violator_role_id==roleData[i].id ? "selected" : "" %>><%= roleData[i].name %></option>
-											<% } %>
+											<% pageData.roleData.forEach(role => { %>
+												<option value="<%= role.id %>"<%= configData.moderation.filters.spam_filter.violator_role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+											<% }); %>
 										</select>
 									</span>
 								</p>
@@ -106,7 +106,7 @@
 						<div class="field">
 							<p class="control">
 								<label class="checkbox">
-								<input name="mention_filter-isEnabled" type="checkbox" onclick="$('#mention_filter-options').toggleClass('is-hidden');" <%= configData.moderation.filters.mention_filter.isEnabled ? "checked" : "" %>>
+								<input name="mention_filter-isEnabled" type="checkbox" onclick="$('#mention_filter-options').toggleClass('is-hidden');"<%= configData.moderation.filters.mention_filter.isEnabled ? " checked" : "" %>>
 									Filter messages with excessive member/role mentions
 								</label>
 							</p>
@@ -114,24 +114,24 @@
 						<div id="mention_filter-options" class="<%= configData.moderation.filters.mention_filter.isEnabled ? '' : 'is-hidden' %>">
 							<div class="field">
 								<label class="label">Enabled in these channel(s)</label>
-								<% for(var i=0; i<channelData.length; i++) { %>
+								<% pageData.channelData.forEach(channel => { %>
 									<label class="checkbox">
-									<input name="mention_filter-disabled_channel_ids-<%= channelData[i].id %>" type="checkbox" <%= configData.moderation.filters.mention_filter.disabled_channel_ids.indexOf(channelData[i].id)==-1 ? "checked" : "" %>>
-										#<%= channelData[i].name %>
+									<input name="mention_filter-disabled_channel_ids-<%= channel.id %>" type="checkbox"<%= !configData.moderation.filters.mention_filter.disabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+										#<%= channel.name %>
 									</label>
 									<br>
-								<% } %>
+								<% }); %>
 							</div>
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<p class="control">
 									<span class="select is-primary">
 										<select name="mention_filter-action">
-											<option value="none" <%= configData.moderation.filters.mention_filter.action=="none" ? "selected" : "" %>>Nothing</option>
-											<option value="block" <%= configData.moderation.filters.mention_filter.action=="block" ? "selected" : "" %>>Block</option>
-		                                    <option value="mute" <%= configData.moderation.filters.mention_filter.action=="mute" ? "selected" : "" %>>Mute</option>
-		                                    <option value="kick" <%= configData.moderation.filters.mention_filter.action=="kick" ? "selected" : "" %>>Kick</option>
-		                                    <option value="ban" <%= configData.moderation.filters.mention_filter.action=="ban" ? "selected" : "" %>>Ban</option>
+											<option value="none"<%= configData.moderation.filters.mention_filter.action === "none" ? " selected" : "" %>>Nothing</option>
+											<option value="block"<%= configData.moderation.filters.mention_filter.action === "block" ? " selected" : "" %>>Block</option>
+		                                    <option value="mute"<%= configData.moderation.filters.mention_filter.action === "mute" ? " selected" : "" %>>Mute</option>
+		                                    <option value="kick"<%= configData.moderation.filters.mention_filter.action === "kick" ? " selected" : "" %>>Kick</option>
+		                                    <option value="ban"<%= configData.moderation.filters.mention_filter.action === "ban" ? " selected" : "" %>>Ban</option>
 										</select>
 									</span>
 								</p>
@@ -146,7 +146,7 @@
 							<div class="field">
 								<p class="control">
 									<label class="checkbox">
-									<input name="mention_filter-include_everyone" type="checkbox" <%= configData.moderation.filters.mention_filter.include_everyone ? "checked" : "" %>>
+									<input name="mention_filter-include_everyone" type="checkbox"<%= configData.moderation.filters.mention_filter.include_everyone ? " checked" : "" %>>
 										Include @everyone and @here in the mention count
 									</label>
 								</p>
@@ -154,7 +154,7 @@
 							<div class="field">
 								<p class="control">
 									<label class="checkbox">
-									<input name="mention_filter-delete_message" type="checkbox" <%= configData.moderation.filters.mention_filter.delete_message ? "checked" : "" %>>
+									<input name="mention_filter-delete_message" type="checkbox"<%= configData.moderation.filters.mention_filter.delete_message ? " checked" : "" %>>
 										Delete filtered mention-spam messages
 									</label>
 								</p>
@@ -165,9 +165,9 @@
 									<span class="select is-primary">
 										<select name="mention_filter-violator_role_id">
 											<option value="">None</option>
-											<% for(var i=0; i<roleData.length; i++) { %>
-												<option value="<%= roleData[i].id %>" <%= configData.moderation.filters.mention_filter.violator_role_id==roleData[i].id ? "selected" : "" %>><%= roleData[i].name %></option>
-											<% } %>
+											<% pageData.roleData.forEach(role => { %>
+												<option value="<%= role.id %>"<%= configData.moderation.filters.mention_filter.violator_role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+											<% }); %>
 										</select>
 									</span>
 								</p>
@@ -181,32 +181,32 @@
 						<div class="field">
 							<p class="control">
 								<label class="checkbox">
-								<input name="nsfw_filter-isEnabled" type="checkbox" onclick="$('#nsfw_filter-options').toggleClass('is-hidden');" <%= configData.moderation.filters.nsfw_filter.isEnabled ? "checked" : "" %>>
-									Filter NSFW queries in these commands: <%- config.filtered_commands %>
+								<input name="nsfw_filter-isEnabled" type="checkbox" onclick="$('#nsfw_filter-options').toggleClass('is-hidden');"<%= configData.moderation.filters.nsfw_filter.isEnabled ? " checked" : "" %>>
+									Filter NSFW queries in these commands: <%- configData.filtered_commands %>
 								</label>
 							</p>
 						</div>
 						<div id="nsfw_filter-options" class="<%= configData.moderation.filters.nsfw_filter.isEnabled ? '' : 'is-hidden' %>">
 							<div class="field">
 								<label class="label">Filter only in these channel(s)</label>
-								<% for(var i=0; i<channelData.length; i++) { %>
+								<% pageData.channelData.forEach(channel => { %>
 									<label class="checkbox">
-									<input name="nsfw_filter-disabled_channel_ids-<%= channelData[i].id %>" type="checkbox" <%= configData.moderation.filters.nsfw_filter.disabled_channel_ids.indexOf(channelData[i].id)==-1 ? "checked" : "" %>>
-										#<%= channelData[i].name %>
+									<input name="nsfw_filter-disabled_channel_ids-<%= channel.id %>" type="checkbox"<%= !configData.moderation.filters.nsfw_filter.disabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+										#<%= channel.name %>
 									</label>
 									<br>
-								<% } %>
+								<% }); %>
 							</div>
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<p class="control">
 									<span class="select is-primary">
 										<select name="nsfw_filter-action">
-											<option value="none" <%= configData.moderation.filters.nsfw_filter.action=="none" ? "selected" : "" %>>Nothing</option>
-											<option value="block" <%= configData.moderation.filters.nsfw_filter.action=="block" ? "selected" : "" %>>Block</option>
-		                                    <option value="mute" <%= configData.moderation.filters.nsfw_filter.action=="mute" ? "selected" : "" %>>Mute</option>
-		                                    <option value="kick" <%= configData.moderation.filters.nsfw_filter.action=="kick" ? "selected" : "" %>>Kick</option>
-		                                    <option value="ban" <%= configData.moderation.filters.nsfw_filter.action=="ban" ? "selected" : "" %>>Ban</option>
+											<option value="none"<%= configData.moderation.filters.nsfw_filter.action === "none" ? " selected" : "" %>>Nothing</option>
+											<option value="block"<%= configData.moderation.filters.nsfw_filter.action === "block" ? " selected" : "" %>>Block</option>
+		                                    <option value="mute"<%= configData.moderation.filters.nsfw_filter.action === "mute" ? " selected" : "" %>>Mute</option>
+		                                    <option value="kick"<%= configData.moderation.filters.nsfw_filter.action === "kick" ? " selected" : "" %>>Kick</option>
+		                                    <option value="ban"<%= configData.moderation.filters.nsfw_filter.action === "ban" ? " selected" : "" %>>Ban</option>
 										</select>
 									</span>
 								</p>
@@ -214,7 +214,7 @@
 							<div class="field">
 								<p class="control">
 									<label class="checkbox">
-									<input name="nsfw_filter-delete_message" type="checkbox" <%= configData.moderation.filters.nsfw_filter.delete_message ? "checked" : "" %>>
+									<input name="nsfw_filter-delete_message" type="checkbox"<%= configData.moderation.filters.nsfw_filter.delete_message ? " checked" : "" %>>
 										Delete the command messages that contain NSFW queries
 									</label>
 								</p>
@@ -225,9 +225,9 @@
 									<span class="select is-primary">
 										<select name="nsfw_filter-violator_role_id">
 											<option value="">None</option>
-											<% for(var i=0; i<roleData.length; i++) { %>
-												<option value="<%= roleData[i].id %>" <%= configData.moderation.filters.nsfw_filter.violator_role_id==roleData[i].id ? "selected" : "" %>><%= roleData[i].name %></option>
-											<% } %>
+											<% pageData.roleData.forEach(role => { %>
+												<option value="<%= role.id %>"<%= configData.moderation.filters.nsfw_filter.violator_role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+											<% }); %>
 										</select>
 									</span>
 								</p>
@@ -241,7 +241,7 @@
 						<div class="field">
 							<p class="control">
 								<label class="checkbox">
-								<input name="custom_filter-isEnabled" type="checkbox" onclick="$('#custom_filter-options').toggleClass('is-hidden');" <%= configData.moderation.filters.custom_filter.isEnabled ? "checked" : "" %>>
+								<input name="custom_filter-isEnabled" type="checkbox" onclick="$('#custom_filter-options').toggleClass('is-hidden');"<%= configData.moderation.filters.custom_filter.isEnabled ? " checked" : "" %>>
 									Filter messages that contain one of the words/phrases below
 								</label>
 							</p>
@@ -255,24 +255,24 @@
 							</div>
 							<div class="field">
 								<label class="label">Enabled in these channel(s)</label>
-								<% for(var i=0; i<channelData.length; i++) { %>
+								<% pageData.channelData.forEach(channel => { %>
 									<label class="checkbox">
-									<input name="custom_filter-disabled_channel_ids-<%= channelData[i].id %>" type="checkbox" <%= configData.moderation.filters.custom_filter.disabled_channel_ids.indexOf(channelData[i].id)==-1 ? "checked" : "" %>>
-										#<%= channelData[i].name %>
+									<input name="custom_filter-disabled_channel_ids-<%= channel.id %>" type="checkbox"<%= !configData.moderation.filters.custom_filter.disabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+										#<%= channel.name %>
 									</label>
 									<br>
-								<% } %>
+								<% }); %>
 							</div>
 							<div class="field">
 								<label class="label">What happens to violators?</label>
 								<p class="control">
 									<span class="select is-primary">
 										<select name="custom_filter-action">
-											<option value="none" <%= configData.moderation.filters.custom_filter.action=="none" ? "selected" : "" %>>Nothing</option>
-											<option value="block" <%= configData.moderation.filters.custom_filter.action=="block" ? "selected" : "" %>>Block</option>
-		                                    <option value="mute" <%= configData.moderation.filters.custom_filter.action=="mute" ? "selected" : "" %>>Mute</option>
-		                                    <option value="kick" <%= configData.moderation.filters.custom_filter.action=="kick" ? "selected" : "" %>>Kick</option>
-		                                    <option value="ban" <%= configData.moderation.filters.custom_filter.action=="ban" ? "selected" : "" %>>Ban</option>
+											<option value="none"<%= configData.moderation.filters.custom_filter.action === "none" ? " selected" : "" %>>Nothing</option>
+											<option value="block"<%= configData.moderation.filters.custom_filter.action === "block" ? " selected" : "" %>>Block</option>
+		                                    <option value="mute"<%= configData.moderation.filters.custom_filter.action === "mute" ? " selected" : "" %>>Mute</option>
+		                                    <option value="kick"<%= configData.moderation.filters.custom_filter.action === "kick" ? " selected" : "" %>>Kick</option>
+		                                    <option value="ban"<%= configData.moderation.filters.custom_filter.action === "ban" ? " selected" : "" %>>Ban</option>
 										</select>
 									</span>
 								</p>
@@ -280,7 +280,7 @@
 							<div class="field">
 								<p class="control">
 									<label class="checkbox">
-									<input name="custom_filter-delete_message" type="checkbox" <%= configData.moderation.filters.custom_filter.delete_message ? "checked" : "" %>>
+									<input name="custom_filter-delete_message" type="checkbox"<%= configData.moderation.filters.custom_filter.delete_message ? " checked" : "" %>>
 										Delete messages that contain one or more filtered keywords
 									</label>
 								</p>
@@ -291,9 +291,9 @@
 									<span class="select is-primary">
 										<select name="custom_filter-violator_role_id">
 											<option value="">None</option>
-											<% for(var i=0; i<roleData.length; i++) { %>
-												<option value="<%= roleData[i].id %>" <%= configData.moderation.filters.custom_filter.violator_role_id==roleData[i].id ? "selected" : "" %>><%= roleData[i].name %></option>
-											<% } %>
+											<% pageData.roleData.forEach(role => { %>
+												<option value="<%= role.id %>" <%= configData.moderation.filters.custom_filter.violator_role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+											<% }); %>
 										</select>
 									</span>
 								</p>

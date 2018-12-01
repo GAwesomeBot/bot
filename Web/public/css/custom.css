@@ -74,7 +74,7 @@
     color: #ff3860;
 }
 
-/* Customisations/Custom classes */
+/* Customisations */
 .navbar {
     box-shadow: none;
 }
@@ -104,36 +104,6 @@
     padding-bottom: calc(.5rem - 1px);
 }
 
-.main-header-section {
-    background: url('/header-image')!important;
-    background-size: cover!important;
-}
-
-.arrow-link {
-    color: hsl(0, 0%, 96%) !important;
-}
-.arrow-link:hover {
-    color: #4a4a4a !important;
-}
-
-.message.is-primary {
-    background-color: #ddfff8;
-}
-.message.is-warning {
-    background-color: #fff9e1;
-}
-
-.menu-list a.is-active {
-    background-color: hsl(171, 100%, 41%);
-}
-
-.select.is-primary select, .input.is-primary, .textarea.is-primary {
-    border-color: #dbdbdb;
-}
-.input.is-primary:focus, .textarea.is-primary:focus {
-    border-color: #00d1b2;
-}
-
 #nprogress .bar {
     height: 4px;
 }
@@ -148,6 +118,58 @@
 .progress::-webkit-progress-value {
     transition: width 0.5s ease, color 0.5s ease;
 }
+
+.menu-list a.is-active {
+    background-color: hsl(171, 100%, 41%);
+}
+
+.message.is-primary {
+    background-color: #ddfff8;
+}
+.message.is-warning {
+    background-color: #fff9e1;
+}
+
+.select.is-primary select, .input.is-primary, .textarea.is-primary {
+    border-color: #dbdbdb;
+}
+.input.is-primary:focus, .textarea.is-primary:focus {
+    border-color: #00d1b2;
+}
+
+/* Helpers */
+.is-divider {
+    height: .2rem;
+}
+.is-divider[data-content]::after {
+    font-size: 1rem;
+    transform: translateY(-1.35rem);
+}
+
+.is-avatar {
+    border-radius: 100%;
+    vertical-align: center;
+}
+.is-avatar.is-small {
+    width: 24px;
+}
+
+/* Page Components */
+.main-header-section {
+    background: url('/header-image')!important;
+    background-size: cover!important;
+}
+
+#scroll-top-button-container {
+    display: none;
+    position: fixed;
+    padding-bottom: 25px;
+    right: 0;
+    bottom: 0;
+    z-index: 99;
+}
+
+/* Custom Elements */
 .command-items {
     box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
     -webkit-box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
@@ -199,27 +221,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Element Components */
+.arrow-link {
+    color: hsl(0, 0%, 96%) !important;
+}
+.arrow-link:hover {
+    color: #4a4a4a !important;
+}
 .switch+label::before {
     transition: background .25s ease-out;
 }
 .nsfw-switch[type=checkbox]:checked+label::before {
     background: #ff3860 !important;
-}
-.is-divider {
-    height: .2rem;
-}
-.is-divider[data-content]::after {
-    font-size: 1rem;
-    transform: translateY(-1.35rem);
-}
-
-#scroll-top-button-container {
-    display: none;
-    position: fixed;
-    padding-bottom: 25px;
-    right: 0;
-    bottom: 0;
-    z-index: 99;
 }
 
 /* Spinner by tobiasahlin.com/spinkit/ */

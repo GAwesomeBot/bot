@@ -675,7 +675,7 @@ module.exports = class GABClient extends DJSClient {
 
 		// Add a strike for the user
 		memberQueryDocument.push("strikes", {
-			_id: this.user.id,
+			admin: this.user.id,
 			reason: strikeMessage,
 		});
 
@@ -938,8 +938,8 @@ module.exports = class GABClient extends DJSClient {
 		if (this.isMuted(channel, member) && channel.type === "text") {
 			const overwrite = channel.permissionOverwrites.get(member.id);
 			if (overwrite) {
-				const allowedPerms = overwrite.allowed;
-				const deniedPerms = overwrite.denied;
+				const allowedPerms = overwrite.allow;
+				const deniedPerms = overwrite.deny;
 				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
 					try {
 						await channel.updateOverwrite(member.id, {

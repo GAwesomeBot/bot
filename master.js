@@ -177,7 +177,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 			// Shard has modified Console data
 			sharder.IPC.on("dashboardUpdate", async msg => {
 				winston.silly(`Broadcasting update to dashboard at ${msg.location}.`);
-				sharder.IPC.send("dashboardUpdate", {namespace: msg.namespace, location: msg.location}, "*");
+				sharder.IPC.send("dashboardUpdate", { namespace: msg.namespace, location: msg.location, author: msg.author }, "*");
 			});
 
 			// Shard requests a user to be muted

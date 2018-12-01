@@ -1,3 +1,4 @@
+const { ObjectID } = require("mongodb");
 const Schema = require("./Schema");
 
 module.exports = Schema.Map({
@@ -31,8 +32,11 @@ module.exports = Schema.Map({
 		default: false,
 	},
 	strikes: [new Schema({
-		// User ID
 		_id: {
+			type: String,
+			default: () => new ObjectID().toString(),
+		},
+		admin: {
 			type: String,
 			required: true,
 		},

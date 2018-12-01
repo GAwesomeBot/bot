@@ -8,50 +8,49 @@
     <script src="/static/js/auto-complete.min.js"></script>
     <script src="/static/js/form-change-listener.js"></script>
     <script>
-			function newStatusMessage (type) {
-				var newMessageId = 'new-' + type + '-message'
-				var newMessage = $('#' + newMessageId)
-				if (newMessage.val()) {
-					newMessage.removeClass('is-danger')
-				} else {
-					newMessage.addClass('is-danger')
-				}
-
-				if (newMessage.val()) {
-					var data = {}
-					data[newMessageId] = newMessage.val()
-					$.ajax({
-						type: 'POST',
-						url: '<%= currentPage %>',
-						data: data,
-						success: function () {
-							saveFormState()
-							$('#form').submit()
-                            Turbolinks.visit('');
-						}
-					})
-				}
-			}
-
-			function removeMessage (data) {
-				var messageNode = $('#' + data).parent()
-
-				if (data) {
-					var toSend = {}
-					toSend[data] = 'on'
-					$.ajax({
-						type: 'POST',
-						url: '<%= currentPage %>',
-						data: toSend,
-						success: function () {
-							messageNode.remove()
-							saveFormState()
-							$('#form').submit()
-                            Turbolinks.visit('');
-						}
-					})
-				}
-			}
+      function newStatusMessage (type) {
+        var newMessageId = 'new-' + type + '-message';
+        var newMessage = $('#' + newMessageId);
+        if (newMessage.val()) {
+          newMessage.removeClass('is-danger');
+        } else {
+          newMessage.addClass('is-danger');
+        }
+        if (newMessage.val()) {
+          var data = {};
+          data[newMessageId] = newMessage.val();
+          $.ajax({
+            type: 'POST',
+            url: '<%= currentPage %>',
+            data: data,
+            success: function () {
+              saveFormState();
+              $('#form').submit();
+              Turbolinks.visit('');
+            }
+          })
+        }
+      }
+      function removeMessage (data) {
+        var messageNode = $('#' + data).parent()
+        if (data) {
+          var toSend = {}
+          toSend[data] = 'on'
+          hide_update_modal = true;
+          $.ajax({
+            type: 'POST',
+            url: '<%= currentPage %>',
+            data: toSend,
+            success: function () {
+              messageNode.remove();
+              saveFormState();
+              hide_update_modal = true;
+              $('#form').submit();
+              Turbolinks.visit('');
+            }
+          })
+        }
+      }
     </script>
 </head>
 <body onload="saveFormState();">
@@ -84,48 +83,48 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="server_name_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('#server_name_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.server_name_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#server_name_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.server_name_updated_message.isEnabled ? " checked" : "" %>>
                             Server <strong>name</strong> changed
                         </label>
                         &nbsp;
                         <span id="server_name_updated_message-options"
                               class="select is-primary is-small<%= configData.moderation.status_messages.server_name_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="server_name_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.server_name_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.server_name_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
                     <div class="field">
                         <label class="checkbox">
                             <input name="server_icon_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('#server_icon_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.server_icon_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#server_icon_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.server_icon_updated_message.isEnabled ? " checked" : "" %>>
                             New server <strong>icon</strong>
                         </label>
                         &nbsp;
                         <span id="server_icon_updated_message-options"
                               class="select is-primary is-small<%= configData.moderation.status_messages.server_icon_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="server_icon_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.server_icon_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.server_icon_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
                     <div class="field">
                         <label class="checkbox">
                             <input name="server_region_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('#server_region_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.server_region_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#server_region_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.server_region_updated_message.isEnabled ? " checked" : "" %>>
                             Server <strong>region</strong> changed
                         </label>
                         &nbsp;
                         <span id="server_region_updated_message-options"
                               class="select is-primary is-small<%= configData.moderation.status_messages.server_region_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="server_region_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.server_region_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.server_region_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
@@ -137,21 +136,21 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="new_member_message-isEnabled" type="checkbox"
-                                       onclick="$('.new_member_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.new_member_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.new_member_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.new_member_message.isEnabled ? " checked" : "" %>>
                                 <strong>New member</strong> joined server
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small new_member_message-options<%= configData.moderation.status_messages.new_member_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="new_member_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.new_member_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>" <%= configData.moderation.status_messages.new_member_message.channel_id === channel.id ? "selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="new_member_message-options<%= configData.moderation.status_messages.new_member_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.new_member_message.messages.length; i++) { %>
+                                <% configData.moderation.status_messages.new_member_message.messages.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white" id="new_member_message-<%= i %>-removed"
                                             onclick="removeMessage('new_member_message-<%= i %>-removed'); return false">
@@ -159,9 +158,9 @@
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <%- configData.moderation.status_messages.new_member_message.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+                                    <%- message.replace(/@user/g, "<strong>@user</strong>").replace(/@mention/g, "<strong>@mention</strong>") %>
                                 </li>
-                                <% } %>
+                                <% }); %>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
                                         <div class="field is-grouped">
@@ -191,7 +190,7 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="new_member_pm-isEnabled" type="checkbox"
-                                   onclick="$('#new_member_pm-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.new_member_pm.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#new_member_pm-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.new_member_pm.isEnabled ? " checked" : "" %>>
                             Send a <strong>PM</strong> to new server members
                         </label>
                         <span id="new_member_pm-options"
@@ -206,21 +205,21 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="member_online_message-isEnabled" type="checkbox"
-                                       onclick="$('.member_online_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_online_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.member_online_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_online_message.isEnabled ? " checked" : "" %>>
                                 Member came <strong>online</strong>
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small member_online_message-options<%= configData.moderation.status_messages.member_online_message.isEnabled ? '' : ' is-hidden' %>">
 						    			<select name="member_online_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_online_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_online_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="member_online_message-options<%= configData.moderation.status_messages.member_online_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.member_online_message.messages.length; i++) { %>
+                                <% configData.moderation.status_messages.member_online_message.messages.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white" id="member_online_message-<%= i %>-removed"
                                             onclick="removeMessage('member_online_message-<%= i %>-removed'); return false">
@@ -228,9 +227,9 @@
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <%- configData.moderation.status_messages.member_online_message.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+                                    <%- message.replace(/@user/g, "<strong>@user</strong>").replace(/@mention/g, "<strong>@mention</strong>") %>
                                 </li>
-                                <% } %>
+                                <% }); %>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
                                         <div class="field is-grouped">
@@ -261,21 +260,21 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="member_offline_message-isEnabled" type="checkbox"
-                                       onclick="$('.member_offline_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_offline_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.member_offline_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_offline_message.isEnabled ? " checked" : "" %>>
                                 Member went <strong>offline</strong>
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small member_offline_message-options<%= configData.moderation.status_messages.member_offline_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_offline_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_offline_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_offline_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="member_offline_message-options<%= configData.moderation.status_messages.member_offline_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.member_offline_message.messages.length; i++) { %>
+                                <% configData.moderation.status_messages.member_offline_message.messages.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white"
                                             id="member_offline_message-<%= i %>-removed"
@@ -284,9 +283,9 @@
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <%- configData.moderation.status_messages.member_offline_message.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+                                    <%- message.replace(/@user/g, "<strong>@user</strong>").replace(/@mention/g, "<strong>@mention</strong>") %>
                                 </li>
-                                <% } %>
+                                <% }) %>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
                                         <div class="field is-grouped">
@@ -316,60 +315,60 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="member_username_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('.member_username_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_username_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('.member_username_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_username_updated_message.isEnabled ? " checked" : "" %>>
                             Member changed their <strong>username</strong>
                         </label>
                         &nbsp;
                         <span class="select is-primary is-small member_username_updated_message-options<%= configData.moderation.status_messages.member_username_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_username_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_username_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_username_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
                     <div class="field">
                         <label class="checkbox">
                             <input name="member_nick_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('.member_nick_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_nick_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('.member_nick_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_nick_updated_message.isEnabled ? " checked" : "" %>>
                             Member updated their <strong>nickname</strong>
                         </label>
                         &nbsp;
                         <span class="select is-primary is-small member_nick_updated_message-options<%= configData.moderation.status_messages.member_nick_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_nick_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_nick_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_nick_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
                     <div class="field">
                         <label class="checkbox">
                             <input name="member_avatar_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('.member_avatar_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_avatar_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('.member_avatar_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_avatar_updated_message.isEnabled ? " checked" : "" %>>
                             Member changed their <strong>avatar</strong>
                         </label>
                         &nbsp;
                         <span class="select is-primary is-small member_avatar_updated_message-options<%= configData.moderation.status_messages.member_avatar_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_avatar_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_avatar_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_avatar_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
                     <div class="field">
                         <label class="checkbox">
                             <input name="member_game_updated_message-isEnabled" type="checkbox"
-                                   onclick="$('.member_game_updated_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_game_updated_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('.member_game_updated_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_game_updated_message.isEnabled ? " checked" : "" %>>
                             Member started playing a <strong>game</strong>
                         </label>
                         &nbsp;
                         <span class="select is-primary is-small member_game_updated_message-options<%= configData.moderation.status_messages.member_game_updated_message.isEnabled ? '' : ' is-hidden' %>">
 									<select name="member_game_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_game_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_game_updated_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
@@ -377,21 +376,21 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="member_streaming_message-isEnabled" type="checkbox"
-                                       onclick="$('.member_streaming_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_streaming_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.member_streaming_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_streaming_message.isEnabled ? " checked" : "" %>>
                                 Member <strong>streaming</strong> (Twitch or YT Gaming)
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small member_streaming_message-options<%= configData.moderation.status_messages.member_streaming_message.isEnabled ? '' : ' is-hidden' %>">
 						    			<select name="member_streaming_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_streaming_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_streaming_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="member_streaming_message-options<%= configData.moderation.status_messages.member_streaming_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.member_streaming_message.enabled_user_ids.length; i++) { %>
+                                <% configData.moderation.status_messages.member_streaming_message.enabled_user_ids.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white"
                                             id="member_streaming_message-<%= i %>-removed"
@@ -400,12 +399,12 @@
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <img src="<%= configData.moderation.status_messages.member_streaming_message.enabled_user_ids[i].avatar %>"
-                                         style="border-radius: 100%;width: 24px;vertical-align: middle;"
-                                         alt="<%= configData.moderation.status_messages.member_streaming_message.enabled_user_ids[i].id %>">
-                                    <%= configData.moderation.status_messages.member_streaming_message.enabled_user_ids[i].name %>
+                                    <img src="<%= message.avatar %>"
+                                         class="is-avatar is-small"
+                                         alt="<%= message.id %>">
+                                    <%= message.name %>
                                 </li>
-                                <% } %>
+                                <% }); %>
                                 <br>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
@@ -444,16 +443,16 @@
 									<select id="member_rank_updated_message-type"
                                             name="member_rank_updated_message-type"
                                             onchange="$('.member_rank_updated_message-type-options').toggleClass('is-hidden')">
-										<option value="message" <%= configData.moderation.status_messages.member_rank_updated_message.type == "message" ? "selected" : "" %>>Message</option>
-										<option value="pm" <%= configData.moderation.status_messages.member_rank_updated_message.type == "pm" ? "selected" : "" %>>PM</option>
+										<option value="message"<%= configData.moderation.status_messages.member_rank_updated_message.type === "message" ? " selected" : "" %>>Message</option>
+										<option value="pm"<%= configData.moderation.status_messages.member_rank_updated_message.type === "pm" ? " selected" : "" %>>PM</option>
 									</select>
 								</span>
                         &nbsp;
                         <span class="select is-primary is-small member_rank_updated_message-type-options<%= (configData.moderation.status_messages.member_rank_updated_message.isEnabled && configData.moderation.status_messages.member_rank_updated_message.type == "message") ? '' : ' is-hidden' %>">
 									<select name="member_rank_updated_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_rank_updated_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>" <%= configData.moderation.status_messages.member_rank_updated_message.channel_id === channel.id ? "selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                     </div>
@@ -461,32 +460,32 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="member_removed_message-isEnabled" type="checkbox"
-                                       onclick="$('.member_removed_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_removed_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.member_removed_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_removed_message.isEnabled ? " checked" : "" %>>
                                 Member <strong>left</strong> server (or got kicked)
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small member_removed_message-options<%= configData.moderation.status_messages.member_removed_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_removed_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_removed_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_removed_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="member_removed_message-options<%= configData.moderation.status_messages.member_removed_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.member_removed_message.messages.length; i++) { %>
+                                <% configData.moderation.status_messages.member_removed_message.messages.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white"
                                             id="member_removed_message-<%= i %>-removed"
-                                            onclick="removeMessage('member_removed_message-<%= i %>-removed') return false">
+                                            onclick="removeMessage('member_removed_message-<%= i %>-removed'); return false;">
                                             <span class="icon is-small" style="margin-left: -2px;">
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <%- configData.moderation.status_messages.member_removed_message.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+                                    <%- message.replace(/@user/g, "<strong>@user</strong>").replace(/@mention/g, "<strong>@mention</strong>") %>
                                 </li>
-                                <% } %>
+                                <% }); %>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
                                         <div class="field is-grouped">
@@ -516,7 +515,7 @@
                     <div class="field">
                         <label class="checkbox">
                             <input name="member_removed_pm-isEnabled" type="checkbox"
-                                   onclick="$('#member_removed_pm-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_removed_pm.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#member_removed_pm-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_removed_pm.isEnabled ? " checked" : "" %>>
                             Send a <strong>PM</strong> to users when they leave the server
                         </label>
                         <span id="member_removed_pm-options"
@@ -531,21 +530,21 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="member_banned_message-isEnabled" type="checkbox"
-                                       onclick="$('.member_banned_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_banned_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.member_banned_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_banned_message.isEnabled ? " checked" : "" %>>
                                 User <strong>banned</strong> from server
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small member_banned_message-options<%= configData.moderation.status_messages.member_banned_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_banned_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_banned_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_banned_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="member_banned_message-options<%= configData.moderation.status_messages.member_banned_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.member_banned_message.messages.length; i++) { %>
+                                <% configData.moderation.status_messages.member_banned_message.messages.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white" id="member_banned_message-<%= i %>-removed"
                                             onclick="removeMessage('member_banned_message-<%= i %>-removed'); return false">
@@ -553,9 +552,9 @@
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <%- configData.moderation.status_messages.member_banned_message.messages[i].replace("@user", "<strong>@user</strong>") %>
+                                    <%- message.replace(/@user/g, "<strong>@user</strong>") %>
                                 </li>
-                                <% } %>
+                                <% }); %>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
                                         <div class="field is-grouped">
@@ -586,21 +585,21 @@
                         <div class="field">
                             <label class="checkbox">
                                 <input name="member_unbanned_message-isEnabled" type="checkbox"
-                                       onclick="$('.member_unbanned_message-options').toggleClass('is-hidden')" <%= configData.moderation.status_messages.member_unbanned_message.isEnabled ? "checked" : "" %>>
+                                       onclick="$('.member_unbanned_message-options').toggleClass('is-hidden')"<%= configData.moderation.status_messages.member_unbanned_message.isEnabled ? " checked" : "" %>>
                                 User <strong>unbanned</strong> from server
                             </label>
                             &nbsp;
                             <span class="select is-primary is-small member_unbanned_message-options<%= configData.moderation.status_messages.member_unbanned_message.isEnabled ? '' : ' is-hidden' %>">
 									    <select name="member_unbanned_message-channel_id">
-                                            <% for(var i = 0; i < channelData.length; i++) { %>
-                                            <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.member_unbanned_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                            <% } %>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                            <option value="<%= channel.id %>"<%= configData.moderation.status_messages.member_unbanned_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
                                         </select>
                                     </span>
                         </div>
                         <div class="field">
                             <ul class="member_unbanned_message-options<%= configData.moderation.status_messages.member_unbanned_message.isEnabled ? '' : ' is-hidden' %>">
-                                <% for(var i = 0; i < configData.moderation.status_messages.member_unbanned_message.messages.length; i++) { %>
+                                <% configData.moderation.status_messages.member_unbanned_message.messages.forEach((message, i) => { %>
                                 <li>
                                     <button class="button is-small is-white"
                                             id="member_unbanned_message-<%= i %>-removed"
@@ -609,9 +608,9 @@
                                                 <i class="fa fa-times"></i>
                                             </span>
                                     </button>
-                                    <%- configData.moderation.status_messages.member_unbanned_message.messages[i].replace("@user", "<strong>@user</strong>") %>
+                                    <%- message.replace(/@user/g, "<strong>@user</strong>") %>
                                 </li>
-                                <% } %>
+                                <% }); %>
                                 <div class="field is-horizontal">
                                     <div class="field-body">
                                         <div class="field is-grouped">
@@ -653,37 +652,37 @@
                               class="select is-primary is-small<%= configData.moderation.status_messages.message_edited_message.isEnabled ? '' : ' is-hidden' %>">
 									<select id="message_edited_message-type" name="message_edited_message-type"
                                             onchange="$('.message_edited_message-options').toggleClass('is-hidden')">
-										<option value="msg" <%= configData.moderation.status_messages.message_edited_message.type == "msg" ? "selected" : "" %>>Channel of message</option>
-										<option value="single" <%= configData.moderation.status_messages.message_edited_message.type == "single" ? "selected" : "" %>>Single channel</option>
+										<option value="msg"<%= configData.moderation.status_messages.message_edited_message.type == "msg" ? " selected" : "" %>>Channel of message</option>
+										<option value="single"<%= configData.moderation.status_messages.message_edited_message.type == "single" ? " selected" : "" %>>Single channel</option>
 									</select>
 								</span>
                         &nbsp;
                         <span id="message_edited_message-channel_id-options"
                               class="select is-primary is-small message_edited_message-options<%= (configData.moderation.status_messages.message_edited_message.isEnabled && configData.moderation.status_messages.message_edited_message.channel_id) ? '' : ' is-hidden' %>">
 									<select name="message_edited_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.message_edited_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.message_edited_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                         <span id="message_edited_message-enabled_channel_ids-options"
                               class="<%= configData.moderation.status_messages.message_edited_message.isEnabled ? '' : 'is-hidden' %>">
 									<br>
-                            <% for(var i = 0; i < channelData.length; i++) { %>
+                            <% pageData.channelData.forEach(channel => { %>
                             &nbsp;
 										<label class="checkbox">
-										<input name="message_edited_message-enabled_channel_ids-<%= channelData[i].id %>"
-                                               type="checkbox" <%= configData.moderation.status_messages.message_edited_message.enabled_channel_ids.indexOf(channelData[i].id) > -1 ? "checked" : "" %>>
-											#<%= channelData[i].name %>
+										<input name="message_edited_message-enabled_channel_ids-<%= channel.id %>"
+                                               type="checkbox"<%= configData.moderation.status_messages.message_edited_message.enabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+											#<%= channel.name %>
 										</label>
 										<br>
-                            <% } %>
+                            <% }); %>
                         </span>
                     </div>
                     <div class="field">
                         <label class="checkbox">
                             <input name="message_deleted_message-isEnabled" type="checkbox"
-                                   onclick="$('#message_deleted_message-type-options').toggleClass('is-hidden'); $('#message_deleted_message-enabled_channel_ids-options').toggleClass('is-hidden'); if(!this.checked) {$('.message_deleted_message-options').addClass('is-hidden')} else if(!$('#message_deleted_message-type').val()=='msg') {$('#message_deleted_message-channel_id-options').removeClass('is-hidden')}" <%= configData.moderation.status_messages.message_deleted_message.isEnabled ? "checked" : "" %>>
+                                   onclick="$('#message_deleted_message-type-options').toggleClass('is-hidden'); $('#message_deleted_message-enabled_channel_ids-options').toggleClass('is-hidden'); if (!this.checked) {$('.message_deleted_message-options').addClass('is-hidden')} else if (!$('#message_deleted_message-type').val() === 'msg') {$('#message_deleted_message-channel_id-options').removeClass('is-hidden')}"<%= configData.moderation.status_messages.message_deleted_message.isEnabled ? " checked" : "" %>>
                             Message <strong>deleted</strong> (not necessarily by author)
                         </label>
                         &nbsp;
@@ -691,31 +690,31 @@
                               class="select is-primary is-small<%= configData.moderation.status_messages.message_deleted_message.isEnabled ? '' : ' is-hidden' %>">
 									<select id="message_deleted_message-type" name="message_deleted_message-type"
                                             onchange="$('.message_deleted_message-options').toggleClass('is-hidden')">
-										<option value="msg" <%= configData.moderation.status_messages.message_deleted_message.type == "msg" ? "selected" : "" %>>Channel of message</option>
-										<option value="single" <%= configData.moderation.status_messages.message_deleted_message.type == "single" ? "selected" : "" %>>Single channel</option>
+										<option value="msg"<%= configData.moderation.status_messages.message_deleted_message.type === "msg" ? " selected" : "" %>>Channel of message</option>
+										<option value="single"<%= configData.moderation.status_messages.message_deleted_message.type === "single" ? " selected" : "" %>>Single channel</option>
 									</select>
 								</span>
                         &nbsp;
                         <span id="message_deleted_message-channel_id-options"
                               class="select is-primary is-small message_deleted_message-options<%= (configData.moderation.status_messages.message_deleted_message.isEnabled && configData.moderation.status_messages.message_deleted_message.channel_id) ? '' : ' is-hidden' %>">
 									<select name="message_deleted_message-channel_id">
-                                        <% for(var i = 0; i < channelData.length; i++) { %>
-                                        <option value="<%= channelData[i].id %>" <%= configData.moderation.status_messages.message_deleted_message.channel_id == channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-                                        <% } %>
+                                        <% pageData.channelData.forEach(channel => { %>
+                                        <option value="<%= channel.id %>"<%= configData.moderation.status_messages.message_deleted_message.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                        <% }); %>
                                     </select>
 								</span>
                         <span id="message_deleted_message-enabled_channel_ids-options"
                               class="<%= configData.moderation.status_messages.message_deleted_message.isEnabled ? '' : 'is-hidden' %>">
 									<br>
-                            <% for(var i = 0; i < channelData.length; i++) { %>
+                            <% pageData.channelData.forEach(channel => { %>
                             &nbsp;
 										<label class="checkbox">
-										<input name="message_deleted_message-enabled_channel_ids-<%= channelData[i].id %>"
-                                               type="checkbox" <%= configData.moderation.status_messages.message_deleted_message.enabled_channel_ids.indexOf(channelData[i].id) > -1 ? "checked" : "" %>>
-											#<%= channelData[i].name %>
+										<input name="message_deleted_message-enabled_channel_ids-<%= channel.id %>"
+                                               type="checkbox"<%= configData.moderation.status_messages.message_deleted_message.enabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+											#<%= channel.name %>
 										</label>
 										<br>
-                            <% } %>
+                            <% }); %>
                         </span>
                     </div>
                     <br>

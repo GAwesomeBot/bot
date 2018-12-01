@@ -164,7 +164,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		const { namespace } = msg;
 		const param = msg.location;
 		try {
-			io.of(namespace).emit("update", param);
+			io.of(namespace).emit("update", { location: param, author: msg.author });
 			if (param === "maintainer") global.configJSON = reload("../Configurations/config.json");
 		} catch (err) {
 			winston.warn("An error occurred while handling a dashboard WebSocket!", err);

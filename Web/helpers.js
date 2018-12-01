@@ -114,7 +114,7 @@ module.exports = {
 
 	createMessageOfTheDay: (req, id) => req.app.client.IPC.send("createMOTD", { guild: id }),
 
-	dashboardUpdate: (req, namespace, location) => req.app.client.IPC.send("dashboardUpdate", { namespace: namespace, location: location }),
+	dashboardUpdate: (req, namespace, location) => req.app.client.IPC.send("dashboardUpdate", { namespace: namespace, location: location, author: req.consolemember ? req.consolemember.id : "SYSTEM" }),
 
 	getRoleData: svr => svr.roles.filter(role => role.name !== "@everyone" && role.name.indexOf("color-") !== 0).map(role => ({
 		name: role.name,
