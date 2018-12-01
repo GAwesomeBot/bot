@@ -154,6 +154,10 @@
     width: 24px;
 }
 
+.is-embedded-message {
+    margin-bottom: 0!important;
+}
+
 /* Page Components */
 .main-header-section {
     background: url('/header-image')!important;

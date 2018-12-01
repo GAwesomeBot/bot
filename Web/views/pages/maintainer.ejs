@@ -29,7 +29,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-server"></i>
 									</span>
-									Server<%= pageData.serverCount==1 ? "" : "s" %>
+									Server<%= pageData.serverCount === 1 ? "" : "s" %>
 								</div>
 								<div class="title">
                                     <%= pageData.serverCount %>
@@ -38,7 +38,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-user"></i>
 									</span>
-									User<%= pageData.userCount==1 ? "" : "s" %>
+									User<%= pageData.userCount === 1 ? "" : "s" %>
 								</div>
 								<div class="title">
                                     <%= pageData.userCount %>
@@ -51,7 +51,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-comments-o"></i>
 									</span>
-									Message<%= pageData.totalMessageCount==1 ? "" : "s" %> today
+									Message<%= pageData.totalMessageCount === 1 ? "" : "s" %> today
 								</div>
 								<div class="title">
                                     <%= pageData.totalMessageCount %>
@@ -60,7 +60,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-file"></i>
 									</span>
-									View<%= pageData.trafficData.hour==1 ? "" : "s" %> the past hour
+									View<%= pageData.trafficData.hour === 1 ? "" : "s" %> the past hour
 								</div>
 								<div class="title">
                                     <%= pageData.trafficData.hour %>
@@ -141,7 +141,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-month",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= Object.values(pageData.trafficData.days) %>],
+		data: [<%- Object.values(pageData.trafficData.days) %>],
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
@@ -150,7 +150,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-week",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= pageData.trafficData.week %>],
+		data: [<%- pageData.trafficData.week %>],
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
@@ -160,7 +160,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-day",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= pageData.trafficData.day %>],
+		data: [<%- pageData.trafficData.day %>],
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],

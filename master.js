@@ -23,7 +23,7 @@ const scope = { safeMode: false };
 Boot({ configJS, configJSON, auth }, scope).then(() => {
 	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
-	database.initialize(configJS.databaseURL).catch(err => {
+	database.einitialize(configJS.database).catch(err => {
 		winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 		process.exit(1);
 	}).then(async () => {
@@ -33,7 +33,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 			await winston.info(`Connected to the database successfully.`);
 
 			winston.silly("Confirming MongoDB config values.");
-			await Raw.db.admin().command({ getCmdLineOpts: 1 }).then(res => {
+			await db.client.admin().command({ getCmdLineOpts: 1 }).then(res => {
 				if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
 					winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
 					configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");
@@ -107,12 +107,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 		});
 
 		if (!scope.safeMode) {
-			let traffic;
-			database.einitialize(configJS.database).then(() => {
-				traffic = new Traffic(sharder.IPC, false);
-			});
-
-			sharder.traffic = traffic;
+			sharder.traffic = new Traffic(sharder.IPC, false);
 
 			// Sharder events
 			sharder.ready = 0;
@@ -150,10 +145,10 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				try {
 					if (msg.target !== "*") {
 						const shardId = sharder.IPC.shard(msg.target);
-						if (!shardId && shardId !== 0) return callback({target: msg.target, err: 404, result: null});
+						if (!shardId && shardId !== 0) return callback({ target: msg.target, err: 404, result: null });
 
 						const result = await sharder.shards.get(shardId).getGuild(msg.target, msg.settings);
-						return callback({target: msg.target, err: null, result});
+						return callback({ target: msg.target, err: null, result });
 					} else {
 						const promises = [];
 						sharder.shards.forEach(async shard => {
@@ -170,7 +165,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 					}
 				} catch (err) {
 					winston.warn("An error occurred while fetching internal guild data l.l\n", err);
-					return callback({target: msg.target, err: err, result: null});
+					return callback({ target: msg.target, err: err, result: null });
 				}
 			});
 
@@ -273,11 +268,11 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				}
 				data.master.PID = process.pid;
 				const timer = new Stopwatch();
-				data.master.guilds = await db.servers.count().exec();
+				data.master.guilds = await db.servers.count();
 				const afterQuery = timer.friendlyDuration;
 				timer.stop();
 				data.master.ping = afterQuery;
-				data.master.users = await db.users.count().exec();
+				data.master.users = await db.users.count();
 				if (!msg.noShards) data.shards = await Promise.all(sharder.shards.map(shard => sharder.IPC.send("shardData", {}, shard.id)));
 				callback(data);
 			});
@@ -304,7 +299,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				const findResults = await sharder.IPC.send("relay", {
 					command: msg.command,
 					params: msg.findParams,
-					action: "find"
+					action: "find",
 				}, "*");
 
 				if (findResults.every(result => result === false)) return reply("none");
@@ -316,7 +311,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				const shardID = sharder.IPC.shard(guildID);
 				msg.execParams.guildid = guildID;
 
-				sharder.IPC.send("relay", {command: msg.command, params: msg.execParams, action: "run"}, shardID);
+				sharder.IPC.send("relay", { command: msg.command, params: msg.execParams, action: "run" }, shardID);
 			});
 
 			sharder.IPC.on("awaitMessage", async (msg, callback) => callback(await sharder.IPC.send("awaitMessage", msg, 0)));

@@ -12,7 +12,7 @@
 			newBlockUser.addClass("is-danger");
 		}
 
-		if(newBlockUser.val()) {
+		if (newBlockUser.val()) {
 			hide_update_modal = true;
 			$.ajax({
 				type: "POST",
@@ -51,7 +51,7 @@
 					</article>
 					<form id="form" action="<%= currentPage %>" method="post">
 						<div class="field" style="overflow-x: scroll;">
-							<% if (configData.global_blocklist.length>0) { %>
+							<% if (configData.global_blocklist.length > 0) { %>
 							<table class="table is-fullwidth">
 								<thead>
 								<tr>
@@ -62,19 +62,19 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<configData.global_blocklist.length; i++) { %>
+								<% configData.global_blocklist.forEach(user => { %>
 								<tr>
 									<td>
-										<img class="image is-24x24" src="<%= configData.global_blocklist[i].avatar %>" alt="<%= configData.global_blocklist[i].id %>">
+										<img class="image is-24x24" src="<%= user.avatar %>" alt="<%= user.id %>">
 									</td>
 									<td>
-										<%= configData.global_blocklist[i].name %>
+										<%= user.name %>
 									</td>
 									<td>
-										<%= configData.global_blocklist[i].id %>
+										<%= user.id %>
 									</td>
 									<td>
-										<button class="button is-small is-danger" name="block-<%= i %>-removed" onclick="hide_update_modal = true;">
+										<button class="button is-small is-danger" name="block-<%= user.id %>-removed" onclick="hide_update_modal = true;">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>
@@ -82,11 +82,11 @@
 										</button>
 									</td>
 								</tr>
-								<% } %>
+								<% }); %>
 								</tbody>
 							</table>
 							<% } else { %>
-							<article class="message" style="margin-bottom: 0px;">
+							<article class="message is-embedded-message">
 								<div class="message-header">
 									<p>
 										<span class="icon">

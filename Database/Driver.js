@@ -71,8 +71,6 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 		});
 });
 
-exports.get = exports.getConnection = () => global.Database;
-
 const { MongoClient } = require("mongodb");
 
 const Model = require("./Model");
@@ -119,3 +117,5 @@ exports.einitialize = async config => {
 	});
 	return global.EDatabase.client;
 };
+
+exports.get = exports.getConnection = () => global.EDatabase;

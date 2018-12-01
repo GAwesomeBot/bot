@@ -19,7 +19,7 @@ del {
         </div>
         <div class="media-content">
             <p class="title is-4">@<%= revision.responsibleUser.name %></p>
-            <p class="subtitle" title="<%= revision.rawTimestamp %>" style="margin-bottom: 0px;"><%= revision.relativeTimestamp %></p>
+            <p class="subtitle is-embedded-message" title="<%= revision.rawTimestamp %>"><%= revision.relativeTimestamp %></p>
             <code id="page-update-<%= i %>-diff" class="box" style="display: none;margin-top: 10px;">
                 <%- revision.diffHtml || "Page created. No diff available." %>
             </code>

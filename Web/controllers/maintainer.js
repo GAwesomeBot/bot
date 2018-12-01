@@ -103,7 +103,7 @@ controllers.servers.list = async (req, { res }) => {
 	}
 };
 controllers.servers.list.post = async (req, res) => {
-	if (req.body.removeFromActivity) {
+	if (req.body.removeFromActivity && !configJSON.activityBlocklist.includes(req.body.removeFromActivity)) {
 		configJSON.activityBlocklist.push(req.body.removeFromActivity);
 	}
 	if (req.body.unbanFromActivity) {
@@ -144,19 +144,18 @@ controllers.options.blocklist = async (req, { res }) => {
 };
 controllers.options.blocklist.post = async (req, res) => {
 	if (req.body["new-user"]) {
-		let usr = await Users.findOne({ username: req.body["new-user"] }).exec();
+		let usr = await EUsers.findOne({ username: req.body["new-user"] });
 		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
 
 		if (usr && !configJSON.userBlocklist.includes(usr.id ? usr.id : usr._id) && !configJSON.maintainers.includes(usr.id ? usr.id : usr._id)) {
 			configJSON.userBlocklist.push(usr.id ? usr.id : usr._id);
 		}
 	} else {
-		for (let i = 0; i < configJSON.userBlocklist.length; i++) {
-			if (req.body[`block-${i}-removed`] !== undefined) {
-				configJSON.userBlocklist[i] = null;
+		configJSON.userBlocklist.forEach(usrid => {
+			if (req.body[`block-${usrid}-removed`] !== undefined) {
+				configJSON.userBlocklist.splice(configJSON.userBlocklist.indexOf(usrid), 1);
 			}
-		}
-		configJSON.userBlocklist.spliceNullElements();
+		});
 	}
 
 	save(req, res);
@@ -239,16 +238,15 @@ controllers.options.contributors = async (req, { res }) => {
 };
 controllers.options.contributors.post = async (req, res) => {
 	if (req.body["new-user"]) {
-		let usr = await Users.findOne({ username: req.body["new-user"] }).exec();
+		let usr = await EUsers.findOne({ username: req.body["new-user"] });
 		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
 		if (!usr.id) usr.id = usr._id;
-		if (usr && configJSON.wikiContributors.indexOf(usr.id) === -1) {
+		if (usr && !configJSON.wikiContributors.includes(usr.id)) {
 			configJSON.wikiContributors.push(usr.id);
 		}
-	} else if (configJSON.maintainers.includes(req.user.id)) {
+	} else {
 		const i = configJSON.wikiContributors.indexOf(req.body["contributor-removed"]);
-		configJSON.wikiContributors[i] = null;
-		configJSON.wikiContributors.spliceNullElements();
+		configJSON.wikiContributors.splice(i, 1);
 	}
 
 	save(req, res);
@@ -276,7 +274,7 @@ controllers.management.maintainers = async (req, { res }) => {
 controllers.management.maintainers.post = async (req, res) => {
 	if (req.level !== 2 && req.level !== 0) return res.sendStatus(403);
 	if (req.body["new-user"]) {
-		let usr = await Users.findOne({ username: req.body["new-user"] }).exec();
+		let usr = await EUsers.findOne({ username: req.body["new-user"] });
 		if (!usr) usr = await req.app.client.users.fetch(req.body["new-user"], true);
 		if (!usr.id) usr.id = usr._id;
 
@@ -326,12 +324,10 @@ controllers.management.shards = async (req, { res }) => {
 	res.setConfigData({
 		shardTotal: Number(process.env.SHARD_COUNT),
 		data,
-	})
-		.setPageData({
-			currentShard: req.app.client.shardID,
-			page: "maintainer-shards.ejs",
-		})
-		.render();
+	}).setPageData({
+		currentShard: req.app.client.shardID,
+		page: "maintainer-shards.ejs",
+	}).render();
 };
 controllers.management.shards.post = async (req, res) => {
 	const bot = req.app.client;
@@ -369,15 +365,14 @@ controllers.management.version = async (req, { res }) => {
 		latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
 		utd: version["up-to-date"],
 		page: "maintainer-version.ejs",
-	})
-		.setConfigData({
-			version: configJSON.version,
-			branch: configJSON.branch,
-		})
-		.render();
+	}).setConfigData({
+		version: configJSON.version,
+		branch: configJSON.branch,
+	}).render();
 };
 controllers.management.version.post = async (req, res) => {
 	req.app.io.of("/dashboard/maintainer/management/version").on("connection", socket => {
+		if (socket.request.user.id !== req.user.id) return socket.disconnect();
 		socket.on("update", data => {
 			if (data === "start") {
 				socket.emit("update", "prepare");
@@ -431,7 +426,7 @@ controllers.management.logs.socket = async socket => {
 		socket.emit("logs", data);
 	};
 
-	const tail = new Tail(path.join(__dirname, "../../logs/verbose.gawesomebot.log"));
+	const tail = new Tail(path.join(__dirname, "../../logs/verbose.gawesomebot.log"), { useWatchFile: process.platform === "win32" });
 
 	tail.on("line", send);
 	tail.watch();

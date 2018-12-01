@@ -83,7 +83,7 @@
 										</div>
 	 									<div class="column">
 											<label class="label">Game</label>
-											<div class="field<%= !configData.game_default ? " has-addons" : ""%>" style="margin-bottom: 0px;">
+											<div class="field is-embedded-message<%= !configData.game_default ? " has-addons" : ""%>">
 												<div class="control has-icons-left is-expanded">
 													<input name="game" id="user-game" class="input is-primary" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
 													<span class="icon"><i class="fa fa-gamepad"></i></span>
@@ -102,7 +102,7 @@
 								</div>
 								<div id="twitch-url-container" class="field<%= configData.type!=="STREAMING" ? " is-hidden" : "" %>">
 									<label class="label">Twitch URL</label>
-									<div class="field" style="margin-bottom: 0px;">
+									<div class="field is-embedded-message">
 										<div class="control has-icons-left is-expanded">
 											<input name="twitch" id="user-twitch" class="input is-primary" type="text" value="<%= configData.twitchURL %>" style="width: 100%;">
 											<span class="icon"><i class="fa fa-twitch"></i></span>
