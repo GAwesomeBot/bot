@@ -138,6 +138,17 @@ exports.StatusMessages = {
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`),
 		color: exports.Colors.LIGHT_GREEN,
 	}),
+	GUILD_MEMBER_REMOVE: (message, member, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${member.id}`,
+		},
+		thumbnail: {
+			url: member.user.displayAvatarURL(),
+		},
+		title: "Member Left",
+		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`),
+		color: exports.Colors.LIGHT_ORANGE,
+	}),
 };
 
 exports.GUILD_VERIFICATION_LEVELS = [
