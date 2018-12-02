@@ -112,9 +112,20 @@ exports.StatusMessages = {
 		thumbnail: {
 			url: user.displayAvatarURL(),
 		},
-		title: "Member Banned",
+		title: "Status Messages - Member Banned",
 		description: message.replaceAll("@user", `**@${user.tag}**`),
 		color: exports.Colors.RED,
+	}),
+	GUILD_BAN_REMOVE: (message, user) => ({
+		footer: {
+			text: `User ID: ${user.id}`,
+		},
+		thumbnail: {
+			url: user.displayAvatarURL(),
+		},
+		title: "Member Unbanned",
+		description: message.replaceAll("@user", `**@${user.tag}**`),
+		color: exports.Colors.GREEN,
 	}),
 };
 

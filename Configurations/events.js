@@ -70,7 +70,7 @@ module.exports = {
 		"GAB.GuildBanAdd",
 	],
 	guildBanRemove: [
-
+		"GAB.GuildBanRemove",
 	],
 	channelCreate: [
 
