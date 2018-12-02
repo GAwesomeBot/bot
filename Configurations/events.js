@@ -67,7 +67,7 @@ module.exports = {
 
 	],
 	guildBanAdd: [
-
+		"GAB.GuildBanAdd",
 	],
 	guildBanRemove: [
 

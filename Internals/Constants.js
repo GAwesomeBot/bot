@@ -104,6 +104,20 @@ exports.Text = {
 	GUILD_VERIFICATION_LEVEL: level => exports.GUILD_VERIFICATION_LEVELS[level],
 };
 
+exports.StatusMessages = {
+	GUILD_BAN_ADD: (message, user) => ({
+		footer: {
+			text: `User ID: ${user.id}`,
+		},
+		thumbnail: {
+			url: user.displayAvatarURL(),
+		},
+		title: "Member Banned",
+		description: message.replaceAll("@user", `**@${user.tag}**`),
+		color: exports.Colors.RED,
+	}),
+};
+
 exports.GUILD_VERIFICATION_LEVELS = [
 	"None",
 	"Low - must have verified email on account",
