@@ -84,7 +84,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 
 			winston.silly("Confirming shardTotal config value.");
 			if (!parseInt(configJS.shardTotal) && configJS.shardTotal !== "auto") {
-				winston.error(`In config.js, shardTotal must be a number or "auto"`);
+				winston.error(`You must enter your shardTotal config value as a valid number, or "auto".`);
 				process.exit(1);
 			}
 
