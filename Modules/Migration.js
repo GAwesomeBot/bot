@@ -85,12 +85,12 @@ module.exports = async () => {
 				winston.info("Updating data... [3/3]");
 				await migrateChannelsAndMembers();
 				winston.info(`Successfully migrated "${database.db}"! You may now launch GAwesomeBot without the "--migrate" flag.`);
-				//process.exit(0);
+				process.exit(0);
 				// eslint-disable-next-line
 			} catch (_) {}
 		})
 		.catch(err => {
 			winston.error(`Failed to connect to the database!\n`, err);
-			//process.exit(-1);
+			process.exit(-1);
 		});
 };
