@@ -39,7 +39,7 @@
 								</label>
 							</div>
 						</div>
-						<div id="spam_filter-options"<%= configData.moderation.filters.spam_filter.isEnabled ? '' : ' class="is-hidden"' %>>
+						<div id="spam_filter-options" class="<%= configData.moderation.filters.spam_filter.isEnabled ? '' : 'is-hidden' %>">
 							<div class="field">
 								<label class="label">Enabled in these channel(s)</label>
 								<% pageData.channelData.forEach(channel => { %>
