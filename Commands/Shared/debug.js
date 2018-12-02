@@ -48,16 +48,23 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				fields.push({
 					name: "Shard Process Information",
 					value: `💎 Process is running **${process.release.name} ${process.version}** (located at **${process.execPath}**) with Process ID **${process.pid}** and Shard ID **${client.shardID}**, node is running from **${process.cwd()}**
-								\n💾 Using a Heap with **${Math.ceil(process.memoryUsage().heapTotal / 1000000)}MB** RAM reserved, out of a Resident set of **${Math.ceil(process.memoryUsage().rss / 1000000)}MB**
+								\n💾 Using a Heap with **${Math.ceil(process.memoryUsage().heapTotal / 1000000)}MB** RAM reserved, out of a resident set size of **${Math.ceil(process.memoryUsage().rss / 1000000)}MB**
 								\n⏲ Process has been running for **${Math.floor(process.uptime() / 3600)} hours**`,
 				});
 			}
 			if (args.includes("-v") || args.includes("--version")) {
-				fields.push({
-					name: "GAwesomeBot Version Information",
-					value: `💽 Currently running GAwesomeBot **${version.config.name}**, on branch **${version.branch}**
+				if (version === 404) {
+					fields.push({
+						name: "GAwesomeBot Version Information",
+						value: `💽 Currently running an unknown version of GAwesomeBot labeled as **${configJSON.version}** on branch **${configJSON.branch}**.`,
+					});
+				} else {
+					fields.push({
+						name: "GAwesomeBot Version Information",
+						value: `💽 Currently running GAwesomeBot **${version.config.name}**, on branch **${version.branch}**
 								\n🔄 Version is synced with commit **${version.sha}**, and labeled with unique tag **${version.version}**`,
-				});
+					});
+				}
 			}
 			if (args.includes("-d") || args.includes("--discord") || args.includes("--bot")) {
 				fields.push({
@@ -71,7 +78,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				fields.push({
 					name: "Master Process Information",
 					value: `💎 Process is running **${process.release.name} ${process.version}** (located at **${process.execPath}**) with Process ID **${masterData.master.PID}**, node is running from **${process.cwd()}**
-								\n💾 Using a Resident set of **${Math.ceil(masterData.master.rss)}MB**
+								\n💾 Using a resident set size of **${Math.ceil(masterData.master.rss)}MB**
 								\n🗄 GAwesomeBot's MongoDB has **${masterData.master.users} users**, and **${masterData.master.guilds} guilds** registered. The query took **${masterData.master.ping}** to finish
 								\n⏲ Process has been running for **${masterData.master.uptime} hours**`,
 				});
