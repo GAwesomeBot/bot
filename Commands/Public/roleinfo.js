@@ -14,13 +14,15 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		}
 
 		const memberRoles = [...msg.member.roles.values()].sort((a, b) => b.position - a.position);
-		const totalPermissions = memberRoles.reduce((a, b) => a | b.permissions, 0); // eslint-disable-line no-bitwise
+		const totalPermissionsBitfield = memberRoles.reduce((a, b) => a | b.permissions, 0); // eslint-disable-line no-bitwise
+		const totalPermissions = new Permissions(totalPermissionsBitfield);
 		for (let i = 0; i < memberRoles.length; i += rolesPerPage) {
 			const roleSegment = memberRoles.slice(i, i + rolesPerPage).join("\n");
 			descriptions.push([
 				`You currently have those roles:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < memberRoles.length ? `\n...and ${memberRoles.length - i - rolesPerPage} more` : ""}`,
 				"\nYour roles grant you get the following permissions:",
-				totalPermissions ? `\`\`\`${TitlecasePermissions(new Permissions(totalPermissions).toArray(false).join(", "))}\`\`\`` : "You do not have any permissions on this server ⁉️",
+				totalPermissionsBitfield ? `\`\`\`${TitlecasePermissions(totalPermissions.toArray(false).join(", "))}\`\`\`` : "You do not have any permissions on this server ⁉️",
+				totalPermissions.has(Permissions.FLAGS.ADMINISTRATOR, false) ? "⚠️ You have Administrator permissions which bypass any other permission or override" : "",
 			].join("\n"));
 		}
 		if (descriptions.length === 2 && descriptions[0].length + descriptions[1].length < 2048) {
@@ -35,7 +37,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 
 		await new PaginatedEmbed(msg, {
 			color: Colors.INFO,
-			title: `This guild has ${guildRoles.length} roles:`,
+			title: `This guild has ${guildRoles.length} roles`,
 			description: `{description}`,
 			footer: `Page {currentPage} out of {totalPages}`,
 		}, {
@@ -76,10 +78,13 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		if (role.managed) {
 			elements.push("🤖 Managed by an integration");
 		}
-		elements.push(`👌 Permissions:${permissions.length ? `\n\`\`\`${TitlecasePermissions(permissions)}\`\`\`` : " This role does not grant any additional permissions"}`);
+		elements.push(`✅ Permissions:${permissions.length ? `\n\`\`\`${TitlecasePermissions(permissions)}\`\`\`` : " This role does not grant any additional permissions"}`);
+		if (role.permissions.has(Permissions.FLAGS.ADMINISTRATOR, false)) {
+			elements.push("⚠️ This role grants Administrator permissions which bypass any other permission or override");
+		}
 		return msg.send({
 			embed: {
-				title: `Data about role ${role.name} :: ${role.id}`,
+				title: `Information about role ${role.name} :: ${role.id}`,
 				color: role.color || null,
 				description: elements.join("\n"),
 			},
