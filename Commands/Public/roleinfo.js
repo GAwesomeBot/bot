@@ -29,7 +29,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 			return msg.send({
 				embed: {
 					color: Colors.INFO,
-					title: `This guild has ${guildRoles.length} roles:`,
+					title: `This guild has ${guildRoles.length} roles`,
 					description: `${descriptions[0]}\n\n${descriptions[1]}`,
 				},
 			});
@@ -55,7 +55,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 						title: "What's that role? 🏷️",
 						description: "I do not know anything about a role with that name.",
 						footer: {
-							text: "You can find a list of all roles by simply executing this command without any arguments.",
+							text: "You can find a list of all roles by running this command without any arguments.",
 						},
 					},
 				});
