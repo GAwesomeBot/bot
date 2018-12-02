@@ -84,10 +84,10 @@ controllers.servers.list = async (req, { res }) => {
 		}
 		if (data.length < parseInt(req.query.i) + 1) req.query.i = 0;
 
-		if (req.query.leave) {
+		if (req.query.leave !== undefined) {
 			req.app.client.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
 			renderPage();
-		} else if (req.query.block) {
+		} else if (req.query.block !== undefined) {
 			req.app.client.IPC.send("leaveGuild", data[parseInt(req.query.i)].id);
 			configJSON.guildBlocklist.push(data[parseInt(req.query.i)].id);
 			save(req, res, true, true);
