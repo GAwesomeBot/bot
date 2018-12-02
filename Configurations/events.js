@@ -76,7 +76,7 @@ module.exports = {
 
 	],
 	channelDelete: [
-
+		"GAB.ChannelDelete",
 	],
 	channelUpdate: [
 
