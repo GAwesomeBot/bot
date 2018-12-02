@@ -1,5 +1,5 @@
 const BaseEvent = require("../BaseEvent.js");
-const { LoggingLevels } = require("../../Constants");
+const { LoggingLevels, StatusMessages } = require("../../Constants");
 /* eslint-disable max-len */
 
 /**
@@ -16,26 +16,12 @@ class GuildMemberAdd extends BaseEvent {
 					winston.verbose(`Member "${member.user.tag}" joined server "${member.guild}"`, { svrid: member.guild.id, usrid: member.id });
 					const ch = member.guild.channels.get(serverDocument.config.moderation.status_messages.new_member_message.channel_id);
 					if (ch) {
-						const channelDocument = serverDocument.query.id("channels", ch.id);
+						const channelDocument = serverDocument.channels[ch.id];
 						if (!channelDocument || channelDocument.bot_enabled) {
-							const random = serverDocument.config.moderation.status_messages.new_member_message.messages.random.replaceAll("@user", `**@${this.client.getName(serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`);
-							if (random) {
+							const message = serverDocument.config.moderation.status_messages.new_member_message.messages.random;
+							if (message) {
 								ch.send({
-									embed: {
-										color: 0x3669FA,
-										description: random,
-									},
-								});
-							} else {
-								ch.send({
-									embed: {
-										color: 0xFF0000,
-										title: `Uh-oh. Something went wrong!`,
-										description: `Just letting you know, ${member} joined this server!`,
-										footer: {
-											text: `Psst; Admins should make sure their server is correctly configurated!`,
-										},
-									},
+									embed: StatusMessages.GUILD_MEMBER_ADD(message, member, serverDocument, this.client),
 								});
 							}
 						}
@@ -51,10 +37,10 @@ class GuildMemberAdd extends BaseEvent {
 								thumbnail: {
 									url: member.guild.iconURL() || "",
 								},
-								title: `Welcome to ${member.guild} Discord Chat!`,
+								title: `Welcome to ${member.guild}!`,
 								description: serverDocument.config.moderation.status_messages.new_member_pm.message_content || "It seems like there's no join message for new members! Have a cookie instead 🍪",
 								footer: {
-									text: `I'm ${this.client.getName(serverDocument, member.guild.member(this.client.user.id))} by the way. Learn more by using "${member.guild.commandPrefix}help"!`,
+									text: `I'm ${this.client.getName(serverDocument, member.guild.members.get(this.client.user.id))} by the way. Learn more by using "${await this.client.getCommandPrefix(member.guild, serverDocument)}help"!`,
 								},
 							},
 						});

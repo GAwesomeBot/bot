@@ -16,6 +16,7 @@ class GuildBanAdd extends BaseEvent {
 				if (!channelDocument || channelDocument.bot_enabled) {
 					const { messages } = serverDocument.config.moderation.status_messages.member_unbanned_message;
 					const message = messages[Math.floor(Math.random() * messages.length)];
+					if (!message) return;
 					channel.send({
 						embed: StatusMessages.GUILD_BAN_REMOVE(message, user),
 					});

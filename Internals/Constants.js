@@ -127,6 +127,17 @@ exports.StatusMessages = {
 		description: message.replaceAll("@user", `**@${user.tag}**`),
 		color: exports.Colors.GREEN,
 	}),
+	GUILD_MEMBER_ADD: (message, member, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${member.id}`,
+		},
+		thumbnail: {
+			url: member.user.displayAvatarURL(),
+		},
+		title: "Member Joined",
+		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`),
+		color: exports.Colors.LIGHT_GREEN,
+	}),
 };
 
 exports.GUILD_VERIFICATION_LEVELS = [
