@@ -14,7 +14,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		}
 
 		const memberRoles = [...msg.member.roles.values()].sort((a, b) => b.position - a.position);
-		const totalPermissions = memberRoles.reduce((a, b) => a | b.permissions, 0);
+		const totalPermissions = memberRoles.reduce((a, b) => a | b.permissions, 0); // eslint-disable-line no-bitwise
 		for (let i = 0; i < memberRoles.length; i += rolesPerPage) {
 			const roleSegment = memberRoles.slice(i, i + rolesPerPage).join("\n");
 			descriptions.push([
