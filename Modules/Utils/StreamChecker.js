@@ -29,6 +29,6 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 		});
 	} catch (err) {
 		winston.debug(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err.message);
-		client.logMessage(serverDocument, LoggingLevels.ERROR, `Streamer ${streamerDocument._id} is not configured correctly, and I failed to fetch their streaming status!`, streamerDocument.channel_id);
+		client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to fetch streamer ${streamerDocument._id}, they might not be configured correctly!`, streamerDocument.channel_id);
 	}
 };
