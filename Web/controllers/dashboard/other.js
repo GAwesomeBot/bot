@@ -1,5 +1,5 @@
 const moment = require("moment");
-const { saveAdminConsoleOptions: save, parseAuthUser } = require("../../helpers");
+const { saveAdminConsoleOptions: save } = require("../../helpers");
 
 const controllers = module.exports;
 

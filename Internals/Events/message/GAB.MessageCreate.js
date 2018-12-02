@@ -4,7 +4,6 @@ const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/ind
 const {
 	Gist,
 	FilterChecker: checkFiltered,
-	Gag,
 } = Utils;
 const {
 	Errors: {

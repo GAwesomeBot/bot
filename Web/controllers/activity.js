@@ -1,4 +1,3 @@
-const { parseAuthUser } = require("../helpers");
 const { getGuild, Utils } = require("../../Modules");
 const { GetGuild } = getGuild;
 const parsers = require("../parsers");

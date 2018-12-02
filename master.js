@@ -23,6 +23,7 @@ const scope = { safeMode: false };
 Boot({ configJS, configJSON, auth }, scope).then(() => {
 	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
+	// eslint-disable-next-line promise/catch-or-return
 	database.initialize(configJS.database).catch(err => {
 		winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
 		process.exit(1);
@@ -160,7 +161,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 						return callback({
 							target: msg.target,
 							err: null,
-							result: result.reduce((prev, value) => isArr ? prev.concat(value) : Object.assign(prev, value), isArr ? [] : {})
+							result: result.reduce((prev, value) => isArr ? prev.concat(value) : Object.assign(prev, value), isArr ? [] : {}),
 						});
 					}
 				} catch (err) {
@@ -221,7 +222,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 						if (msg.target !== "all" && res.err) result.err = true;
 						else if (msg.target === "all" && res.some(m => m.err)) result.err = true;
 						callback(result);
-					});
+					}).catch(() => callback(null));
 				} else {
 					return callback(null);
 				}
@@ -289,7 +290,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 			});
 
 			sharder.IPC.on("restartShard", async (msg, callback) => {
-				if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("restart", {soft: msg.soft}, Number(msg.shard));
+				if (sharder.shards.has(Number(msg.shard))) await sharder.IPC.send("restart", { soft: msg.soft }, Number(msg.shard));
 				callback();
 			});
 

@@ -191,7 +191,7 @@ controllers.streamers.post = async (req, res) => {
 	} else {
 		parsers.commandOptions(req, "streamers", req.body);
 		serverDocument.config.streamers_data.forEach(streamerDocument => {
-			const streamerQueryDocument = serverQueryDocument.clone.id("config.streamers_data", streamerDocument._id)
+			const streamerQueryDocument = serverQueryDocument.clone.id("config.streamers_data", streamerDocument._id);
 			if (req.body[`streamer-${streamerDocument._id}-channel_id`]) streamerQueryDocument.set("channel_id", req.body[`streamer-${streamerDocument._id}-channel_id`]);
 		});
 	}

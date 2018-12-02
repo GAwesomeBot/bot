@@ -1,4 +1,4 @@
-const { saveAdminConsoleOptions: save, parseAuthUser, getChannelData, getRoleData } = require("../../helpers");
+const { saveAdminConsoleOptions: save, getChannelData, getRoleData } = require("../../helpers");
 const parsers = require("../../parsers");
 
 const controllers = module.exports;

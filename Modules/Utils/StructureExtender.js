@@ -49,7 +49,7 @@ module.exports = () => {
 			}
 
 			async build () {
-				const content = this.content;
+				const { content } = this;
 
 				if (this.guild && this.client.isReady) {
 					await this.guild.populateDocument();
