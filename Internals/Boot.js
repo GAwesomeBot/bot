@@ -7,9 +7,9 @@ const build = () => {
 	winston.warn("Travis build launched. Process will exit after successfully starting.");
 };
 
-const migrate = async () => {
-	await require("./Migration.js")();
-	process.exit(0);
+const migrate = async (val, configJS, configJSON, auth, scope) => {
+	scope.migrating = true;
+	await require("../Modules/Migration.js")();
 };
 
 const db = (val, configJS) => {

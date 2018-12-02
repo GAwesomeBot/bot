@@ -21,6 +21,7 @@ const configWarnings = [];
 const scope = { safeMode: false };
 
 Boot({ configJS, configJSON, auth }, scope).then(() => {
+	if (scope.migrating) return;
 	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
 
 	// eslint-disable-next-line promise/catch-or-return
