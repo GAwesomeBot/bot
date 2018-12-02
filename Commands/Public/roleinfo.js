@@ -22,7 +22,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 				`You currently have those roles:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < memberRoles.length ? `\n...and ${memberRoles.length - i - rolesPerPage} more` : ""}`,
 				"\nYour roles grant you get the following permissions:",
 				totalPermissionsBitfield ? `\`\`\`${TitlecasePermissions(totalPermissions.toArray(false).join(", "))}\`\`\`` : "You do not have any permissions on this server ⁉️",
-				totalPermissions.has(Permissions.FLAGS.ADMINISTRATOR, false) ? "⚠️ You have Administrator permissions which bypass any other permission or override" : "",
+				totalPermissions.has(Permissions.FLAGS.ADMINISTRATOR, false) ? "⚠️ You have Administrator permissions which bypasses any other permission or override" : "",
 			].join("\n"));
 		}
 		if (descriptions.length === 2 && descriptions[0].length + descriptions[1].length < 2048) {
@@ -80,7 +80,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		}
 		elements.push(`✅ Permissions:${permissions.length ? `\n\`\`\`${TitlecasePermissions(permissions)}\`\`\`` : " This role does not grant any additional permissions"}`);
 		if (role.permissions.has(Permissions.FLAGS.ADMINISTRATOR, false)) {
-			elements.push("⚠️ This role grants Administrator permissions which bypass any other permission or override");
+			elements.push("⚠️ This role grants Administrator permissions which bypasses any other permission or override");
 		}
 		return msg.send({
 			embed: {
