@@ -5,7 +5,7 @@ class GuildMemberUpdate extends BaseEvent {
 	async handle (oldMember, member) {
 		const serverDocument = await Servers.findOne(member.guild.id);
 		if (!serverDocument) {
-			return winston.error("Failed to find server data for GuildMemberUpdate", { svrid: guild.id, usrid: member.user.id });
+			return winston.error("Failed to find server data for GuildMemberUpdate", { svrid: member.guild.id, usrid: member.user.id });
 		}
 
 		if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.status_messages.member_nick_updated_message.isEnabled) {
