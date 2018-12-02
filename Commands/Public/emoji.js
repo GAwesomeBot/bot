@@ -27,10 +27,6 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 					`\t- It might show some emojis too fast / slow depending on their original framerate (we render them in 50fps)`,
 					`\t- Certain emojis might cut off.`,
 				].join("\n") : "",
-				footer: {
-					// Because he was such a good 🅱️oi
-					text: `Credit to TTtie for helping with this command`,
-				},
 			},
 		});
 	} else {

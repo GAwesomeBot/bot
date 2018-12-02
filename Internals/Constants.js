@@ -149,6 +149,39 @@ exports.StatusMessages = {
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`),
 		color: exports.Colors.LIGHT_ORANGE,
 	}),
+	MEMBER_CREATE_NICK: (member, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${member.id}`,
+		},
+		thumbnail: {
+			url: member.user.displayAvatarURL(),
+		},
+		title: "Nickname Created",
+		description: `**@${client.getName(serverDocument, member)}** created a nickname: \`${member.nickname}\``,
+		color: exports.Colors.BLUE,
+	}),
+	MEMBER_CHANGE_NICK: (member, oldNickname, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${member.id}`,
+		},
+		thumbnail: {
+			url: member.user.displayAvatarURL(),
+		},
+		title: "Nickname Updated",
+		description: `**@${client.getName(serverDocument, member)}** changed their nickname from \`${oldNickname}\` to \`${member.nickname}\``,
+		color: exports.Colors.BLUE,
+	}),
+	MEMBER_REMOVE_NICK: (member, oldNickname, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${member.id}`,
+		},
+		thumbnail: {
+			url: member.user.displayAvatarURL(),
+		},
+		title: "Nickname Removed",
+		description: `**@${client.getName(serverDocument, member)}** removed their nickname \`${oldNickname}\``,
+		color: exports.Colors.BLUE,
+	}),
 };
 
 exports.GUILD_VERIFICATION_LEVELS = [

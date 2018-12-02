@@ -37,7 +37,7 @@ module.exports = {
 		"GAB.GuildMemberRemove",
 	],
 	guildMemberUpdate: [
-
+		"GAB.GuildMemberUpdate",
 	],
 	guildMemberAvailable: [
 
