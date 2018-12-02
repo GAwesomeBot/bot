@@ -11,7 +11,16 @@ const moment = require("moment");
 module.exports = async (client, server, serverDocument, feedDocument) => {
 	const feedQueryDocument = serverDocument.query.id("config.rss_feeds", feedDocument._id);
 
-	const articles = await getRSS(feedDocument.url, 100);
+	let articles;
+	try {
+		articles = await getRSS(feedDocument.url, 100);
+	} catch (err) {
+		if (err === "invalid") {
+			await client.logMessage(serverDocument, "warn", `Failed to fetch articles for RSS Feed ${feedDocument._id}. URL might be configured incorrectly!`);
+		} else {
+			throw err;
+		}
+	}
 	if (articles && articles.length > 0 && articles[0]) {
 		let info = [];
 		if (feedDocument.streaming.last_article_title !== articles[0].link) {
@@ -46,7 +55,7 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 			await serverDocument.save().catch(err => {
 				winston.warn(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, err);
 			});
-			winston.info(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });
+			winston.debug(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });
 			for (let i = 0; i < feedDocument.streaming.enabled_channel_ids.length; i++) {
 				const channel = server.channels.get(feedDocument.streaming.enabled_channel_ids[i]);
 				if (channel) {

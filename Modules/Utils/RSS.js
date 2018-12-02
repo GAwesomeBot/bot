@@ -16,6 +16,7 @@ module.exports = (url, num) => new Promise((resolve, reject) => {
 		getRSS(url, (err, articles) => {
 			if (err) {
 				winston.debug(`Feed at URL ${url} did not respond with valid RSS.`);
+				reject("invalid");
 			} else {
 				resolve(articles.slice(0, num));
 			}
