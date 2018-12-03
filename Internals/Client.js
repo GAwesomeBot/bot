@@ -34,6 +34,8 @@ module.exports = class GABClient extends DJSClient {
 
 		this.debugMode = options.debugMode || false;
 
+		this.officialMode = ["344473886337007617", "231849525185216512"].includes(auth.discord.clientID);
+
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Collection();
 

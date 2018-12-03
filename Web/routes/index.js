@@ -65,6 +65,11 @@ const blogRouting = router => {
 	router.routes.push(new Route(router, "/blog/:id/react", [middleware.checkUnavailable], controllers.blog.article.react, "post", "general"));
 };
 
+const officialRouting = router => {
+	if (!router.app.client.officialMode) return;
+	setupPage(router, "/paperwork", [], controllers.paperwork);
+};
+
 module.exports = app => {
 	const routers = {
 		general: express.Router(),
@@ -84,6 +89,7 @@ module.exports = app => {
 	galleryRouting(routers.general);
 	wikiRouting(routers.general);
 	blogRouting(routers.general);
+	officialRouting(routers.general);
 	dashboardRouting(routers.dashboard);
 	maintainerDashboardRouting(routers.maintainerDashboard);
 	setupAPI(routers.API);

@@ -24,6 +24,10 @@ controllers.headerImage = (req, res) => {
 	});
 };
 
+controllers.paperwork = (req, { res }) => {
+	res.render("pages/paperwork.ejs");
+};
+
 controllers.error = (req, res, next) => {
 	if (req.query.err === "discord") renderError(res, "The Discord OAuth flow could not be completed.");
 	else if (req.query.err === "json") renderError(res, "That doesn't look like a valid trivia set to me!");
