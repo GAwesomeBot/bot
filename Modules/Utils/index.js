@@ -22,4 +22,5 @@ module.exports = {
 	StreamerUtils: require("./StreamerUtils.js"),
 	StreamingRSS: require("./StreamingRSS.js"),
 	StructureExtender: require("./StructureExtender.js"),
+	TitlecasePermissions: require("./TitlecasePermissions.js"),
 };
