@@ -153,12 +153,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		callback(result);
 	});
 
-	client.IPC.on("cacheUpdate", msg => {
-		const guildID = msg.guild;
-		const guild = client.guilds.get(guildID);
-		if (guild) client.cache.update(guild.id);
-	});
-
 	client.IPC.on("leaveGuild", async msg => {
 		const guild = client.guilds.get(msg);
 		if (guild) guild.leave();
@@ -232,7 +226,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				if (msg.action === "end") await Trivia.end(client, svr, serverDocument, ch, channelDocument, ch);
 				try {
 					await serverDocument.save();
-					client.IPC.send("cacheUpdate", { guild: msg.guild });
 				} catch (err) {
 					winston.warn(`An ${err.name} occurred while attempting to end a Trivia Game.`, { err: err, guild: svr.id });
 				}
@@ -254,7 +247,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				if (msg.action === "end") await Polls.end(serverDocument, ch, channelDocument);
 				try {
 					await serverDocument.save();
-					client.IPC.send("cacheUpdate", { guild: msg.guild });
 				} catch (err) {
 					winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, guild: svr.id });
 				}
@@ -271,7 +263,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				if (msg.action === "end") await Giveaways.end(client, svr, ch, serverDocument);
 				try {
 					await serverDocument.save();
-					client.IPC.send("cacheUpdate", { guild: msg.guild });
 				} catch (err) {
 					winston.warn(`An ${err.name} occurred while attempting to end a Poll.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
 				}
@@ -293,7 +284,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				if (msg.action === "end") await Lotteries.end(client, svr, serverDocument, ch, channelDocument);
 				try {
 					await serverDocument.save();
-					client.IPC.send("cacheUpdate", { guild: msg.guild });
 				} catch (err) {
 					winston.warn(`A ${err.name} occurred while attempting to end a Lottery.`, { err: err, docVersion: serverDocument.__v, guild: svr.id });
 				}

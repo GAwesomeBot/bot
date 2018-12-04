@@ -186,9 +186,6 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 			// Shard requests a new Message Of The Day to be created
 			sharder.IPC.forward("createMOTD");
 
-			// Shard requests an update to the serverDocument cache
-			sharder.IPC.forward("cacheUpdate");
-
 			// Shard requests bot stats to be posted
 			sharder.IPC.on("sendAllGuilds", () => sharder.IPC.send("postAllData", {}, 0));
 

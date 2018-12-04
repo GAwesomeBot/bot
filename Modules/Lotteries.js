@@ -18,8 +18,8 @@ module.exports = {
 				.set("creator_id", usr.id)
 				.set("participant_ids", [])
 				.set("multiplier", multiplier ? multiplier : 2);
-			setTimeout(() => {
-				const newServerDocument = Servers.findOne(serverDocument._id);
+			setTimeout(async () => {
+				const newServerDocument = await Servers.findOne(serverDocument._id);
 				module.exports.end(client, svr, newServerDocument, ch, newServerDocument.channels[channelDocument._id]);
 			}, 3600000);
 		}
