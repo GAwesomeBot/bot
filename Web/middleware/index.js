@@ -85,6 +85,7 @@ class GABResponse {
 	}
 
 	populateDashboard (req) {
+		if (!req.svr.members[req.svr.ownerID]) req.svr.members[req.svr.ownerID] = { user: { username: "invalid-user", id: "invalid-user" } };
 		this.serverData = {
 			name: req.svr.name,
 			id: req.svr.id,

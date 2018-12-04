@@ -99,7 +99,7 @@ parsers.userData = async (req, usr, userDocument) => {
 		userProfile.pastNames = userDocument.past_names;
 		userProfile.afkMessage = userDocument.afk_message;
 		for (const svr of mutualServers) {
-			const owner = svr.members[svr.ownerID];
+			const owner = svr.members[svr.ownerID] || { username: "invalid-user" };
 			userProfile.mutualServers.push({
 				name: svr.name,
 				id: svr.id,

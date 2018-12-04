@@ -56,7 +56,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			let guilds = msg.settings.mutualOnlyTo ? client.guilds.filter(guild => guild.members.has(msg.settings.mutualOnlyTo)) : client.guilds;
 
 			const query = msg.settings.findFilter;
-			if (query) guilds = guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || svr.members.get(svr.ownerID).user.username.toLowerCase().indexOf(query) > -1);
+			// eslint-disable-next-line max-len
+			if (query) guilds = guilds.filter(svr => svr.name.toLowerCase().indexOf(query) > -1 || svr.id === query || (svr.members.has(svr.ownerID) && svr.members.get(svr.ownerID).user.username.toLowerCase().includes(query)));
 
 			guilds.forEach((val, key) => {
 				try {
