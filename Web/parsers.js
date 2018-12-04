@@ -21,7 +21,7 @@ parsers.serverData = async (req, serverDocument, webp = false) => {
 	await svr.initialize(["OWNER", req.app.client.user.id]);
 	await svr.fetchProperty("createdAt");
 	if (svr.success) {
-		const owner = req.app.client.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
+		const owner = req.app.client.users.get(svr.ownerID) || svr.members[svr.ownerID] ? svr.members[svr.ownerID].user : { username: "invalid-user", id: "invalid-user" };
 		data = {
 			name: svr.name,
 			id: svr.id,
