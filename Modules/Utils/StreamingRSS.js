@@ -22,7 +22,7 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 		}
 	}
 	if (articles && articles.length > 0 && articles[0]) {
-		let info = [];
+		const info = [];
 		if (feedDocument.streaming.last_article_title !== articles[0].link) {
 			const getNewArticles = forceAdd => {
 				let adding = forceAdd;
