@@ -481,7 +481,8 @@ GAwesomeUtil.unpublishExtension = extid => {
 
 GAwesomeUtil.rejectExtension = extid => {
 	let reason = prompt("Reason to reject:");
-	if (!reason) reason = "No reason given.";
+	if (reason === "") reason = "No reason given.";
+	else if (reason === null) return;
 	NProgress.start();
 	$.ajax({
 		method: "POST",
@@ -497,7 +498,8 @@ GAwesomeUtil.rejectExtension = extid => {
 
 GAwesomeUtil.removeExtension = extid => {
 	let reason = prompt("Reason to remove:");
-	if (!reason) reason = "No reason given.";
+	if (reason === "") reason = "No reason given.";
+	else if (reason === null) return;
 	NProgress.start();
 	$.ajax({
 		method: "POST",
