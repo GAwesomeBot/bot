@@ -1,6 +1,6 @@
 const fetch = require("chainfetch");
 
-module.exports = async ({ Constants: { Colors, APIs } }, documents, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, APIs, UserAgent } }, documents, msg, commandData) => {
 	await msg.send({
 		embed: {
 			color: Colors.INFO,
@@ -10,8 +10,8 @@ module.exports = async ({ Constants: { Colors, APIs } }, documents, msg, command
 	});
 
 	try {
-		const res = await fetch.get(APIs.JOKE()).set("Accept", "application/json").toJSON();
-		const { body } = res;
+		const body = await fetch.get(APIs.JOKE()).set({ Accept: "application/json", "User-Agent": UserAgent }).toJSON()
+			.onlyBody();
 
 		if (body.status === 200 && body.joke && typeof body.joke === "string") {
 			msg.send({
@@ -22,6 +22,7 @@ module.exports = async ({ Constants: { Colors, APIs } }, documents, msg, command
 			});
 		}
 	} catch (err) {
+		winston.debug("Failed to fetch joke for the joke command.", { svrid: msg.guild.id, err });
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,

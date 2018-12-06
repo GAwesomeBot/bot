@@ -309,6 +309,8 @@ exports.APIs = {
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 };
 
+exports.UserAgent = "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)";
+
 exports.EmptySpace = `\u200b`;
 
 exports.Perms = {
