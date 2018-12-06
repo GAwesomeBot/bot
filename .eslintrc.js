@@ -7,9 +7,6 @@ module.exports = {
 	parserOptions: {
 		ecmaVersion: 2018,
 		sourceType: "module",
-		ecmaFeatures: {
-			experimentalObjectRestSpread: true,
-		},
 	},
 	globals: {
 		winston: true,

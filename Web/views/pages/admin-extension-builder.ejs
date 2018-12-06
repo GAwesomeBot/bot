@@ -3,10 +3,8 @@
 <head>
 	<title><%= extensionData.name ? (extensionData.name + " - ") : "" %><%= serverData.name %> Extension Builder - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 

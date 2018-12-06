@@ -10,7 +10,7 @@
 		GAwesomeData.discriminator = "<%= pageData.exampleDiscriminator %>";
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -31,7 +31,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="box hero is-small">
 							<div class="hero-body">
 								<div class="has-text-centered">

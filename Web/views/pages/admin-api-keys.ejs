@@ -3,9 +3,8 @@
 <head>
 	<title><%= serverData.name %> API Keys - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -24,7 +23,7 @@
 							Many of GAwesomeBot's commands (e.g. <code>image</code>, <code>youtube</code>, etc.) rely on APIs to fetch data from online sources. Our global API key is rate limited and we often exceed the limit. You can set your own API keys here to avoid being rate limited because people on other servers used certain commands.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field">
 							<label class="label">Google API Key</label>
 							<div class="control">

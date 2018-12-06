@@ -3,9 +3,6 @@
 <head>
 	<title><%= serverData.name %> Blocked - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function newBlock() {
 		var newBlockMember = $("#new-block-member");
@@ -16,7 +13,7 @@
 		}
 
 		if(newBlockMember.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",

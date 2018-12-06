@@ -4,7 +4,6 @@
 	<title><%= serverData.name %> Trivia Sets - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTrivia() {
 		var newTriviaName = $("#new-trivia-name");
@@ -32,7 +31,7 @@
 						"new-items": event.target.result,
 					},
 					success: function() {
-						saveFormState();
+						GAwesomeUtil.SFS();
 						$("#form").submit();
 						Turbolinks.visit('');
 					}
@@ -43,7 +42,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -62,7 +61,7 @@
 							GAwesomeBot's built-in trivia set is great, but you might want to add a <strong>custom question bank</strong> specific to your server. Trivia sets can be accessed from the <code>trivia</code> command and are uploaded as <strong>JSON</strong> files.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 							<div class="field" style="overflow-x: scroll;">
                                 <%- include("../partials/no-results", { isHidden: configData.trivia_sets.length, isSearchQuery: false, description: "You haven't uploaded any custom trivia sets yet. Select a file below to get started." }) %>
 								<table class="table is-fullwidth<%= configData.trivia_sets.length ? "" : " is-hidden" %>">

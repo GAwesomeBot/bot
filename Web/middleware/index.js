@@ -1,4 +1,3 @@
-const auth = require("../../Configurations/auth");
 const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
 
 class GABResponse {
@@ -9,7 +8,6 @@ class GABResponse {
 			officialMode: req.app.client.officialMode ? true : undefined,
 			adsenseID: req.app.client.officialMode ? configJS.adsenseID : undefined,
 		};
-
 
 		this.serverData = {
 			name: req.app.client.user.username,

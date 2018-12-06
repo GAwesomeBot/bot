@@ -3,7 +3,7 @@
 <head>
 	<title><%= serverData.name %> Streamers - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
+
 	<script>
 	function newStreamer() {
 		var newStreamerName = $("#new-streamer-name");
@@ -16,7 +16,7 @@
 		var newStreamerType = $("#new-streamer-type");
 
 		if(newStreamerName.val()) {
-		  hide_update_modal = true;
+		  GAwesomeData.HUM = true;
 		  $.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -25,9 +25,9 @@
 					"new-type": newStreamerType.val()
 				},
 				success: function() {
-				  saveFormState();
+				  GAwesomeUtil.SFS();
 				  $("#form").submit();
-				  hide_update_modal = true;
+				  GAwesomeData.HUM = true;
 				  Turbolinks.visit('');
 				}
 			});
@@ -35,7 +35,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -54,7 +54,7 @@
 							Discord is a gamer-focused platform, so a lot of Discord servers have corresponding stream accounts on <strong>Twitch</strong> and <strong>YouTube Gaming</strong>. GAwesomeBot supports checking for when streams go live (add them below) and has a corresponding <code>streamers</code> command to display information about the status of a stream.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="command-items">
 						<% const commandData = configData.commands.streamers; commandData.name = "streamers"; commandData.description = pageData.commandDescriptions.streamers; commandData.category = pageData.commandCategories.streamers; %>
 						<% include ../partials/admin-command-item %>

@@ -3,9 +3,6 @@
 <head>
 	<title><%= serverData.name %> Admins - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
     <script>
 	function newAdmin() {
 		var newAdminRole = $("#new-admin-role_id");
@@ -23,7 +20,7 @@
 		}
 
 		if(newAdminRole.val() && newAdminLevel.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",

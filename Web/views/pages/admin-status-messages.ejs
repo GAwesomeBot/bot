@@ -3,10 +3,6 @@
 <head>
     <title><%= serverData.name %> Status Messages - GAwesomeBot Admin Console</title>
     <% include ../partials/head %>
-
-    <link rel="stylesheet" href="/static/css/auto-complete.css">
-    <script src="/static/js/auto-complete.min.js"></script>
-    <script src="/static/js/form-change-listener.js"></script>
     <script>
       function newStatusMessage (type) {
         var newMessageId = 'new-' + type + '-message';
@@ -24,7 +20,7 @@
             url: '<%= currentPage %>',
             data: data,
             success: function () {
-              saveFormState();
+              GAwesomeUtil.SFS();
               $('#form').submit();
               Turbolinks.visit('');
             }
@@ -36,15 +32,15 @@
         if (data) {
           var toSend = {}
           toSend[data] = 'on'
-          hide_update_modal = true;
+          GAwesomeData.HUM = true;
           $.ajax({
             type: 'POST',
             url: '<%= currentPage %>',
             data: toSend,
             success: function () {
               messageNode.remove();
-              saveFormState();
-              hide_update_modal = true;
+              GAwesomeUtil.SFS();
+              GAwesomeData.HUM = true;
               $('#form').submit();
               Turbolinks.visit('');
             }
@@ -53,7 +49,7 @@
       }
     </script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 <% include ../partials/dashboard-header %>
 <% include ../partials/dashboard-socket-updates %>
 
@@ -76,7 +72,7 @@
                         </div>
                     </div>
                 </article>
-                <form id="form" onsubmit="submitForm(); return false">
+                <form id="form" onsubmit="GAwesomeUtil.submitForm(); return false">
                     <h4 class="subtitle is-4">
                         Server
                     </h4>

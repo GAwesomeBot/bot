@@ -5,7 +5,7 @@
 	<% include ../partials/head %>
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 	<section class="section is-white">
@@ -23,7 +23,7 @@
 							These settings apply to <strong>all commands</strong>. They define how commands should display information, such as the number of results to show or whether to delete command messages after GAwesomeBot has responded.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<h4 class="subtitle is-4">
 							General
 						</h4>

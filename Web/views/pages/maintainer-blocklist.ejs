@@ -13,7 +13,7 @@
 		}
 
 		if (newBlockUser.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -74,7 +74,7 @@
 										<%= user.id %>
 									</td>
 									<td>
-										<button class="button is-small is-danger" name="block-<%= user.id %>-removed" onclick="hide_update_modal = true;">
+										<button class="button is-small is-danger" name="block-<%= user.id %>-removed" onclick="GAwesomeData.HUM = true;">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>

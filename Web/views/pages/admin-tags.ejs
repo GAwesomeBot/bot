@@ -3,7 +3,6 @@
 <head>
 	<title><%= serverData.name %> Tags - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTag() {
 		var newTagName = $("#new-tag-name");
@@ -23,7 +22,7 @@
 		}
 
 		if(newTagName.val() && newTagContent.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -33,7 +32,7 @@
 					"new-content": newTagContent.val()
 				},
 				success: function() {
-					hide_update_modal = true;
+					GAwesomeData.HUM = true;
 				  	Turbolinks.visit('');
 				}
 			});
@@ -41,7 +40,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -60,7 +59,7 @@
 							GAwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax. Locking a tag prevents the tag from being removed using the <code>tag</code> command, admins excluded.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<h4 class="subtitle is-4">
 							General
 						</h4>

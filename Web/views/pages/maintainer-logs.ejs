@@ -34,7 +34,7 @@
 </section>
 <script>
     GAwesomeData.dashboard.logs = [<%- pageData.logs %>][0];
-	GAwesomeData.dashboard.terminal = new Terminal();
+	GAwesomeData.dashboard.terminal = new TerminalMin();
     GAwesomeData.dashboard.terminal.setHeight("300px");
     GAwesomeData.dashboard.terminal.blinkingCursor(false);
 	$("#console").append(GAwesomeData.dashboard.terminal.html);

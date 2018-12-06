@@ -4,7 +4,6 @@
 	<title><%= serverData.name %> RSS Feeds - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newRss() {
 		var newRssUrl = $("#new-rss-url");
@@ -22,7 +21,7 @@
 		}
 
 		if(newRssUrl.val() && newRssName.val()) {
-		  hide_update_modal = true;
+		  GAwesomeData.HUM = true;
 		  $.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -31,8 +30,8 @@
 					"new-name": newRssName.val().toLowerCase()
 				},
 				success: function() {
-				  saveFormState();
-				  hide_update_modal = true;
+				  GAwesomeUtil.SFS();
+				  GAwesomeData.HUM = true;
 				  $("#form").submit();
 				  Turbolinks.visit('');
 				}
@@ -57,7 +56,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -76,7 +75,7 @@
 							These <strong>RSS feeds can be accessed via the <code>rss</code> command</strong> by their unique name. For feeds that have streaming enabled, new articles will be posted in the channel you choose every 15 minutes or so. In general, RSS feeds can be used as a means to pull content from a variety of <strong>online services</strong> for which there is no built-in GAwesomeBot command.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="command-items">
 						<% const commandData = configData.commands.rss; commandData.name = "rss"; commandData.description = pageData.commandDescriptions.rss; commandData.category = pageData.commandCategories.rss; %>
 						<% include ../partials/admin-command-item %>

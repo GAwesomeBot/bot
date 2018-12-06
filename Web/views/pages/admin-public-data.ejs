@@ -13,10 +13,8 @@
 		  }
 		</script>
 	<% } %>
-
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -38,7 +36,7 @@
 						</div>
 					</article>
 					<% if (!configData.isBanned) { %>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field">
 							<p class="control">
 								<label class="checkbox">

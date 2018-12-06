@@ -3,10 +3,8 @@
 <head>
 	<title><%= serverData.name %> Roles - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -27,7 +25,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="command-items">
 						<% var commandData = configData.commands.roleinfo; commandData.name = "roleinfo"; commandData.description = pageData.commandDescriptions.roleinfo; commandData.category = pageData.commandCategories.roleinfo; %>
 						<% include ../partials/admin-command-item %>

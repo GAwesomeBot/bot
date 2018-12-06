@@ -4,25 +4,6 @@ const { Error: GABError } = require("../Internals/Errors");
 const mpath = require("mpath");
 const { ObjectID } = require("mongodb");
 
-const isObject = obj => obj && obj.constructor === Object;
-
-const deepClone = source => {
-	if (typeof source !== "object" || source === null) return source;
-	if (Array.isArray(source)) {
-		const output = new Array(source.length);
-		for (let i = 0, len = source.length; i < len; i++) output[i] = deepClone(source[i]);
-		return output;
-	}
-	if (isObject(source)) {
-		const output = {};
-		for (const key in source) output[key] = deepClone(source[key]);
-		return output;
-	}
-	if (source instanceof Date) {
-		return new Date(source.getTime());
-	}
-};
-
 module.exports = class Document {
 	/**
 	 * An object representing a Model document from MongoDB

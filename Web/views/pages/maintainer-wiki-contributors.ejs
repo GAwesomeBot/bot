@@ -3,9 +3,6 @@
 <head>
 	<title>Wiki Contributors - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function newWikiContributors() {
 		var newContributorUser = $("#new-contributor-user");
@@ -16,7 +13,7 @@
 		}
 
 		if(newContributorUser.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -86,7 +83,7 @@
 														<%= configData.wiki_contributors[i].id %>
 													</td>
 													<td>
-														<button class="button is-small is-danger" name="contributor-removed" value="<%= configData.wiki_contributors[i].id %>" onclick="hide_update_modal = true;"<% if(pageData.showRemove && configData.wiki_contributors[i].isMaintainer) { %> disabled<% } %>>
+														<button class="button is-small is-danger" name="contributor-removed" value="<%= configData.wiki_contributors[i].id %>" onclick="GAwesomeData.HUM = true;"<% if(pageData.showRemove && configData.wiki_contributors[i].isMaintainer) { %> disabled<% } %>>
 															<span>Remove</span>
 															<span class="icon is-small">
 																<i class="fa fa-times"></i>

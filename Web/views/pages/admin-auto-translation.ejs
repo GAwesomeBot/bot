@@ -3,10 +3,6 @@
 <head>
 	<title><%= serverData.name %> Auto Translation - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTranslated() {
 		var newTranslatedMember = $("#new-translated-member");
@@ -42,7 +38,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -61,7 +57,7 @@
 							GAwesomeBot's <code>translate</code> command can be set to automatically <strong>translate messages from certain members to English</strong>. This is useful for users that don't speak English. The bot will <strong>automatically and instantaneously</strong> post a translated version of each message in the channels you specify.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field" style="overflow-x: scroll;">
                             <%- include("../partials/no-results", { isHidden: configData.translated_messages.length, isSearchQuery: false, description: "You haven't set any members to translate messages for yet. Fill out the form below to get started." }) %>
 							<table class="table is-fullwidth<%= configData.translated_messages.length ? "" : " is-hidden" %>">

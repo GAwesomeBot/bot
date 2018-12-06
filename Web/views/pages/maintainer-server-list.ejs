@@ -41,7 +41,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" action="/dashboard/maintainer/servers/server-list" method="get" onsubmit="saveFormState();">
+					<form id="form" action="/dashboard/maintainer/servers/server-list" method="get" onsubmit="GAwesomeUtil.SFS();">
 						<input type="hidden" name="svrid" value="maintainer" />
 						<div class="field has-addons">
 							<div class="control is-expanded">
@@ -58,7 +58,7 @@
 						</div>
 						<script>
 						  $.getJSON("/api/list/servers", function(data) {
-							new autoComplete({
+							new AutoComplete({
 							  selector: "#server-search",
 							  minChars: 2,
 							  source: function(query, res) {
