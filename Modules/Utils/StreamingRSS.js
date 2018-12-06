@@ -46,7 +46,6 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 				}
 			};
 			getNewArticles(feedDocument.streaming.last_article_title === "");
-			info = info.slice(1);
 			if (info.length === 0) getNewArticles(true);
 		}
 
