@@ -2,7 +2,7 @@ const { get } = require("snekfetch");
 const S = require("../../Modules/String");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent } }, { serverDocument }, msg, commandData) => {
 	if (msg.channel.nsfw) {
 		if (msg.suffix) {
 			const m = await msg.channel.send({
@@ -25,7 +25,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 			}
 			const { body, statusCode } = await get(APIs.E621(query)).set({
 				Accept: "application/json",
-				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+				"User-Agent": UserAgent,
 			});
 			if (body && statusCode === 200 && body.length) {
 				const unparsed = [], descriptions = [], fields = [], images = [];

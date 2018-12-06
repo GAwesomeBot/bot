@@ -11,7 +11,7 @@ const {
 	},
 	Constants,
 } = require("../../index");
-const { LoggingLevels, Colors } = Constants;
+const { LoggingLevels, Colors, UserAgent } = Constants;
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
@@ -486,7 +486,7 @@ class MessageCreate extends BaseEvent {
 			res = await snekfetch.get(`http://api.program-o.com/v2/chatbot/?bot_id=6&say=${encodeURIComponent(prompt)}&convo_id=${userOrUserID.id ? userOrUserID.id : userOrUserID}&format=json`)
 				.set({
 					Accept: "application/json",
-					"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+					"User-Agent": UserAgent,
 				});
 		} catch (err) {
 			throw err;
