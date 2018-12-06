@@ -475,6 +475,7 @@ controllers.MOTD.post = async (req, res) => {
 	const serverQueryDocument = req.svr.queryDocument;
 
 	const alreadyEnabled = serverDocument.config.message_of_the_day.isEnabled;
+	const oldInterval = serverDocument.config.message_of_the_day.interval;
 	serverQueryDocument.set("config.message_of_the_day.isEnabled", req.body.isEnabled === "on")
 		.set("config.message_of_the_day.message_content", req.body.message_content)
 		.set("config.message_of_the_day.channel_id", req.body.channel_id)
@@ -482,7 +483,7 @@ controllers.MOTD.post = async (req, res) => {
 
 	save(req, res, true);
 
-	if (!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) {
+	if ((!alreadyEnabled && serverDocument.config.message_of_the_day.isEnabled) || oldInterval !== serverDocument.config.message_of_the_day.interval) {
 		createMessageOfTheDay(req, req.svr.id);
 	}
 };
