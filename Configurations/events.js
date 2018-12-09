@@ -22,7 +22,7 @@ module.exports = {
 		"GAB.GuildDelete",
 	],
 	guildUpdate: [
-
+		"GAB.GuildUpdate",
 	],
 	guildUnavailable: [
 		"GAB.GuildUnavailable",

@@ -149,6 +149,30 @@ exports.StatusMessages = {
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`),
 		color: exports.Colors.LIGHT_ORANGE,
 	}),
+	GUILD_UPDATE_NAME: (oldName, guild) => ({
+		thumbnail: {
+			url: guild.iconURL(),
+		},
+		title: "Name Changed",
+		description: `Guild Name changed from **${oldName}** to **${guild.name}**`,
+		color: exports.Colors.BLUE,
+	}),
+	GUILD_UPDATE_ICON: (oldIcon, guild) => ({
+		thumbnail: {
+			url: guild.iconURL(),
+		},
+		title: "Icon Changed",
+		description: `Guild icon changed from ${oldIcon ? `[old icon](${oldIcon})` : "default"} to ${guild.iconURL() ? `[new icon](${guild.iconURL()})` : "default"}`,
+		color: exports.Colors.BLUE,
+	}),
+	GUILD_UPDATE_REGION: (oldRegion, newRegion, guild) => ({
+		thumbnail: {
+			url: guild.iconURL(),
+		},
+		title: "Region Changed",
+		description: `Guild voice region changed from ${oldRegion} to ${newRegion}`,
+		color: exports.Colors.BLUE,
+	}),
 	MEMBER_CREATE_NICK: (member, serverDocument, client) => ({
 		footer: {
 			text: `Member ID: ${member.id}`,
