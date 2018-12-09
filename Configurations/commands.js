@@ -814,7 +814,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		trivia: {
-			usage: `[todo do usage]`,
+			usage: `["start"|<answer>|"skip"/"next"|"end"/"."]`,
 			description: `A fun question-and-answer group quiz game`,
 			defaults: {
 				isEnabled: true,

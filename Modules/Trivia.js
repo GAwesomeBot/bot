@@ -7,12 +7,12 @@ const questionTitles = [
 	"Oh, here's a good one❗",
 	"I bet you don't know this one❗",
 	"I'd be surprised if you know this❗",
-	"And, what about this one❓",
+	"What about this one❓",
 	"Are you just going to guess this one❓",
 	"Maybe skip this tough one❓",
 	"Are you sure you're not using Wikipedia at this point❓",
 	"Maybe give this easy one to someone else❓",
-	"Hey, stop googling! You know who you are❗",
+	"Hey, stop googling❗",
 	"Who comes up with these❓",
 ];
 
