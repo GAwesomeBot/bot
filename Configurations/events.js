@@ -52,7 +52,7 @@ module.exports = {
 
 	],
 	roleDelete: [
-
+		"GAB.RoleDelete",
 	],
 	roleUpdate: [
 
