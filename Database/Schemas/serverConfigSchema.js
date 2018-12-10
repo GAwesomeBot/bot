@@ -99,6 +99,7 @@ module.exports = new Schema({
 	custom_api_keys: new Schema({
 		google_api_key: String,
 		google_cse_id: String,
+		imgur_client_id: String,
 	}),
 	custom_roles: [String],
 	delete_command_messages: {

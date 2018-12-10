@@ -38,10 +38,17 @@
 								<span class="help">Used for <code>image</code>. Create a CSE and get its ID <a href="https://cse.google.com/cse/create/new">here</a>.</span>
 							</div>
 						</div>
-							<br>
-							<% var formButtonsUnsaved = false; %>
-							<% include ../partials/form-buttons %>
-						    <% include ../partials/form-buttons-bar %>
+						<div class="field">
+							<label class="label">Imgur Client ID</label>
+							<div class="control">
+								<input name="imgur_client_id" class="input is-primary" type="text" value="<%= configData.custom_api_keys.imgur_client_id %>" placeholder="Custom key not set; using default">
+								<span class="help">Used for <code>imgur</code>. Create an Imgur application and get its ID <a href="https://apidocs.imgur.com/">here</a>.</span>
+							</div>
+						</div>
+						<br>
+						<% var formButtonsUnsaved = false; %>
+						<% include ../partials/form-buttons %>
+						<% include ../partials/form-buttons-bar %>
 					</form>
 				</div>
 			</div>

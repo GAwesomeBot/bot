@@ -409,6 +409,7 @@ controllers.APIKeys.post = async (req, res) => {
 
 	serverQueryDocument.set("config.custom_api_keys.google_api_key", req.body.google_api_key);
 	serverQueryDocument.set("config.custom_api_keys.google_cse_id", req.body.google_cse_id);
+	serverQueryDocument.set("config.custom_api_keys.imgur_client_id", req.body.imgur_client_id);
 
 	save(req, res, true);
 };
