@@ -631,7 +631,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		remindme: {
-			usage: `<time from now> | <reminder>`,
+			usage: `"to" <reminder> "in" <time from now>`,
 			description: `Reminds you in DMs about things`,
 			defaults: {
 				isEnabled: true,
