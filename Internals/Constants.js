@@ -1,6 +1,17 @@
 /* eslint node/exports-style: ["error", "exports"] */
+/* eslint-disable max-len */
 
-exports.ModLogEntries = {
+/**
+ * Constant hardcoded values used by GAB
+ * @namespace
+ */
+const Constants = exports;
+
+/**
+ * Formatted ModLog action descriptions
+ * @type {{ADD_ROLE: string, CREATE_ROLE: string, REMOVE_ROLE: string, DELETE_ROLE: string, MODIFY_ROLE: string, KICK: string, BAN: string, SOFTBAN: string, TEMP_BAN: string, UNBAN: string, MUTE: string, TEMP_MUTE: string, UNMUTE: string, BLOCK: string, STRIKE: string, OTHER: string}}
+ */
+Constants.ModLogEntries = {
 	ADD_ROLE: "Add Role",
 	CREATE_ROLE: "Create Role",
 	REMOVE_ROLE: "Remove Role",
@@ -24,51 +35,69 @@ exports.ModLogEntries = {
 };
 
 /**
- * Client.logMessage
+ * Levels for GABClient.logMessage
+ * @type {{INFO: string, ERROR: string, WARN: string, SAVE: string}}
  */
-exports.LoggingLevels = {
+Constants.LoggingLevels = {
 	INFO: "info",
 	ERROR: "error",
 	WARN: "warn",
 	SAVE: "save",
 };
 
-exports.Colors = {
-	// An *uncaught* error occurred, the command could not finish executing
+/**
+ * Various color codes for use in embeds
+ * @type object
+ * @property {number} RED - An uncaught error occurred, the command could not finish executing
+ * @property {number} ERROR - An uncaught error occurred, the command could not finish executing
+ * @property {number} ERR - Alias of ERROR
+ * @property {number} LIGHT_RED - An expected problem was found, the command finished executing. Problems such as no results, etc.
+ * @property {number} SOFT_ERR - An expected problem was found, the command finished executing. Problems such as no results, etc.
+ * @property {number} LIGHT_ORANGE - The user executing the commands was missing permissions required to execute the command
+ * @property {number} MISSING_PERMS - The user executing the commands was missing permissions required to execute the command
+ * @property {number} GREEN - The user requested data to be updated, or the bot to perform an action. This finished with success
+ * @property {number} SUCCESS - The user requested data to be updated, or the bot to perform an action. This finished with success
+ * @property {number} LIGHT_GREEN - The user requested data to be returned. The bot fetched the data with success
+ * @property {number} RESPONSE - The user requested data to be returned. The bot fetched the data with success
+ * @property {number} BLUE - The bot is notifying the user of something, either in response to a command, or resulting from an event
+ * @property {number} INFO - The bot is notifying the user of something, either in response to a command, or resulting from an event
+ * @property {number} LIGHT_BLUE - The bot is requesting more data from the user before it can continue executing the command
+ * @property {number} INPUT - The bot is requesting more data from the user before it can continue executing the command
+ * @property {number} PROMPT - Alias of INPUT
+ * @property {number} YELLOW - The user passed invalid command parameters to the bot, and the command could not be parsed
+ * @property {number} INVALID - The user passed invalid command parameters to the bot, and the command could not be parsed
+ * @property {number} TRIVIA_START - A trivia game has started
+ * @property {number} TRIVIA_END - A trivia game has ended
+ * @property {number} YOUTUBE
+ * @property {number} TWITCH
+ */
+Constants.Colors = {
 	RED: 0xFF0000,
 	ERROR: 0xFF0000,
 	ERR: 0xFF0000,
 
-	// An expected problem was found, the command finished executing. Problems such as no results, etc.
 	LIGHT_RED: 0xCC0F16,
 	SOFT_ERR: 0xCC0F16,
 
-	// The user executing the commands was missing permissions required to execute the command
 	LIGHT_ORANGE: 0xE55B0A,
 	MISSING_PERMS: 0xE55B0A,
 
-	// The user requested data to be updated, or the bot to perform an action. This finished with success
 	GREEN: 0x00FF00,
 	SUCCESS: 0x00FF00,
 
-	// The user requested data to be returned. The bot fetched the data with success
 	LIGHT_GREEN: 0x43B581,
 	RESPONSE: 0x43B581,
 
-	// The bot is notifying the user of something, either in response to a command, or resulting from an event
 	BLUE: 0x3669FA,
 	INFO: 0x3669FA,
 
-	// The bot is requesting more data from the user before it can continue executing the command
 	LIGHT_BLUE: 0x9ECDF2,
 	INPUT: 0x9ECDF2,
 	PROMPT: 0x9ECDF2,
 
-	// The user passed invalid command parameters to the bot, and the command could not be parsed
 	YELLOW: 0xFFFF00,
 	INVALID: 0xFFFF00,
 
-	// A trivia game has started or ended
 	TRIVIA_START: 0x50FF60,
 	TRIVIA_END: 0x2B67FF,
 
@@ -76,8 +105,11 @@ exports.Colors = {
 	YOUTUBE: 0xFF0000,
 };
 
-// Should all be functions for consistency, even if the string is hardcoded.
-exports.Text = {
+/**
+ * Various functions that return text displayed to the End User
+ * @type {{ERROR_TITLE: (function(): string), ERROR_BODY: (function(string, string): string), ERROR_FOOTER: (function(): string), OWO_ERROR_BODY: (function(): string), INVALID_USAGE: (function(object, string=): string), MISSING_PERMS: (function(string): string), NSFW_INVALID: (function(): string), INVITE: (function(GABClient): {embed: {color: number, title: string, description: string}}), GUILD_VERIFICATION_LEVEL: (function(string): string)}}
+ */
+Constants.Text = {
 	ERROR_TITLE: () => "Something went wrong! 😱",
 	ERROR_BODY: (cmd, stack) => `Something went wrong while executing \`${cmd}\`!${stack ? `\n**Error Message**: \`\`\`js\n${stack}\`\`\`` : ""}`,
 	ERROR_FOOTER: () => "Contact your GAB maintainer for more support.",
@@ -87,7 +119,7 @@ exports.Text = {
 	NSFW_INVALID: () => `You need to give me something to search for! ( ͡° ͜ʖ ͡° )`,
 	INVITE: client => ({
 		embed: {
-			color: exports.Colors.LIGHT_GREEN,
+			color: Constants.Colors.LIGHT_GREEN,
 			title: `Thanks for choosing me! 😊`,
 			description: [
 				`To add me, follow [this URL](${configJS.oauthLink.format({ id: client.user.id })})`,
@@ -101,10 +133,14 @@ exports.Text = {
 			].join("\n"),
 		},
 	}),
-	GUILD_VERIFICATION_LEVEL: level => exports.GUILD_VERIFICATION_LEVELS[level],
+	GUILD_VERIFICATION_LEVEL: level => Constants.GUILD_VERIFICATION_LEVELS[level],
 };
 
-exports.StatusMessages = {
+/**
+ * Functions that return embed objects for usage in Status Messages
+ * @type object
+ */
+Constants.StatusMessages = {
 	GUILD_BAN_ADD: (message, user) => ({
 		footer: {
 			text: `User ID: ${user.id}`,
@@ -114,7 +150,7 @@ exports.StatusMessages = {
 		},
 		title: "Status Messages - Member Banned",
 		description: message.replaceAll("@user", `**@${user.tag}**`),
-		color: exports.Colors.RED,
+		color: Constants.Colors.RED,
 	}),
 	GUILD_BAN_REMOVE: (message, user) => ({
 		footer: {
@@ -125,7 +161,7 @@ exports.StatusMessages = {
 		},
 		title: "Member Unbanned",
 		description: message.replaceAll("@user", `**@${user.tag}**`),
-		color: exports.Colors.GREEN,
+		color: Constants.Colors.GREEN,
 	}),
 	GUILD_MEMBER_ADD: (message, member, serverDocument, client) => ({
 		footer: {
@@ -136,7 +172,7 @@ exports.StatusMessages = {
 		},
 		title: "Member Joined",
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`),
-		color: exports.Colors.LIGHT_GREEN,
+		color: Constants.Colors.LIGHT_GREEN,
 	}),
 	GUILD_MEMBER_REMOVE: (message, member, serverDocument, client) => ({
 		footer: {
@@ -147,7 +183,7 @@ exports.StatusMessages = {
 		},
 		title: "Member Left",
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`),
-		color: exports.Colors.LIGHT_ORANGE,
+		color: Constants.Colors.LIGHT_ORANGE,
 	}),
 	GUILD_UPDATE_NAME: (oldName, guild) => ({
 		thumbnail: {
@@ -155,7 +191,7 @@ exports.StatusMessages = {
 		},
 		title: "Name Changed",
 		description: `Guild Name changed from **${oldName}** to **${guild.name}**`,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 	}),
 	GUILD_UPDATE_ICON: (oldIcon, guild) => ({
 		thumbnail: {
@@ -163,7 +199,7 @@ exports.StatusMessages = {
 		},
 		title: "Icon Changed",
 		description: `Guild icon changed from ${oldIcon ? `[old icon](${oldIcon})` : "default"} to ${guild.iconURL() ? `[new icon](${guild.iconURL()})` : "default"}`,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 	}),
 	GUILD_UPDATE_REGION: (oldRegion, newRegion, guild) => ({
 		thumbnail: {
@@ -171,7 +207,7 @@ exports.StatusMessages = {
 		},
 		title: "Region Changed",
 		description: `Guild voice region changed from ${oldRegion} to ${newRegion}`,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 	}),
 	MEMBER_CREATE_NICK: (member, serverDocument, client) => ({
 		footer: {
@@ -182,7 +218,7 @@ exports.StatusMessages = {
 		},
 		title: "Nickname Created",
 		description: `**@${client.getName(serverDocument, member)}** created a nickname: \`${member.nickname}\``,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 	}),
 	MEMBER_CHANGE_NICK: (member, oldNickname, serverDocument, client) => ({
 		footer: {
@@ -193,7 +229,7 @@ exports.StatusMessages = {
 		},
 		title: "Nickname Updated",
 		description: `**@${client.getName(serverDocument, member)}** changed their nickname from \`${oldNickname}\` to \`${member.nickname}\``,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 	}),
 	MEMBER_REMOVE_NICK: (member, oldNickname, serverDocument, client) => ({
 		footer: {
@@ -204,11 +240,15 @@ exports.StatusMessages = {
 		},
 		title: "Nickname Removed",
 		description: `**@${client.getName(serverDocument, member)}** removed their nickname \`${oldNickname}\``,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 	}),
 };
 
-exports.GUILD_VERIFICATION_LEVELS = [
+/**
+ * An array of verification level descriptions ordered by severity
+ * @type {string[]}
+ */
+Constants.GUILD_VERIFICATION_LEVELS = [
 	"None",
 	"Low - must have verified email on account",
 	"Medium - must be registered on Discord for longer than 5 minutes",
@@ -216,33 +256,42 @@ exports.GUILD_VERIFICATION_LEVELS = [
 	"Very High - ┻━┻ミヽ(ಠ益ಠ)ﾉ彡┻━┻ - must have a verified phone number",
 ];
 
-// Hardcoded names for the child process manager
-exports.WorkerTypes = {
+/**
+ * Hardcoded names for worker process manager
+ * @type {{MATH: string, EMOJI: string}}
+ */
+Constants.WorkerTypes = {
 	MATH: "mathjs",
 	EMOJI: "emoji",
 };
 
-exports.WorkerCommands = {
+Constants.WorkerCommands = {
 	MATHJS: {
 		EVAL: "eval",
 		HELP: "help",
 	},
 };
 
-exports.WorkerEvents = {
+Constants.WorkerEvents = {
 	RUN_MATH: "runMathCommand",
 	JUMBO_EMOJI: "jumboEmoji",
 };
 
-// Emojis used in menu-like things
-exports.PageEmojis = {
+/**
+ * Emojis used in menu objects
+ * @type {{back: string, stop: string, forward: string}}
+ */
+Constants.PageEmojis = {
 	back: "◀",
 	stop: "⏹",
 	forward: "▶",
 };
 
-// Numbered emojis from one to ten
-exports.NumberEmojis = {
+/**
+ * Numbered emojis from 1 to 10
+ * @type {{one: string, two: string, three: string, four: string, five: string, six: string, seven: string, eight: string, nine: string, ten: string}}
+ */
+Constants.NumberEmojis = {
 	one: "1⃣",
 	two: "2⃣",
 	three: "3⃣",
@@ -256,18 +305,18 @@ exports.NumberEmojis = {
 };
 
 /**
- * Emojis that are used in the help menu, each representing:
- * ℹ -- Main menu
- * 🤖 -- GAB commands, like ping
- * 🎪 -- Fun commands
- * ⚒ -- ~~Communism~~ Moderation
- * 🎬 -- Sarch and Media
- * 👹 -- NSFW
- * ⭐️ -- Stats and points (and starboard 👀)
- * 🔦 -- Utility commands
- * ⚙️ -- Extension Commands
+ * Emojis that are used in the help menu
+ * @property {string} info - Main menu
+ * @property {string} gab - GAB commands, like ping
+ * @property {string} fun - Fun commands
+ * @property {string} mod - ~~Communism~~ Moderation commands
+ * @property {string} media - Search and Media commands
+ * @property {string} nsfw - NSFW commands
+ * @property {string} stats - Stats and points
+ * @property {string} util - Utility commands
+ * @property {string} extension - Extension commands
  */
-exports.HelpMenuEmojis = {
+Constants.HelpMenuEmojis = {
 	info: "ℹ",
 	gab: "🤖",
 	fun: "🎪",
@@ -282,8 +331,9 @@ exports.HelpMenuEmojis = {
 /**
  * I was super lazy to do if-checks so I did this instead.
  * Sorry. -- Vlad
+ * @type object
  */
-exports.CategoryEmojiMap = {
+Constants.CategoryEmojiMap = {
 	"Extensions ⚙️": "⚙",
 	"Fun 🎪": "🎪",
 	"GAwesomeBot 🤖": "🤖",
@@ -294,15 +344,15 @@ exports.CategoryEmojiMap = {
 	"Utility 🔦": "🔦",
 };
 
-exports.Templates = {
+Constants.Templates = {
 	ReactionMenu: {
 		title: `Choose a number`,
-		color: exports.Colors.BLUE,
+		color: Constants.Colors.BLUE,
 		description: `{list}`,
 		footer: `Page {current} out of {total}`,
 	},
 	StreamingTemplate: data => {
-		const color = exports.Colors[data.type.toUpperCase()] || exports.Colors.INFO;
+		const color = Constants.Colors[data.type.toUpperCase()] || Constants.Colors.INFO;
 		return {
 			embed: {
 				color,
@@ -320,7 +370,11 @@ exports.Templates = {
 	},
 };
 
-exports.APIs = {
+/**
+ * An object of API endpoints GAB interacts with
+ * @type {{ANIME: (function(*=): string), CATFACT: (function(*): string), DOGFACT: (function(*): string), E621: (function(*=): string), FORTUNE: (function(*=): string), GIPHY: (function(*, *=, *): string), JOKE: (function(): string), NUMFACT: (function(*): string), REDDIT: (function(*): string), SPOOPYLINK: (function(*): string), URBAN: (function(*=, *=): string)}}
+ */
+Constants.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
@@ -334,11 +388,29 @@ exports.APIs = {
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 };
 
-exports.UserAgent = "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)";
+/**
+ * Address of GAB's versioning server. Changing this value is not recommended and will almost certainly cause major issues.
+ * @type {string}
+ */
+Constants.APIs.VERSIONING = "https://status.gawesomebot.com";
 
-exports.EmptySpace = `\u200b`;
+/**
+ * Default value of the useragent header on all requests made to third-party endpoints.
+ * @type {string}
+ */
+Constants.UserAgent = "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)";
 
-exports.Perms = {
+/**
+ * An empty space
+ * @type {string}
+ */
+Constants.EmptySpace = `\u200b`;
+
+/**
+ * Descriptions of Maintainer permissions
+ * @type {{eval: string, sudo: string, management: string, administration: string, shutdown: string}}
+ */
+Constants.Perms = {
 	eval: "⚙ Evaluation (Can execute `eval`)",
 	sudo: "🛡 Sudo Mode (Can act as a Server Admin)",
 	management: "🔧 Management (Can access management)",
@@ -346,8 +418,11 @@ exports.Perms = {
 	shutdown: "🌟 Shutdown (Can manage GAB Processes)",
 };
 
-// Events that can be used to create event extensions. D.js events that are not in this list will be disabled on the worker process
-exports.AllowedEvents = [
+/**
+ * List of events that can be used to create event extensions. D.js events that are not in this list will be disabled on the worker process
+ * @type {string[]}
+ */
+Constants.AllowedEvents = [
 	"channelCreate",
 	"channelDelete",
 	"channelUpdate",
@@ -374,10 +449,13 @@ exports.AllowedEvents = [
 	"voiceStateUpdate",
 ];
 
-// Embed object for NSFW commands
-exports.NSFWEmbed = {
+/**
+ * Embed object for NSFW commands in non-NSFW channels
+ * @type {{embed: {color: number, title: string, description: string, footer: {text: string}}}}
+ */
+Constants.NSFWEmbed = {
 	embed: {
-		color: exports.Colors.SOFT_ERR,
+		color: Constants.Colors.SOFT_ERR,
 		title: `I'm sorry, but I can't let you do that! 🙄`,
 		description: `You'll have to run this command in a channel that is marked **NSFW**!`,
 		footer: {
@@ -386,7 +464,11 @@ exports.NSFWEmbed = {
 	},
 };
 
-exports.APIResponses = {
+/**
+ * JSON Objects that are used as responses to requests to GAB's API
+ * @type {{servers: {success: function, notFound: function, internalError: function}, users: {success: function, badRequest: function, notFound: function, internalError: function}, extensions: {success: function, notFound: function, internalError: function}}}
+ */
+Constants.APIResponses = {
 	servers: {
 		success: data => ({ err: null, data }),
 		notFound: () => ({ err: "Server not found", data: null }),
@@ -405,8 +487,11 @@ exports.APIResponses = {
 	},
 };
 
-// Categories for the fortune command
-exports.FortuneCategories = [
+/**
+ * Categories for the fortune command
+ * @type {string[]}
+ */
+Constants.FortuneCategories = [
 	"all",
 	"computers",
 	"cookie",
@@ -419,7 +504,11 @@ exports.FortuneCategories = [
 	"wisdom",
 ];
 
-exports.EightBall = {
+/**
+ * EightBall values and wait times
+ * @type {{WaitTimes: number[], Answers: *[]}}
+ */
+Constants.EightBall = {
 	WaitTimes: [1000, 1500, 3000, 2500, 2000, 1250, 500, 300, 100, 600],
 	Answers: [
 		{
@@ -510,7 +599,11 @@ exports.EightBall = {
  * The license will be specified above each item, if applicable
  */
 
-exports.EmojiRegex = {
+/**
+ * A set of regex strings for emojis
+ * @type {{Text: RegExp, SkinToneText: RegExp, UnicodeSkinTone: RegExp, MobileSkinTone: RegExp}}
+ */
+Constants.EmojiRegex = {
 	Text: /:.*?:/,
 	SkinToneText: /:(.*?)::skin-tone-([1-5]):/,
 	UnicodeSkinTone: /:(.*?):(🏻|🏼|🏽|🏾|🏿)/,
