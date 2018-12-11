@@ -512,7 +512,7 @@ module.exports = class GABClient extends DJSClient {
 	 * @param {Discord.GuildMember} [affectedUser] The affected member
 	 * @returns {Object} Object containing the results
 	 */
-	async canDoActionOnMember (guild, member, affectedUser = null, type = null) {
+	canDoActionOnMember (guild, member, affectedUser = null, type = null) {
 		if (type) {
 			switch (type.toLowerCase()) {
 				case "ban": {
@@ -529,6 +529,24 @@ module.exports = class GABClient extends DJSClient {
 					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
 					if (affectedUser === null) {
 						obj.canClientBan = guild.me.permissions.has("BAN_MEMBERS");
+						obj.memberAboveAffected = true;
+					}
+					return obj;
+				}
+				case "manage": {
+					const obj = {
+						canClientManage: false,
+						memberAboveAffected: false,
+					};
+					if (affectedUser && affectedUser.manageable) obj.canClientManage = true;
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					if (affectedUser === null) {
+						obj.canClientManage = guild.me.permissions.has("MANAGE_NICKNAMES");
 						obj.memberAboveAffected = true;
 					}
 					return obj;
