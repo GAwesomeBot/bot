@@ -1,14 +1,14 @@
 const dgr = require("async-dl-github-repo");
 const fs = require("fs-nextra");
 const snekfetch = require("snekfetch");
-const { Console } = require("../Internals");
+const { Console, Constants } = require("../Internals");
 // TODO: Use fs.writeJSONAtomic wherever possible
 
 module.exports = {
 	check: async (config = configJSON) => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
+			res = await snekfetch.get(`${Constants.APIs.VERSIONING}/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
 		} catch (err) {
 			winston.warn(`Failed to check for new updates. ~.~\n`, err);
 			throw err;
@@ -23,7 +23,7 @@ module.exports = {
 	get: async (branch, version) => {
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${branch}/${version}`, { redirect: false });
+			res = await snekfetch.get(`${Constants.APIs.VERSIONING}/api/versions/${branch}/${version}`, { redirect: false });
 		} catch (err) {
 			res = {};
 			res.statusCode = 404;
@@ -47,7 +47,7 @@ module.exports = {
 
 		let res;
 		try {
-			res = await snekfetch.get(`https://status.gawesomebot.com/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
+			res = await snekfetch.get(`${Constants.APIs.VERSIONING}/api/versions/${config.branch}/check?v=${config.version}`, { redirect: false });
 			if (res.statusCode !== 200) {
 				throw new Error(`Updater received unexpected status code ${res.statusCode} ${res.statusText}`);
 			}

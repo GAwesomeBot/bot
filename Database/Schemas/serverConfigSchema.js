@@ -473,6 +473,10 @@ module.exports = new Schema({
 			default: Date.now,
 		},
 	})],
+	room_category: {
+		type: String,
+		required: false,
+	},
 	rss_feeds: [new Schema({
 		_id: {
 			type: String,
