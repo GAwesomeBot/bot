@@ -26,7 +26,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			await msg.channel.delete(`Room Management | Command issued by ${msg.author.tag}`).catch(err => {
 				success = false;
 				winston.debug(`Failed to delete room '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id, err });
-				msg.send({
+				question.edit({
 					embed: {
 						color: Colors.LIGHT_ERR,
 						title: "Failed to delete room!",
@@ -101,7 +101,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 					embed: {
 						color: Colors.SUCCESS,
 						description: "Ok! I won't add any members either.",
-					}
+					},
 				});
 			}
 		}
@@ -127,14 +127,11 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 				serverQueryDocument.set("config.room_category", categoryChannel.id);
 			}
 
-			const permissionOverwrites = [];
-			members.forEach(member => {
-				permissionOverwrites.push({
-					id: member.user.id,
-					type: "member",
-					allow: "VIEW_CHANNEL",
-				});
-			});
+			const permissionOverwrites = members.map(member => ({
+				id: member.user.id,
+				type: "member",
+				allow: "VIEW_CHANNEL",
+			}));
 
 			const channel = await msg.guild.channels.create(`talk-room-${Date.now()}`, {
 				reason: `Room Management | Command issued by ${msg.author.tag}`,
@@ -153,7 +150,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			}).catch(err => {
 				winston.debug(`Failed to create talk room in '${msg.guild.name}'`, { svrid: msg.guild.id, err });
 			});
-			if (channel.type === "text") {
+			if (channel && channel.type === "text") {
 				channel.send({
 					embed: {
 						color: Colors.SUCCESS,
@@ -161,7 +158,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 						description: `Use \`${msg.guild.commandPrefix}${commandData.name}\` to delete this room or add members.`,
 					},
 				});
-			} else if (channel.type === "voice") {
+			} else if (channel && channel.type === "voice") {
 				msg.send({
 					embed: {
 						color: Colors.SUCCESS,
@@ -171,7 +168,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 				});
 			}
 
-			serverQueryDocument.push("config.room_data", { _id: channel.id });
+			if (channel) serverQueryDocument.push("config.room_data", { _id: channel.id });
 		} else {
 			winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
 			msg.send({
