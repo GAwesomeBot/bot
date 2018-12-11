@@ -4,7 +4,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 	if (msg.suffix) {
 		let [target, nickname] = ArgParser.parseQuoteArgs(msg.suffix, "|");
 		if (target && nickname) {
-			if (!msg.member.hasPermission("MANAGE_NICKNAMES")) {
+			if (!msg.member.permissions.has("MANAGE_NICKNAMES")) {
 				return msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
@@ -68,17 +68,17 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 				});
 			}
 
-			if (nickname.trim() === ".") nickname = "";
+			if (nickname.trim() === ".") nickname = null;
 			await member.edit({ nick: nickname }, `Command issued by ${msg.author.tag}`);
 			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
-					description: `${client.getName(serverDocument, member, true)} now has ${nickname === "" ? "no nickname" : `the nickname \`${member.nickname}\``} on this guild 💥`,
+					description: `${client.getName(serverDocument, member, true)} now has ${nickname === null ? "no nickname" : `the nickname \`${member.nickname}\``} on this guild 💥`,
 				},
 			});
 		} else if (target) {
 			nickname = target;
-			if (nickname === ".") nickname = "";
+			if (nickname === ".") nickname = null;
 
 			if (!msg.member.manageable) {
 				return msg.send({
@@ -109,7 +109,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 		msg.send({
 			embed: {
 				color: Colors.RESPONSE,
-				description: `🏷 Your nick on this guild is \`${msg.member.nickname}\``,
+				description: `Your nick on this guild is \`${msg.member.nickname}\` 🏷`,
 			},
 		});
 	} else {
