@@ -108,7 +108,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 	} else if (msg.suffix) {
 		const args = ArgParser.parseQuoteArgs(msg.suffix);
 		if (["text", "voice"].includes(args[0].toLowerCase())) {
-			const type = args[0];
+			const [type] = args.splice(0, 1);
 			args.splice(0, 1);
 			const members = [];
 
@@ -136,7 +136,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			const channel = await msg.guild.channels.create(`talk-room-${Date.now()}`, {
 				reason: `Room Management | Command issued by ${msg.author.tag}`,
 				type,
-				parent: msg.guild.channels.get(serverDocument.config.room_category),
+				parent: serverDocument.config.room_category,
 				topic: `Talk Room created by ${msg.author.tag}`,
 				permissionOverwrites: [{
 					id: msg.guild.id,
