@@ -19,7 +19,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { Titlecas
 		for (let i = 0; i < memberRoles.length; i += rolesPerPage) {
 			const roleSegment = memberRoles.slice(i, i + rolesPerPage).join("\n");
 			descriptions.push([
-				`You currently have those roles:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < memberRoles.length ? `\n...and ${memberRoles.length - i - rolesPerPage} more` : ""}`,
+				`You currently have these roles:\n\n${i ? `...${i} previous roles\n` : ""}${roleSegment}${i + rolesPerPage < memberRoles.length ? `\n...and ${memberRoles.length - i - rolesPerPage} more` : ""}`,
 				"\nYour roles grant you get the following permissions:",
 				totalPermissionsBitfield ? `\`\`\`${TitlecasePermissions(totalPermissions.toArray(false).join(", "))}\`\`\`` : "You do not have any permissions on this server ⁉️",
 				totalPermissions.has(Permissions.FLAGS.ADMINISTRATOR, false) ? "⚠️ You have Administrator permissions which bypasses any other permission or override" : "",
