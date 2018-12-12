@@ -672,7 +672,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		room: {
-			usage: `"text" or "voice" or "both" [<user 1>] [|] [<user 2>] [|] [...]`,
+			usage: `"text" or "voice" [<user 1>] [<user 2>] [...]`,
 			description: `Creates a temporary text or voice channel with a few members`,
 			defaults: {
 				isEnabled: true,
