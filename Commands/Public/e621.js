@@ -5,15 +5,7 @@ const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent } }, { serverDocument }, msg, commandData) => {
 	if (msg.channel.nsfw) {
 		if (msg.suffix) {
-			const m = await msg.channel.send({
-				embed: {
-					color: Colors.INFO,
-					description: `We're fetching the requested images...`,
-					footer: {
-						text: `This might take a while!`,
-					},
-				},
-			});
+			const m = await msg.channel.send(Text.THIRD_PARTY_FETCH("We're fetching the requested images"));
 			let query = msg.suffix.substring(0, msg.suffix.lastIndexOf(" "));
 			let num = msg.suffix.substring(msg.suffix.lastIndexOf(" ") + 1);
 			if (!query || isNaN(num)) {
