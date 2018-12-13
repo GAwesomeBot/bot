@@ -41,7 +41,7 @@ module.exports = class Console {
 						const obj = Object.keys(meta).length ? `\n\t${meta.stack ? meta.stack : require("util").inspect(meta, false, depth || 2, colorize)}` : ``;
 						return `(${ts}) (${level.toUpperCase()}) (${type === "master" ? "MASTER" : type.toUpperCase()}) ${chalk.stripColor(message)} ${obj}`;
 					},
-					filename: require("path").join(process.cwd(), `logs/${type === "master" ? "master" : type.replace(/ /g, "-")}-%DATE%-gawesomebot.log`),
+					filename: require("path").join(process.cwd(), `logs/%DATE%-${type === "master" ? "master" : type.replace(/ /g, "-")}-gawesomebot.log`),
 				}),
 				new winston.transports.DailyRotateFile({
 					name: "Full Output",
