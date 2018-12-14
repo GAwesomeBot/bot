@@ -280,7 +280,7 @@ class MessageCreate extends BaseEvent {
 								}
 							});
 						}
-					}
+					};
 
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {

@@ -95,7 +95,7 @@ module.exports = {
 		// "GAB.OtherFilters",
 	],
 	messageDelete: [
-
+		"GAB.MessageDelete",
 	],
 	messageUpdate: [
 		"GAB.MessageCommandUpdateHandler",

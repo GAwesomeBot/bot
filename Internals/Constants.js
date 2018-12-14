@@ -242,6 +242,17 @@ Constants.StatusMessages = {
 		description: `**@${client.getName(serverDocument, member)}** removed their nickname \`${oldNickname}\``,
 		color: Constants.Colors.BLUE,
 	}),
+	MESSAGE_DELETED: (type, msg, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${msg.author.id} • Channel ID: ${msg.channel.id}`,
+		},
+		thumbnail: {
+			url: msg.member.user.displayAvatarURL(),
+		},
+		title: "Message Deleted",
+		description: `A message by **@${client.getName(serverDocument, msg.member)}** ${type === "single" ? `in #${msg.channel.name} ` : ""}was deleted:\n\`\`\`${msg.cleanContent.replace(/`/g, "\\`")}\n\`\`\``,
+		color: Constants.Colors.LIGHT_RED,
+	}),
 };
 
 /**
