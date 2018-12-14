@@ -376,7 +376,7 @@ Constants.Templates = {
  */
 Constants.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
-	BITLY : action => `https://api-ssl.bitly.com/v4/${action}`,
+	BITLY: action => `https://api-ssl.bitly.com/v4/${action}`,
 	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
 	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
