@@ -250,34 +250,36 @@ class MessageCreate extends BaseEvent {
 				// Only keep responding if the bot is on in the channel and author isn't blocked on the server
 				if (channelDocument.bot_enabled && !serverDocument.config.blocked.includes(msg.author.id)) {
 					// Translate message if necessary
-					const translatedDocument = serverQueryDocument.clone.id("config.translated_messages", msg.author.id).val;
-					if (translatedDocument) {
-						// Detect the language (not always accurate; used only to exclude English messages from being translated to English)
-						mstranslate.detect({ text: msg.cleanContent }, (err, res) => {
-							if (err) {
-								winston.debug(`Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, usrid: msg.author.id }, err);
-								this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
-							} else if (res.toLowerCase() !== "en") {
-								// If the message is not in English, attempt to translate it from the language defined for the user
-								mstranslate.translate({ text: msg.cleanContent, from: translatedDocument.source_language, to: "EN" }, (translateErr, translateRes) => {
-									if (translateErr) {
-										winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
-										this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
-									} else {
-										msg.send({
-											embed: {
-												color: Colors.INFO,
-												title: `**@${this.client.getName(serverDocument, msg.member)}** said:`,
-												description: `\`\`\`${translateRes}\`\`\``,
-												footer: {
-													text: `Translated using Microsoft Translator. The translated text might not be 100% accurate!`,
+					const translateMessage = () => {
+						const translatedDocument = serverQueryDocument.clone.id("config.translated_messages", msg.author.id).val;
+						if (translatedDocument) {
+							// Detect the language (not always accurate; used only to exclude English messages from being translated to English)
+							mstranslate.detect({ text: msg.cleanContent }, (err, res) => {
+								if (err) {
+									winston.debug(`Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, usrid: msg.author.id }, err);
+									this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+								} else if (res.toLowerCase() !== "en") {
+									// If the message is not in English, attempt to translate it from the language defined for the user
+									mstranslate.translate({ text: msg.cleanContent, from: translatedDocument.source_language, to: "EN" }, (translateErr, translateRes) => {
+										if (translateErr) {
+											winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
+											this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+										} else {
+											msg.send({
+												embed: {
+													color: Colors.INFO,
+													title: `**@${this.client.getName(serverDocument, msg.member)}** said:`,
+													description: `\`\`\`${translateRes}\`\`\``,
+													footer: {
+														text: `Translated using Microsoft Translator. The translated text might not be 100% accurate!`,
+													},
 												},
-											},
-										});
-									}
-								});
-							}
-						});
+											});
+										}
+									});
+								}
+							});
+						}
 					}
 
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
@@ -422,6 +424,7 @@ class MessageCreate extends BaseEvent {
 							}
 							// Check if it's a chatterbot prompt
 							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.client.user.id}>`) || msg.content.startsWith(`<@!${this.client.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.client.getSharedCommand(msg.command)) {
+								translateMessage();
 								await this.setCooldown(serverDocument, channelDocument, channelQueryDocument);
 								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 								this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
@@ -462,8 +465,12 @@ class MessageCreate extends BaseEvent {
 										disableEveryone: true,
 									});
 								}
+							} else if (!extensionApplied) {
+								translateMessage();
 							}
 						}
+					} else {
+						translateMessage();
 					}
 				}
 				await serverDocument.save();
