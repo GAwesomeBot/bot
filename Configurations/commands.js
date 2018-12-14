@@ -479,7 +479,7 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		nick: {
-			usage: `[<user>|<nickname> or <name>]`,
+			usage: `[<user>|][<nickname> or <name>]`,
 			description: `Changes a members nickname on the server`,
 			defaults: {
 				isEnabled: true,

@@ -29,7 +29,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			}
 		}
 		reason = (hasReason && reason.length && reason.join(" ")) || "Unspecified reason...";
-		const { canClientBan, memberAboveAffected } = await client.canDoActionOnMember(msg.guild, msg.member, (isGuildMember && member) || null, "ban");
+		const { canClientBan, memberAboveAffected } = client.canDoActionOnMember(msg.guild, msg.member, (isGuildMember && member) || null, "ban");
 		if (!canClientBan) {
 			return msg.send({
 				embed: {
