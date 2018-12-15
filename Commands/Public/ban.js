@@ -162,12 +162,12 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			}
 			if (message.content) {
 				collector.stop();
-				try {
-					await message.delete();
-				} catch (_) {
-					// Meh
-				}
 				if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
+					try {
+						await message.delete();
+					} catch (_) {
+						// Meh
+					}
 					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
