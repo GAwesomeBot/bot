@@ -355,6 +355,7 @@ class MessageCreate extends BaseEvent {
 												memberDocument,
 												memberQueryDocument,
 												userDocument,
+												userQueryDocument: userDocument.query,
 											};
 											const commandData = {
 												name: cmd,
