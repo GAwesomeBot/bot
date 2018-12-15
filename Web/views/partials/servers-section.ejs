@@ -139,11 +139,11 @@ GAwesomeUtil.showActivitySelections = () => {
 									</div>
 								</div>
 
-								<div class="content">
-									<% if (server.description) { %>
+								<% if (server.description) { %>
+									<div class="content">
 										<%- server.description %>
-									<% } %>
-								</div>
+									</div>
+								<% } %>
 
 								<% if (server.invite_link) { %>
 									<div class="content">
