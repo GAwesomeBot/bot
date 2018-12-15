@@ -18,20 +18,22 @@ module.exports = {
 				`\t**${option}**`,
 			].join("\n"));
 			map = map.chunk(10);
-			const description = [];
+			const descriptions = [];
 			for (const innerArray of map) {
-				description.push(innerArray.join("\n"));
+				descriptions.push(innerArray.join("\n"));
 			}
 			const menu = new PaginatedEmbed({
 				channel: ch,
 				author: {
 					id: usr.id,
 				},
-			}, description, {
+			}, {
 				title: `🍻 A poll named "__${title}__" has started!`,
 				color: Colors.INFO,
 				description: `${usr} has started a poll in here! Run \`${svr.commandPrefix}poll\` to see all available choices!\nThe following options are available:\n\n{description}`,
 				footer: `Use "${svr.commandPrefix}poll <option no.>" here or PM me "poll ${svr}|#${ch.name}" to vote.`,
+			}, {
+				descriptions,
 			});
 			await menu.init();
 		}

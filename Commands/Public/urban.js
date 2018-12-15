@@ -45,11 +45,14 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 				},
 			]);
 		});
-		const menu = new PaginatedEmbed(msg, descriptions, {
+		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
-			title: `${!msg.suffix ? "Random d" : "D"}efinition {current description} out of {total descriptions}${msg.suffix ? ` for '${msg.suffix}'` : ""}:`,
+			title: `${!msg.suffix ? "Random d" : "D"}efinition {currentPage} out of {totalPages}${msg.suffix ? ` for '${msg.suffix}'` : ""}:`,
 			footer: body.tags && body.tags.length ? `Tags: ${body.tags.join(", ")}` : "",
-		}, [], fields);
+		}, {
+			descriptions,
+			fields,
+		});
 		await menu.init();
 	} else {
 		winston.debug(`Failed to fetch Urban Dictionary results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
