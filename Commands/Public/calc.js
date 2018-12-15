@@ -54,8 +54,8 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				msg.send({
 					embed: {
 						color: Colors.ERR,
-						title: Text.COMMAND_ERR(),
-						description: `\`\`\`css\n${err}\`\`\``,
+						title: Text.ERROR_TITLE(),
+						description: Text.ERROR_BODY("calc", err),
 						footer: {
 							text: `I'm sorry :(`,
 						},
