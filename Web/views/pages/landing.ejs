@@ -5,31 +5,14 @@
 	<% include ../partials/head %>
 
 	<style type="text/css">
-	@media screen and (max-width: 420px) {
-		#gawesomebot-title {
-			font-size: 42px;
-		}
-	}
-	@media screen and (min-width: 321px) and (max-width: 768px) {
-		#gawesomebot-title {
-			font-size: 46px;
-		}
-		#gawesomebot-subtitle {
-			font-size: 30px;
-		}
+	@media screen and (max-width: 768px) {
 		#gawesomebot-discord {
-			height: 31px;
+			height: 1.5rem;
 		}
 	}
 	@media screen and (min-width: 769px) {
-		#gawesomebot-title {
-			font-size: 96px;
-		}
-		#gawesomebot-subtitle {
-			font-size: 40px;
-		}
 		#gawesomebot-discord {
-			height: 42px;
+			height: 2.5rem;
 		}
 	}
 	</style>
@@ -42,10 +25,10 @@
 		<div class="hero-body">
 			<div class="container has-text-centered">
 				<img src="/static/img/icon.png" style="border-radius: 100%;width:200px;">
-				<h1 id="gawesomebot-title" class="title is-1" style="font-family: Montserrat;">
+				<h1 id="gawesomebot-title" class="title is-1 is-size-3-mobile" style="font-family: Montserrat;">
 					<span style="display: inline-block;">GAwesomeBot</span>
 				</h1>
-				<h2 id="gawesomebot-subtitle" class="title is-2">
+				<h2 id="gawesomebot-subtitle" class="title is-2 is-size-4-mobile">
 					The best <img id="gawesomebot-discord" src="/static/img/discord-logo.png" style="vertical-align: top;"> bot!
 				</h2>
 				<br>
