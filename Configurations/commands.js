@@ -582,7 +582,7 @@ const commands = {
 		},
 		profile: {
 			usage: `[<user> or "me"]`,
-			description: `An all-in-one command to view informations about users`,
+			description: `An all-in-one command to view information about users`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -939,14 +939,14 @@ const commands = {
 			perm: "eval",
 		},
 		reload: {
-			usage: `...<pm or public>.<command> or "*"`,
+			usage: `[<type>"."]<command> or [<type>"."]"*"`,
 			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
 			perm: "administration",
 		},
 		debug: {
 			usage: `["-h"]`,
-			description: `Provides information about the bot, optionally, some system architecture information`,
+			description: `Provides information about the bot and, optionally, some system architecture information`,
 			perm: "none",
 		},
 	},

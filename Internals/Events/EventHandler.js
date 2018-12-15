@@ -20,7 +20,7 @@ module.exports = class EventHandler {
 		}
 	}
 
-	async reloadEvent (eventName) {
+	reloadEvent (eventName) {
 		if (eventName === "*") {
 			for (const eventNameInCache in this._cache) {
 				for (const eventFileName in this._cache[eventNameInCache]) {
