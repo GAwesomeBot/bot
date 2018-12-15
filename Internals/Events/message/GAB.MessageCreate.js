@@ -170,7 +170,7 @@ class MessageCreate extends BaseEvent {
 						let inAllChannels = false;
 						if (msg.suffix && msg.suffix.toLowerCase().trim() === "all") {
 							inAllChannels = true;
-							serverDocument.channels.forEach(targetChannelDocument => {
+							Object.values(serverDocument.channels).forEach(targetChannelDocument => {
 								serverQueryDocument.set(`channels.${targetChannelDocument._id}.bot_enabled`, true);
 							});
 						}
@@ -181,6 +181,7 @@ class MessageCreate extends BaseEvent {
 							},
 						});
 						this.client.logMessage(serverDocument, LoggingLevels.INFO, `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
+						await serverDocument.save();
 						return;
 					}
 				}
