@@ -5,12 +5,7 @@ module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text }, auth }, 
 	if (!tokens.bitlyToken || tokens.bitlyToken === "") return;
 
 	if (!msg.suffix) {
-		return msg.send({
-			embed: {
-				color: Colors.INVALID,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		return msg.sendInvalidUsage(commandData);
 	}
 
 	let link = msg.suffix.trim();

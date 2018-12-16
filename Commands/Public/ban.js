@@ -144,13 +144,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			});
 		}
 	} else {
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `Do you want me to ban you? 😮`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		msg.sendInvalidUsage(commandData, "Do you want me to ban you? 😮");
 		const collector = msg.channel.createMessageCollector(
 			m => m.author.id === msg.author.id,
 			{ time: 60000 }

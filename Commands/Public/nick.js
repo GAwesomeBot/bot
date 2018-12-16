@@ -15,12 +15,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 
 			if (!target.trim() || !nickname.trim()) {
 				winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-				return msg.send({
-					embed: {
-						color: Colors.INVALID,
-						description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-					},
-				});
+				return msg.sendInvalidUsage(commandData);
 			}
 
 			let member;

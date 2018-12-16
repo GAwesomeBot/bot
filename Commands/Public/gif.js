@@ -43,12 +43,6 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument: { con
 			});
 		}
 	} else {
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `Forgot something...? 🤔`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		msg.sendInvalidUsage(commandData, "Forgot something...? 🤔");
 	}
 };

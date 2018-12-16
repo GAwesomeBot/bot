@@ -216,12 +216,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 			}
 			default: {
 				winston.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
-				msg.send({
-					embed: {
-						color: Colors.INVALID,
-						description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-					},
-				});
+				msg.sendInvalidUsage(commandData);
 				break;
 			}
 		}

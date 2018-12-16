@@ -171,12 +171,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			if (channel) serverQueryDocument.push("config.room_data", { _id: channel.id });
 		} else {
 			winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-			msg.send({
-				embed: {
-					color: Colors.INVALID,
-					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				},
-			});
+			msg.sendInvalidUsage(commandData);
 		}
 	} else {
 		msg.send({

@@ -9,12 +9,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, documents, msg,
 		}
 
 		if (!num || isNaN(num) || (num !== -1 && num < 1) || num > 100) {
-			return msg.send({
-				embed: {
-					color: Colors.INVALID,
-					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				},
-			});
+			return msg.sendInvalidUsage(commandData);
 		}
 
 		num = parseInt(num);
@@ -59,11 +54,6 @@ module.exports = async ({ Constants: { Colors, Text }, client }, documents, msg,
 			});
 		});
 	} else {
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		msg.sendInvalidUsage(commandData);
 	}
 };

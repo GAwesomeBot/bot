@@ -11,13 +11,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		}
 	}
 	if (!isFinite(min) || !isFinite(max)) {
-		return msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: "Those aren't valid numbers! 🔢",
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		return msg.sendInvalidUsage(commandData, "Those aren't valid numbers! 🔢");
 	}
 	if (min > max) [min, max] = [max, min];
 	const randNum = Math.floor(Math.random() * (max - min + 1)) + min;

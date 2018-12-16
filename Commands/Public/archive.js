@@ -6,13 +6,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		let [count, lastID, ...other] = msg.suffix.split(" ");
 		count = parseInt(count);
 		if (isNaN(count) || !count || count <= 0) {
-			return msg.send({
-				embed: {
-					color: Colors.INVALID,
-					title: "What's that number? 🤔",
-					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				},
-			});
+			return msg.sendInvalidUsage(commandData, "What's that number? 🤔");
 		}
 		if (count > 100) count = 100;
 		let messages;

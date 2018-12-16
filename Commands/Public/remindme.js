@@ -5,12 +5,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { userDocument 
 	if (msg.suffix) {
 		const result = await remind(client, userDocument, userDocument.query, msg.suffix);
 		if (result === "ERR") {
-			msg.send({
-				embed: {
-					color: Colors.INVALID,
-					description: Text.INVALID_USAGE(commandData),
-				},
-			});
+			msg.sendInvalidUsage(commandData);
 		} else {
 			msg.send({
 				embed: {

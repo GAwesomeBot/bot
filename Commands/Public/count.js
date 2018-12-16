@@ -86,12 +86,7 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 				}
 			} else {
 				winston.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-				msg.send({
-					embed: {
-						color: Colors.INVALID,
-						description: Text.INVALID_USAGE(commandData),
-					},
-				});
+				msg.sendInvalidUsage(commandData);
 			}
 		} else {
 			const countDocument = serverDocument.config.count_data.id(msg.suffix.toLowerCase().trim());

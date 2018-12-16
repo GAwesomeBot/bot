@@ -3,11 +3,7 @@ const fetch = require("chainfetch");
 module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text } }, documents, msg, commandData) => {
 	const number = msg.suffix || "random";
 	if (msg.suffix && isNaN(msg.suffix)) {
-		return msg.send({
-			color: Colors.INVALID,
-			title: "That isn't a valid number!",
-			description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-		});
+		return msg.sendInvalidUsage(commandData, "That isn't a valid number!");
 	}
 
 	await msg.send(Text.THIRD_PARTY_FETCH(`We're fetching your ${number} fact`));

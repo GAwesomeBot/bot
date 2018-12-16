@@ -150,6 +150,19 @@ module.exports = () => {
 				});
 			}
 
+			sendInvalidUsage (commandData, title = "", footer = "") {
+				return this.send({
+					embed: {
+						color: Colors.INVALID,
+						title,
+						description: Text.INVALID_USAGE(commandData, this.guild ? this.guild.commandPrefix : undefined),
+						footer: {
+							text: footer,
+						},
+					},
+				});
+			}
+
 			static combineContentOptions (content, options) {
 				if (!options) return IsObject(content) ? content : { content };
 				return { ...options, content };

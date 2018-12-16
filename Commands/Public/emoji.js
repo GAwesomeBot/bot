@@ -31,12 +31,6 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 		});
 	} else {
 		winston.verbose(`Emoji(s) not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				title: `What would you like to jumbo today? 🤔`,
-			},
-		});
+		msg.sendInvalidUsage(commandData, "What would you like to jumbo today? 🤔");
 	}
 };

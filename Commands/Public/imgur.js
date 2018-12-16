@@ -25,16 +25,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 		filesToUpload = filesToUpload.concat(msg.suffix.split(" ").trimAll().filter(IsURL));
 	}
 	if (!filesToUpload.length) {
-		return msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `What should I upload? 😕`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				footer: {
-					text: `Protip: You can use multiple URLs (separated by spaces) or attachments to upload them in one album!`,
-				},
-			},
-		});
+		return msg.sendInvalidUsage(commandData, "What should I upload? 😕", "Protip: You can use multiple URLs (separated by spaces) or attachments to upload them in one album!");
 	}
 	await msg.send({
 		embed: {

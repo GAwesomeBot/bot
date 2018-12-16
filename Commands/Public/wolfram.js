@@ -3,12 +3,7 @@ const { tokens: { wolframAppID } } = require("../../Configurations/auth");
 
 module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text } }, documents, msg, commandData) => {
 	if (!msg.suffix) {
-		return msg.send({
-			embed: {
-				color: Colors.INVALID,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		return msg.sendInvalidUsage(commandData);
 	}
 
 	const response = await msg.send(Text.THIRD_PARTY_FETCH("Fetching data from Wolfram|Alpha"));
