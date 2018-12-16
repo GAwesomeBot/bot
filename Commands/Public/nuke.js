@@ -41,9 +41,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, documents, msg,
 			}
 		}
 
-		let messages = await msg.channel.messages.fetch({ limit: 100, before: before || msg.id, after });
-		messages = messages.filter(filter);
-		messages = messages.array().slice(0, num);
+		const messages = await msg.channel.messages.fetch({ limit: 100, before: before || msg.id, after }).then(msgs => msgs.filter(filter).array().slice(0, num));
 		msg.channel.bulkDelete(messages, true).then(({ size }) => {
 			msg.send({
 				embed: {
