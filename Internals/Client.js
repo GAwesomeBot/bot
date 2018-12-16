@@ -639,7 +639,7 @@ module.exports = class GABClient extends DJSClient {
 								const role = server.roles.get(rank.role_id);
 								if (role) {
 									try {
-										member.roles.add(role, `Added member to the role for leveling up in ranks.`)
+										member.roles.add(role, `Added member to role for leveling up in ranks.`)
 											.catch(err => {
 												throw err;
 											});

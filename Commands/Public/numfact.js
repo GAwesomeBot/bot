@@ -10,13 +10,7 @@ module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text } }, docume
 		});
 	}
 
-	await msg.send({
-		embed: {
-			color: Colors.INFO,
-			title: `We're fetching your ${number} fact`,
-			description: `Please stand by...`,
-		},
-	});
+	await msg.send(Text.THIRD_PARTY_FETCH(`We're fetching your ${number} fact`));
 
 	try {
 		const body = await fetch.get(APIs.NUMFACT(number)).set("User-Agent", UserAgent).onlyBody();

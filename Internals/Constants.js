@@ -133,6 +133,13 @@ Constants.Text = {
 			].join("\n"),
 		},
 	}),
+	THIRD_PARTY_FETCH: description => ({
+		embed: {
+			color: Constants.Colors.INFO,
+			title: `${description && description !== "" ? description : "Fetching data"} ⌛`,
+			description: "Please stand by...",
+		},
+	}),
 	GUILD_VERIFICATION_LEVEL: level => Constants.GUILD_VERIFICATION_LEVELS[level],
 };
 
@@ -398,6 +405,7 @@ Constants.APIs = {
 	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
+	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${query}&output=json`,
 };
 
 /**
