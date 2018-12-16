@@ -4,7 +4,7 @@ GAwesomeBot Modules are snippets of codes that either act as utilities to aid in
 
 #### When do I modify Modules?
 A Module should only be edited if you wish to change the functionality of said Module. In general, **Utils should not be edited** for non-development purposes.
-If you are strictly seeking customization, you should check out the files in the `/Configuration` folder instead.
+If you are strictly seeking customization, you should check out the files in the `/Configurations` folder instead.
 
 #### How do I decide what files are Modules?
 If a file contains *one* function, class, and/or namespace containing only functions about the same feature, a file would classify as a Module.
