@@ -2,7 +2,7 @@ const ModLog = require("../../Modules/ModLog");
 
 module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
 	const args = msg.suffix ? msg.suffix.split(" ") : [];
-	if (msg.suffix && args.length >= 2) {
+	if (args.length >= 2) {
 		const result = await ModLog.update(msg.guild, args[0].trim(), {
 			reason: msg.suffix.substring(msg.suffix.indexOf(" ") + 1).trim(),
 		});

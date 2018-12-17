@@ -105,7 +105,7 @@ module.exports = class ModLog {
 				const channel = guild.channels.get(serverDocument.modlog.channel_id);
 
 				if (channel && channel.type === "text") {
-					const message = await channel.messages.fetch(modlogEntryDocument.message_id);
+					const message = await channel.messages.fetch(modlogEntryDocument.message_id).catch();
 					if (message) {
 						await message.edit({
 							embed: {
