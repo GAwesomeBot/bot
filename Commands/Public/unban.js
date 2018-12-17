@@ -69,6 +69,6 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			});
 		}
 	} else {
-		msg.sendInvalidUsage(commandData, "Huh? Unban what?");
+ 		msg.sendInvalidUsage(commandData, "Huh? Unban who?");
 	}
 };
