@@ -147,7 +147,8 @@ middleware.setHeaders = (req, res, next) => {
 };
 
 middleware.logRequest = (req, res, next) => {
-	winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
+	// eslint-disable-next-line max-len
+	winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path, useragent: req.header("User-Agent") });
 	next();
 };
 

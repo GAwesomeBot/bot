@@ -198,7 +198,7 @@ module.exports = class GABClient extends DJSClient {
 		try {
 			privateCommandModules[command] = reload(`../Commands/PM/${command}.js`);
 		} catch (err) {
-			winston.verbose(`Failed to reload private command "${command}"`, err);
+			winston.debug(`Failed to reload private command "${command}"`, err);
 			if (returnError) return err;
 		}
 	}
@@ -208,7 +208,7 @@ module.exports = class GABClient extends DJSClient {
 			command = this.getPublicCommandName(command);
 			commandModules[command] = reload(`../Commands/Public/${command}.js`);
 		} catch (err) {
-			winston.verbose(`Failed to reload public command "${command}"`, err);
+			winston.debug(`Failed to reload public command "${command}"`, err);
 			if (returnError) return err;
 		}
 	}
@@ -218,7 +218,7 @@ module.exports = class GABClient extends DJSClient {
 			command = this.getSharedCommandName(command);
 			sharedModules[command] = reload(`../Commands/Shared/${command}.js`);
 		} catch (err) {
-			winston.verbose(`Failed to reload shared command "${command}"`, err);
+			winston.debug(`Failed to reload shared command "${command}"`, err);
 			if (returnError) return err;
 		}
 	}

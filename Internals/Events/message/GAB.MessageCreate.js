@@ -478,9 +478,8 @@ class MessageCreate extends BaseEvent {
 				await serverDocument.save();
 			}
 		}
-		// Keep this here, to remind us to delete it!
-		// Even if Travis cries
-		console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
+
+		winston.verbose(`Successfully finished handling Discord Message. CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms\t`, { content: msg.content, msgid: msg.id, svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 	}
 
 	/**
