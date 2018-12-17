@@ -6,16 +6,14 @@ const userFilter = query => ({ user }) => {
 		query = query.slice(2, -1);
 	}
 
-	return user.id === query || user.tag === query || user.username === query;
+	return user.id === query.toLowerCase().trim() || user.tag === query.toLowerCase().trim() || user.username === query.toLowerCase().trim();
 };
 
 module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		const bans = await msg.guild.fetchBans();
-		let query, reason;
-		if (msg.suffix.includes("|")) [query, reason] = ArgParser.parseQuoteArgs(msg.suffix, "|");
-		else query = msg.suffix;
-		if (!reason) reason = "Unspecified reason...";
+		let [query, ...reason] = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
+		if (!reason || !reason.length) reason = "Unspecified reason...";
+		else reason = reason.join(" ").trim();
 
 		if (!msg.guild.me.permissions.has("BAN_MEMBERS")) {
 			return msg.send({
@@ -27,6 +25,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			});
 		}
 
+		const bans = await msg.guild.fetchBans();
 		const ban = bans.find(userFilter(query.trim()));
 		if (ban && ban.user) {
 			await msg.send({
