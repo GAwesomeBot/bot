@@ -1433,9 +1433,9 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-infobox-parser@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/infobox-parser/-/infobox-parser-3.0.1.tgz#136ed02b93dc536461c3dc1a25901c6bbe12220b"
+infobox-parser@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/infobox-parser/-/infobox-parser-3.0.3.tgz#27b848ab9cfca52b98c4d63cf628b2fce043477c"
   dependencies:
     camelcase "^4.1.0"
 
@@ -3113,11 +3113,11 @@ wide-align@^1.1.0:
   dependencies:
     string-width "^1.0.2"
 
-wikijs@^4.8.0:
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.8.0.tgz#6e2092540b195c1de2aba280e4f77bf99247e788"
+wikijs@^4.10.1:
+  version "4.10.1"
+  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.10.1.tgz#c57c330d916a7b0e6cdecc89b747aa83304c2fd2"
   dependencies:
-    infobox-parser "3.0.1"
+    infobox-parser "3.0.3"
     isomorphic-fetch "^2.2.1"
 
 winston-compat@^0.1.4:
