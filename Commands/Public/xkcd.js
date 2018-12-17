@@ -1,6 +1,6 @@
 const fetch = require("chainfetch");
 
-module.exports = async ({ Constants: { Colors, Text, APIs, UserAgent } }, documents, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text, APIs, UserAgent } }, documents, msg) => {
 	if (msg.suffix) {
 		const comicData = await fetch.get(APIs.XKCD(msg.suffix)).set({ "User-Agent": UserAgent, Accepts: "application/json" }).onlyBody()
 			.catch(() => null);
