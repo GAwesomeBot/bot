@@ -141,7 +141,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-month",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%- Object.values(pageData.trafficData.days) %>],
+		data: <%- JSON.stringify(Object.values(pageData.trafficData.days)) %>,
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
@@ -150,7 +150,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-week",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%- pageData.trafficData.week %>],
+		data: <%- JSON.stringify(pageData.trafficData.week) %>,
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
@@ -160,7 +160,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-day",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%- pageData.trafficData.day %>],
+		data: <%- JSON.stringify(pageData.trafficData.day) %>,
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],

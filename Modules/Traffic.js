@@ -68,7 +68,7 @@ class Traffic {
 		rawData.forEach(traffic => {
 			const day = new Date(traffic._id).getDate();
 			if (!data.days[day]) {
-				data.days[day] = traffic;
+				data.days[day] = traffic.toObject();
 			} else {
 				data.days[day].pageViews += traffic.pageViews;
 				data.days[day].authViews += traffic.authViews;
