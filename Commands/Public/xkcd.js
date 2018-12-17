@@ -7,7 +7,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, UserAgent } }, docume
 	const notFound = () => msg.send({
 		embed: {
 			color: Colors.SOFT_ERR,
-			description: msg.suffix ? `Doh! A XKCD comic with ID ${msg.suffix} wasn't found.` : `Doh! The current XKCD comic couldn't be fetched.`,
+			description: msg.suffix ? `Doh! An XKCD comic with ID ${msg.suffix} wasn't found.` : `Doh! The current XKCD comic couldn't be fetched.`,
 		},
 	});
 
