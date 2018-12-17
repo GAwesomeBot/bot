@@ -43,29 +43,27 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				description: `Bye-Bye **@${client.getName(serverDocument, member)}** 👞`,
 			},
 		});
-		const dmKicked = async id => {
-			client.users.get(id).send({
-				embed: {
-					color: Colors.RED,
-					description: `Youch! You just got kicked from \`${msg.guild}\`! 👞`,
-					fields: [
-						{
-							name: `Reason`,
-							value: `${reason}`,
-							inline: true,
-						},
-						{
-							name: `Moderator`,
-							value: `@${msg.author.tag}`,
-							inline: true,
-						},
-					],
-					thumbnail: {
-						url: msg.guild.iconURL(),
+		const dmKicked = id => client.users.get(id).send({
+			embed: {
+				color: Colors.RED,
+				description: `Youch! You just got kicked from \`${msg.guild}\`! 👞`,
+				fields: [
+					{
+						name: `Reason`,
+						value: `${reason}`,
+						inline: true,
 					},
+					{
+						name: `Moderator`,
+						value: `@${msg.author.tag}`,
+						inline: true,
+					},
+				],
+				thumbnail: {
+					url: msg.guild.iconURL(),
 				},
-			}).catch(() => null);
-		};
+			},
+		}).catch(() => null);
 
 		await msg.send({
 			embed: {
@@ -80,9 +78,9 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		const response = (await msg.channel.awaitMessages(res => res.author.id === msg.author.id, { max: 1, time: 60000 })).first();
 		response.delete().catch();
 		if (response && response.content && configJS.yesStrings.includes(response.content.toLowerCase().trim())) {
+			await dmKicked(member.id);
 			await member.kick(`${reason} | Command issued by @${msg.author.tag}`);
 			await CreateModLog(msg.guild, "Kick", member, msg.author, reason);
-			dmKicked(member.id);
 			return kicked();
 		} else {
 			msg.send({
