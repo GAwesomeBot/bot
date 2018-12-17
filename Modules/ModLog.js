@@ -130,4 +130,64 @@ module.exports = class ModLog {
 			return new Error("MISSING_MODLOG_CHANNEL");
 		}
 	}
+
+	static async delete (guild, id) {
+		const serverDocument = await Servers.findOne(guild.id);
+		if (serverDocument.modlog.isEnabled && serverDocument.modlog.channel_id) {
+			const modlogEntryQueryDocument = serverDocument.query.id("modlog.entries", parseInt(id));
+			const modlogEntryDocument = modlogEntryQueryDocument.val;
+			if (modlogEntryDocument) {
+				const channel = guild.channels.get(serverDocument.modlog.channel_id);
+				if (channel && channel.type === "text") {
+					const message = await channel.messages.fetch(modlogEntryDocument.message_id).catch();
+					if (message) message.delete().catch();
+					modlogEntryQueryDocument.remove();
+					await serverDocument.save();
+					return id;
+				} else {
+					return new Error("INVALID_MODLOG_CHANNEL", channel);
+				}
+			} else {
+				return new Error("MODLOG_ENTRY_NOT_FOUND", id);
+			}
+		} else {
+			return new Error("MISSING_MODLOG_CHANNEL");
+		}
+	}
+
+	/**
+	 * Enables ModLog features in a guild and channel
+	 * @param {GABGuild} guild
+	 * @param {Channel} channel
+	 * @returns {Promise<Snowflake|GABError|null>} The Snowflake ID of the channel modlog has been enabled in, if successful. If an expected error occurred, this will return a GABError object
+	 */
+	static async enable (guild, channel) {
+		if (!guild) return null;
+		const serverDocument = await Servers.findOne(guild.id);
+		if (!serverDocument) return null;
+		if (channel && channel.type === "text") {
+			serverDocument.query.set("modlog.isEnabled", true);
+			serverDocument.query.set("modlog.channel_id", channel.id);
+			await serverDocument.save();
+			return channel.id;
+		} else {
+			return new Error("INVALID_MODLOG_CHANNEL", channel);
+		}
+	}
+
+	/**
+	 * Disables ModLog featuers in a guild
+	 * @param {GABGuild} guild
+	 * @returns {Promise<string|null>} The String ID of the channel modlog was enabled in, if successful.
+	 */
+	static async disable (guild) {
+		if (!guild) return null;
+		const serverDocument = await Servers.findOne(guild.id);
+		if (!serverDocument) return null;
+		const oldChannelID = serverDocument.modlog.channel_id;
+		serverDocument.query.set("modlog.isEnabled", false);
+		serverDocument.query.set("modlog.channel_id", null);
+		await serverDocument.save();
+		return oldChannelID;
+	}
 };
