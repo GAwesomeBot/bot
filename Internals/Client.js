@@ -533,6 +533,24 @@ module.exports = class GABClient extends DJSClient {
 					}
 					return obj;
 				}
+				case "kick": {
+					const obj = {
+						canClientKick: false,
+						memberAboveAffected: false,
+					};
+					if (affectedUser && affectedUser.bannable) obj.canClientKick = true;
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					if (affectedUser === null) {
+						obj.canClientKick = guild.me.permissions.has("KICK_MEMBERS");
+						obj.memberAboveAffected = true;
+					}
+					return obj;
+				}
 				case "manage": {
 					const obj = {
 						canClientManage: false,

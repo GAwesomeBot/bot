@@ -63,7 +63,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					await client.users.get(id).send({
 						embed: {
 							color: Colors.RED,
-							description: `Oh snap, you just got banned from \`${msg.guild}\`!`,
+							description: `Oh snap, you just got banned from \`${msg.guild}\`! 🔨`,
 							fields: [
 								{
 									name: `Reason`,
@@ -71,7 +71,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 									inline: true,
 								},
 								{
-									name: `Staff Member`,
+									name: `Moderator`,
 									value: `@${msg.author.tag}`,
 									inline: true,
 								},
@@ -138,7 +138,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					color: Colors.SOFT_ERR,
 					description: `I couldn't find a matching member on this server...`,
 					footer: {
-						text: `If you have a user ID you can run "${msg.guild.commandPrefix}${commandData.name} ID" to ban them!`,
+						text: `If you have a user ID you can run "${msg.guild.commandPrefix}${commandData.name} <ID>" to ban them!`,
 					},
 				},
 			});
@@ -164,7 +164,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					}
 					msg.send({
 						embed: {
-							color: Colors.SOFT_ERR,
+							color: Colors.LIGHT_RED,
 							description: `Ok! Bye-Bye!`,
 							footer: {
 								text: `Just kidding! I'd never ban you. ❤️`,
