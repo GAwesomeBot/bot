@@ -12,7 +12,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: `Don't be silly, bots can't have points! 🤖`,
+					description: `Don't be silly, bots can't have GAwesomePoints! 🤖`,
 				},
 			});
 		} else if (member) {
@@ -33,20 +33,20 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			});
 		}
 	} else {
-		const userDocuments = await Users.find({ _id: { $in: Array.from(msg.guild.members.keys()) }, points: { $gt: 0 } })
+		const userDocuments = await Users.find({ _id: { $in: [...msg.guild.members.keys()] }, points: { $gt: 0 } })
 			.sort({ points: -1 })
 			.limit(10)
 			.exec();
 		const fields = userDocuments.map(targetUserDocument => ({
 			name: `**@${client.getName(serverDocument, msg.guild.members.get(targetUserDocument._id))}:**`,
-			value: `${targetUserDocument.points} AwesomePoint${targetUserDocument.points === 1 ? "" : "s"}`,
+			value: `${targetUserDocument.points} GAwesomePoint${targetUserDocument.points === 1 ? "" : "s"}`,
 			inline: true,
 		}));
 		if (fields.length) {
 			msg.send({
 				embed: {
 					color: Colors.RESPONSE,
-					title: `Here are the ${fields.length} members with the most points 🌟`,
+					title: fields.length === 1 ? `Here is the only member with GAwesomePoints 🌟` : `Here are the ${fields.length} members with the most GAwesomePoints 🌟`,
 					fields,
 				},
 			});
@@ -54,7 +54,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: "No one on this server has any points! Use `+1` to upvote the previous message 🌠",
+					description: "No one on this server has any GAwesomePoints! Use `+1` to upvote the previous message 🌠",
 				},
 			});
 		}
