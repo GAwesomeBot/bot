@@ -17,6 +17,7 @@
                     </span>
 					Extensions for <strong>everyone</strong>.
 				</h1>
+				<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 				<% if (!['my', 'builder'].includes(pageData.mode)) { %>
 					<div class="columns">
 						<div class="column is-8 is-offset-2">
@@ -38,7 +39,6 @@
 						</div>
 					</div>
 				<% } %>
-				<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 			</div>
 		</div>
 		<div class="hero-foot">

@@ -15,6 +15,7 @@
 				<h1 class="subtitle is-1">
 					<strong><%= pageData.totalMessageCount %></strong> message<%= pageData.totalMessageCount === 1 ? "" : "s" %> today, <strong><%= pageData.numActiveServers %></strong> active server<%= pageData.numActiveServers === 1 ? "" : "s" %>
 				</h1>
+				<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 				<div class="columns">
 					<div class="column is-8 is-offset-2">
 						<div class="field has-addons has-addons-centered">
@@ -32,7 +33,6 @@
 						</div>
 					</div>
 				</div>
-				<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 			</div>
 		</div>
 		<div class="hero-foot">

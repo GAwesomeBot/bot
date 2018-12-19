@@ -20,11 +20,11 @@
 				<h3 class="subtitle is-3">
 					Documentation for everything.
 				</h3>
-                <% if (pageData.mode !== "edit") { %>
-                	<% const menuToggleButtonSize = ""; %>
-                	<% include ../partials/menu-toggle %>
-                <% } %>
 				<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
+				<% if (pageData.mode !== "edit") { %>
+				<% const menuToggleButtonSize = ""; %>
+				<% include ../partials/menu-toggle %>
+				<% } %>
 			</div>
 		</div>
 	</section>
