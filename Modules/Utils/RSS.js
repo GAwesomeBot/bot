@@ -7,8 +7,8 @@ const getRSS = new (require("rss-parser"))();
  * @returns {?array}
  */
 module.exports = (url, num) => new Promise((resolve, reject) => {
-	getRSS.parseURL(url).then(articles => resolve(articles.slice(0, num))).catch(() => {
-		winston.debug(`Feed at URL ${url} did not respond with valid RSS.`);
+	getRSS.parseURL(url).then(articles => resolve(articles.items.slice(0, num))).catch(err => {
+		winston.debug(`Feed at URL ${url} did not respond with valid RSS.`, { err });
 		reject("invalid");
 	});
 });
