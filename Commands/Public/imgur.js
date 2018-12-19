@@ -3,7 +3,7 @@ const { IsURL } = require("../../Modules/Utils/index");
 const { tokens: { imgurClientID } } = require("../../Configurations/auth");
 
 module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
-	const imgur = new Imgur(serverDocument.custom_api_keys.imgur_client_id || imgurClientID);
+	const imgur = new Imgur(serverDocument.config.custom_api_keys.imgur_client_id || imgurClientID);
 
 	if (msg.suffix === "credits" && configJSON.maintainers.includes(msg.author.id)) {
 		const c = await imgur.getCredits();
