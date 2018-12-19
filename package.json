@@ -55,6 +55,7 @@
     "process-as-promised": "^1.0.1",
     "remove-markdown": "^0.3.0",
     "require-reload": "^0.2.2",
+    "rss-parser": "^3.6.0",
     "showdown": "^1.8.6",
     "snekfetch": "^4.0.4",
     "socket.io": "^2.1.1",
