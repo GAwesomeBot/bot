@@ -8,8 +8,8 @@
 				<img id="dashboard-icon" src="<%= serverData.icon %>" style="border-radius: 100%;width: 48px;vertical-align: bottom;" alt="<%= serverData.id %>">
 				<strong><%= serverData.name %></strong> <%= serverData.isMaintainer ? "Maintainer" : "Admin" %> Console
 			</h1>
+			<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 		</div>
-		<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 	</div>
 	<div class="hero-foot">
 		<div class="container has-text-centered">
