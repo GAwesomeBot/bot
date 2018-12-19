@@ -479,7 +479,7 @@ class MessageCreate extends BaseEvent {
 			}
 		}
 
-		winston.verbose(`Successfully finished handling Discord Message. CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms\t`, { content: msg.content, msgid: msg.id, svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		winston.verbose(`Successfully finished handling Discord Message. CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms\t`, { content: msg.content, msgid: msg.id, svrid: msg.guild ? msg.guild.id : undefined, chid: msg.channel.id, usrid: msg.author.id });
 	}
 
 	/**
