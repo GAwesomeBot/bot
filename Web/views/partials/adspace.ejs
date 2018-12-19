@@ -1,0 +1,9 @@
+<% if (officialMode && adsEnabled) { %>
+    <%# Ads are enabled by maintainer, but may still not be displayed on client due to, for example, adblocking software %>
+    <p>
+        <i>Advertisement</i>
+    </p>
+    <%# Your ad here! %>
+<% } else { %>
+    <%# Ads are disabled by maintainer %>
+<% } %>

@@ -24,6 +24,7 @@
                 	<% const menuToggleButtonSize = ""; %>
                 	<% include ../partials/menu-toggle %>
                 <% } %>
+				<%- include("./adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 			</div>
 		</div>
 	</section>

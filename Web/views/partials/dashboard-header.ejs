@@ -9,6 +9,7 @@
 				<strong><%= serverData.name %></strong> <%= serverData.isMaintainer ? "Maintainer" : "Admin" %> Console
 			</h1>
 		</div>
+		<%- include("./adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 	</div>
 	<div class="hero-foot">
 		<div class="container has-text-centered">
