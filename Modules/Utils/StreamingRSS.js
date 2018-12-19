@@ -33,12 +33,12 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 						info.push({
 							color: 0x3669FA,
 							footer: {
-								text: `Published at ${moment(articles[i].published).format("DD MMMM YYYY [at] HH:mm Z [UK Time]")}`,
+								text: `Published at ${moment(articles[i].isoDate).format("DD MMMM YYYY [at] HH:mm Z [UK Time]")}`,
 							},
 							title: `${articles[i].title}`,
 							url: articles[i].link || "",
 							author: {
-								name: articles[i].author || articles[i].feed.name,
+								name: articles[i].creator,
 							},
 							description: `Read more [here](${articles[i].link})`,
 						});
