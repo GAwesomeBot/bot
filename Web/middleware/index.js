@@ -17,7 +17,7 @@ class GABResponse {
 		this.configData = {};
 		this.pageData = {};
 
-		if (req.perm) {
+		if (req.perm && req.user) {
 			Object.assign(this.template, {
 				isContributor: true,
 				isMaintainer: true,
@@ -26,11 +26,17 @@ class GABResponse {
 				accessPrivileges: fetchMaintainerPrivileges(req.user.id),
 			});
 			this.serverData.isMaintainer = true;
-		} else {
+		} else if (req.user) {
 			Object.assign(this.template, {
 				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
 				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
 				isSudoMaintainer: req.isAuthenticated() ? configJSON.sudoMaintainers.includes(parseAuthUser(req.user).id) : false,
+			});
+		} else {
+			Object.assign(this.template, {
+				isContributor: false,
+				isMaintainer: false,
+				isSudoMaintainer: false,
 			});
 		}
 
