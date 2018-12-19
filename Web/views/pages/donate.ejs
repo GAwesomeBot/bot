@@ -58,6 +58,12 @@
 		                        </a>
 							<% }); %>
 						<% } %>
+						<% if (officialMode) { %>
+							<h5 class="subtitle is-5">
+								By viewing ads, you are supporting us develop and maintain GAB publicly. However, we understand ads can be annoying and ruin the viewing experience. While we attempt to keep our ads as user-friendly as possible, you can disable ads here to prevent seeing them in this browser or enable them to continue supporting us.
+							</h5>
+							<a class="button is-medium is-fullwidth is-outlined <%= adsense.isEnabled ? "is-danger" : "is-success"%>" onclick="GAwesomeUtil.toggleAds('<%= adsense.isEnabled %>');"><%= adsense.isEnabled ? "Disable" : "Enable" %> advertisements and sponsored content</a>
+						<% } %>
 						<div style="display: none;" id="auttaja">
 							<h5 class="subtitle is-5">
 								Not every bot has a life as great as GAB's. Please help out these sad bots get a life of their own by adding them to your server today.

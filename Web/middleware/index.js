@@ -6,7 +6,10 @@ class GABResponse {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
 			officialMode: req.app.client.officialMode ? true : undefined,
-			adsenseID: req.app.client.officialMode ? configJS.adsenseID : undefined,
+			adsense: {
+				isEnabled: req.cookies.adsPreference === "true",
+				ID: req.app.client.officialMode ? configJS.adsenseID : undefined,
+			},
 		};
 
 		this.serverData = {

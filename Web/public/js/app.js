@@ -156,6 +156,11 @@ GAwesomeUtil.debugDump = () => {
 	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({ tl: !!Turbolinks, io: !!io, np: !!NProgress, fs: !!saveAs, sa: !!swal, ac: !!AutoComplete, cm: !!CodeMirror, md: !!md5 })}`, "log", true);
 };
 
+GAwesomeUtil.toggleAds = value => {
+	document.cookie = `adsPreference=${value !== "true"}`;
+	GAwesomeUtil.refresh();
+};
+
 GAwesomeUtil.SFS = () => {
 	try {
 		// Save builder code if it exists
