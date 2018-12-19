@@ -1046,6 +1046,7 @@ module.exports = class GABClient extends DJSClient {
 							content: content,
 							channelid: chid ? chid : undefined,
 							userid: usrid ? usrid : undefined,
+							timestamp: Date.now(),
 						},
 					},
 				});
