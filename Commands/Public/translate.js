@@ -32,10 +32,20 @@ module.exports = ({ Constants: { Colors, Text }, client }, { serverDocument }, m
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
-				description: `Something went wrong while trying to ${src === null ? "detect your text's langauge" : `translate your ${src} text`}! 😵`,
+				description: `Something went wrong while trying to ${src === null ? "detect your text's language" : `translate your ${src} text`}! 😵`,
 			},
 		});
 		if (err) winston.debug(`Failed to ${src === null ? "auto-detect language" : "translate text"} for ${commandData.name} command.`, { svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id, err });
+	};
+
+	const translateText = (from, to, input) => {
+		mstranslate.translate({ text: input, from, to }, (err, res) => {
+			if (err || !res) {
+				onFail(err, from);
+			} else {
+				sendTranslation(from, to, res);
+			}
+		});
 	};
 
 	if (source === "?") {
@@ -43,22 +53,10 @@ module.exports = ({ Constants: { Colors, Text }, client }, { serverDocument }, m
 			if (err || !res || res === "") {
 				onFail(err, null);
 			} else {
-				mstranslate.translate({ from: res, to: target, text }, (err2, res2) => {
-					if (err2 || !res2) {
-						onFail(err2, res);
-					} else {
-						sendTranslation(res, target, res2);
-					}
-				});
+				translateText(res, target, text);
 			}
 		});
 	} else {
-		mstranslate.translate({ text, from: source, to: target }, (err, res) => {
-			if (err || !res) {
-				onFail(err, source);
-			} else {
-				sendTranslation(source, target, res);
-			}
-		});
+		translateText(source, target, text);
 	}
 };
