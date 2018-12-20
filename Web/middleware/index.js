@@ -7,7 +7,7 @@ class GABResponse {
 			currentPage: `${req.baseUrl}${req.path}`,
 			officialMode: req.app.client.officialMode ? true : undefined,
 			adsense: {
-				isEnabled: req.cookies.adsPreference === "true",
+				isEnabled: req.cookies.adsPreference !== "false",
 				ID: req.app.client.officialMode ? configJS.adsenseID : undefined,
 			},
 		};

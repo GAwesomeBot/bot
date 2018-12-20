@@ -804,7 +804,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		translate: {
-			usage: `<text> <"?" or source language> [to] <target language>`,
+			usage: `<"?" or source language> [to] <target language> <text>`,
 			description: `Uses Microsoft Translate to translate a word / phrase into another language`,
 			defaults: {
 				isEnabled: true,
