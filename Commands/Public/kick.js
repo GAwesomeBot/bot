@@ -12,7 +12,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			return msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: `I couldn't find a matching member on this server...`,
+					description: `I couldn't find a matching member in this guild...`,
 				},
 			});
 		}
