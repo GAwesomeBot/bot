@@ -5,7 +5,7 @@ const BaseEvent = require("../BaseEvent");
  */
 class UsernameHandler extends BaseEvent {
 	requirements (msg) {
-		return !msg.author.bot;
+		return !msg.author.bot && msg.type === "DEFAULT";
 	}
 
 	async prerequisite (msg) {

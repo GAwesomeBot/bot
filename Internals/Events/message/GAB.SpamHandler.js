@@ -6,8 +6,7 @@ class SpamHandler extends BaseEvent {
 	requirements (msg) {
 		if (!msg.guild) return false;
 		if (msg.author.bot) return false;
-		if (msg.editedAt) return false;
-		return true;
+		return !msg.editedAt && msg.type === "DEFAULT";
 	}
 
 	async prerequisite (msg) {
