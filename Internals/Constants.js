@@ -158,6 +158,7 @@ Constants.StatusMessages = {
 		title: "Status Messages - Member Banned",
 		description: message.replaceAll("@user", `**@${user.tag}**`),
 		color: Constants.Colors.RED,
+		timestamp: Date.now(),
 	}),
 	GUILD_BAN_REMOVE: (message, user) => ({
 		footer: {
@@ -169,6 +170,7 @@ Constants.StatusMessages = {
 		title: "Member Unbanned",
 		description: message.replaceAll("@user", `**@${user.tag}**`),
 		color: Constants.Colors.GREEN,
+		timestamp: Date.now(),
 	}),
 	GUILD_MEMBER_ADD: (message, member, serverDocument, client) => ({
 		footer: {
@@ -180,6 +182,7 @@ Constants.StatusMessages = {
 		title: "Member Joined",
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`).replaceAll("@mention", `<@!${member.id}>`),
 		color: Constants.Colors.LIGHT_GREEN,
+		timestamp: Date.now(),
 	}),
 	GUILD_MEMBER_REMOVE: (message, member, serverDocument, client) => ({
 		footer: {
@@ -191,6 +194,7 @@ Constants.StatusMessages = {
 		title: "Member Left",
 		description: message.replaceAll("@user", `**@${client.getName(serverDocument, member)}**`),
 		color: Constants.Colors.LIGHT_ORANGE,
+		timestamp: Date.now(),
 	}),
 	GUILD_UPDATE_NAME: (oldName, guild) => ({
 		thumbnail: {
@@ -199,6 +203,7 @@ Constants.StatusMessages = {
 		title: "Name Changed",
 		description: `Guild Name changed from **${oldName}** to **${guild.name}**`,
 		color: Constants.Colors.BLUE,
+		timestamp: Date.now(),
 	}),
 	GUILD_UPDATE_ICON: (oldIcon, guild) => ({
 		thumbnail: {
@@ -207,6 +212,7 @@ Constants.StatusMessages = {
 		title: "Icon Changed",
 		description: `Guild icon changed from ${oldIcon ? `[old icon](${oldIcon})` : "default"} to ${guild.iconURL() ? `[new icon](${guild.iconURL()})` : "default"}`,
 		color: Constants.Colors.BLUE,
+		timestamp: Date.now(),
 	}),
 	GUILD_UPDATE_REGION: (oldRegion, newRegion, guild) => ({
 		thumbnail: {
@@ -215,6 +221,7 @@ Constants.StatusMessages = {
 		title: "Region Changed",
 		description: `Guild voice region changed from ${oldRegion} to ${newRegion}`,
 		color: Constants.Colors.BLUE,
+		timestamp: Date.now(),
 	}),
 	MEMBER_CREATE_NICK: (member, serverDocument, client) => ({
 		footer: {
@@ -226,6 +233,7 @@ Constants.StatusMessages = {
 		title: "Nickname Created",
 		description: `**@${client.getName(serverDocument, member)}** created a nickname: \`${member.nickname}\``,
 		color: Constants.Colors.BLUE,
+		timestamp: Date.now(),
 	}),
 	MEMBER_CHANGE_NICK: (member, oldNickname, serverDocument, client) => ({
 		footer: {
@@ -237,6 +245,7 @@ Constants.StatusMessages = {
 		title: "Nickname Updated",
 		description: `**@${client.getName(serverDocument, member)}** changed their nickname from \`${oldNickname}\` to \`${member.nickname}\``,
 		color: Constants.Colors.BLUE,
+		timestamp: Date.now(),
 	}),
 	MEMBER_REMOVE_NICK: (member, oldNickname, serverDocument, client) => ({
 		footer: {
@@ -248,6 +257,7 @@ Constants.StatusMessages = {
 		title: "Nickname Removed",
 		description: `**@${client.getName(serverDocument, member)}** removed their nickname \`${oldNickname}\``,
 		color: Constants.Colors.BLUE,
+		timestamp: Date.now(),
 	}),
 	MESSAGE_DELETED: (type, msg, serverDocument, client) => ({
 		footer: {
@@ -257,8 +267,21 @@ Constants.StatusMessages = {
 			url: msg.member.user.displayAvatarURL(),
 		},
 		title: "Message Deleted",
-		description: `A message by **@${client.getName(serverDocument, msg.member)}** ${type === "single" ? `in #${msg.channel.name} ` : ""}was deleted:\n\`\`\`${msg.cleanContent.replace(/`/g, "\\`")}\n\`\`\``,
+		description: `A message by **@${client.getName(serverDocument, msg.member)}** ${type === "single" ? `in <#${msg.channel.id}> ` : ""}was deleted:\n\`\`\`\n${msg.cleanContent.replace(/`/g, "\\`")}\n\`\`\``,
 		color: Constants.Colors.LIGHT_RED,
+		timestamp: Date.now(),
+	}),
+	MESSAGE_EDITED: (type, msg, oldMsg, serverDocument, client) => ({
+		footer: {
+			text: `Member ID: ${msg.author.id} • Channel ID: ${msg.channel.id}`,
+		},
+		thumbnail: {
+			url: msg.member.user.displayAvatarURL(),
+		},
+		title: "Message Edited",
+		description: `A message by **@${client.getName(serverDocument, msg.member)}** ${type === "single" ? `in <#${msg.channel.id}> ` : ""}was edited:\n\nOriginal:\`\`\`\n${oldMsg.cleanContent.replace(/`/g, "\\`")}\`\`\`\nCurrent:\`\`\`\n${msg.cleanContent.replace(/`/g, "\\`")}\n\`\`\``,
+		color: Constants.Colors.LIGHT_ORANGE,
+		timestamp: Date.now(),
 	}),
 };
 
