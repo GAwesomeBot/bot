@@ -19,7 +19,7 @@ module.exports = async ({ Constants: { Text, Colors }, client }, { serverDocumen
 		if (member.user.bot || [msg.author.id, client.user.id].includes(member.id) || client.getUserBotAdmin(msg.guild, serverDocument, member) > 0) {
 			return msg.send({
 				embed: {
-					color: Colors.SOFT_ERR,
+					color: Colors.MISSING_PERMS,
 					description: `Sorry, I can't strike **@${client.getName(serverDocument, member)}** ✋`,
 					footer: {
 						text: msg.author.id === member.user.id ? "You cannot strike yourself!" : "Bots and Bot Admins cannot be striked!",
