@@ -62,7 +62,7 @@ class ValidationError extends Error {
 	constructor (errors, document) {
 		super();
 		/* { SINGLE_ERROR } */
-		if (errors.constructor === Object) errors = [errors];
+		if (errors.constructor === Object || errors.constructor === this.constructor) errors = [errors];
 		/* ![{ ERROR }, { ERROR }, ...] */
 		else if (!Array.isArray(errors)) throw new GABError("GADRIVER_INVALID_PARAMS");
 

@@ -24,4 +24,19 @@ window.bulma = () => {
 		$("html").removeClass("is-clipped");
 		$("#modal-ter").removeClass("is-active");
 	});
+
+	$("[data-toggle-gfa]").click(function handler () {
+		const toggleSwitch = $(this);
+		const targetAddon = $(`#${toggleSwitch.data("toggle-gfa")}`);
+		if (!targetAddon[0]) return;
+		targetAddon.slideToggle();
+	});
+	$("[data-toggle-gfba]").click(function handler () {
+		const toggleSwitch = $(this);
+		const targetAddon = $(`#${toggleSwitch.data("toggle-gfba")}`);
+		if (!targetAddon[0]) return;
+		const isDisabled = targetAddon.attr("disabled");
+		if (isDisabled) targetAddon.removeAttr("disabled");
+		else targetAddon.attr("disabled", true);
+	});
 };

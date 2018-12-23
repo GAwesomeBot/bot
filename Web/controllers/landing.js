@@ -7,7 +7,7 @@ module.exports = async (req, { res }) => {
 	const userSize = await req.app.client.users.totalCount;
 
 	res.setPageData({
-		page: "landing.ejs",
+		page: req.debugMode ? "newLanding.ejs" : "landing.ejs",
 		bannerMessage: configJSON.homepageMessageHTML,
 		rawServerCount: guildSize,
 		roundedServerCount: Math.floor(guildSize / 100) * 100,

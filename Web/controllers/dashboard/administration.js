@@ -78,9 +78,9 @@ controllers.moderation.post = async (req, res) => {
 	await req.svr.fetchCollection("roles");
 
 	serverQueryDocument.set("config.moderation.isEnabled", req.body.isEnabled === "on")
-		.set("config.moderation.autokick_members.isEnabled", req.body["autokick_members-isEnabled"] === "on")
-		.set("config.moderation.autokick_members.max_inactivity", parseInt(req.body["autokick_members-max_inactivity"]))
-		.set("config.moderation.new_member_roles", []);
+		.set("config.moderation.autokick_members.isEnabled", req.body["autokick_members-isEnabled"] === "on");
+	if (req.body["autokick_members-max_inactivity"]) serverQueryDocument.set("config.moderation.autokick_members.max_inactivity", parseInt(req.body["autokick_members-max_inactivity"]));
+	serverQueryDocument.set("config.moderation.new_member_roles", []);
 	req.svr.roles.forEach(role => {
 		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
 			if (req.body[`new_member_roles-${role.id}`] === "on") {
@@ -88,8 +88,8 @@ controllers.moderation.post = async (req, res) => {
 			}
 		}
 	});
-	serverQueryDocument.set("modlog.isEnabled", req.body["modlog-isEnabled"] === "on")
-		.set("modlog.channel_id", req.body["modlog-channel_id"]);
+	serverQueryDocument.set("modlog.isEnabled", req.body["modlog-isEnabled"] === "on");
+	if (req.body["modlog-channel_id"]) serverQueryDocument.set("modlog.channel_id", req.body["modlog-channel_id"] || null);
 
 	save(req, res, true);
 };

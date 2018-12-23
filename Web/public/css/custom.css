@@ -177,6 +177,46 @@
 }
 
 /* Custom Elements */
+.generic-feature {
+    background: hsl(0, 0%, 98%);
+}
+.generic-feature-addon {
+    padding: 1.5rem;
+}
+.generic-feature-box {
+    display: flex;
+    min-height: 4rem;
+    box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    -webkit-box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    border-radius: 5px;
+}
+.generic-feature-box div {
+    float: left;
+}
+.generic-feature-box div.generic-feature-box-addon {
+    float: right;
+}
+.generic-feature-box-slider {
+    width: 10%;
+    min-width: 5rem;
+    border-right: 2px solid hsl(0, 0%, 86%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.generic-feature-box-description {
+    padding: 1rem;
+}
+.generic-feature-box-addon {
+    display: flex;
+    padding: 1rem;
+    margin-left: auto;
+    overflow: auto;
+    border-left: 2px solid hsl(0, 0%, 86%);
+    justify-content: center;
+    align-items: center;
+}
+
 .command-items {
     box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
     -webkit-box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
