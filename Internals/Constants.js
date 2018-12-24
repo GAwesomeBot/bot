@@ -426,6 +426,7 @@ Constants.APIs = {
 	JOKE: () => `https://icanhazdadjoke.com`,
 	NUMFACT: num => `http://numbersapi.com/${num}`,
 	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
+	SAFEBOORU: (query, num) => `https://safebooru.donmai.us/posts.json?page=0&tags=${encodeURIComponent(query)}&limit=${num}`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${query}&output=json`,
