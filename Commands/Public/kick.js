@@ -68,7 +68,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		await msg.send({
 			embed: {
 				color: Colors.INPUT,
-				title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input..`,
+				title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input...`,
 				description: `Are you sure you want to kick **@${client.getName(serverDocument, member)} (${member})**?\n\nThey will be kicked for\`\`\`css\n${reason}\`\`\``,
 				footer: {
 					text: `They will be notified, and can join the server again with an invite.`,

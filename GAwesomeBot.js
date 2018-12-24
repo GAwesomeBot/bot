@@ -788,7 +788,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		try {
 			await winston.silly(`Received READY event from Discord!`);
 			await client.events.onEvent("ready");
-			await winston.silly("Initializing the encryption manager..");
+			await winston.silly("Initializing the encryption manager...");
 			client.encryptionManager = new Encryption(client);
 			await winston.silly("Running webserver");
 			WebServer.open(client, auth, configJS, winston);

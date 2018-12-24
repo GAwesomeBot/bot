@@ -58,10 +58,10 @@ module.exports = async (client, serverDocument) => {
 	}
 
 	// Reset command data
-	serverDocument.set("command_usage", {});
+	serverQueryDocument.set("command_usage", {});
 
 	// Reset stats timestamp
-	serverDocument.set("stats_timestamp", Date.now());
+	serverQueryDocument.set("stats_timestamp", Date.now());
 
 	// Save changes to serverDocument
 	try {
