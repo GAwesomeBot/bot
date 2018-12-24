@@ -37,18 +37,18 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent 
 					}
 					fields.push([
 						{
-							name: `» Favorites «`,
+							name: `Favorites 🌟`,
 							value: `${unparsed[i].fav_count}`,
 							inline: true,
 						},
 						{
-							name: `» Rating «`,
-							value: `${S(unparsed[i].rating).capitalize().s || "None"}`,
+							name: `Score ⭐`,
+							value: `${unparsed[i].score}`,
 							inline: true,
 						},
 						{
-							name: `» Score «`,
-							value: `${unparsed[i].score}`,
+							name: `Rating 🌡`,
+							value: `${S(unparsed[i].rating).capitalize().s || "None"}`,
 							inline: true,
 						},
 					]);
