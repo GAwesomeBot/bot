@@ -38,7 +38,7 @@
 									Enable <strong>Message of the Day</strong>
 								</div>
                             </div>
-							<div id="message_of_the_day-options" class="generic-feature-addon" <%- configData.message_of_the_day.isEnabled ? '' : ' style="display: none;"' %>>
+							<div id="message_of_the_day-options" class="generic-feature-addon"<%- configData.message_of_the_day.isEnabled ? '' : ' style="display: none;"' %>>
 								<div class="field">
 									<p class="control">
 										<textarea name="message_content" class="textarea is-primary" maxlength="2000" placeholder="Message to send, in markdown"><%= configData.message_of_the_day.message_content %></textarea>
