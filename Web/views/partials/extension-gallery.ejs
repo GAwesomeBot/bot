@@ -128,7 +128,8 @@
 	<button class="modal-close is-large"></button>
 </div>
 
-<% if (pageData.extensions.length>0) { %>
+<div id="extensions-gallery">
+<% if (pageData.extensions.length > 0) { %>
 	<div class="columns">
 	<% pageData.extensions.forEach((extension, i) => { %>
 		<div id="card-<%= extension._id %>" class="column is-one-third">
@@ -275,3 +276,4 @@
 		</ul>
 	</nav>
 <% } %>
+</div>

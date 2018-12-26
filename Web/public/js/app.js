@@ -537,28 +537,11 @@ GAwesomeUtil.featureExtension = extid => {
 };
 
 GAwesomeUtil.installExtension = extid => {
-	GAwesomeUtil.log("Beginning Extension installing process");
-	const extension = GAwesomeData.extensions.extensions.find(a => a._id === extid);
-	if (!extension) {
-		return GAwesomeUtil.warn(`Failed to find Extension Data for ID ${extid}`);
-	}
-	const h = GAwesomeData.extensions.html;
-	GAwesomeUtil.log("Extension Installing Phase: START");
-	GAwesomeData.extensions.state = {
-		phase: 0,
-		id: extid,
-		extension: extension,
-		ongoing: true,
-		data: {},
-		phases: ["start"],
-	};
-	if (extension.type !== "event") GAwesomeData.extensions.state.phases.push("config");
-	if (extension.scopes.length) GAwesomeData.extensions.state.phases.push("scopes");
-	if (extension.fields && extension.fields.length) GAwesomeData.extensions.state.phases.push("fields");
-	GAwesomeData.extensions.state.phases.push("confirm");
-	Object.keys(h.start).forEach(id => $(id).html(h.start[id].replace("$EXTNAME", extension.name)));
-	$("html").addClass("is-clipped");
-	$("#installer-modal").addClass("is-active");
+	GAwesomeUtil.log("Launching Extension install window");
+	const width = window.screen.width - 600;
+	const height = window.screen.height - 720;
+	GAwesomeData.extensions.window = window.open(`/extensions/${extid}/install`, "GAB Extension Installer", `height=720,width=600,left=${width / 2},top=${height / 2}`);
+	GAwesomeData.extensions.window.focus();
 };
 
 GAwesomeUtil.cancelInstall = () => {

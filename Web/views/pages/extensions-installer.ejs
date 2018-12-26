@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Installing <%= pageData.extensionData.name %> - GAwesomeBot Extensions</title>
+    <% include ../partials/head %>
+</head>
+<body>
+<section id="header" class="main-header-section hero is-primary is-small is-bold">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h1 class="subtitle is-1">
+					<span class="icon is-large">
+                        <i class="fa fa-bolt"></i>
+                    </span>
+                Installing extension <strong><%= pageData.extensionData.name %></strong>.
+
+            </h1>
+            <% if (pageData.mode === "install") { %>
+            <a class="button is-outlined is-info is-small" href="/extensions/<%= pageData.extensionData._id %>/install" title="Select a different guild">
+                <img class="image is-16x16" src="<%= serverData.icon %>" style="border-radius: 100%;" alt="<%= serverData.id %>">
+                &nbsp;
+                <span><%= serverData.name %></span>
+            </a>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<section id="frame"	class="section is-dark is-bold">
+    <div class="container has-text-centered">
+        <% if (pageData.mode === "select") { %>
+            <h2 class="title is-2">Select a server to continue</h2>
+            <% serverData.forEach(server => { %>
+                <a class="media arrow-link" href="/extensions/<%= pageData.extensionData._id %>/install?svrid=<%= server.id %>">
+                    <figure class="media-left">
+                        <p class="image server-icon is-48x48">
+                            <img src="<%= server.icon %>" style="border-radius: 100%;" alt="<%= server.id %>">
+                        </p>
+                    </figure>
+                    <div class="media-content">
+                        <h2 class="subtitle is-2 server-name"><%= server.name %></h2>
+                    </div>
+                    <div class="media-right">
+                        <span class="icon server-arrow is-primary is-large">
+                            <i class="fa fa-chevron-right fa-2x"></i>
+                        </span>
+                    </div>
+                </a>
+            <% }); %>
+        <% } else { %>
+            <div></div>
+        <% } %>
+    </div>
+</section>
+</body>

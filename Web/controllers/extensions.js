@@ -20,9 +20,9 @@ const writeExtensionData = (extensionQueryDocument, data) => {
 	extensionQueryDocument.set("interval", data.type === "timer" ? data.interval : null)
 		.set("usage_help", data.type === "command" ? data.usage_help : null)
 		.set("extended_help", data.type === "command" ? data.extended_help : null)
-		.set("event", data.type === "event" ? data.event : undefined)
+		.set("event", data.type === "event" ? data.event : null)
 		.set("last_updated", Date.now())
-		.set("timeout", data.timeout)
+		.set("timeout", parseInt(data.timeout))
 		.set("code_id", generateCodeID(data.code))
 		.set("scopes", []);
 	Object.keys(data).forEach(val => {
@@ -145,6 +145,77 @@ controllers.gallery = async (req, { res }) => {
 		});
 	} else {
 		renderPage();
+	}
+};
+
+controllers.installer = async (req, { res }) => {
+	if (!req.isAuthenticated()) return res.redirect("/login");
+
+	let id;
+	try {
+		id = new ObjectID(req.params.extid);
+	} catch (err) {
+		return renderError(res, "That extension doesn't exist!", undefined, 404);
+	}
+	const galleryDocument = await Gallery.findOne(id);
+	if (!galleryDocument) return renderError(res, "That extension doesn't exist!", undefined, 404);
+	const extensionData = await parsers.extensionData(req, galleryDocument);
+
+	if (!req.query.svrid) {
+		const serverData = [];
+		const addServerData = async (i, callback) => {
+			if (req.user.guilds && i < req.user.guilds.length) {
+				const svr = new GetGuild(req.app.client, req.user.guilds[i].id);
+				await svr.initialize(req.user.id);
+				if (svr.success) {
+					const serverDocument = await Servers.findOne(svr.id).catch(() => null);
+					if (serverDocument) {
+						const member = svr.members[req.user.id];
+						if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
+							serverData.push({
+								name: req.user.guilds[i].name,
+								id: req.user.guilds[i].id,
+								icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
+								prefix: serverDocument.config.command_prefix,
+							});
+						}
+					}
+					addServerData(++i, callback);
+				} else {
+					addServerData(++i, callback);
+				}
+			} else {
+				try {
+					return callback();
+				} catch (err) {
+					renderError(res, "An error occurred while fetching user data.");
+				}
+			}
+		};
+		addServerData(0, async () => {
+			serverData.sort((a, b) => a.name.localeCompare(b.name));
+			res.setServerData(serverData)
+				.setPageData({
+					page: "extensions-installer.ejs",
+					mode: "select",
+					extensionData,
+				})
+				.render();
+		});
+	} else {
+		const serverDocument = await Servers.findOne(req.query.svrid);
+		if (!serverDocument) return renderError(res, "That server doesn't exist!", undefined, 404);
+		const serverData = await parsers.serverData(req, serverDocument);
+		if (serverData) {
+			res.setServerData(serverData)
+				.setPageData({
+					page: "extensions-installer.ejs",
+					mode: "install",
+					extensionData,
+				}).render();
+		} else {
+			return renderError(res, "That server doesn't exist!", undefined, 404);
+		}
 	}
 };
 
