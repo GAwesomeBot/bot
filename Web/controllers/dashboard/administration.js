@@ -446,7 +446,8 @@ controllers.filters.post = async (req, res) => {
 					serverQueryDocument.set(`config.moderation.filters.${filter}.${key}`, parseInt(req.body[`${filter}-${key}`]));
 					break;
 				default:
-					if (req.body[`${filter}-${key}`] !== undefined) serverQueryDocument.set(`config.moderation.filters.${filter}.${key}`, req.body[`${filter}-${key}`]);
+					// eslint-disable-next-line max-len
+					if (req.body[`${filter}-${key}`] !== undefined) serverQueryDocument.set(`config.moderation.filters.${filter}.${key}`, req.body[`${filter}-${key}`] === "on" ? true : req.body[`${filter}-${key}`]);
 					break;
 			}
 		}
