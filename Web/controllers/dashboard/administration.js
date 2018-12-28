@@ -447,7 +447,7 @@ controllers.filters.post = async (req, res) => {
 					break;
 				default:
 					// eslint-disable-next-line max-len
-					if (req.body[`${filter}-${key}`] !== undefined) serverQueryDocument.set(`config.moderation.filters.${filter}.${key}`, req.body[`${filter}-${key}`] === "on" ? true : req.body[`${filter}-${key}`]);
+					if (req.body[`${filter}-${key}`] !== undefined) serverQueryDocument.set(`config.moderation.filters.${filter}.${key}`, req.body[`${filter}-${key}`] === "on" || req.body[`${filter}-${key}`]);
 					break;
 			}
 		}
