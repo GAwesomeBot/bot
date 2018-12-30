@@ -59,6 +59,10 @@
 
 .has-overflow {
     overflow: auto;
+    min-height: 0;
+}
+html.has-no-scrollbar, body.has-no-scrollbar {
+    overflow: hidden;
 }
 
 .is-word-wrapping {
@@ -95,6 +99,9 @@
 }
 
 /* Customisations */
+html, body {
+    height: 100%;
+}
 .navbar {
     box-shadow: none;
 }
@@ -158,6 +165,12 @@
 }
 
 /* Page Components */
+.scroller-wrapper {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
 .main-header-section {
     background: url('/header-image')!important;
     background-size: cover!important;
@@ -180,23 +193,23 @@
 .generic-feature {
     background: hsl(0, 0%, 98%);
 }
-.generic-feature-addon {
+.generic-feature .generic-feature-addon {
     padding: 1.5rem;
 }
-.generic-feature-box {
+.generic-feature .generic-feature-box {
     display: flex;
     min-height: 4rem;
     box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
     -webkit-box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
     border-radius: 5px;
 }
-.generic-feature-box div {
+.generic-feature .generic-feature-box div {
     float: left;
 }
-.generic-feature-box div.generic-feature-box-addon {
+.generic-feature .generic-feature-box div.generic-feature-box-addon {
     float: right;
 }
-.generic-feature-box-slider {
+.generic-feature .generic-feature-box .generic-feature-box-slider {
     width: 10%;
     min-width: 5rem;
     border-right: 2px solid hsl(0, 0%, 86%);
@@ -204,10 +217,10 @@
     justify-content: center;
     align-items: center;
 }
-.generic-feature-box-description {
+.generic-feature .generic-feature-box .generic-feature-box-description {
     padding: 1rem;
 }
-.generic-feature-box-addon {
+.generic-feature .generic-feature-box .generic-feature-box-addon {
     display: flex;
     padding: 1rem;
     margin-left: auto;
@@ -215,6 +228,61 @@
     border-left: 2px solid hsl(0, 0%, 86%);
     justify-content: center;
     align-items: center;
+}
+
+.installer {
+    display: flex;
+    flex-flow: column;
+}
+
+.generic-feature .generic-feature-box.installer-step {
+    cursor: pointer;
+    min-height: 3rem;
+    user-select: none;
+}
+.generic-feature .generic-feature-box.installer-step .generic-feature-box-slider.installer-step-status {
+    min-width: 4rem;
+    font-size: 2rem;
+    transition: color 1s;
+    -webkit-transition: color 1s;
+}
+.generic-feature .generic-feature-addon.installer-step-addon {
+    text-align: left!important;
+    padding-bottom: 1rem;
+    user-select: none;
+}
+.installer-step.is-active .installer-step-status {
+    color: hsl(48, 100%, 67%);
+}
+.installer-step.is-success .installer-step-status {
+    color: hsl(141, 71%, 48%);
+}
+.installer-step-button {
+    margin-top: 1.5rem;
+}
+.generic-feature .generic-feature-box.installer-step[disabled] {
+    cursor: not-allowed;
+    background: hsl(0, 0%, 94%);
+}
+
+.box.scope-list {
+    background-color: hsl(0, 0%, 93%);
+    padding: 0.5rem;
+}
+
+.scope-list .scope {
+    display: flex;
+    font-size: 1.2rem;
+}
+
+.scope .icon {
+    float: left;
+    margin-right: 0.2rem;
+}
+
+.scope-list .scope:not(:last-child) .scope-description {
+    border-bottom: 1px solid hsl(0, 0%, 86%);
+    width: 100%;
 }
 
 .command-items {

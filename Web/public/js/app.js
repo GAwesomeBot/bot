@@ -539,11 +539,11 @@ GAwesomeUtil.featureExtension = extid => {
 	featuredTag.html(featured ? "" : "<span class=\"tag is-primary\">Featured</span>&nbsp;");
 };
 
-GAwesomeUtil.installExtension = extid => {
+GAwesomeUtil.installExtension = (extid, v) => {
 	GAwesomeUtil.log("Launching Extension install window");
 	const width = window.screen.width - 600;
-	const height = window.screen.height - 720;
-	GAwesomeData.extensions.window = window.open(`/extensions/${extid}/install`, "GAB Extension Installer", `height=720,width=600,left=${width / 2},top=${height / 2}`);
+	const height = window.screen.height - 800;
+	GAwesomeData.extensions.window = window.open(`/extensions/${extid}/install?v=${v}`, "GAB Extension Installer", `height=800,width=600,left=${width / 2},top=${height / 2}`);
 	GAwesomeData.extensions.window.focus();
 };
 

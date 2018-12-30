@@ -1,55 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="has-no-scrollbar">
 <head>
     <title>Installing <%= pageData.extensionData.name %> - GAwesomeBot Extensions</title>
     <% include ../partials/head %>
 </head>
-<body>
-<section id="header" class="main-header-section hero is-primary is-small is-bold">
-    <div class="hero-body">
-        <div class="container has-text-centered">
-            <h1 class="subtitle is-1">
+<body class="has-no-scrollbar">
+<div class="scroller-wrapper">
+    <section id="header" class="main-header-section hero is-primary is-small is-bold">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="subtitle is-1">
 					<span class="icon is-large">
                         <i class="fa fa-bolt"></i>
                     </span>
-                Installing extension <strong><%= pageData.extensionData.name %></strong>.
+                    Installing extension <strong><%= pageData.extensionData.name %></strong>.
 
-            </h1>
-            <% if (pageData.mode === "install") { %>
-            <a class="button is-outlined is-info is-small" href="/extensions/<%= pageData.extensionData._id %>/install" title="Select a different guild">
-                <img class="image is-16x16" src="<%= serverData.icon %>" style="border-radius: 100%;" alt="<%= serverData.id %>">
-                &nbsp;
-                <span><%= serverData.name %></span>
-            </a>
-            <% } %>
+                </h1>
+                <% if (pageData.mode === "install") { %>
+                <a class="button is-outlined is-info is-small"
+                   href="/extensions/<%= pageData.extensionData._id %>/install?v=<%= pageData.extensionData.version %>" title="Select a different guild">
+                    <img class="image is-16x16" src="<%= serverData.icon %>" style="border-radius: 100%;"
+                         alt="<%= serverData.id %>">
+                    &nbsp;
+                    <span><%= serverData.name %></span>
+                </a>
+                <% } %>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section id="frame"	class="section is-dark is-bold">
-    <div class="container has-text-centered">
-        <% if (pageData.mode === "select") { %>
+    <section id="frame" class="section is-dark is-bold has-overflow">
+        <div class="container has-text-centered">
+            <% if (pageData.mode === "select") { %>
             <h2 class="title is-2">Select a server to continue</h2>
             <% serverData.forEach(server => { %>
-                <a class="media arrow-link" href="/extensions/<%= pageData.extensionData._id %>/install?svrid=<%= server.id %>">
-                    <figure class="media-left">
-                        <p class="image server-icon is-48x48">
-                            <img src="<%= server.icon %>" style="border-radius: 100%;" alt="<%= server.id %>">
-                        </p>
-                    </figure>
-                    <div class="media-content">
-                        <h2 class="subtitle is-2 server-name"><%= server.name %></h2>
-                    </div>
-                    <div class="media-right">
+            <a class="media arrow-link"
+               href="/extensions/<%= pageData.extensionData._id %>/install?svrid=<%= server.id %>&v=<%= pageData.extensionData.version %>">
+                <figure class="media-left">
+                    <p class="image server-icon is-48x48">
+                        <img src="<%= server.icon %>" style="border-radius: 100%;" alt="<%= server.id %>">
+                    </p>
+                </figure>
+                <div class="media-content">
+                    <h2 class="subtitle is-2 server-name"><%= server.name %></h2>
+                </div>
+                <div class="media-right">
                         <span class="icon server-arrow is-primary is-large">
                             <i class="fa fa-chevron-right fa-2x"></i>
                         </span>
-                    </div>
-                </a>
+                </div>
+            </a>
             <% }); %>
-        <% } else { %>
-            <div></div>
-        <% } %>
-    </div>
-</section>
+            <% } else { %>
+            <div class="installer">
+                <div class="box is-paddingless generic-feature">
+                    <div id="installer-step-authorization" class="generic-feature-box installer-step is-active"
+                         data-select-isa="installer-step-authorization-addon">
+                        <div class="generic-feature-box-slider installer-step-status">
+                        <span class="icon">
+                            <i class="fa fa-circle-o-notch"></i>
+                        </span>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            Authorization
+                        </div>
+                    </div>
+                    <div id="installer-step-authorization-addon" class="generic-feature-addon installer-step-addon">
+                        <h6 class="title is-6">By continuing, you authorize <b><%= pageData.extensionData.name %></b> to...</h6>
+                        <div class="scope-list">
+                            <div class="scope">
+                                <span class="icon">
+                                    <i class="fa fa-<%= pageData.extensionData.typeIcon %>"></i>
+                                </span>
+                                <% switch (pageData.extensionData.type) { case "command": %>
+                                    <span class="scope-description">Respond to <strong><%= pageData.extensionData.typeDescription %></strong> command messages</span>
+                                <% break; case "keyword": %>
+                                    <span class="scope-description">
+                                        Listen for and respond to keywords
+                                        <span class="help"><%= pageData.extensionData.typeDescription %></span>
+                                    </span>
+                                <% break; case "timer": %>
+                                    <span class="scope-description">Run every <strong><%= pageData.extensionData.typeDescription %></strong></span>
+                                <% break; case "event": %>
+                                    <span class="scope-description">Run on and access information about <strong><%= pageData.extensionData.typeDescription %></strong> events</span>
+                                <% break; %>
+                                <% } %>
+                            </div>
+                            <% pageData.extensionData.scopes.forEach(scope => { %>
+                                <div class="scope">
+                                    <span class="icon">
+                                        <i class="fa <%= scope.icon %>"></i>
+                                    </span>
+                                    <span class="scope-description"><%- scope.authDescription.replace(/{SERVER}/g, `<strong>${serverData.name}</strong>`) %></span>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <div class="has-text-centered">
+                            <a class="button is-outlined is-warning installer-step-button"
+                               data-next-is="installer-step-<%= ["command", "keyword"].includes(pageData.extensionData.type) ? "options" : "fields" %>">Authorize</a>
+                        </div>
+                    </div>
+                </div>
+                <% if (["command", "keyword"].includes(pageData.extensionData.type)) { %>
+                    <div class="box is-paddingless generic-feature">
+                        <div id="installer-step-options" class="generic-feature-box installer-step" data-select-isa="installer-step-options-addon" disabled>
+                            <div class="generic-feature-box-slider installer-step-status">
+                                <span class="icon">
+                                    <i class="fa fa-circle-o-notch"></i>
+                                </span>
+                            </div>
+                            <div class="generic-feature-box-description">
+                                Command Options
+                            </div>
+                        </div>
+                        <div id="installer-step-options-addon" class="generic-feature-addon installer-step-addon" style="display: none;">
+                            <form id="installer-step-options-form" onsubmit="return false;">
+
+                                <div class="field">
+                                    <input id="new-mute-member" class="input is-primary" type="text" onkeypress="return event.keyCode !== 13;" required>
+                                </div>
+                                <% switch (pageData.extensionData.type) { case "command": %>
+                                <% break; case "keyword": %>
+                                <% break; %>
+                                <% } %>
+                                <div class="has-text-centered">
+                                    <a class="button is-outlined is-info installer-step-button" data-next-is="installer-step-fields">Next</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="box is-paddingless generic-feature">
+                    <div id="installer-step-fields" class="generic-feature-box installer-step" data-select-isa="installer-step-fields-addon" disabled>
+                        <div class="generic-feature-box-slider installer-step-status">
+                        <span class="icon">
+                            <i class="fa fa-circle-o-notch"></i>
+                        </span>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            Custom Fields
+                        </div>
+                    </div>
+                    <div id="installer-step-fields-addon" class="generic-feature-addon installer-step-addon" style="display: none;">
+                        (Optional) These are key/value pairs that the extension creator configured that allow the server admin to configure the extension further.
+                        <div class="has-text-centered">
+                            <a class="button is-outlined is-info installer-step-button"
+                               data-next-is="installer-step-confirmation">Next</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="box is-paddingless generic-feature">
+                    <div id="installer-step-confirmation" class="generic-feature-box installer-step" data-select-isa="installer-step-confirmation-addon" disabled>
+                        <div class="generic-feature-box-slider installer-step-status">
+                        <span class="icon">
+                            <i class="fa fa-circle-o-notch"></i>
+                        </span>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            Confirmation
+                        </div>
+                    </div>
+                    <div id="installer-step-confirmation-addon" class="generic-feature-addon installer-step-addon" style="display: none;">
+                        Overview of the installation and final confirmation
+                        <div class="has-text-centered">
+                            <a class="button is-outlined is-info installer-step-button">Finish</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </section>
+</div>
 </body>

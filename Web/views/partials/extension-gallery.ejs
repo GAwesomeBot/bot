@@ -138,6 +138,10 @@
 					<p class="card-header-title">
 						<%= extension.name %>
 						&nbsp;
+						<% if (extension.version !== 1) { %>
+							<span class="tag is-info">V<%= extension.version %></span>
+							&nbsp;
+						<% } %>
 						<span id="featured-<%= extension._id %>">
 							<% if (extension.featured) { %>
 								<span class="tag is-primary">Featured</span>
@@ -174,7 +178,7 @@
 				</div>
 				<footer class="card-footer">
 					<% if (authUser && pageData.serverData.length > 0) { %>
-						<a class="card-footer-item" onclick="GAwesomeUtil.installExtension('<%= extension._id %>');">
+						<a class="card-footer-item" onclick="GAwesomeUtil.installExtension('<%= extension._id %>', <%= extension.version %>);">
 							Install
 						</a>
 					<% } %>

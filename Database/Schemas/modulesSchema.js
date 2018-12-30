@@ -19,49 +19,6 @@ module.exports = new Schema({
 		],
 		required: true,
 	},
-	type: {
-		type: String,
-		enum: [
-			"command",
-			"keyword",
-			"timer",
-			"event",
-		],
-		required: true,
-	},
-	key: {
-		type: String,
-		minlength: 2,
-		maxlength: 25,
-	},
-	keywords: [String],
-	case_sensitive: Boolean,
-	admin_level: {
-		type: Number,
-		min: 0,
-		max: 3,
-	},
-	interval: {
-		type: Number,
-		min: 300000,
-		max: 86400000,
-	},
-	enabled_channel_ids: [String],
-	usage_help: {
-		type: String,
-		maxlength: 150,
-	},
-	extended_help: {
-		type: String,
-		maxlength: 1000,
-	},
-	last_run: Date,
-	store: Schema.Mixed,
-	updates_available: {
-		type: Number,
-		min: 0,
-		default: 0,
-	},
 	description: {
 		type: String,
 		maxlength: 2000,
@@ -77,40 +34,77 @@ module.exports = new Schema({
 	state: {
 		type: String,
 		enum: [
+			// Latest version in gallery, no version in queue
 			"gallery",
+			// Existing version in gallery, latest version in queue
+			"version_queue",
+			// No version in gallery, latest version in queue
 			"queue",
+			// No version in gallery, no version in queue
 			"saved",
 		],
 	},
-	code_id: String,
 	versions: [
 		new Schema({
 			_id: {
-				type: String,
+				type: Number,
 				required: true,
 			},
 			code_id: String,
-		}),
-	],
-	event: {
-		type: String,
-		enum: AllowedEvents,
-	},
-	scopes: [String],
-	timeout: {
-		type: Number,
-		default: 5000,
-		min: 100,
-		max: 10000,
-	},
-	fields: [
-		new Schema({
-			_id: {
+			accepted: Boolean,
+			type: {
 				type: String,
+				enum: [
+					"command",
+					"keyword",
+					"timer",
+					"event",
+				],
 				required: true,
 			},
-			name: String,
-			value: String,
+			key: {
+				type: String,
+				minlength: 2,
+				maxlength: 25,
+			},
+			keywords: [String],
+			case_sensitive: Boolean,
+			interval: {
+				type: Number,
+				min: 300000,
+				max: 86400000,
+			},
+			usage_help: {
+				type: String,
+				maxlength: 150,
+			},
+			extended_help: {
+				type: String,
+				maxlength: 1000,
+			},
+			event: {
+				type: String,
+				enum: AllowedEvents,
+			},
+			scopes: [String],
+			timeout: {
+				type: Number,
+				default: 5000,
+				min: 100,
+				max: 10000,
+			},
+			fields: [
+				new Schema({
+					_id: {
+						type: String,
+						required: true,
+					},
+					name: String,
+					value: String,
+				}),
+			],
 		}),
 	],
+	version: Number,
+	published_version: Number,
 });

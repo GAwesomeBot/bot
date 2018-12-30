@@ -494,6 +494,103 @@ Constants.AllowedEvents = [
 ];
 
 /**
+ * An object containing descriptive information on all extension scopes
+ * @type object
+ */
+Constants.Scopes = {
+	ban: {
+		scope: "ban",
+		permissionDescription: "Can ban members from this guild",
+		authDescription: "Ban guild members",
+		icon: "fa-gavel",
+	},
+	kick: {
+		scope: "kick",
+		permissionDescription: "Can kick members from this guild",
+		authDescription: "Kick guild members",
+		icon: "fa-gavel",
+	},
+	roles_read: {
+		scope: "roles_read",
+		permissionDescription: "Can read this guild's role list",
+		authDescription: "Read guild roles",
+		icon: "fa-flag",
+	},
+	roles_manage: {
+		scope: "roles_manage",
+		permissionDescription: "Can modify this guild's roles and assign roles to members",
+		authDescription: "Modify and assign guild roles",
+		icon: "fa-flag",
+	},
+	channels_read: {
+		scope: "channels_read",
+		permissionDescription: "Can access information about this guild's channels such as pinned messages or descriptions",
+		authDescription: "Read guild channel settings, descriptions and pinned messages",
+		icon: "fa-comments",
+	},
+	channels_manage: {
+		scope: "channels_manage",
+		permissionDescription: "Can modify this guild's channels",
+		authDescription: "Modify guild channels and pin messages",
+		icon: "fa-comments",
+	},
+	guild_read: {
+		scope: "guild_read",
+		permissionDescription: "Can access this guild's settings",
+		authDescription: "Read guild settings",
+		icon: "fa-home",
+	},
+	guild_manage: {
+		scope: "guild_manage",
+		permissionDescription: "Can modify this guild's settings",
+		authDescription: "Modify guild settings",
+		icon: "fa-home",
+	},
+	members_read: {
+		scope: "members_read",
+		permissionDescription: "Can access this guild's member list",
+		authDescription: "Read the guild member list",
+		icon: "fa-users",
+	},
+	members_manage: {
+		scope: "members_manage",
+		permissionDescription: "Can modify this guild's member list, for example by purging or managing nicknames",
+		authDescription: "Manage guild members and purge the member list",
+		icon: "fa-users",
+	},
+	messages_read: {
+		scope: "messages_read",
+		permissionDescription: "Can read previous messages in the channel this extension was executed in",
+		authDescription: "Read messages in the channel that ran the extension",
+		icon: "fa-search",
+	},
+	messages_global: {
+		scope: "messages_global",
+		permissionDescription: "Can read previous messages in all channels",
+		authDescription: "Read messages in all channels",
+		icon: "fa-globe",
+	},
+	messages_write: {
+		scope: "messages_write",
+		permissionDescription: "Can write messages in all channels. The extension can always write messages in the channel it was executed in",
+		authDescription: "Send messages in all channels",
+		icon: "fa-paper-plane",
+	},
+	messages_manage: {
+		scope: "messages_manage",
+		permissionDescription: "Can manage all messages in the channels where the extension can read messages",
+		authDescription: "Delete messages",
+		icon: "fa-trash",
+	},
+	config: {
+		scope: "config",
+		permissionDescription: "Can read, but not modify, this guild's GAB Configuration",
+		authDescription: "Read {SERVER}'s GAB configuration",
+		icon: "fa-cogs",
+	},
+};
+
+/**
  * Embed object for NSFW commands in non-NSFW channels
  * @type {{embed: {color: number, title: string, description: string, footer: {text: string}}}}
  */

@@ -4,34 +4,50 @@ const { ObjectID } = require("mongodb");
 
 const parsers = require("../parsers");
 const { GetGuild } = require("../../Modules").getGuild;
-const { AllowedEvents, Colors } = require("../../Internals/Constants");
+const { AllowedEvents, Colors, Scopes } = require("../../Internals/Constants");
 const { renderError, dashboardUpdate, generateCodeID } = require("../helpers");
 
 // eslint-disable-next-line max-len
 const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
-const writeExtensionData = (extensionQueryDocument, data) => {
-	extensionQueryDocument.set("name", data.name)
-		.set("type", data.type)
-		.set("key", data.type === "command" ? data.key : null);
-	if (data.type === "keyword") {
-		extensionQueryDocument.set("keywords", data.keywords.split(","))
-			.set("case_sensitive", data.case_sensitive === "on");
-	}
-	extensionQueryDocument.set("interval", data.type === "timer" ? data.interval : null)
-		.set("usage_help", data.type === "command" ? data.usage_help : null)
-		.set("extended_help", data.type === "command" ? data.extended_help : null)
-		.set("event", data.type === "event" ? data.event : null)
-		.set("last_updated", Date.now())
-		.set("timeout", parseInt(data.timeout))
-		.set("code_id", generateCodeID(data.code))
-		.set("scopes", []);
+const pushExtensionVersionData = (extensionDocument, data) => {
+	const extensionQueryDocument = extensionDocument.query;
+	const currentVersion = extensionDocument.versions.id(extensionDocument.version) || { _id: 0 };
+	const newVersion = { _id: currentVersion._id, accepted: currentVersion.accepted };
+	newVersion.type = data.type;
+
+	newVersion.key = data.type === "command" ? data.key : null;
+	newVersion.usage_help = data.type === "command" ? data.usage_help : null;
+	newVersion.extended_help = data.type === "command" ? data.extended_help : null;
+
+	newVersion.keywords = data.keywords ? data.keywords.split(",") : [];
+	newVersion.case_sensitive = data.case_sensitive === "on";
+
+	newVersion.interval = data.type === "timer" ? parseInt(data.interval) : null;
+
+	newVersion.event = data.type === "event" ? data.event : null;
+
+	newVersion.timeout = parseInt(data.timeout);
+	newVersion.code_id = generateCodeID(data.code);
+	newVersion.scopes = [];
 	Object.keys(data).forEach(val => {
-		if (val.startsWith("scope_")) {
-			extensionQueryDocument.push("scopes", val.split("scope_")[1]);
-		}
+		if (val.startsWith("scope_") && data[val]) newVersion.scopes.push(val.split("scope_")[1]);
 	});
 
-	return extensionQueryDocument;
+	if (!Object.keys(newVersion).some(key => JSON.stringify(newVersion[key]) !== JSON.stringify(currentVersion[key]))) return false;
+	newVersion._id++;
+	newVersion.accepted = false;
+	extensionQueryDocument.push("versions", newVersion);
+	return newVersion._id;
+};
+const writeExtensionData = (extensionDocument, data) => {
+	const extensionQueryDocument = extensionDocument.query;
+	extensionQueryDocument.set("name", data.name)
+		.set("last_updated", Date.now());
+
+	const versionTag = pushExtensionVersionData(extensionDocument, data);
+	if (!versionTag) return false;
+	extensionQueryDocument.set("version", versionTag);
+	return versionTag;
 };
 
 const controllers = module.exports;
@@ -54,14 +70,14 @@ controllers.gallery = async (req, { res }) => {
 		const extensionState = req.path.substring(req.path.lastIndexOf("/") + 1);
 		try {
 			let rawCount = await Gallery.count({
-				state: extensionState,
+				state: { $in: ["version_queue", extensionState] },
 			});
 			if (!rawCount) {
 				rawCount = 0;
 			}
 
 			const matchCriteria = {
-				state: extensionState,
+				state: { $in: ["version_queue", extensionState] },
 			};
 			if (req.query.id) {
 				matchCriteria._id = new ObjectID(req.query.id);
@@ -75,7 +91,7 @@ controllers.gallery = async (req, { res }) => {
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-			const extensionData = await Promise.all(galleryDocuments.map(a => parsers.extensionData(req, a)));
+			const extensionData = await Promise.all(galleryDocuments.map(a => parsers.extensionData(req, a, extensionState === "queue" ? a.version : a.published_version)));
 
 			res.setPageData({
 				page: "extensions.ejs",
@@ -159,7 +175,9 @@ controllers.installer = async (req, { res }) => {
 	}
 	const galleryDocument = await Gallery.findOne(id);
 	if (!galleryDocument) return renderError(res, "That extension doesn't exist!", undefined, 404);
-	const extensionData = await parsers.extensionData(req, galleryDocument);
+	const versionTag = parseInt(req.query.v) || galleryDocument.published_version;
+	if (!galleryDocument.versions.id(versionTag)) return renderError(res, "That extension version doesn't exist!", undefined, 404);
+	const extensionData = await parsers.extensionData(req, galleryDocument, versionTag);
 
 	if (!req.query.svrid) {
 		const serverData = [];
@@ -257,7 +275,9 @@ controllers.builder = async (req, { res }) => {
 				activeSearchQuery: req.query.q,
 				mode: "builder",
 				extensionData,
+				versionData: extensionData.versions ? extensionData.versions.id(extensionData.version) : {},
 				events: AllowedEvents,
+				scopes: Scopes,
 			});
 
 			res.render();
@@ -271,7 +291,7 @@ controllers.builder = async (req, { res }) => {
 				});
 				if (galleryDocument) {
 					try {
-						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.code_id}.gabext`);
+						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.versions.id(galleryDocument.version).code_id}.gabext`);
 					} catch (err) {
 						galleryDocument.code = "";
 					}
@@ -312,32 +332,26 @@ controllers.builder.post = async (req, res) => {
 					}
 				}
 			};
-			const saveExtensionData = (galleryDocument, isUpdate) => {
+			const saveExtensionData = async (galleryDocument, isUpdate) => {
 				const galleryQueryDocument = galleryDocument.query;
 
 				galleryQueryDocument.set("level", "gallery")
-					.set("state", "saved")
 					.set("description", req.body.description);
-				const oldName = galleryDocument.name;
-				const oldID = galleryDocument.code_id;
-				writeExtensionData(galleryQueryDocument, req.body);
+				const newVersion = writeExtensionData(galleryDocument, req.body);
+				if (newVersion && isUpdate) galleryQueryDocument.set("state", galleryDocument.state === "saved" ? "saved" : "version_queue");
+				else if (newVersion) galleryQueryDocument.set("state", "saved");
 
 				if (!isUpdate) {
 					galleryQueryDocument.set("owner_id", req.user.id);
 					dashboardUpdate(req, "/extensions/my", req.user.id);
-				} else {
-					galleryQueryDocument.push("versions", {
-						_id: oldName,
-						code_id: oldID,
-					});
-					if (oldName === req.body.name) galleryQueryDocument.set("name", `${galleryDocument.name} (2)`);
 				}
+
 				const validation = galleryDocument.validate();
 				if (validation) {
 					winston.warn("Failed to validate extension data", { err: validation });
 					return sendResponse(true);
 				}
-				galleryDocument.save().catch(err => {
+				await galleryDocument.save().catch(err => {
 					winston.warn(`Failed to save extension metadata: ${err}`);
 					sendResponse(true);
 				});
@@ -350,12 +364,12 @@ controllers.builder.post = async (req, res) => {
 					owner_id: req.user.id,
 				});
 				if (galleryDocument) {
-					saveExtensionData(galleryDocument, true);
+					await saveExtensionData(galleryDocument, true);
 				} else {
-					saveExtensionData(await Gallery.new(), false);
+					await saveExtensionData(await Gallery.new(), false);
 				}
 			} else {
-				saveExtensionData(await Gallery.new(), false);
+				await saveExtensionData(await Gallery.new(), false);
 			}
 		} else {
 			renderError(res, "Failed to verify extension data!", undefined, 400);
@@ -373,12 +387,15 @@ controllers.download = async (req, res) => {
 		return res.sendStatus(500);
 	}
 	if (extensionDocument && extensionDocument.state !== "saved") {
+		const versionTag = req.query.v || extensionDocument.published_version;
+		const versionDocument = extensionDocument.versions.id(versionTag);
+		if (!versionDocument) return res.sendStatus(404);
 		try {
 			res.set({
 				"Content-Disposition": `${"attachment; filename="}${extensionDocument.name}.gabext`,
 				"Content-Type": "text/javascript",
 			});
-			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${extensionDocument.code_id}.gabext`));
+			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${versionDocument.code_id}.gabext`));
 		} catch (err) {
 			res.sendStatus(500);
 		}
@@ -461,6 +478,8 @@ controllers.gallery.modify = async (req, res) => {
 				}
 				case "accept": {
 					galleryQueryDocument.set("state", "gallery");
+					galleryQueryDocument.clone.id("versions", galleryDocument.version).set("accepted", true);
+					galleryQueryDocument.set("published_version", galleryDocument.version);
 
 					try {
 						await galleryDocument.save();
@@ -468,22 +487,6 @@ controllers.gallery.modify = async (req, res) => {
 						return res.sendStatus(500);
 					}
 					res.sendStatus(200);
-
-					const serverDocuments = await Servers.find({
-						extensions: {
-							$elemMatch: {
-								_id: galleryDocument._id,
-							},
-						},
-					}).exec();
-					if (serverDocuments) {
-						serverDocuments.forEach(serverDocument => {
-							serverDocument.query.id("extensions", galleryDocument._id.toString()).inc("updates_available");
-							serverDocument.save().catch(err => {
-								winston.error("Failed to save server data for extension update", { svrid: serverDocument._id }, err);
-							});
-						});
-					}
 
 					messageOwner(galleryDocument.owner_id, {
 						embed: {
@@ -518,8 +521,10 @@ controllers.gallery.modify = async (req, res) => {
 						await ownerUserDocument2.save();
 					}
 
+					galleryQueryDocument.clone.id("versions", req.params.action === "remove" ? galleryDocument.published_version : galleryDocument.version).set("approved", false);
 					galleryQueryDocument.set("state", "saved")
-						.set("featured", false);
+						.set("featured", false)
+						.set("published_version", null);
 					galleryDocument.save()
 						.then(() => res.sendStatus(200))
 						.catch(() => res.sendStatus(500));
@@ -559,7 +564,8 @@ controllers.gallery.modify = async (req, res) => {
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(403);
 
 					galleryQueryDocument.set("state", "saved")
-						.set("featured", false);
+						.set("featured", false)
+						.set("published_version", null);
 					await galleryDocument.save();
 
 					res.sendStatus(200);

@@ -145,7 +145,7 @@ module.exports = class Document {
 			const op = this._atomics[atomic];
 
 			Object.keys(op).forEach(path => {
-				if (atomicsMerged) return;
+				if (atomicsMerged || (path.split(".").length === newPath.split(".").length && path !== newPath)) return;
 				if (path === newPath) {
 					switch (newAtomic) {
 						case "$set":

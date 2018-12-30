@@ -11,6 +11,7 @@ const md = new showdown.Converter({
 	smartIndentationFix: true,
 });
 md.setFlavor("github");
+const { Constants } = require("../Internals");
 const { GetGuild } = require("../Modules").getGuild;
 
 const parsers = module.exports;
@@ -111,36 +112,39 @@ parsers.userData = async (req, usr, userDocument) => {
 	return userProfile;
 };
 
-parsers.extensionData = async (req, galleryDocument) => {
+parsers.extensionData = async (req, galleryDocument, versionTag) => {
 	const owner = await req.app.client.users.fetch(galleryDocument.owner_id, true) || {};
+	const versionDocument = galleryDocument.versions.id(versionTag || galleryDocument.published_version);
 	let typeIcon, typeDescription;
-	switch (galleryDocument.type) {
+	switch (versionDocument.type) {
 		case "command":
 			typeIcon = "magic";
-			typeDescription = galleryDocument.key;
+			typeDescription = versionDocument.key;
 			break;
 		case "keyword":
 			typeIcon = "key";
-			typeDescription = galleryDocument.keywords.join(", ");
+			typeDescription = versionDocument.keywords.join(", ");
 			break;
 		case "timer":
 			typeIcon = "clock-o";
-			if (moment(galleryDocument.interval)) {
-				const interval = moment.duration(galleryDocument.interval);
+			if (moment(versionDocument.interval)) {
+				const interval = moment.duration(versionDocument.interval);
 				typeDescription = `${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
 			} else {
-				typeDescription = `${galleryDocument.interval}ms`;
+				typeDescription = `${versionDocument.interval}ms`;
 			}
 			break;
 		case "event":
 			typeIcon = "code";
-			typeDescription = `${galleryDocument.event}`;
+			typeDescription = `${versionDocument.event}`;
 			break;
 	}
+	const scopes = versionDocument.scopes.map(scope => Constants.Scopes[scope]);
 	return {
 		_id: galleryDocument._id,
 		name: galleryDocument.name,
-		type: galleryDocument.type,
+		version: versionTag,
+		type: versionDocument.type,
 		typeIcon,
 		typeDescription,
 		description: md.makeHtml(xssFilters.inHTMLData(galleryDocument.description)),
@@ -155,9 +159,9 @@ parsers.extensionData = async (req, galleryDocument) => {
 		points: galleryDocument.points,
 		relativeLastUpdated: moment(galleryDocument.last_updated).fromNow(),
 		rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),
-		scopes: galleryDocument.scopes,
-		fields: galleryDocument.fields,
-		timeout: galleryDocument.timeout,
+		scopes,
+		fields: versionDocument.fields,
+		timeout: versionDocument.timeout,
 	};
 };
 

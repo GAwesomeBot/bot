@@ -6,8 +6,9 @@
 					<tr>
 						<th>Name</th>
 						<th>ID</th>
-						<th>Type</th>
+						<th>Latest Version</th>
 						<th>Status</th>
+						<th>Type</th>
 						<th>Points</th>
 						<th></th>
 					</tr>
@@ -22,23 +23,28 @@
 								<%= extension._id %>
 							</td>
 							<td>
-								<%= extension.type.charAt(0).toUpperCase() + extension.type.slice(1) %>
+								V<%= extension.version %>
 							</td>
 							<td>
 								<% if (extension.state === "gallery") { %>
-									Published
+								Published
 								<% } else if (extension.state === "queue") { %>
-									In Queue
+								In Queue
+								<% } else if (extension.state === "version_queue") { %>
+								Version in Queue
 								<% } else { %>
-									Saved
+								Saved
 								<% } %>
+							</td>
+							<td>
+								<%= extension.versions.id(extension.version).type.charAt(0).toUpperCase() + extension.versions.id(extension.version).type.slice(1) %>
 							</td>
 							<td>
 								<%= extension.points %>
 							</td>
 							<td>
 								<% if (extension.state !== "saved") { %>
-								<a class="button is-small" href="/extensions/<%= extension.state %>?id=<%= extension._id %>">
+								<a class="button is-small" href="/extensions/<%= extension.state === "version_queue" ? "queue" : extension.state %>?id=<%= extension._id %>">
 									<span class="icon is-small">
 										<i class="fa fa-eye"></i>
 									</span>
