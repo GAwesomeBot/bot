@@ -12,7 +12,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			return msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: `I couldn't find a matching member on this server...`,
+					description: `I couldn't find a matching member in this guild... 🧐`,
 				},
 			});
 		}
@@ -30,7 +30,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		if (!memberAboveAffected) {
 			return msg.send({
 				embed: {
-					color: Colors.SOFT_ERR,
+					color: Colors.MISSING_PERMS,
 					title: `I'm sorry, but I cannot let you do that! 😶`,
 					description: `You cannot kick someone who's above you! That's dumb!`,
 				},

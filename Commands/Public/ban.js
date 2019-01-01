@@ -42,7 +42,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		if (!memberAboveAffected) {
 			return msg.send({
 				embed: {
-					color: Colors.SOFT_ERR,
+					color: Colors.MISSING_PERMS,
 					title: `I'm sorry, but I cannot let you do that! 😶`,
 					description: `You cannot ban someone who's above you! That's dumb!`,
 				},
@@ -136,7 +136,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: `I couldn't find a matching member on this server...`,
+					description: `I couldn't find a matching member in this guild... 🧐`,
 					footer: {
 						text: `If you have a user ID you can run "${msg.guild.commandPrefix}${commandData.name} <ID>" to ban them!`,
 					},

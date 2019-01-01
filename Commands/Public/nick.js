@@ -7,7 +7,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			if (!msg.member.permissions.has("MANAGE_NICKNAMES")) {
 				return msg.send({
 					embed: {
-						color: Colors.SOFT_ERR,
+						color: Colors.MISSING_PERMS,
 						description: `You don't have permission to edit other member's nicks on this server 🔨`,
 					},
 				});
@@ -47,7 +47,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			if (!memberAboveAffected) {
 				return msg.send({
 					embed: {
-						color: Colors.SOFT_ERR,
+						color: Colors.MISSING_PERMS,
 						title: `I'm sorry, but I cannot let you do that! 😶`,
 						description: `You cannot manage someone who's above you! That's dumb!`,
 					},
