@@ -31,7 +31,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			await msg.send({
 				embed: {
 					color: Colors.INPUT,
-					title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input..`,
+					title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input...`,
 					description: `Are you sure you want to unban **@${ban.user.tag}**?\n\nThey were banned for\`\`\`css\n${ban.reason}\`\`\`\nThey will be unbanned for\`\`\`css\n${reason.trim()}\`\`\``,
 					footer: {
 						text: `The unbanned user will not be automatically notified!`,
