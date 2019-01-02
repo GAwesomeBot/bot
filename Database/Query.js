@@ -121,7 +121,7 @@ module.exports = class Query {
 
 				this._writeValue(parsed, definition.cast(value));
 			} else {
-				this._validate(this._definition, this.parsed, path);
+				this._validate(this._definition, this.parsed, path, !this._definition.isArray || isNaN(this.parsed.substring(this.parsed.lastIndexOf(".") + 1)));
 
 				this._writeValue(this.parsed, this._definition.cast(path));
 			}

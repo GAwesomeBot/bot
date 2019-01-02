@@ -1,49 +1,3 @@
-<% if (pageData.serverData) { %>
-<script>
-	GAwesomeData.extensions.servers = <%- JSON.stringify(pageData.serverData || []) %>;
-	GAwesomeData.extensions.extensions = <%- JSON.stringify(pageData.extensions || []) %>;
-</script>
-<div id="installer-modal" class="modal">
-	<div class="modal-background"></div>
-	<div class="modal-card" style="height: 80%;">
-		<div class="modal-card-head">
-			<p id="installer-title" class="modal-card-title">Installing Extension</p>
-			<button class="delete" aria-label="close" onclick="GAwesomeUtil.cancelInstall();"></button>
-		</div>
-		<div id="installer-box" class="modal-card-body" style="height: 100%;">
-			<div style="height: 90%; overflow: overlay;">
-				<h4 id="installer-subtitle" class="subtitle has-text-centered is-4">Extension Information</h4>
-				<form id="installer-form" onsubmit="return false;">
-                    <div id="installer-selector" class="field">
-                        <div class="control has-text-centered">
-                            <div class="select is-primary">
-                                <select id="installer-serverSelect" onchange="$('#installer-loading').show(); GAwesomeUtil.switchInstallTarget();">
-                                    <option value="select">Select a server</option>
-                                    <% pageData.serverData.forEach(server => { %>
-                                        <option value="<%= server.id %>"><%- server.name %></option>
-                                    <% }); %>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="installer-content" class="has-text-centered">
-                    </div>
-					<div id="installer-loading" class="installspinner" style="display: none;">
-						<div class="cube1"></div>
-						<div class="cube2"></div>
-					</div>
-				</form>
-			</div>
-			<div id="installer-control" class="has-text-centered" style="height: 10%; visibility: hidden;">
-				<button id="installer-continue" class="button is-info" onclick="GAwesomeUtil.advanceInstall();">Install</button>
-			</div>
-		</div>
-		<div class="modal-card-foot">
-			<progress id="installer-progress" class="progress is-info" value="0" max="100"></progress>
-		</div>
-	</div>
-</div>
-<% } %>
 <div id="typeDescription-event" class="modal">
 	<div class="modal-background"></div>
 	<div class="modal-content">
@@ -178,7 +132,7 @@
 				</div>
 				<footer class="card-footer">
 					<% if (authUser && pageData.serverData.length > 0) { %>
-						<a class="card-footer-item" onclick="GAwesomeUtil.installExtension('<%= extension._id %>', <%= extension.version %>);">
+						<a class="card-footer-item" onclick="GAwesomeUtil.openExtensionInstaller('<%= extension._id %>', <%= extension.version %>);">
 							Install
 						</a>
 					<% } %>

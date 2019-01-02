@@ -11,7 +11,7 @@ module.exports = new Schema({
 		default: Date.now,
 	},
 	config: require("./serverConfigSchema.js"),
-	extensions: [require("./modulesSchema.js")],
+	extensions: [require("./serverGallerySchema.js")],
 	members: require("./serverMembersSchema.js"),
 	games: [require("./serverGamesSchema.js")],
 	channels: require("./serverChannelsSchema.js"),

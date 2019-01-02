@@ -539,89 +539,39 @@ GAwesomeUtil.featureExtension = extid => {
 	featuredTag.html(featured ? "" : "<span class=\"tag is-primary\">Featured</span>&nbsp;");
 };
 
-GAwesomeUtil.installExtension = (extid, v) => {
-	GAwesomeUtil.log("Launching Extension install window");
+GAwesomeUtil.openExtensionInstaller = (extid, v) => {
+	GAwesomeUtil.log("Launching extension installer in window");
 	const width = window.screen.width - 600;
 	const height = window.screen.height - 800;
 	GAwesomeData.extensions.window = window.open(`/extensions/${extid}/install?v=${v}`, "GAB Extension Installer", `height=800,width=600,left=${width / 2},top=${height / 2}`);
 	GAwesomeData.extensions.window.focus();
 };
 
-GAwesomeUtil.cancelInstall = () => {
-	if (GAwesomeData.extensions.state && GAwesomeData.extensions.state.ongoing) {
-		GAwesomeUtil.log("Stopping Extension install after User Input");
-		GAwesomeData.extensions.state.ongoing = false;
-		$("#installer-modal").removeClass("is-active");
-		$("html").removeClass("is-clipped");
-		$("#installer-content").html("");
-		$("#installer-control").css("visibility", "hidden");
-		$("#installer-loading").hide();
-		$("#installer-progress").attr("value", 0);
-		$("#installer-selector").show();
-	} else {
-		GAwesomeUtil.warn("Extension Install not ongoing!");
-	}
-};
+GAwesomeUtil.installExtension = ({ target }) => {
+	GAwesomeUtil.log("[INSTALLER] Start install");
 
-GAwesomeUtil.switchInstallTarget = () => {
-	if (!GAwesomeData.extensions.state || !GAwesomeData.extensions.state.ongoing) return GAwesomeUtil.warn("An Install is not ongoing");
-	const serverid = $("#installer-serverSelect").val();
-	const target = $("#installer-content");
-	target.hide();
-	if (serverid === "select") {
-		target.html("");
-		$("#installer-control").css("visibility", "hidden");
-	} else {
-		const e = GAwesomeData.extensions.state.extension;
-		const svr = GAwesomeData.extensions.servers.find(a => a.id === serverid);
-		let info = `
-								<br>
-								<h5 class="title is-5">${e.name}</h5>
-								<h5 class="subtitle is-5">$DATA</h5>
-								<span class="icon is-large">
-									<i class="fa fa-2x fa-arrow-down"></i>
-								</span>
-								<br>
-								<br>
-								<img src="${svr.icon}" alt="${svr.id}" height="128" width="128">
-								<h5 class="title is-5">${svr.name}</h5>
-								`;
-		switch (e.type) {
-			case "command":
-				info = info.replace("$DATA", `Use <code>${svr.prefix}${e.typeDescription}</code> to trigger this extension.`);
-				break;
-			case "keyword":
-				info = info.replace("$DATA", `Messages with <code>${e.typeDescription}</code> will trigger this extension.`);
-				break;
-			case "timer":
-				info = info.replace("$DATA", `Every <code>${e.typeDescription}</code> this extension will trigger.`);
-				break;
-			case "event":
-				info = info.replace("$DATA", `This extension will trigger on the <code>${e.typeDescription}</code> event.`);
-				break;
+	const searchParams = new URLSearchParams(window.location.search);
+
+	const button = $(target);
+	button.addClass("is-loading");
+
+	const data = `${$(".installer-step-form").serialize()}&v=${searchParams.get("v")}`;
+
+	GAwesomeUtil.log(`[INSTALLER] Send POST with form data '${data}'`);
+	$.ajax({
+		method: "POST",
+		url: `/dashboard/${searchParams.get("svrid")}/other/extensions`,
+		data,
+	}).always(res => {
+		if (res !== "OK" && res.status !== 200) {
+			GAwesomeUtil.log(`[INSTALLER] Received non-OK status code from POST request. Response Code: ${res.status}`, "error");
+			swal("Failed to install extension.", "Contact support or try again later.", "error").then(() => button.removeClass("is-loading")).catch();
+		} else {
+			GAwesomeUtil.log("[INSTALLER] POST request successful.");
+			button.removeClass("is-loading");
+			swal("Successfully installed extension!", "You can now close this window.", "success").then(() => window.close()).catch();
 		}
-		target.html(`${info}`);
-		$("#installer-control").css("visibility", "visible");
-	}
-	$("#installer-loading").hide();
-	target.show();
-};
-
-GAwesomeUtil.advanceInstall = () => {
-	if (GAwesomeData.extensions.state.inUse) return;
-	GAwesomeData.extensions.state.inUse = true;
-	$("#installer-content").hide();
-	$("#installer-loading").show();
-	const { phases } = GAwesomeData.extensions.state;
-	const oldPhase = GAwesomeData.extensions.state.phase;
-	const newPhase = oldPhase + 1;
-	$("#installer-progress").attr("value", Math.ceil((newPhase / (phases.length - 1)) * 100));
-	GAwesomeData.extensions.state.phase = newPhase;
-	const h = GAwesomeData.extensions.html;
-	Object.keys(h[phases[newPhase]]).forEach(id => $(id).html(h[phases[newPhase]][id]()));
-	$("#installer-loading").hide();
-	$("#installer-content").show();
-	GAwesomeData.extensions.state.inUse = false;
+	});
 };
 
 GAwesomePaths.extensions = () => {
@@ -638,6 +588,8 @@ GAwesomePaths.extensions = () => {
 			theme: "monokai",
 		});
 		GAwesomeData.builder.refresh();
+	} else if (window.location.pathname.endsWith("/install")) {
+		$("#installer-submit").click(GAwesomeUtil.installExtension);
 	}
 };
 

@@ -115,15 +115,20 @@ parsers.userData = async (req, usr, userDocument) => {
 parsers.extensionData = async (req, galleryDocument, versionTag) => {
 	const owner = await req.app.client.users.fetch(galleryDocument.owner_id, true) || {};
 	const versionDocument = galleryDocument.versions.id(versionTag || galleryDocument.published_version);
+	if (!versionDocument) return null;
 	let typeIcon, typeDescription;
+	const typeInfo = {};
 	switch (versionDocument.type) {
 		case "command":
 			typeIcon = "magic";
 			typeDescription = versionDocument.key;
+			typeInfo.key = versionDocument.key;
 			break;
 		case "keyword":
 			typeIcon = "key";
 			typeDescription = versionDocument.keywords.join(", ");
+			typeInfo.keywords = versionDocument.keywords;
+			typeInfo.case_sensitive = versionDocument.case_sensitive;
 			break;
 		case "timer":
 			typeIcon = "clock-o";
@@ -133,13 +138,16 @@ parsers.extensionData = async (req, galleryDocument, versionTag) => {
 			} else {
 				typeDescription = `${versionDocument.interval}ms`;
 			}
+			typeInfo.interval = versionDocument.interval;
 			break;
 		case "event":
 			typeIcon = "code";
 			typeDescription = `${versionDocument.event}`;
+			typeInfo.event = versionDocument.event;
 			break;
 	}
 	const scopes = versionDocument.scopes.map(scope => Constants.Scopes[scope]);
+
 	return {
 		_id: galleryDocument._id,
 		name: galleryDocument.name,
@@ -147,6 +155,7 @@ parsers.extensionData = async (req, galleryDocument, versionTag) => {
 		type: versionDocument.type,
 		typeIcon,
 		typeDescription,
+		typeInfo,
 		description: md.makeHtml(xssFilters.inHTMLData(galleryDocument.description)),
 		featured: galleryDocument.featured,
 		owner: {

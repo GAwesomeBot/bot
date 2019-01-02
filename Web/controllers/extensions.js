@@ -5,7 +5,7 @@ const { ObjectID } = require("mongodb");
 const parsers = require("../parsers");
 const { GetGuild } = require("../../Modules").getGuild;
 const { AllowedEvents, Colors, Scopes } = require("../../Internals/Constants");
-const { renderError, dashboardUpdate, generateCodeID } = require("../helpers");
+const { renderError, dashboardUpdate, generateCodeID, getChannelData } = require("../helpers");
 
 // eslint-disable-next-line max-len
 const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
@@ -91,7 +91,8 @@ controllers.gallery = async (req, { res }) => {
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-			const extensionData = await Promise.all(galleryDocuments.map(a => parsers.extensionData(req, a, extensionState === "queue" ? a.version : a.published_version)));
+			const extensionData = await Promise.all(galleryDocuments.filter(galleryDocument => galleryDocument.published_version !== null && !isNaN(galleryDocument.published_version))
+				.map(a => parsers.extensionData(req, a, extensionState === "queue" ? a.version : a.published_version)));
 
 			res.setPageData({
 				page: "extensions.ejs",
@@ -214,7 +215,7 @@ controllers.installer = async (req, { res }) => {
 			serverData.sort((a, b) => a.name.localeCompare(b.name));
 			res.setServerData(serverData)
 				.setPageData({
-					page: "extensions-installer.ejs",
+					page: "extension-installer.ejs",
 					mode: "select",
 					extensionData,
 				})
@@ -224,12 +225,15 @@ controllers.installer = async (req, { res }) => {
 		const serverDocument = await Servers.findOne(req.query.svrid);
 		if (!serverDocument) return renderError(res, "That server doesn't exist!", undefined, 404);
 		const serverData = await parsers.serverData(req, serverDocument);
+		const svr = new GetGuild(req.app.client, serverDocument._id);
+		await svr.initialize();
 		if (serverData) {
 			res.setServerData(serverData)
 				.setPageData({
-					page: "extensions-installer.ejs",
+					page: "extension-installer.ejs",
 					mode: "install",
 					extensionData,
+					channelData: getChannelData(svr),
 				}).render();
 		} else {
 			return renderError(res, "That server doesn't exist!", undefined, 404);
@@ -521,7 +525,7 @@ controllers.gallery.modify = async (req, res) => {
 						await ownerUserDocument2.save();
 					}
 
-					galleryQueryDocument.clone.id("versions", req.params.action === "remove" ? galleryDocument.published_version : galleryDocument.version).set("approved", false);
+					galleryQueryDocument.clone.id("versions", req.params.action === "remove" ? galleryDocument.published_version : galleryDocument.version).set("accepted", false);
 					galleryQueryDocument.set("state", "saved")
 						.set("featured", false)
 						.set("published_version", null);

@@ -39,17 +39,27 @@ window.bulma = () => {
 		if (isDisabled) targetAddon.removeAttr("disabled");
 		else targetAddon.attr("disabled", true);
 	});
-	// 0. Ignore if disabled
-	// 1. Change status colors
-	// 2. Slide up current addon
-	// 3. Slide down selected addon
+
+	const validateElement = (element) => {
+		if (!element || !element.data("validate-form")) return true;
+		const formId = element.data("validate-form");
+		const form = document.getElementById(formId);
+
+		if (!form) return true;
+		else return form.reportValidity();
+	};
+
 	$("[data-select-isa]").click(function handler () {
 		const installerStep = $(this);
 		if (installerStep.attr("disabled") || installerStep.hasClass("is-active")) return;
+
 		const targetAddon = $(`#${installerStep.data("select-isa")}`);
 		if (!targetAddon[0]) return;
+
 		const selectedStep = $(".installer-step.is-active");
 		const selectedAddon = $(`#${selectedStep.data("select-isa")}`);
+		if (!validateElement(selectedStep)) return;
+
 		selectedAddon.slideUp();
 		selectedStep.removeClass("is-active");
 		targetAddon.slideDown();
@@ -59,7 +69,9 @@ window.bulma = () => {
 		const button = $(this);
 		const currentStep = $(".installer-step.is-active");
 		const nextStep = $(`#${button.data("next-is")}`);
-		if (!nextStep[0]) return;
+
+		if (!nextStep[0] || !validateElement(button)) return;
+
 		currentStep.addClass("is-success").removeClass("is-active");
 		$(`#${currentStep.data("select-isa")}`).slideUp();
 		nextStep.removeAttr("disabled").addClass("is-active");

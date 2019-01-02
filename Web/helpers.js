@@ -60,8 +60,8 @@ module.exports = {
 	saveAdminConsoleOptions: async (req, res, isAPI) => {
 		const validationError = req.svr.document.validate();
 		if (validationError) {
-			winston.debug(`A (malformed) request resulted in an invalid document:\n`, validationError);
-			return module.exports.renderError(res, "Your request is malformed.", null, 400);
+			winston.debug(`A (malformed) ${req.method} request at ${req.originalURL} resulted in an invalid document:\n`, validationError);
+			return isAPI ? res.sendStatus(400) : module.exports.renderError(res, "Your request is malformed.", null, 400);
 		}
 		try {
 			req.app.client.logMessage(req.svr.document, LoggingLevels.SAVE, `Changes were saved in the Admin Console at section ${req.path.replace(`/${req.svr.id}`, "")}.`, null, req.consolemember.user.id);

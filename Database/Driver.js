@@ -23,7 +23,7 @@ exports.initialize = async config => {
 	] = [
 		new Model(db, "servers", require("./Schemas/serverSchema")),
 		new Model(db, "users", require("./Schemas/userSchema")),
-		new Model(db, "gallery", require("./Schemas/modulesSchema")),
+		new Model(db, "gallery", require("./Schemas/gallerySchema")),
 		new Model(db, "blog", require("./Schemas/blogSchema")),
 		new Model(db, "wiki", require("./Schemas/wikiSchema")),
 		new Model(db, "traffic", require("./Schemas/trafficSchema")),

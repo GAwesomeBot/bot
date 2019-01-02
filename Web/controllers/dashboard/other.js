@@ -1,4 +1,5 @@
 const moment = require("moment");
+const { ObjectID } = require("mongodb");
 const { saveAdminConsoleOptions: save } = require("../../helpers");
 
 const controllers = module.exports;
@@ -185,6 +186,53 @@ controllers.public.post = async (req, res) => {
 
 controllers.extensions = async (req, res) => {
 	res.render("pages/503.ejs", {});
+};
+
+controllers.extensions.post = async (req, { res }) => {
+	const { document: serverDocument, queryDocument: serverQueryDocument } = req.svr;
+
+	if (req.body.id && req.body.v) {
+		let id;
+		try {
+			id = new ObjectID(req.body.id);
+		} catch (err) {
+			return res.sendStatus(404);
+		}
+		const extensionDocument = await Gallery.findOne(id);
+		if (!extensionDocument) return res.sendStatus(404);
+		const versionDocument = extensionDocument.versions.id(parseInt(req.body.v));
+		if (!versionDocument) return res.sendStatus(404);
+
+		const serverExtensionDocument = { _id: id.toString(), version: parseInt(req.body.v), disabled_channel_ids: [], keywords: [] };
+
+		switch (versionDocument.type) {
+			case "command":
+				serverExtensionDocument.key = req.body.key || versionDocument.key;
+				serverExtensionDocument.admin_level = parseInt(req.body.adminLevel) || 0;
+				Object.values(req.svr.channels).forEach(ch => {
+					if (!req.body[`enabled_channel_ids-${ch.id}`] && ch.type === "text") serverExtensionDocument.disabled_channel_ids.push(ch.id);
+				});
+				break;
+			case "keyword":
+				serverExtensionDocument.keywords = req.body.keywords && Array.isArray(req.body.keywords) ? req.body.keywords.split(",") : versionDocument.keywords;
+				serverExtensionDocument.case_sensitive = Boolean(req.body.caseSensitive);
+				break;
+			case "timer":
+				serverExtensionDocument.interval = parseInt(req.body.interval) || versionDocument.interval;
+				break;
+		}
+
+		try {
+			if (serverDocument.extensions.id(id.toString())) serverQueryDocument.clone.id("extensions", id.toString()).set(serverExtensionDocument);
+			else serverQueryDocument.push("extensions", serverExtensionDocument);
+		} catch (err) {
+			winston.debug(`A (malformed) ${req.method} request at ${req.originalURL} resulted in an invalid document:\n`, err);
+			return res.sendStatus(400);
+		}
+		save(req, res, true);
+	} else {
+		return res.sendStatus(400);
+	}
 };
 
 controllers.export = async (req, res) => {
