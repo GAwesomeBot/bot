@@ -266,7 +266,7 @@ class MessageCreate extends BaseEvent {
 											winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
 											this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
 										} else {
-											msg.send({
+											msg.channel.send({
 												embed: {
 													color: Colors.INFO,
 													title: `**@${this.client.getName(serverDocument, msg.member)}** said:`,
