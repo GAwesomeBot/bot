@@ -17,7 +17,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 					embed: {
 						color: Colors.SOFT_ERR,
 						title: `I'm sorry, but I can't do that... 😔`,
-						description: `I'm missing permissions to mute that user!\nEither they are above me or I don't have the **Manage Roles** permission.`,
+						description: `I'm missing permissions to unmute that user!\nEither they are above me or I don't have the **Manage Roles** permission.`,
 					},
 				});
 			}
@@ -26,26 +26,26 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 					embed: {
 						color: Colors.MISSING_PERMS,
 						title: `I'm sorry, but I cannot let you do that! 😶`,
-						description: `You cannot mute someone who's above you! That's dumb!`,
+						description: `You cannot unmute someone who's above you! That's dumb!`,
 					},
 				});
 			}
 
-			if (client.isMuted(msg.channel, member)) {
+			if (!client.isMuted(msg.channel, member)) {
 				return msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
-						description: "That member is already muted. You can't double-mute members, that's crazy talk! 🤪",
+						description: "That member isn't muted. You can't be negative-muted, that's crazy talk! 🤪",
 					},
 				});
 			}
 
-			await client.muteMember(msg.channel, member, `Muted ${member.user.tag} in #${msg.channel.name} | Command issued by ${msg.author.tag}`);
-			await ModLog.create(msg.guild, "Mute", member, msg.author, reason);
+			await client.unmuteMember(msg.channel, member, `Unmuted ${member.user.tag} in #${msg.channel.name} | Command issued by ${msg.author.tag}`);
+			await ModLog.create(msg.guild, "Unmute", member, msg.author, reason);
 			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
-					description: `**@${client.getName(serverDocument, member)}** can't speak in #${msg.channel.name} anymore 🔇`,
+					description: `**@${client.getName(serverDocument, member)}** can speak in #${msg.channel.name} now 🔈`,
 				},
 			});
 		} else {
@@ -57,6 +57,6 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			});
 		}
 	} else {
-		msg.sendInvalidUsage(commandData, "Do you want me to mute you? 😮");
+		msg.sendInvalidUsage(commandData, "Who do you want me to unmute? 😮");
 	}
 };
