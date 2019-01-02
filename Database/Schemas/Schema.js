@@ -374,6 +374,7 @@ class Schema {
 	}
 
 	validate (obj = {}, doc) {
+		if (obj === null) obj = {};
 		const unvalidated = Object.keys(obj);
 		let errors = [];
 
