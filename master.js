@@ -205,7 +205,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				if (msg.target === "master") {
 					const result = {};
 					try {
-						result.result = await eval(`(async () => {${msg.code})()`);
+						result.result = await eval(`(async () => {${msg.code}})()`);
 					} catch (err) {
 						result.err = true;
 						result.result = err;
