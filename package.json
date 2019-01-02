@@ -75,7 +75,7 @@
   },
   "devDependencies": {
     "active-handles": "^1.1.0",
-    "clean-css-cli": "^4.1.11",
+    "clean-css-cli": "^4.2.1",
     "eslint": "^5.10.0",
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^3.8.0",
