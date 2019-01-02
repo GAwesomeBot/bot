@@ -114,7 +114,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		ban: {
-			usage: `<user> [|] [<reason>]`,
+			usage: `<user> [|] [<days>] [|] [<reason>]`,
 			description: `Bans the user from this server and deletes 1 day's worth of messages.`,
 			defaults: {
 				isEnabled: true,
@@ -730,16 +730,6 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
-		},
-		softban: {
-			usage: `<user> [|] [<reason>]`,
-			description: `Bans the user from this server without deleting their messages`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 3,
-			},
-			category: `Moderation ⚒`,
 		},
 		stats: {
 			usage: `["clear"]`,

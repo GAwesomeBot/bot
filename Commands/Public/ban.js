@@ -4,6 +4,8 @@ const ArgParser = require("../../Modules/MessageUtils/Parser");
 module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		let [inputMember, ...reason] = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
+		let days = 1;
+		if (!isNaN(reason[0]) && parseInt(reason[0]) < 31) days = parseInt(reason.splice(0, 1));
 		const isJustUserID = /^\d+$/.test(inputMember);
 		let isGuildMember = false, hasReason = true, member = null;
 		if (isJustUserID) {
@@ -115,9 +117,9 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					}
 					if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
 						if (isGuildMember) {
-							member.ban({ days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+							member.ban({ days, reason: `${reason} | Command issued by @${msg.author.tag}` });
 						} else {
-							msg.guild.members.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+							msg.guild.members.ban(member.id, { days, reason: `${reason} | Command issued by @${msg.author.tag}` });
 						}
 						dmBanned(member.id);
 						await CreateModLog(msg.guild, "Ban", member, msg.author, reason);
