@@ -387,7 +387,7 @@ class Schema {
 			if (unvalidated.includes(definition.key)) unvalidated.splice(unvalidated.indexOf(definition.key), 1);
 		});
 
-		unvalidated.forEach(val => val[0] !== "_" ? errors.push({ type: "undefined", val: obj[val], path: val, definition: undefined }) : null);
+		unvalidated.forEach(val => val[0] !== "_" ? errors.push({ type: "undefined", value: obj[val], path: val, definition: undefined }) : null);
 
 		if (errors.length) return new ValidationError(errors, doc || obj);
 		else return null;
