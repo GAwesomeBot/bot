@@ -107,6 +107,10 @@ module.exports = new Schema({
 		default: false,
 	},
 	list_data: [new Schema({
+		_id: {
+			type: Number,
+			required: true,
+		},
 		content: {
 			type: String,
 			required: true,
@@ -114,7 +118,6 @@ module.exports = new Schema({
 		isCompleted: {
 			type: Boolean,
 			default: false,
-			required: true,
 		},
 	})],
 	message_of_the_day: new Schema({

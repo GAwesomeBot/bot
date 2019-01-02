@@ -387,7 +387,7 @@ module.exports = class Query {
 		const parent = mpath.get(parentPath, this._doc._doc);
 		if (Array.isArray(parent)) {
 			parent.splice(childPath, 1);
-			this._doc._setAtomic(parentPath, childPath, "$unset");
+			this._doc._setAtomic(path, "", "$unset");
 		} else {
 			delete parent[childPath];
 			delete mpath.get(parentPath, this._doc)[childPath];
