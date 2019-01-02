@@ -9,11 +9,10 @@ const {
 module.exports = class Extension {
 	/**
 	 *	Create an Extension Module instance
-	 *	@param {modulesSchema} rawExtensionDocument - The extension's document
-	 *	@param {serverSchema} serverDocument - The document of the guild in which the extension is being executed
+	 *	@param {Object} extensionDocument - The extension's subdocument
+	 *	@param {Document} serverDocument - The document of the guild in which the extension is being executed
 	 */
-	constructor (rawExtensionDocument, serverDocument) {
-		const extensionDocument = rawExtensionDocument.toObject();
+	constructor (extensionDocument, serverDocument) {
 		this.name = extensionDocument.name;
 		this.type = extensionDocument.type;
 		this.key = extensionDocument.key;

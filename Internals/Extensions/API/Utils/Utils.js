@@ -59,9 +59,9 @@ class Utils {
 		}
 
 		if (color < 0 || color > 0xFFFFFF) {
-			throw new RangeError(`The color isn't in the range of 0x000000 - 0xFFFFFF`);
+			throw new RangeError(`The specified color isn't in the range of 0x000000 - 0xFFFFFF`);
 		} else if (color && isNaN(color)) {
-			throw new TypeError(`Color isn't a number.`);
+			throw new TypeError(`The specified color isn't a number.`);
 		}
 
 		return color;

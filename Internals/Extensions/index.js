@@ -3,10 +3,10 @@ const fs = require("fs-nextra");
 const API = require("./API");
 const { Sandbox } = API;
 
-const getExtensionCode = extensionDocument => fs.readFile(`${__dirname}/../../Extensions/${extensionDocument.code_id}.gabext`, "utf8");
+const getExtensionCode = versionDocument => fs.readFile(`${__dirname}/../../Extensions/${versionDocument.code_id}.gabext`, "utf8");
 
-const parseScopes = extensionDocument => {
-	const { scopes } = extensionDocument;
+const parseScopes = versionDocument => {
+	const { scopes } = versionDocument;
 	const parsed = {
 		messages: {
 			readChannel: false,
@@ -86,21 +86,22 @@ const parseScopes = extensionDocument => {
 	return parsed;
 };
 
-module.exports = async (client, serverDocument, extensionDocument, params) => {
+module.exports = async (client, serverDocument, extensionDocument, versionDocument, params) => {
 	let extensionCode;
 	try {
-		extensionCode = await getExtensionCode(extensionDocument);
+		extensionCode = await getExtensionCode(versionDocument);
 	} catch (err) {
-		return winston.warn(`Failed to load the extension code for ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: params.guild.id, extid: extensionDocument._id }, err);
+		// eslint-disable-next-line max-len
+		return winston.warn(`Failed to load extension code for ${versionDocument.type} extension "${extensionDocument.name}"`, { svrid: params.guild.id, extid: extensionDocument._id, v: versionDocument._id }, err);
 	}
 	try {
-		const scopes = parseScopes(extensionDocument);
+		const scopes = parseScopes(versionDocument);
 		const vm = new VM({
-			timeout: extensionDocument.timeout,
-			sandbox: new Sandbox(client, serverDocument, extensionDocument, params, scopes),
+			timeout: versionDocument.timeout,
+			sandbox: new Sandbox(client, serverDocument, extensionDocument, versionDocument, params, scopes),
 		});
 		vm.run(extensionCode);
 	} catch (err) {
-		winston.debug(`Failed to run ${extensionDocument.type} extension "${extensionDocument.name}": ${err.stack}`, { svrid: params.guild.id, extid: extensionDocument._id });
+		winston.debug(`Failed to run ${versionDocument.type} extension "${extensionDocument.name}": ${err.stack}`, { svrid: params.guild.id, extid: extensionDocument._id, v: versionDocument._id }, err);
 	}
 };
