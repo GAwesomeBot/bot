@@ -115,6 +115,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			await Promise.all(args.map(async memberQuery => {
 				const member = await client.memberSearch(memberQuery, msg.guild).catch(() => {
 					// No-op
+					console.log("rip")
 				});
 				if (member) members.push(member);
 			}));

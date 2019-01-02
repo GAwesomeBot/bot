@@ -120,7 +120,7 @@ module.exports = {
 
 	],
 	voiceStateUpdate: [
-
+		"GAB.VoiceStateUpdate",
 	],
 	disconnect: [
 
