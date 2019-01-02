@@ -109,13 +109,11 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 		const args = ArgParser.parseQuoteArgs(msg.suffix);
 		if (["text", "voice"].includes(args[0].toLowerCase())) {
 			const [type] = args.splice(0, 1);
-			args.splice(0, 1);
 			const members = [];
 
 			await Promise.all(args.map(async memberQuery => {
 				const member = await client.memberSearch(memberQuery, msg.guild).catch(() => {
 					// No-op
-					console.log("rip")
 				});
 				if (member) members.push(member);
 			}));

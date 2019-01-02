@@ -77,6 +77,12 @@ class ChannelDelete extends BaseEvent {
 			serverQueryDocument.pull("config.voicetext_channels", channel.id);
 		}
 
+		// Rooms
+		if (serverDocument.config.room_data.id(channel.id)) {
+			updated = true;
+			serverQueryDocument.pull("config.room_data", channel.id);
+		}
+
 		// Save possible changes
 		if (updated) {
 			try {
