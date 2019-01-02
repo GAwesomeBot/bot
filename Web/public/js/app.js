@@ -188,9 +188,12 @@ GAwesomeUtil.submitForm = () => {
 			const form = $("#form-submit");
 			form.removeClass("is-loading");
 			if (data !== "OK" && data.status !== 200 && data.status !== 302) {
+				GAwesomeUtil.log(`Failed to save dashboard settings. Server returned status ${data.status}.`, "error");
 				form.find("span:nth-child(1)").html("<i class='fa fa-exclamation'></i>");
 				form.find("span:nth-child(2)").html("Error");
-			} else { form.find("span:nth-child(2)").html("Saved"); }
+			} else {
+				form.find("span:nth-child(2)").html("Saved");
+			}
 
 			$(".menu-modifier").each((index, modifier) => {
 				modifier = $(modifier);
