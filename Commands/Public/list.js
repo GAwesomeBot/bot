@@ -27,12 +27,13 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 
 	if (msg.suffix) {
 		let [inputID, ...action] = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
+		action = action.join(" ");
 
 		if (inputID && isNaN(inputID.trim())) {
 			const generateID = (offset = 1) => {
 				if (!serverDocument.config.list_data || serverDocument.config.list_data.length === 0) return 1;
 				const ID = serverDocument.config.list_data[serverDocument.config.list_data.length - 1]._id + offset;
-				if (serverDocument.config.list_data.id(ID)) generateID(offset + 1);
+				if (serverDocument.config.list_data.id(ID)) return generateID(offset + 1);
 				else return ID;
 			};
 			const ID = generateID();
@@ -47,7 +48,6 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 				},
 			}).then(sendList);
 		} else if (serverDocument.config.list_data.id(parseInt(inputID))) {
-			action = action.join(" ");
 			switch (action) {
 				case "":
 					if (!msg.suffix.includes("|")) return msg.sendInvalidUsage(commandData);
