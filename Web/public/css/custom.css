@@ -219,6 +219,8 @@ html, body {
 }
 .generic-feature .generic-feature-box .generic-feature-box-description {
     padding: 1rem;
+    display: flex;
+    align-items: center;
 }
 .generic-feature .generic-feature-box .generic-feature-box-addon {
     display: flex;

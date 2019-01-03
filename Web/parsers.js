@@ -149,7 +149,7 @@ parsers.extensionData = async (req, galleryDocument, versionTag) => {
 	const scopes = versionDocument.scopes.map(scope => Constants.Scopes[scope]);
 
 	return {
-		_id: galleryDocument._id,
+		_id: galleryDocument._id.toString(),
 		name: galleryDocument.name,
 		version: versionTag,
 		type: versionDocument.type,

@@ -91,7 +91,7 @@ controllers.gallery = async (req, { res }) => {
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-			const extensionData = await Promise.all(galleryDocuments.filter(galleryDocument => galleryDocument.published_version !== null && !isNaN(galleryDocument.published_version))
+			const extensionData = await Promise.all(galleryDocuments.filter(galleryDocument => (galleryDocument.published_version !== null && !isNaN(galleryDocument.published_version)) || extensionState === "queue")
 				.map(a => parsers.extensionData(req, a, extensionState === "queue" ? a.version : a.published_version)));
 
 			res.setPageData({

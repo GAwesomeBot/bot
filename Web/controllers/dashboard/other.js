@@ -1,6 +1,7 @@
 const moment = require("moment");
 const { ObjectID } = require("mongodb");
 const { saveAdminConsoleOptions: save } = require("../../helpers");
+const parsers = require("../../parsers");
 
 const controllers = module.exports;
 
@@ -184,8 +185,27 @@ controllers.public.post = async (req, res) => {
 	}
 };
 
-controllers.extensions = async (req, res) => {
-	res.render("pages/503.ejs", {});
+controllers.extensions = async (req, { res }) => {
+	const serverDocument = req.svr.document;
+	const serverExtensionDocuments = serverDocument.extensions;
+
+	const extensionData = await Promise.all(serverExtensionDocuments.map(async serverExtensionDocument => {
+		const extensionDocument = await Gallery.findOne(new ObjectID(serverExtensionDocument._id));
+		if (!extensionDocument) return null;
+		const obj = await parsers.extensionData(req, extensionDocument, serverExtensionDocument.version);
+		obj.published_version = extensionDocument.published_version;
+		obj.level = extensionDocument.level;
+		return obj;
+	}));
+
+	extensionData.spliceNullElements();
+
+	res.setPageData({
+		page: "admin-extensions.ejs",
+		extensionData: extensionData,
+	}).setConfigData({
+		extensions: serverExtensionDocuments,
+	}).render();
 };
 
 controllers.extensions.post = async (req, { res }) => {
