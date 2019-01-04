@@ -27,7 +27,7 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 				channel.send(serverConfigDocument.message_of_the_day.message_content);
 				client.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", null, channel.id);
 			} else {
-				client.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
+				client.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null);
 			}
 			client.setTimeout(async () => {
 				const newServerDocument = await Servers.findOne(server.id).catch(err => {
