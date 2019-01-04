@@ -40,11 +40,13 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 
 	if (motdDocument.isEnabled) {
 		if (client.MOTDTimers.has(server.id)) client.clearTimeout(client.MOTDTimers.get(server.id));
+		let timeout = (new Date(motdDocument.last_run).getTime() + motdDocument.interval) - Date.now();
+		if (timeout <= 0) timeout = 1;
 		client.MOTDTimers.set(server.id, client.setTimeout(async () => {
 			const serverDocument = await Servers.findOne(server.id).catch(err => {
 				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
 			});
 			await sendMOTD(serverDocument);
-		}, Math.abs((new Date(motdDocument.last_run).getTime() + motdDocument.interval) - Date.now())));
+		}, timeout));
 	}
 };
