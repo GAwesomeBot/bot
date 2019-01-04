@@ -569,6 +569,20 @@ module.exports = class GABClient extends DJSClient {
 					}
 					return obj;
 				}
+				case "mute": {
+					const obj = {
+						canClientMute: false,
+						memberAboveAffected: false,
+					};
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					obj.canClientMute = guild.me.permissions.has("MANAGE_ROLES");
+					return obj;
+				}
 			}
 		} else {
 			throw new GABError("MISSING_ACTION_TYPE");
