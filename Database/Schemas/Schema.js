@@ -226,7 +226,7 @@ class Definition {
 
 		if (raw[MapSymbol]) {
 			this.type = Types.schema(raw.schema);
-			this._default = {};
+			this._default = () => ({});
 			this.isMap = true;
 			this.type.schema._parent = this;
 		} else if (TypeDefs.includes(raw)) {
@@ -242,7 +242,7 @@ class Definition {
 		} else if (raw.constructor === module.exports || raw[0].constructor === module.exports) {
 			if (Array.isArray(raw)) {
 				this.type = Types.schema(raw[0]);
-				this._default = [];
+				this._default = () => [];
 				this.isArray = true;
 			} else {
 				this.type = Types.schema(raw);
@@ -253,7 +253,7 @@ class Definition {
 			this.type = Types[raw[0].name.toLowerCase()];
 			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
 
-			this._default = [];
+			this._default = () => [];
 			this.isArray = true;
 		} else {
 			this.type = null;
