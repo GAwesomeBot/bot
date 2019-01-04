@@ -1,4 +1,4 @@
-module.exports = pullEndpointKey => (req, res) => {
+module.exports = pullEndpointKey => async (req, res) => {
 	switch (pullEndpointKey) {
 		case "muted": {
 			const memberDocument = req.svr.document.members[req.params.id];
@@ -12,6 +12,10 @@ module.exports = pullEndpointKey => (req, res) => {
 		case "tags":
 			req.svr.queryDocument.pull("config.tags.list", req.params.id);
 			break;
+		case "extensions": {
+			req.svr.queryDocument.pull("extensions", req.params.id);
+			break;
+		}
 		default:
 			req.svr.queryDocument.pull(`config.${pullEndpointKey}`, req.params.id);
 	}

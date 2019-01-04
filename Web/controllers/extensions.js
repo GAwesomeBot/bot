@@ -5,50 +5,7 @@ const { ObjectID } = require("mongodb");
 const parsers = require("../parsers");
 const { GetGuild } = require("../../Modules").getGuild;
 const { AllowedEvents, Colors, Scopes } = require("../../Internals/Constants");
-const { renderError, dashboardUpdate, generateCodeID, getChannelData } = require("../helpers");
-
-// eslint-disable-next-line max-len
-const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
-const pushExtensionVersionData = (extensionDocument, data) => {
-	const extensionQueryDocument = extensionDocument.query;
-	const currentVersion = extensionDocument.versions.id(extensionDocument.version) || { _id: 0 };
-	const newVersion = { _id: currentVersion._id, accepted: currentVersion.accepted };
-	newVersion.type = data.type;
-
-	newVersion.key = data.type === "command" ? data.key : null;
-	newVersion.usage_help = data.type === "command" ? data.usage_help : null;
-	newVersion.extended_help = data.type === "command" ? data.extended_help : null;
-
-	newVersion.keywords = data.keywords ? data.keywords.split(",") : [];
-	newVersion.case_sensitive = data.case_sensitive === "on";
-
-	newVersion.interval = data.type === "timer" ? parseInt(data.interval) : null;
-
-	newVersion.event = data.type === "event" ? data.event : null;
-
-	newVersion.timeout = parseInt(data.timeout);
-	newVersion.code_id = generateCodeID(data.code);
-	newVersion.scopes = [];
-	Object.keys(data).forEach(val => {
-		if (val.startsWith("scope_") && data[val]) newVersion.scopes.push(val.split("scope_")[1]);
-	});
-
-	if (!Object.keys(newVersion).some(key => JSON.stringify(newVersion[key]) !== JSON.stringify(currentVersion[key]))) return false;
-	newVersion._id++;
-	newVersion.accepted = false;
-	extensionQueryDocument.push("versions", newVersion);
-	return newVersion._id;
-};
-const writeExtensionData = (extensionDocument, data) => {
-	const extensionQueryDocument = extensionDocument.query;
-	extensionQueryDocument.set("name", data.name)
-		.set("last_updated", Date.now());
-
-	const versionTag = pushExtensionVersionData(extensionDocument, data);
-	if (!versionTag) return false;
-	extensionQueryDocument.set("version", versionTag);
-	return versionTag;
-};
+const { renderError, dashboardUpdate, generateCodeID, getChannelData, validateExtensionData, writeExtensionData } = require("../helpers");
 
 const controllers = module.exports;
 
@@ -91,7 +48,8 @@ controllers.gallery = async (req, { res }) => {
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-			const extensionData = await Promise.all(galleryDocuments.filter(galleryDocument => (galleryDocument.published_version !== null && !isNaN(galleryDocument.published_version)) || extensionState === "queue")
+			const extensionData = await Promise.all(galleryDocuments.filter(galleryDocument => (galleryDocument.published_version !== null && !isNaN(galleryDocument.published_version)) ||
+				extensionState === "queue")
 				.map(a => parsers.extensionData(req, a, extensionState === "queue" ? a.version : a.published_version)));
 
 			res.setPageData({
@@ -231,7 +189,7 @@ controllers.installer = async (req, { res }) => {
 			res.setServerData(serverData)
 				.setPageData({
 					page: "extension-installer.ejs",
-					mode: "install",
+					mode: req.query.update ? "update" : "install",
 					extensionData,
 					channelData: getChannelData(svr),
 				}).render();
@@ -245,6 +203,7 @@ controllers.my = async (req, { res }) => {
 	if (req.isAuthenticated()) {
 		try {
 			const galleryDocuments = await Gallery.find({
+				level: "gallery",
 				owner_id: req.user.id,
 			}).exec();
 
@@ -554,6 +513,7 @@ controllers.gallery.modify = async (req, res) => {
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
 
 					await Gallery.delete({ _id: galleryDocument._id });
+					await Servers.update({ extensions: { $elemMatch: { _id: galleryDocument._id.toString() } } }, { $pull: { extensions: { _id: galleryDocument._id.toString() } } }, { multi: true });
 					dashboardUpdate(req, req.path, req.user.id);
 
 					try {

@@ -26,4 +26,12 @@ module.exports = new Schema({
 		max: 4,
 	},
 	store: Schema.Mixed,
+	status: new Schema({
+		code: {
+			type: Number,
+			enum: [0, 1, 2],
+			default: 0,
+		},
+		description: String,
+	}),
 });

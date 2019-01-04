@@ -4,6 +4,7 @@ const {
 		Error: GABError,
 	},
 } = require("../../../index");
+let rawExtensionDocument;
 
 /**	Library containing basic Extension metadata and methods */
 module.exports = class Extension {

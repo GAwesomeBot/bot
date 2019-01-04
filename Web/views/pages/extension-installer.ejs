@@ -13,8 +13,7 @@
 					<span class="icon is-large">
                         <i class="fa fa-bolt"></i>
                     </span>
-                    Installing extension <strong><%= pageData.extensionData.name %></strong>.
-
+                    <%= pageData.mode === "update" ? "Updating" : "Installing" %> extension <strong><%= pageData.extensionData.name %></strong>.
                 </h1>
                 <% if (pageData.mode === "install") { %>
                 <a class="button is-outlined is-info is-small"
@@ -24,6 +23,13 @@
                     &nbsp;
                     <span><%= serverData.name %></span>
                 </a>
+                <% } else if (pageData.mode === "update") { %>
+                <button class="button is-outlined is-info is-small" disabled>
+                    <img class="image is-16x16" src="<%= serverData.icon %>" style="border-radius: 100%;"
+                         alt="<%= serverData.id %>">
+                    &nbsp;
+                    <span><%= serverData.name %></span>
+                </button>
                 <% } %>
             </div>
         </div>

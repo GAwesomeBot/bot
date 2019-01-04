@@ -1,6 +1,8 @@
+const fs = require("fs-nextra");
 const moment = require("moment");
 const { ObjectID } = require("mongodb");
-const { saveAdminConsoleOptions: save } = require("../../helpers");
+const { AllowedEvents, Scopes } = require("../../../Internals/Constants");
+const { saveAdminConsoleOptions: save, renderError, getChannelData, generateCodeID, writeExtensionData, validateExtensionData } = require("../../helpers");
 const parsers = require("../../parsers");
 
 const controllers = module.exports;
@@ -205,7 +207,8 @@ controllers.extensions = async (req, { res }) => {
 		extensionData: extensionData,
 	}).setConfigData({
 		extensions: serverExtensionDocuments,
-	}).render();
+	}).setServerData("channelData", getChannelData(req.svr))
+		.render();
 };
 
 controllers.extensions.post = async (req, { res }) => {
@@ -223,7 +226,7 @@ controllers.extensions.post = async (req, { res }) => {
 		const versionDocument = extensionDocument.versions.id(parseInt(req.body.v));
 		if (!versionDocument) return res.sendStatus(404);
 
-		const serverExtensionDocument = { _id: id.toString(), version: parseInt(req.body.v), disabled_channel_ids: [], keywords: [] };
+		const serverExtensionDocument = { _id: id.toString(), version: parseInt(req.body.v), disabled_channel_ids: [], keywords: [], status: { code: 0, description: "" } };
 
 		switch (versionDocument.type) {
 			case "command":
@@ -234,7 +237,11 @@ controllers.extensions.post = async (req, { res }) => {
 				});
 				break;
 			case "keyword":
-				serverExtensionDocument.keywords = req.body.keywords && Array.isArray(req.body.keywords) ? req.body.keywords.split(",") : versionDocument.keywords;
+				serverExtensionDocument.admin_level = parseInt(req.body.adminLevel) || 0;
+				Object.values(req.svr.channels).forEach(ch => {
+					if (!req.body[`enabled_channel_ids-${ch.id}`] && ch.type === "text") serverExtensionDocument.disabled_channel_ids.push(ch.id);
+				});
+				serverExtensionDocument.keywords = req.body.keywords ? req.body.keywords.split(",") : versionDocument.keywords;
 				serverExtensionDocument.case_sensitive = Boolean(req.body.caseSensitive);
 				break;
 			case "timer":
@@ -252,6 +259,151 @@ controllers.extensions.post = async (req, { res }) => {
 		save(req, res, true);
 	} else {
 		return res.sendStatus(400);
+	}
+};
+
+controllers.extensionBuilder = async (req, { res }) => {
+	const renderPage = (extensionData, extensionConfigData) => {
+		res.setServerData("channelData", getChannelData(req.svr))
+			.setPageData({
+				page: "admin-extension-builder.ejs",
+				extensionData,
+				extensionConfigData,
+				versionData: extensionData.versions ? extensionData.versions.id(extensionData.version) : {},
+				events: AllowedEvents,
+				scopes: Scopes,
+			})
+			.render();
+	};
+
+	if (req.query.extid) {
+		try {
+			const extensionConfigData = req.svr.document.extensions.id(req.query.extid);
+			if (extensionConfigData) {
+				let galleryDocument;
+				try {
+					galleryDocument = await Gallery.findOne({
+						_id: new ObjectID(req.query.extid),
+						level: "third",
+					});
+				} catch (err) {
+					return renderPage({}, {});
+				}
+				if (galleryDocument) {
+					try {
+						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.versions.id(galleryDocument.version).code_id}.gabext`);
+					} catch (err) {
+						galleryDocument.code = "";
+					}
+					renderPage(galleryDocument, extensionConfigData);
+				} else {
+					renderPage({}, {});
+				}
+			} else {
+				renderPage({}, {});
+			}
+		} catch (err) {
+			renderError(res, "An error occurred while fetching extension data.");
+		}
+	} else {
+		renderPage({}, {});
+	}
+};
+controllers.extensionBuilder.post = async (req, res) => {
+	if (validateExtensionData(req.body)) {
+		const sendErrorResponse = err => res.status(500).send(err);
+
+		const saveExtensionCode = async (err, codeID) => {
+			if (err) {
+				winston.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
+				sendErrorResponse(err);
+			} else {
+				try {
+					return fs.outputFileAtomic(`${__dirname}/../../../Extensions/${codeID}.gabext`, req.body.code);
+				} catch (error) {
+					winston.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
+					sendErrorResponse(true);
+				}
+			}
+		};
+
+		const installExtensionData = async galleryDocument => {
+			const serverDocument = req.svr.document;
+			const serverQueryDocument = req.svr.queryDocument;
+			const versionDocument = galleryDocument.versions.id(galleryDocument.version);
+
+			const serverExtensionDocument = { _id: galleryDocument._id.toString(), version: galleryDocument.version, disabled_channel_ids: [], keywords: [], status: { code: 0, description: "" } };
+
+			switch (versionDocument.type) {
+				case "command":
+					serverExtensionDocument.key = versionDocument.key;
+					serverExtensionDocument.admin_level = parseInt(req.body.adminLevel) || 0;
+					Object.values(req.svr.channels).forEach(ch => {
+						if (!req.body[`enabled_channel_ids-${ch.id}`] && ch.type === "text") serverExtensionDocument.disabled_channel_ids.push(ch.id);
+					});
+					break;
+				case "keyword":
+					serverExtensionDocument.admin_level = parseInt(req.body.adminLevel) || 0;
+					Object.values(req.svr.channels).forEach(ch => {
+						if (!req.body[`enabled_channel_ids-${ch.id}`] && ch.type === "text") serverExtensionDocument.disabled_channel_ids.push(ch.id);
+					});
+					serverExtensionDocument.keywords = versionDocument.keywords;
+					serverExtensionDocument.case_sensitive = versionDocument.case_sensitive;
+					break;
+				case "timer":
+					serverExtensionDocument.interval = versionDocument.interval;
+					break;
+			}
+
+			if (serverDocument.extensions.id(galleryDocument._id.toString())) serverQueryDocument.clone.id("extensions", galleryDocument._id.toString()).set(serverExtensionDocument);
+			else serverQueryDocument.push("extensions", serverExtensionDocument);
+			save(req, res, true);
+		};
+
+		const saveExtensionData = async (galleryDocument, isUpdate) => {
+			const galleryQueryDocument = galleryDocument.query;
+
+			galleryQueryDocument.set("level", "third")
+				.set("description", req.body.description)
+				.set("state", "saved");
+			writeExtensionData(galleryDocument, req.body);
+
+			if (!isUpdate) galleryQueryDocument.set("owner_id", req.user.id);
+
+			const validation = galleryDocument.validate();
+			if (validation) {
+				winston.warn("Failed to validate extension data", { err: validation });
+				return sendErrorResponse(validation);
+			}
+			await galleryDocument.save().catch(err => {
+				winston.warn(`Failed to save extension metadata: ${err}`);
+				sendErrorResponse(err);
+			}).then(async () => {
+				await saveExtensionCode(false, generateCodeID(req.body.code));
+				await installExtensionData(galleryDocument);
+			});
+		};
+
+		if (req.query.extid) {
+			let galleryDocument;
+			try {
+				galleryDocument = await Gallery.findOne({
+					_id: new ObjectID(req.query.extid),
+					owner_id: req.user.id,
+				});
+			} catch (err) {
+				return saveExtensionData(await Gallery.new(), false);
+			}
+			if (galleryDocument) {
+				await saveExtensionData(galleryDocument, true);
+			} else {
+				await saveExtensionData(await Gallery.new(), false);
+			}
+		} else {
+			await saveExtensionData(await Gallery.new(), false);
+		}
+	} else {
+		renderError(res, "Failed to verify extension data.", undefined, 400);
 	}
 };
 

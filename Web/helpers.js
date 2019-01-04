@@ -144,4 +144,46 @@ module.exports = {
 		.createHash("md5")
 		.update(code, "utf8")
 		.digest("hex"),
+
+	validateExtensionData: data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code,
+	pushExtensionVersionData: (extensionDocument, data) => {
+		const extensionQueryDocument = extensionDocument.query;
+		const currentVersion = extensionDocument.versions.id(extensionDocument.version) || { _id: 0 };
+		const newVersion = { _id: currentVersion._id, accepted: currentVersion.accepted };
+		newVersion.type = data.type;
+
+		newVersion.key = data.type === "command" ? data.key : null;
+		newVersion.usage_help = data.type === "command" ? data.usage_help : null;
+		newVersion.extended_help = data.type === "command" ? data.extended_help : null;
+
+		newVersion.keywords = data.keywords ? data.keywords.split(",") : [];
+		newVersion.case_sensitive = data.case_sensitive === "on";
+
+		newVersion.interval = data.type === "timer" ? parseInt(data.interval) : null;
+
+		newVersion.event = data.type === "event" ? data.event : null;
+
+		newVersion.timeout = parseInt(data.timeout);
+		newVersion.code_id = module.exports.generateCodeID(data.code);
+		newVersion.scopes = [];
+		Object.keys(data).forEach(val => {
+			if (val.startsWith("scope_") && data[val]) newVersion.scopes.push(val.split("scope_")[1]);
+		});
+
+		if (!Object.keys(newVersion).some(key => JSON.stringify(newVersion[key]) !== JSON.stringify(currentVersion[key]))) return false;
+		newVersion._id++;
+		newVersion.accepted = false;
+		extensionQueryDocument.push("versions", newVersion);
+		return newVersion._id;
+	},
+	writeExtensionData: (extensionDocument, data) => {
+		const extensionQueryDocument = extensionDocument.query;
+		extensionQueryDocument.set("name", data.name)
+			.set("last_updated", Date.now());
+
+		const versionTag = module.exports.pushExtensionVersionData(extensionDocument, data);
+		if (!versionTag) return false;
+		extensionQueryDocument.set("version", versionTag);
+		return versionTag;
+	},
 };

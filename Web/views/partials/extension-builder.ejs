@@ -1,4 +1,4 @@
-<form id="form" onsubmit="GAwesomeUtil.saveExtension(<%= isGallery %>, '<%- isGallery ? "/extensions/builder?" : currentPage + "?" %><%= pageData.extensionData._id ? ('extid=' + pageData.extensionData._id) : "" %>'); return false;">
+<form id="form" onsubmit="GAwesomeUtil.saveExtension(<%= isGallery %>, '<%- isGallery ? `/extensions/builder?${pageData.extensionData._id ? ('extid=' + pageData.extensionData._id) : ""}` : `/dashboard/${serverData.id}/other/extensions` %>'); return false;">
 	<div class="field">
 		<label class="label">Name</label>
 		<p class="control">
@@ -6,20 +6,7 @@
 		</p>
 		<span class="help">A simple title for the extension.</span>
 	</div>
-	<% if (!isGallery) { %>
-	<div class="field">
-		<label class="label">Channel(s)</label>
-		<% pageData.channelData.forEach(channel => { %>
-			<label class="checkbox">
-			<input name="enabled_channel_ids-<%= channel.id %>" type="checkbox" <%= pageData.extensionData.enabled_channel_ids ? (pageData.extensionData.enabled_channel_ids.includes(channel.id) ? "checked" : "") : "" %>>
-				#<%= channel.name %>
-			</label>
-			<br>
-		<% }); %>
-		<span class="help">The extension will run only in these channels.</span>
-		<br>
-	</div>
-	<% } %>
+	<hr>
 	<div class="field">
 		<label class="label">Type</label>
 		<p class="control">
@@ -42,22 +29,6 @@
 				<span class="help">This string will be used to call the command. No spaces.</span>
 			</p>
 		</div>
-		<% if (!isGallery) { %>
-		<div class="field">
-			<label class="label">Permissions</label>
-			<p class="control">
-				<span class="select is-primary">
-					<select name="command-admin_level">
-						<option value="0" <%= pageData.extensionData.admin_level === 0 ? "" : "selected" %>>@everyone</option>
-						<option value="1" <%= pageData.extensionData.admin_level === 1 ? "selected" : "" %>>Admin level &ge;1</option>
-						<option value="2" <%= pageData.extensionData.admin_level === 2 ? "selected" : "" %>>Admin level &ge;2</option>
-						<option value="3" <%= pageData.extensionData.admin_level === 3 ? "selected" : "" %>>Admin level 3</option>
-					</select>
-				</span>
-				<span class="help">The command will only respond to members that have the selected bot admin level (or higher).</span>
-			</p>
-		</div>
-		<% } %>
 		<div class="field">
 			<label class="label">Usage</label>
 			<p class="control">
@@ -72,6 +43,33 @@
 				<span class="help">Detailed information about the extension, shown within the <code>help</code> command.</span>
 			</p>
 		</div>
+		<% if (!isGallery) { %>
+		<div class="field">
+		<label class="label">Channel(s)</label>
+			<% serverData.channelData.forEach(channel => { %>
+			<label class="checkbox">
+				<input name="enabled_channel_ids-<%= channel.id %>" type="checkbox" <%= pageData.extensionConfigData.disabled_channel_ids ? (!pageData.extensionConfigData.disabled_channel_ids.includes(channel.id) ? "checked" : "") : "" %>>
+				#<%= channel.name %>
+			</label>
+			<br>
+			<% }); %>
+			<span class="help">The extension will run only in these channels.</span>
+		</div>
+		<div class="field">
+			<label class="label">Permissions</label>
+			<p class="control">
+				<span class="select is-primary">
+					<select name="adminLevel">
+						<option value="0" <%= pageData.extensionConfigData.admin_level === 0 ? "" : "selected" %>>@everyone</option>
+						<option value="1" <%= pageData.extensionConfigData.admin_level === 1 ? "selected" : "" %>>Admin level &ge;1</option>
+						<option value="2" <%= pageData.extensionConfigData.admin_level === 2 ? "selected" : "" %>>Admin level &ge;2</option>
+						<option value="3" <%= pageData.extensionConfigData.admin_level === 3 ? "selected" : "" %>>Admin level 3</option>
+					</select>
+				</span>
+				<span class="help">The extension will only respond to members that have the selected bot admin level (or higher).</span>
+			</p>
+		</div>
+		<% } %>
 	</span>
 	<span id="builder-type-keyword-options" class="builder-type-options <%= pageData.versionData.type === "keyword" ? '' : 'is-hidden' %>">
 		<div class="field">
@@ -92,17 +90,28 @@
 		</div>
 		<% if (!isGallery) { %>
 		<div class="field">
+		<label class="label">Channel(s)</label>
+			<% serverData.channelData.forEach(channel => { %>
+			<label class="checkbox">
+				<input name="enabled_channel_ids-<%= channel.id %>" type="checkbox" <%= pageData.extensionConfigData.disabled_channel_ids ? (!pageData.extensionConfigData.disabled_channel_ids.includes(channel.id) ? "checked" : "") : "" %>>
+				#<%= channel.name %>
+			</label>
+			<br>
+			<% }); %>
+			<span class="help">The extension will run only in these channels.</span>
+		</div>
+		<div class="field">
 			<label class="label">Permissions</label>
 			<p class="control">
 				<span class="select is-primary">
-					<select name="keyword-admin_level">
-						<option value="0" <%= pageData.extensionData.admin_level === 0 ? "" : "selected" %>>@everyone</option>
-						<option value="1" <%= pageData.extensionData.admin_level === 1 ? "selected" : "" %>>Admin level &ge;1</option>
-						<option value="2" <%= pageData.extensionData.admin_level === 2 ? "selected" : "" %>>Admin level &ge;2</option>
-						<option value="3" <%= pageData.extensionData.admin_level === 3 ? "selected" : "" %>>Admin level 3</option>
+					<select name="adminLevel">
+						<option value="0" <%= pageData.extensionConfigData.admin_level === 0 ? "" : "selected" %>>@everyone</option>
+						<option value="1" <%= pageData.extensionConfigData.admin_level === 1 ? "selected" : "" %>>Admin level &ge;1</option>
+						<option value="2" <%= pageData.extensionConfigData.admin_level === 2 ? "selected" : "" %>>Admin level &ge;2</option>
+						<option value="3" <%= pageData.extensionConfigData.admin_level === 3 ? "selected" : "" %>>Admin level 3</option>
 					</select>
 				</span>
-				<span class="help">The extension will only run if the message author has the selected bot admin level (or higher).</span>
+				<span class="help">The extension will only respond to members that have the selected bot admin level (or higher).</span>
 			</p>
 		</div>
 		<% } %>
@@ -111,8 +120,8 @@
 		<div class="field">
 			<label class="label">Interval</label>
 			<p class="control">
-				<input name="interval" class="input is-primary" type="number" value="<%- pageData.versionData.interval %>" min="300000" max="86400000" >
-				<span class="help">Number of milliseconds between each run of the extension.</span>
+				<input name="interval" class="input is-primary" type="number" value="<%- pageData.versionData.interval || 300000 %>" min="300000" max="86400000" required>
+				<span class="help">Number of milliseconds between each run of the extension, with a minimum of 300000ms (5 minutes) and a maximum of 86400000ms (24 hours).</span>
 			</p>
 		</div>
 	</span>
@@ -131,7 +140,7 @@
 			</p>
 		</div>
 	</span>
-	<br>
+	<hr>
 	<div class="field">
 		<label class="label">Scopes</label>
 		<% Object.values(pageData.scopes).forEach(scope => { %>
@@ -149,7 +158,6 @@
 			<span class="help">The amount of milliseconds that your extension can run between 100 and 10000. If your extension takes longer to execute than the timeout, it will be killed.</span>
 		</p>
 	</div>
-	<br>
 	<div class="field">
 		<label class="label">
 			Code
@@ -166,24 +174,24 @@
 		</p>
 		<br>
 		<label class="button is-small">
-				<span class="icon is-small">
-					<i class="fa fa-upload"></i>
-				</span>
+			<span class="icon is-small">
+				<i class="fa fa-upload"></i>
+			</span>
 			<span>Upload</span>
 			<input id="builder-code-upload" type="file" onchange="GAwesomeUtil.uploadCode(this.files);" style="display: none;">
 		</label>
 		<a class="button is-small" onclick="GAwesomeUtil.downloadCode();">
-				<span class="icon is-small">
-					<i class="fa fa-download"></i>
-				</span>
+			<span class="icon is-small">
+				<i class="fa fa-download"></i>
+			</span>
 			<span>Download</span>
 		</a>
 	</div>
-    <br>
+	<hr>
 	<div class="field">
 		<label class="label">Description</label>
 		<p class="control">
-			<textarea id="builder-publish-description" <%- !isGallery ? "" : "name='description'" %> class="textarea is-primary" maxlength="2000" placeholder="Description of extension, in markdown" <%= !isGallery ? "" : "required" %>><%= pageData.extensionData.description %></textarea>
+			<textarea id="builder-publish-description" name="description" class="textarea is-primary" maxlength="2000" placeholder="Description of extension, in markdown" required><%= pageData.extensionData.description %></textarea>
 		</p>
 	</div>
 	<% if (isGallery && pageData.extensionData._id && pageData.extensionData.state === "saved") { %>
@@ -203,7 +211,7 @@
 		</a>
 		<br>
     <% } %>
-    <br>
+	<hr>
 	<% var formButtonsUnsaved = false; %>
 	<% include ../partials/form-buttons %>
     <% if (isGallery && pageData.extensionData._id && pageData.extensionData.state === "gallery") { %>

@@ -170,6 +170,7 @@ GAwesomeUtil.SFS = () => {
 	}
 	// Set form state to current serialized form
 	GAwesomeData.IFS = $("#form").serialize();
+	GAwesomeData.HUM = true;
 	// Reset save button
 	$("#form-submit span:nth-child(2)").html("Save");
 	// Update Turbolinks snapshots
@@ -425,17 +426,21 @@ GAwesomeUtil.publishExtension = extid => {
 	}
 };
 
-GAwesomeUtil.deleteExtension = extid => {
-	if (confirm("Are you sure you want to remove this extension? This action is irreversible!")) {
+GAwesomeUtil.deleteExtension = (extid, divid) => {
+	if (confirm("Are you sure you want to delete this extension? This action is irreversible!")) {
 		NProgress.start();
-		$(`#delete-${extid}`).parent().parent()
-			.remove();
 		$.ajax({
 			type: "POST",
 			url: `/extensions/${extid}/delete`,
 			data: {},
 		})
 			.always(() => {
+				if (!divid) {
+					$(`#delete-${extid}`).parent().parent()
+						.remove();
+				} else {
+					GAwesomeUtil.removeElement($(`#${divid}`), null, null);
+				}
 				NProgress.done();
 				NProgress.remove();
 			});
@@ -449,7 +454,7 @@ GAwesomeUtil.saveExtension = (isGallery, URL) => {
 	extensionData.find(a => a.name === "code").value = GAwesomeData.builder.getValue();
 	$.ajax({
 		method: "POST",
-		url: URL,
+		url: isGallery ? URL : window.location.pathname + window.location.search,
 		data: extensionData,
 	})
 		.always((data) => {
@@ -463,7 +468,7 @@ GAwesomeUtil.saveExtension = (isGallery, URL) => {
 			} else if (isGallery) {
 				Turbolinks.visit("/extensions/my");
 			} else {
-				Turbolinks.visit("");
+				Turbolinks.visit(URL);
 			}
 		});
 };
@@ -539,11 +544,12 @@ GAwesomeUtil.featureExtension = extid => {
 	featuredTag.html(featured ? "" : "<span class=\"tag is-primary\">Featured</span>&nbsp;");
 };
 
-GAwesomeUtil.openExtensionInstaller = (extid, v) => {
+GAwesomeUtil.openExtensionInstaller = (extid, v, svrid) => {
 	GAwesomeUtil.log("Launching extension installer in window");
 	const width = window.screen.width - 600;
 	const height = window.screen.height - 800;
-	GAwesomeData.extensions.window = window.open(`/extensions/${extid}/install?v=${v}`, "GAB Extension Installer", `height=800,width=600,left=${width / 2},top=${height / 2}`);
+	GAwesomeData.extensions.window = window.open(`/extensions/${extid}/install?v=${v}${svrid ? `&svrid=${svrid}&update=true` : ""}`, "GAB Extension Installer",
+		`height=800,width=600,left=${width / 2},top=${height / 2}`);
 	GAwesomeData.extensions.window.focus();
 };
 
@@ -572,6 +578,35 @@ GAwesomeUtil.installExtension = ({ target }) => {
 			swal("Successfully installed extension!", "You can now close this window.", "success").then(() => window.close()).catch();
 		}
 	});
+};
+
+GAwesomeUtil.updateExtension = (button) => {
+	GAwesomeUtil.SFS();
+	NProgress.start();
+	button.addClass("is-loading");
+	const extid = button.data("extid");
+
+	const data = `${$(`#extension-update-form-${extid}`).serialize()}`;
+
+	$.ajax({
+		method: "POST",
+		url: window.location.pathname,
+		data,
+	}).always(res => {
+		NProgress.done();
+		if (res !== "OK" && res.status !== 200) {
+			swal("Failed to update extension.", "Contact support or try again later.", "error").then(() => button.removeClass("is-loading")).catch();
+		} else {
+			button.removeClass("is-loading");
+		}
+	});
+};
+
+GAwesomeUtil.uninstallExtension = extid => {
+	NProgress.start();
+	const element = $(`#extension-${extid}`);
+	const URL = `${window.location.pathname}/${extid}`;
+	GAwesomeUtil.removeElement(element, null, URL);
 };
 
 GAwesomePaths.extensions = () => {
@@ -647,30 +682,40 @@ GAwesomeUtil.dashboard.getCache = (svr, key) => {
 	return cache.data;
 };
 
-GAwesomeUtil.dashboard.removeElement = elem => GAwesomeUtil.dashboardWrapper(() => {
+GAwesomeUtil.removeElement = (element, parent, url) => {
+	const afterDelete = () => {
+		element.fadeOut(400, () => {
+			const onlyChild = element.is(":only-child");
+			element.remove();
+			if (onlyChild) {
+				if (parent) parent.addClass("is-hidden");
+				$(".no-elements-message").removeClass("is-hidden");
+			}
+			GAwesomeUtil.SFS();
+			NProgress.done();
+			NProgress.remove();
+		});
+	};
+
+	if (url) {
+		$.ajax({
+			url,
+			method: "DELETE",
+		}).always(afterDelete);
+	} else {
+		afterDelete();
+	}
+};
+
+GAwesomeUtil.dashboard.removeTableElement = elem => GAwesomeUtil.dashboardWrapper(() => {
 	const button = $(elem);
 	button.addClass("is-loading");
 
 	const tableRow = button.parents("tr");
 	const table = tableRow.parents("table");
-	const isLastTableRow = tableRow.is(":only-child");
 	const buttonName = button.attr("name");
 
-	const afterDelete = () => {
-		tableRow.fadeOut(400, () => {
-			tableRow.remove();
-			if (isLastTableRow) {
-				table.addClass("is-hidden");
-				$(".no-elements-message").removeClass("is-hidden");
-			}
-			GAwesomeUtil.SFS();
-		});
-	};
-
-	$.ajax({
-		url: `${window.location.pathname}/${buttonName}`,
-		method: "DELETE",
-	}).always(afterDelete);
+	GAwesomeUtil.removeElement(tableRow, table, `${window.location.pathname}/${buttonName}`);
 });
 
 GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
@@ -813,38 +858,53 @@ GAwesomePaths.dashboard = () => GAwesomeUtil.dashboardWrapper(() => {
 	});
 	GAwesomeUtil.dashboard.connect();
 	const sectionPage = window.location.pathname.split("/")[4];
-	if (sectionPage === "command-options") {
-		$("#ban_gif").on("blur", () => {
-			if ($("#ban_gif").val() === "Default") {
-				$("#default_ban_gif").hide();
-				$("#ban_gif_field").removeClass("has-addons");
-				return $("#ban_gif_preview").attr("src", "https://imgur.com/3QPLumg.gif");
-			}
-			$("#ban_gif_field").addClass("has-addons");
-			$("#default_ban_gif").show();
-			$("#ban_gif_preview").attr("src", $("#ban_gif").val());
-		});
-	} else if (sectionPage === "name-display") {
-		const example = $("#currentExample");
-		const useNickname = $("#name_display-use_nick");
-		const useDiscriminator = $("#name_display-show_discriminator");
-		useNickname.click(() => {
-			if (useNickname.is(":checked") && GAwesomeData.nickname !== "") {
-				example.text(GAwesomeData.nickname);
-			} else {
-				example.text(GAwesomeData.username);
-			}
-			if (useDiscriminator.is(":checked")) {
-				example.text(`${example.text().trim()}#${GAwesomeData.discriminator}`);
-			}
-		});
-		useDiscriminator.click(() => {
-			if (useDiscriminator.is(":checked")) {
-				example.text(`${example.text()}#${GAwesomeData.discriminator}`);
-			} else {
-				example.text(example.text().trim().slice(0, -5));
-			}
-		});
+	switch (sectionPage) {
+		case "command-options": {
+			$("#ban_gif").on("blur", () => {
+				if ($("#ban_gif").val() === "Default") {
+					$("#default_ban_gif").hide();
+					$("#ban_gif_field").removeClass("has-addons");
+					return $("#ban_gif_preview").attr("src", "https://imgur.com/3QPLumg.gif");
+				}
+				$("#ban_gif_field").addClass("has-addons");
+				$("#default_ban_gif").show();
+				$("#ban_gif_preview").attr("src", $("#ban_gif").val());
+			});
+			break;
+		}
+		case "name-display": {
+			const example = $("#currentExample");
+			const useNickname = $("#name_display-use_nick");
+			const useDiscriminator = $("#name_display-show_discriminator");
+			useNickname.click(() => {
+				if (useNickname.is(":checked") && GAwesomeData.nickname !== "") {
+					example.text(GAwesomeData.nickname);
+				} else {
+					example.text(GAwesomeData.username);
+				}
+				if (useDiscriminator.is(":checked")) {
+					example.text(`${example.text().trim()}#${GAwesomeData.discriminator}`);
+				}
+			});
+			useDiscriminator.click(() => {
+				if (useDiscriminator.is(":checked")) {
+					example.text(`${example.text()}#${GAwesomeData.discriminator}`);
+				} else {
+					example.text(example.text().trim().slice(0, -5));
+				}
+			});
+			break;
+		}
+		case "extension-builder": {
+			GAwesomeData.builder = CodeMirror.fromTextArea(document.getElementById("builder-code-box"), {
+				mode: "javascript",
+				lineWrapping: true,
+				lineNumbers: true,
+				fixedGutter: true,
+				styleActiveLine: true,
+				theme: "monokai",
+			});
+		}
 	}
 });
 
