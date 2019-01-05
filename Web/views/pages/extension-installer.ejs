@@ -234,6 +234,15 @@
                         <div class="has-text-centered">
                             <div class="content has-text-left">
                                 <h5 class="title is-5">Are you sure you want to install <b><%= pageData.extensionData.name %></b>?</h5>
+                                <% if (["queue"].includes(pageData.extensionData.status)) { %>
+                                <article class="message is-danger" title="Even Speedwagon is afraid!">
+                                    <div class="message-body">
+                                        <div class="content">
+                                            You are about to install an extension from the <strong>Gallery Queue</strong>. Extensions from the queue may cause harm to your server or contain offensive or otherwise dangerous content. GAwesomeBot Maintainers are not responsible for any actions taken by unapproved extensions. <strong>You're on your own, kid.</strong>
+                                        </div>
+                                    </div>
+                                </article>
+                                <% } %>
                                 <ul>
                                     <li>GAwesomeBot is not responsible for any damage caused by community extensions.</li>
                                     <li>GAwesomeBot is not able to assist you with utilising extensions.</li>

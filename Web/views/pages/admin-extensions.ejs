@@ -22,6 +22,12 @@
 					<div class="message-body">
 						<div class="content">
 							Extensions! With extensions, you can write custom addons for GAwesomeBot on your server, including <strong>commands</strong>, <strong>keyword responses</strong>, and extensions that run on a <strong>timer</strong> or <strong>event</strong>. Extensions are written in <strong>JavaScript</strong> and run in a sandbox with access to the GAwesomeBot Code API. Read the docs <a href="/wiki/Extensions">here</a>.
+							<br>
+							<ul>
+								Extensions can either be local or public.
+								<li><strong>Local</strong> extensions are extensions exclusive to your server, all <strong>Server Admins</strong> can edit the extension and it cannot be installed by other servers or published to the <strong>gallery</strong>.</li>
+								<li><strong>Public</strong> extensions are extensions that can be published to the <strong>gallery</strong>. Only the <strong>extension author</strong> can edit their own extensions. Once published, public extensions can be installed by any server.</li>
+							</ul>
 						</div>
 					</div>
 				</article>
@@ -204,13 +210,24 @@
 					<% } %>
 				<% }); %>
 				</div>
-				<div class="field">
-					<a class="button is-danger is-outlined is-fullwidth" href="extension-builder">
-						<span class="icon">
-							<i class="fa fa-plus"></i>
-						</span>
-						<span>Build New Local Extension</span>
-					</a>
+				<br>
+				<div class="columns">
+					<div class="column is-half">
+						<a class="button is-warning is-outlined is-fullwidth" href="extension-builder">
+							<span class="icon">
+								<i class="fa fa-code"></i>
+							</span>
+							<span>Build New Local Extension</span>
+						</a>
+					</div>
+					<div class="column is-half">
+						<a class="button is-info is-outlined is-fullwidth" href="/extensions/builder">
+							<span class="icon">
+								<i class="fa fa-code"></i>
+							</span>
+							<span>Build New Public Extension</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -18,6 +18,7 @@ module.exports = router => {
 	// Management Settings
 	setupConsolePage(router, "/management/maintainers", "management", [], controllers.console.management.maintainers);
 	setupConsolePage(router, "/management/shards", "management", [], controllers.console.management.shards);
+	setupConsolePage(router, "/management/injection", "management", [], controllers.console.management.injection);
 	setupConsolePage(router, "/management/version", "management", [], controllers.console.management.version);
 	setupConsolePage(router, "/management/eval", "eval", [], controllers.console.management.eval);
 	setupConsolePage(router, "/management/logs", "management", [], controllers.console.management.logs);

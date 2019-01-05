@@ -153,7 +153,10 @@ GAwesomeUtil.debugDump = () => {
 	GAwesomeUtil.log(`[DUMP:APPDATA] ${JSON.stringify(GAwesomeData)}`, "log", true);
 	GAwesomeData.dashboard.socket = socket;
 	GAwesomeUtil.log(`[DUMP:SESSIONDATA] ${JSON.stringify(localStorage)}`, "log", true);
-	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({ tl: !!Turbolinks, io: !!io, np: !!NProgress, fs: !!saveAs, sa: !!swal, ac: !!AutoComplete, cm: !!CodeMirror, md: !!md5 })}`, "log", true);
+	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({
+		tl: typeof Turbolinks !== "undefined", io: typeof io !== "undefined", np: typeof NProgress !== "undefined", fs: typeof saveAs !== "undefined",
+		sa: typeof swal !== "undefined", ac: typeof AutoComplete !== "undefined", cm: typeof CodeMirror !== "undefined", md: typeof md5 !== "undefined",
+	})}`, "log", true);
 };
 
 GAwesomeUtil.toggleAds = value => {
@@ -180,12 +183,14 @@ GAwesomeUtil.SFS = () => {
 GAwesomeUtil.submitForm = () => {
 	$("#form-submit").addClass("is-loading");
 	GAwesomeData.HUM = true;
+	if (GAwesomeData.builders) Object.values(GAwesomeData.builders).forEach(a => a.save());
 	$.ajax({
 		method: "POST",
 		url: location.pathname + location.search,
 		data: $("#form").serialize(),
 	})
 		.always((data) => {
+			GAwesomeUtil.SFS();
 			const form = $("#form-submit");
 			form.removeClass("is-loading");
 			if (data !== "OK" && data.status !== 200 && data.status !== 302) {
@@ -334,9 +339,9 @@ GAwesomeUtil.downloadContent = () => {
 	saveAs(blob, `${document.getElementById("composer-title").value || "Untitled"}.md`);
 };
 
-GAwesomeUtil.downloadCode = () => {
+GAwesomeUtil.downloadCode = fileName => {
 	const blob = new Blob([GAwesomeData.builder.getValue()], { type: "text/markdown;charset=utf-8" });
-	saveAs(blob, `${document.getElementById("builder-title").value || "Untitled"}.gabext`);
+	saveAs(blob, `${fileName || document.getElementById("builder-title").value || "Untitled"}.gabext`);
 };
 
 GAwesomeUtil.searchWiki = query => {
@@ -895,6 +900,23 @@ GAwesomePaths.dashboard = () => GAwesomeUtil.dashboardWrapper(() => {
 			});
 			break;
 		}
+		case "injection": {
+			const elements = document.getElementsByClassName("code-box");
+			GAwesomeData.builders = {};
+			for (let i = 0; i < elements.length; i++) {
+				const element = elements.item(i);
+				GAwesomeData.builders[element.id] = CodeMirror.fromTextArea(element, {
+					mode: "javascript",
+					lineWrapping: true,
+					lineNumbers: true,
+					fixedGutter: true,
+					styleActiveLine: true,
+					theme: "monokai",
+				});
+				GAwesomeData.builders[element.id].on("change", () => GAwesomeData.builders[element.id].save());
+			}
+			break;
+		}
 		case "extension-builder": {
 			GAwesomeData.builder = CodeMirror.fromTextArea(document.getElementById("builder-code-box"), {
 				mode: "javascript",
@@ -904,6 +926,7 @@ GAwesomePaths.dashboard = () => GAwesomeUtil.dashboardWrapper(() => {
 				styleActiveLine: true,
 				theme: "monokai",
 			});
+			break;
 		}
 	}
 });

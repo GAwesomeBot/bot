@@ -83,7 +83,28 @@
 </div>
 
 <div id="extensions-gallery">
-<% if (pageData.extensions.length > 0) { %>
+	<% if (pageData.mode === "queue") { %>
+	<article class="message is-danger" title="Even Speedwagon is afraid!">
+		<div class="message-body">
+			<div class="has-text-centered">
+				<h5 class="title is-5 is-danger-colored">
+					<span class="icon">
+						<i class="fa fa-exclamation-triangle"></i>
+					</span>
+					Stay safe!
+					<span class="icon">
+						<i class="fa fa-exclamation-triangle"></i>
+					</span>
+				</h5>
+			</div>
+			<br>
+			<div class="content">
+				Extensions in the <strong>Gallery Queue</strong> have not been tested or approved by <strong>GAwesomeBot Maintainers</strong>. Extensions from the queue may cause harm to your server or contain offensive or otherwise dangerous content. GAwesomeBot Maintainers are not responsible for any actions taken by unapproved extensions. <strong>You're on your own, kid.</strong>
+			</div>
+		</div>
+	</article>
+	<% } %>
+	<% if (pageData.extensions.length > 0) { %>
 	<div class="columns">
 	<% pageData.extensions.forEach((extension, i) => { %>
 		<div id="card-<%= extension._id %>" class="column is-one-third">

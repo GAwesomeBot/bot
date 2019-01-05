@@ -356,6 +356,21 @@ controllers.management.shards.post = async (req, res) => {
 	}
 };
 
+controllers.management.injection = async (req, { res }) => {
+	res.setConfigData({
+		injection: configJSON.injection,
+	}).setPageData({
+		page: "maintainer-injection.ejs",
+	}).render();
+};
+controllers.management.injection.post = async (req, res) => {
+	Object.keys(configJSON.injection).forEach(key => {
+		if (req.body[key] || req.body[key] === "") configJSON.injection[key] = req.body[key];
+	});
+
+	save(req, res, true);
+};
+
 controllers.management.version = async (req, { res }) => {
 	const version = await Updater.check();
 	if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);

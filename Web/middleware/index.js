@@ -10,6 +10,7 @@ class GABResponse {
 				isEnabled: req.cookies.adsPreference !== "false",
 				ID: req.app.client.officialMode ? configJS.adsenseID : undefined,
 			},
+			injection: configJSON.injection,
 		};
 
 		this.serverData = {

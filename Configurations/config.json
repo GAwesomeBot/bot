@@ -22,5 +22,9 @@
     "management": 2,
     "administration": 1,
     "shutdown": 2
+  },
+  "injection": {
+    "headScript": "",
+    "pageScript": ""
   }
 }

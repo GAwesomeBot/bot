@@ -164,6 +164,11 @@ html, body {
     border-color: #00d1b2;
 }
 
+.landing-container .hero-buttons {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
 /* Page Components */
 .scroller-wrapper {
     display: flex;

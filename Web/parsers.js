@@ -151,7 +151,7 @@ parsers.extensionData = async (req, galleryDocument, versionTag) => {
 	return {
 		_id: galleryDocument._id.toString(),
 		name: galleryDocument.name,
-		version: versionTag,
+		version: versionTag || galleryDocument.published_version,
 		type: versionDocument.type,
 		typeIcon,
 		typeDescription,
