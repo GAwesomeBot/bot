@@ -19,14 +19,14 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 		const descriptions = [];
 		const fields = [];
 		body.list.forEach(d => {
-			let description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition}`;
-			const example = d.example ? `\n\n_${d.example}_` : "";
-			if (description.length + example.length > 2000) {
-				description = `${description.substring(0, 1997 - example.length)}...`;
-				// This weird thing is to retain the formatting of the example (the underscores)
+			const description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition}`;
+			let merged = `${description}${d.example ? `\n\n_${d.example}_` : ""}`
+				.replace(/_\*~/g, "\\$&")
+				.replace(/\[.+?\]/g, m => `${m}(http://urbandictionary.com/define.php?term=${encodeURIComponent(m.slice(1, -1))})`);
+			if (merged.length > 2048) {
+				merged = `${merged.substring(0, 2044)}_...`;
 			}
-			description += example;
-			descriptions.push(description);
+			descriptions.push(merged);
 			fields.push([
 				{
 					name: "Author",
