@@ -38,7 +38,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 
 	ObjectDefines(client);
 
-	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
+	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { URL: configJS.database.URL, db: configJS.database.db });
 	await database.initialize(configJS.database).catch(err => {
 		winston.error(`An error occurred while connecting to MongoDB! Is the database online? >.<\n`, err);
 		process.exit(1);

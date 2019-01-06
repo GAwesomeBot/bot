@@ -17,6 +17,6 @@ module.exports = {
 		wolframAppID: "",
 		openExchangeRatesKey: "",
 		omdbAPI: "",
-		gistKey: "3f9044fa2ea8d19ae\u003102bd8161291af805dc7611",
+		gistKey: "",
 	},
 };

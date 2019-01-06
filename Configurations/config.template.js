@@ -1,4 +1,4 @@
-const configs = {
+module.exports = {
 	/*
 	 * Represents how many shards the bot will have.
 	 * It *must* be a integer, aka *1*, *52* etc. OR "auto"
@@ -44,7 +44,6 @@ const configs = {
 		 */
 		db: "gabbe",
 	},
-	databaseURL: "mongodb://localhost:27017/gabbe",
 	/*
 	 * MaxVoiceChannels should remain as is.
 	 */
@@ -157,5 +156,3 @@ const configs = {
 		"<strong>Welp</strong>, this is embarrassing.",
 	],
 };
-
-module.exports = configs;
