@@ -19,9 +19,8 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 		const descriptions = [];
 		const fields = [];
 		body.list.forEach(d => {
-			const description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition}`;
-			let merged = `${description}${d.example ? `\n\n_${d.example}_` : ""}`
-				.replace(/_\*~/g, "\\$&")
+			const description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition.replace(/[_*~]/g, "\\$&")}`;
+			let merged = `${description}${d.example ? `\n\n_${d.example.replace(/[_*~]/g, "\\$&")}_` : ""}`
 				.replace(/\[.+?\]/g, m => `${m}(http://urbandictionary.com/define.php?term=${encodeURIComponent(m.slice(1, -1))})`);
 			if (merged.length > 2048) {
 				merged = `${merged.substring(0, 2044)}_...`;
