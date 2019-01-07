@@ -65,7 +65,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			.slice(0, 5)
 			.map(a => {
 				const timePlayed = a.time_played * 15;
-				return `**${a._id}** payed for ${moment.duration(timePlayed, "minutes").humanize()} total`;
+				return `**${a._id}** played for ${moment.duration(timePlayed, "minutes").humanize()} total`;
 			});
 
 		const mostUsedCommands = serverDocument.command_usage ? Object.keys(serverDocument.command_usage).sort((a, b) => serverDocument.command_usage[b] - serverDocument.command_usage[a])
