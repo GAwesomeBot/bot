@@ -3,13 +3,17 @@ const { Gist, RegExpMaker } = require("../../Modules/Utils/");
 module.exports = async (main, msg, commandData) => {
 	if (msg.suffix) {
 		const hrstart = process.hrtime();
+		const forceUnsafe = msg.suffix.split(" ")[0] === "--unsafe";
 		let { suffix } = msg;
+		if (forceUnsafe) suffix = suffix.split(" ").splice(1).join(" ");
 		try {
 			if (suffix.startsWith("```js") && suffix.endsWith("```")) suffix = suffix.substring(5, suffix.length - 3);
 			const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
-			suffix = suffix
-				.replace(/(main\.bot\.token|main\.client\.token|msg\.client\.token)/g, "\"mfaNop\"")
-				.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
+			if (!forceUnsafe) {
+				suffix = suffix
+					.replace(/(main\.bot\.token|main\.client\.token|msg\.client\.token)/g, "\"mfaNop\"")
+					.replace(/\.(clientToken|clientSecret|discordList|discordBots|discordBotsOrg|giphyAPI|googleCSEID|googleAPI|imgurClientID|microsoftTranslation|twitchClientID|wolframAppID|openExchangeRatesKey|omdbAPI|gistKey)/g, "mfaNop");
+			}
 			const { discord, tokens } = require("../../Configurations/auth");
 			const censor = [
 				discord.clientSecret,
