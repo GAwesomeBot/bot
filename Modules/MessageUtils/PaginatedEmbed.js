@@ -24,6 +24,7 @@ class PaginatedEmbed {
 		footers = [],
 		pageCount = null,
 	} = {}) {
+		this.originalMsg = originalMsg;
 		this.channel = originalMsg.channel;
 		this.authorID = originalMsg.author.id;
 		this.pageEmojis = PageEmojis;
@@ -60,8 +61,8 @@ class PaginatedEmbed {
 		this.totalPages = pageCount || this.descriptions.length;
 	}
 
-	async init (timeout = 300000) {
-		await this._sendInitialMessage();
+	async init (timeout = 300000, editMessage) {
+		await this._sendInitialMessage(editMessage);
 		if (this.totalPages > 1) {
 			this.collector = this.msg.createReactionCollector(
 				(reaction, user) => user.id === this.authorID && this.pageEmojiArray.includes(reaction.emoji.name),
@@ -153,8 +154,8 @@ class PaginatedEmbed {
 		};
 	}
 
-	async _sendInitialMessage () {
-		this.msg = await this.channel.send(this._currentMessageContent);
+	async _sendInitialMessage (editMessage) {
+		this.msg = await (editMessage ? this.originalMsg : this.channel).send(this._currentMessageContent);
 	}
 
 	async _updateMessage () {
