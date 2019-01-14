@@ -205,6 +205,10 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		data.uptime = Math.round(((process.uptime() / 60) / 60) * 10) / 10;
 		data.PID = process.pid;
 		data.ID = client.shardID;
+		data.worker = {
+			status: client.workerManager.worker.process.connected,
+			PID: client.workerManager.worker.process.pid,
+		};
 		callback(data);
 	});
 
