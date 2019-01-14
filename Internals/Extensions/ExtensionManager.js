@@ -1,15 +1,17 @@
 const fs = require("fs-nextra");
 const { VM } = require("vm2");
-const GABClient = require("../Client");
+const DJSClient = require("discord.js").Client;
+const { AllowedEvents } = require("../Constants");
 const DB = require("../../Database/Driver");
 const API = require("./API");
+const EventsHandler = require("./EventsHandler");
 const { Sandbox } = API;
 
 /**
  * Manages all operations of extensions on the Shard Worker.
  * @class
  */
-class ExtensionManager extends GABClient {
+class ExtensionManager extends DJSClient {
 	constructor (options) {
 		super(options);
 		/**
@@ -22,6 +24,11 @@ class ExtensionManager extends GABClient {
 		 * @type {?Database}
 		 */
 		this.DB = null;
+		/**
+		 * Events handler initialized on the first call to ExtensionManager.initialize()
+		 * @type {?EventsHandler}
+		 */
+		this.handler = null;
 	}
 
 	/**
@@ -29,9 +36,20 @@ class ExtensionManager extends GABClient {
 	 * @returns {Promise<void>}
 	 */
 	async initialize () {
-		await DB.initialize(configJS.database);
+		this._initializeEventsHandler();
+		await DB.initialize(this.options.database);
 		this.DB = global.Database;
 		this.ready = true;
+	}
+
+	/**
+	 * Construct and bind this manager's EventsHandler if it doesn't already have one.
+	 * @returns {?EventsHandler} The EventsHandler bound to this manager after initializing
+	 * @private
+	 */
+	_initializeEventsHandler () {
+		if (!this.handler) this.handler = new EventsHandler(this, AllowedEvents);
+		return this.handler;
 	}
 
 	/**
@@ -119,6 +137,53 @@ class ExtensionManager extends GABClient {
 				{ svrid: context.guild.id, extid: context.extensionDocument._id, v: context.versionDocument._id }, err);
 			return { success: false, err };
 		}
+	}
+
+	/**
+	 * Checks if a message string contains a command tag, returning the command and suffix
+	 * @param {string} message The message string
+	 * @param {Document} serverDocument The database server document for the server assigned with the message
+	 * @returns {?Object} Object containing the command and the suffix (if present)
+	 */
+	checkCommandTag (message, serverDocument) {
+		message = message.trim();
+		let cmdstr;
+		let commandObject = {
+			command: null,
+			suffix: null,
+		};
+		if (!serverDocument) return commandObject;
+		if (serverDocument.config.command_prefix === "@mention" && message.startsWith(this.user.toString())) {
+			cmdstr = message.substring(this.user.toString().length + 1);
+		} else if (serverDocument.config.command_prefix === "@mention" && message.startsWith(`<@!${this.user.id}>`)) {
+			cmdstr = message.substring(`<@!${this.user.id}>`.length + 1);
+		} else if (message.startsWith(serverDocument.config.command_prefix)) {
+			cmdstr = message.substring(serverDocument.config.command_prefix.length);
+		}
+		if (cmdstr && !cmdstr.includes(" ")) {
+			commandObject = {
+				command: cmdstr.toLowerCase(),
+				suffix: null,
+			};
+		} else if (cmdstr) {
+			const command = cmdstr.split(/\s+/)[0].toLowerCase();
+			const suffix = cmdstr.replace(/[\r\n\t]/g, match => {
+				const escapes = {
+					"\r": "{r}",
+					"\n": "{n}",
+					"\t": "{t}",
+				};
+				return escapes[match] || match;
+			}).split(/\s+/)
+				.splice(1)
+				.join(" ")
+				.format({ n: "\n", r: "\r", t: "\t" });
+			commandObject = {
+				command,
+				suffix,
+			};
+		}
+		return commandObject;
 	}
 }
 

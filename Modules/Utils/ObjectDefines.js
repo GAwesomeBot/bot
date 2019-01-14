@@ -139,21 +139,23 @@ module.exports = client => {
 		return original;
 	};
 
-	/**
-	 * Total count of users or guilds across all shards.
-	 * @returns {Number}
-	 */
-	Object.defineProperty(client.guilds, "totalCount", {
-		get: async function get () {
-			return GetValue(client, "guilds.size", "int");
-		},
-	});
+	if (client) {
+		/**
+		 * Total count of users or guilds across all shards.
+		 * @returns {Number}
+		 */
+		Object.defineProperty(client.guilds, "totalCount", {
+			get: async function get () {
+				return GetValue(client, "guilds.size", "int");
+			},
+		});
 
-	Object.defineProperty(client.users, "totalCount", {
-		get: async function get () {
-			return GetValue(client, "users.size", "int");
-		},
-	});
+		Object.defineProperty(client.users, "totalCount", {
+			get: async function get () {
+				return GetValue(client, "users.size", "int");
+			},
+		});
+	}
 
 	winston.silly(`Loaded ${properties} Object.assigns`);
 };

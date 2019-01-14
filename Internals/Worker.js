@@ -1,10 +1,15 @@
 /* eslint-disable callback-return */
 
 const process = require("process");
-global.winston = new (require("../Internals/Console"))(`Worker -- Shard ${Number(process.env.SHARD_ID)}`);
+global.winston = new (require("../Internals/Console"))(`Shard ${Number(process.env.SHARD_ID)} Worker`);
+
+require("../Modules/Utils/ObjectDefines")();
 
 const { WorkerCommands: { MATHJS: MathJSCommands } } = require("./Constants");
+const configJS = require("../Configurations/config.js");
+const auth = require("../Configurations/auth.js");
 const Emoji = require("../Modules/Emoji/Emoji");
+const ExtensionManager = require("./Extensions");
 
 const mathjs = require("mathjs");
 const safeEval = mathjs.eval;
@@ -59,5 +64,10 @@ p.on("jumboEmoji", async ({ input }, callback) => {
 // #endregion Emoji
 
 (async () => {
+	const extensionManager = new ExtensionManager({
+		database: configJS.database,
+	});
+	await extensionManager.initialize();
+	await extensionManager.login(auth.discord.clientToken);
 	await p.send("ready", { shard: process.env.SHARD_ID });
 })();
