@@ -148,6 +148,17 @@ Constants.Text = {
  * @type object
  */
 Constants.StatusMessages = {
+	GAME_STREAMING: (name, game) => ({
+		title: "Status Messages - Member Streaming",
+		url: game.url,
+		description: `**${name}** is streaming **${game.name}**! 🎮`,
+		color: Constants.Colors.TWITCH,
+	}),
+	GAME_UPDATE: (name, game) => ({
+		title: "Status Messages - Game Updated",
+		description: `**${name}** started playing **${game.name}** 🎮`,
+		color: Constants.Colors.LIGHT_GREEN,
+	}),
 	GUILD_BAN_ADD: (message, user) => ({
 		footer: {
 			text: `User ID: ${user.id}`,

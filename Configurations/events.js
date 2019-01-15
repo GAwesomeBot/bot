@@ -117,7 +117,7 @@ module.exports = {
 		"GAB.UpdateUsername",
 	],
 	presenceUpdate: [
-
+		"GAB.PresenceUpdate",
 	],
 	voiceStateUpdate: [
 		"GAB.VoiceStateUpdate",
