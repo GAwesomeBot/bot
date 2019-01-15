@@ -34,6 +34,17 @@ class VoiceStateUpdate extends BaseEvent {
 	}
 
 	async leftChannel (serverDocument, channel, state) {
+		const roomDocument = serverDocument.config.room_data.id(channel.id);
+		if (roomDocument && channel.members.size === 0) {
+			try {
+				await channel.delete();
+				await serverDocument.query.pull("config.room_data", channel.id);
+				await serverDocument.save();
+				this.client.logMessage(serverDocument, LoggingLevels.INFO, "Auto-removed an empty Voice Room.", channel.id);
+			} catch (err) {
+				this.client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to auto-remove a Voice Room!", channel.id);
+			}
+		}
 		if (serverDocument.config.voicetext_channels.includes(channel.id)) {
 			try {
 				await Voicetext.removeMember(state.guild, channel, state.member);
