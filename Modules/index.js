@@ -21,4 +21,6 @@ module.exports = {
 	Trivia: require("./Trivia.js"),
 	Updater: require("./Updater.js"),
 	Utils: require("./Utils/index"),
+	VoiceStatsCollector: require("./VoiceStatsCollector"),
+	Voicetext: require("./Voicetext"),
 };

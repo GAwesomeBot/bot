@@ -62,7 +62,7 @@ class AFKHandler extends BaseEvent {
 		const userDocument = await Users.findOne(msg.author.id).catch(err => {
 			winston.verbose(`Failed to find user document for resetting global AFK message >.>`, err);
 		});
-		if (userDocument.afk_message) {
+		if (userDocument && userDocument.afk_message) {
 			changed = true;
 			userDocument.query.set("afk_message", null);
 		}
