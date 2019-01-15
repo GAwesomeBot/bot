@@ -140,6 +140,16 @@ Constants.Text = {
 			description: "Please stand by...",
 		},
 	}),
+	EXTENSION_RUN: extensionName => ({
+		embed: {
+			color: Constants.Colors.INFO,
+			title: `Running extension **${extensionName}** ⚙`,
+			description: "Please stand by... ⌛",
+			footer: {
+				text: "Is this message not disappearing within seconds? Contact a Server Admin for help.",
+			},
+		},
+	}),
 	GUILD_VERIFICATION_LEVEL: level => Constants.GUILD_VERIFICATION_LEVELS[level],
 };
 
@@ -315,6 +325,7 @@ Constants.GUILD_VERIFICATION_LEVELS = [
 Constants.WorkerTypes = {
 	MATH: "mathjs",
 	EMOJI: "emoji",
+	EXTENSION: "extension",
 };
 
 Constants.WorkerCommands = {
@@ -327,6 +338,7 @@ Constants.WorkerCommands = {
 Constants.WorkerEvents = {
 	RUN_MATH: "runMathCommand",
 	JUMBO_EMOJI: "jumboEmoji",
+	RUN_EXTENSION: "runExtension",
 };
 
 /**

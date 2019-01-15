@@ -3,27 +3,13 @@ const {
 	Errors: {
 		Error: GABError,
 	},
+	Constants: {
+		Scopes,
+	},
 } = require("../../index");
 class Sandbox {
-	constructor (rawBot, serverDocument, extensionDocument, versionDocument, rawParams, scopes) {
+	constructor (rawBot, { extensionDocument, msg, guild, serverDocument, extensionConfigDocument, eventData }, scopes) {
 		const modules = {};
-
-		// Import Basic Global Objects and Functions
-		this.Array = Array;
-		this.Date = Date;
-		this.JSON = JSON;
-		this.Math = Math;
-		this.Number = Number;
-		this.Object = Object;
-		this.RegExp = RegExp;
-		this.decodeURI = decodeURI;
-		this.decodeURIComponent = decodeURIComponent;
-		this.encodeURI = encodeURI;
-		this.encodeURIComponent = encodeURIComponent;
-		this.isFinite = isFinite;
-		this.isNaN = isNaN;
-		this.parseFloat = parseFloat;
-		this.parseInt = parseInt;
 
 		// Import Third-Party Modules
 		modules.rss = { module: "feed-read", key: "get" };
@@ -35,61 +21,61 @@ class Sandbox {
 		if (extensionDocument.type === "command") {
 			modules.command = {
 				module: () => ({
-					prefix: rawParams.guild.commandPrefix,
-					suffix: rawParams.suffix.trim(),
+					prefix: guild.commandPrefix,
+					suffix: msg.suffix.trim(),
 					key: extensionDocument.key,
 				}),
 				custom: true,
 			};
 		}
-		if (extensionDocument.type === "keyword" && rawParams.keywords) {
+		if (extensionDocument.type === "keyword" && extensionConfigDocument.keywords) {
 			modules.keyword = {
-				module: () => rawParams.keywords,
+				module: () => extensionConfigDocument.keywords,
 				custom: true,
 			};
 		}
-		if (rawParams.msg) {
+		if (msg) {
 			modules.message = {
-				module: () => new API.Message(rawParams.msg, scopes),
+				module: () => new API.Message(msg, scopes),
 				custom: true,
 			};
 		}
-		if (rawParams.ch) {
+		if (msg) {
 			modules.channel = {
-				module: () => new API.Channel(rawParams.ch, scopes),
+				module: () => new API.Channel(msg.channel, scopes),
 				custom: true,
-				scope: scopes.channels.read,
+				scope: Scopes.channels_read.scope,
 			};
 		}
-		if (rawParams.event) {
+		if (eventData) {
 			modules.event = {
-				module: () => new API.Event(rawParams.event, scopes),
+				module: () => new API.Event(eventData, scopes),
 				custom: true,
 			};
 		}
 		modules.guild = {
-			module: () => new API.Guild(rawParams.guild, scopes),
+			module: () => new API.Guild(guild, scopes),
 			custom: true,
-			scope: scopes.guild.read,
+			scope: Scopes.guild_read.scope,
 		};
 		modules.config = {
 			module: () => serverDocument.config,
 			custom: true,
-			scope: scopes.accessDocument,
+			scope: Scopes.config.scope,
 		};
 		modules.extension = {
 			module: () => new API.Extension(extensionDocument, serverDocument),
 			custom: true,
 		};
 		modules.bot = {
-			module: () => new API.Client(rawBot, rawParams.guild, serverDocument, scopes),
+			module: () => new API.Client(rawBot, guild, serverDocument, scopes),
 			custom: true,
 		};
 
 		this.require = name => {
 			const module = modules[name];
 			if (!module) throw new GABError("UNKNOWN_MODULE");
-			if (!module.scope) throw new GABError("MISSING_SCOPES");
+			if (module.scope && !scopes.includes(module.scope)) throw new GABError("MISSING_SCOPES");
 			if (module.key && !module.custom) {
 				return require(module.module)[module.key];
 			} else if (!module.custom) {

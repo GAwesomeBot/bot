@@ -25,6 +25,17 @@ class WorkerManager {
 		}
 	}
 
+	async sendValueToWorker (workerType, data) {
+		switch (workerType) {
+			case WorkerTypes.EXTENSION: {
+				return this.safeSend(WorkerEvents.RUN_EXTENSION, data);
+			}
+			default: {
+				throw new Error("CHILD_PROCESS_TYPE_INVALID", workerType);
+			}
+		}
+	}
+
 	async _getMathJSResult (command, requestedInfo) {
 		if (!command) throw new Error("CHILD_PROCESS_MISSING_PROPERTY", "command");
 		if (!requestedInfo) throw new Error("CHILD_PROCESS_MISSING_PROPERTY", "The information");
@@ -45,6 +56,9 @@ class WorkerManager {
 		this.worker = new processAsPromised(fork(`${__dirname}/Worker.js`, [], { env: { SHARD_ID: this.client.shardID }, execArgv: [] }));
 		this.worker.once("ready", async d => {
 			winston.info(`Worker for shard ${Number(d.shard)} is up and running!`);
+		});
+		this.worker.on("exit", () => {
+			winston.warn("Worker exited");
 		});
 		return this.worker;
 	}

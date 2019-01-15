@@ -12,6 +12,7 @@ const { RemoveFormatting } = require("../Modules/Utils/index");
 const {
 	Constants: {
 		LoggingLevels,
+		WorkerTypes,
 	},
 	Errors: {
 		Error: GABError,
@@ -1072,6 +1073,21 @@ module.exports = class GABClient extends DJSClient {
 			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
 		}
 		return serverDocument;
+	}
+
+	/**
+	 * Runs a message (command or keyword) extension on the extension worker
+	 * @param {GABMessage} msg
+	 * @param {Object} extensionConfigDocument
+	 * @returns {Promise<*>}
+	 */
+	async runExtension (msg, extensionConfigDocument) {
+		const result = await this.workerManager.sendValueToWorker(WorkerTypes.EXTENSION, {
+			msg: msg.id, guild: msg.guild.id, ch: msg.channel.id,
+			ext: extensionConfigDocument._id, extv: extensionConfigDocument.version,
+		});
+		if (result === false) winston.debug(`Failed to run message extension in guild.`, { msgid: msg.id, svrid: msg.guild.id, extid: extensionConfigDocument._id, extv: extensionConfigDocument.version });
+		return result;
 	}
 
 	/**

@@ -389,22 +389,26 @@ class MessageCreate extends BaseEvent {
 							let extensionApplied = false;
 							const extensionLength = serverDocument.extensions.length;
 							for (let i = 0; i < extensionLength; i++) {
-								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && serverDocument.extensions[i].enabled_channel_ids.includes(msg.channel.id)) {
+								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && !serverDocument.extensions[i].disabled_channel_ids.includes(msg.channel.id)) {
+									const extensionDocument = await Gallery.findOneByObjectID(serverDocument.extensions[i]._id);
+									const versionDocument = extensionDocument ? extensionDocument.versions.id(serverDocument.extensions[i].version) : null;
 									// Command extensions
-									if (serverDocument.extensions[i].type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
+									if (versionDocument && versionDocument.type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
 										winston.verbose(`Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
 										this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 										extensionApplied = true;
 
 										// Do the normal things for commands
 										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelQueryDocument, msg), this.setCooldown(serverDocument, channelDocument, channelQueryDocument)]);
-										// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, commandObject.suffix, null);
-									} else if (serverDocument.extensions[i].type === "keyword") {
+										const m = await msg.send(Constants.Text.EXTENSION_RUN(extensionDocument.name));
+										await this.client.runExtension(msg, serverDocument.extensions[i]);
+										await m.delete().catch(() => null);
+									} else if (versionDocument && versionDocument.type === "keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
 										if (((serverDocument.extensions[i].keywords.length > 1 || serverDocument.extensions[i].keywords[0] !== "*") && keywordMatch.selectedKeyword > -1) || (serverDocument.extensions[i].keywords.length === 1 && serverDocument.extensions[i].keywords[0] === "*")) {
 											winston.verbose(`Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
 											this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
-											// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, null, keywordMatch);
+											await this.client.runExtension(msg, serverDocument.extensions[i]);
 										}
 									}
 								}

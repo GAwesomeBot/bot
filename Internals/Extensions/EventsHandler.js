@@ -17,14 +17,6 @@ class EventsHandler {
 		});
 	}
 
-	async message (msg) {
-		if (!msg.guild || msg.author.id === this.manager.user.id || msg.author.bot) return;
-		winston.silly("Handling incoming public message as extension handler...", { svrid: msg.guild.id });
-
-		const serverDocument = await Servers.findOne(msg.guild.id);
-		return serverDocument;
-	}
-
 	defaultHandler () {
 		return null;
 	}

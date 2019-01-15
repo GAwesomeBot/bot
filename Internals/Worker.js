@@ -26,6 +26,10 @@ mathjs.import({
 const Process = require("process-as-promised");
 const p = new Process();
 
+const extensionManager = new ExtensionManager({
+	database: configJS.database,
+});
+
 // #region Math
 p.on("runMathCommand", (data, callback) => {
 	winston.silly(`Received data from master shard for calculating...`, data);
@@ -63,10 +67,32 @@ p.on("jumboEmoji", async ({ input }, callback) => {
 });
 // #endregion Emoji
 
+// #region Extensions
+p.on("runExtension", async (data, callback) => {
+	if (!extensionManager.ready) return;
+
+	const guild = extensionManager.guilds.get(data.guild);
+	if (!guild) return callback(false);
+	const channel = guild.channels.get(data.ch);
+	if (!channel) return callback(false);
+	const msg = await channel.messages.fetch(data.msg);
+	if (!msg) return callback(false);
+
+	const serverDocument = await Servers.findOne(guild.id);
+	if (!serverDocument) return callback(false);
+	const extensionDocument = await Gallery.findOneByObjectID(data.ext);
+	if (!extensionDocument) return callback(false);
+	const versionDocument = await extensionDocument.versions.id(data.extv);
+	if (!versionDocument) return callback(false);
+
+	try {
+		callback(await extensionManager.runExtension(extensionDocument, versionDocument, serverDocument, serverDocument.extensions.id(data.ext), { msg, guild }));
+	} catch (err) {
+		callback(false);
+	}
+});
+
 (async () => {
-	const extensionManager = new ExtensionManager({
-		database: configJS.database,
-	});
 	await extensionManager.initialize();
 	await extensionManager.login(auth.discord.clientToken);
 	await p.send("ready", { shard: process.env.SHARD_ID });
