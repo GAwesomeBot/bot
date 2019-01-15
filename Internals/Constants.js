@@ -70,6 +70,7 @@ Constants.LoggingLevels = {
  * @property {number} TRIVIA_END - A trivia game has ended
  * @property {number} YOUTUBE
  * @property {number} TWITCH
+ * @property {number} TWITTER
  */
 Constants.Colors = {
 	RED: 0xFF0000,
@@ -103,6 +104,7 @@ Constants.Colors = {
 
 	TWITCH: 0x6441A5,
 	YOUTUBE: 0xFF0000,
+	TWITTER: 0x1da1f2,
 };
 
 /**
@@ -484,6 +486,7 @@ Constants.APIs = {
 	NUMFACT: num => `http://numbersapi.com/${num}`,
 	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
+	TWITRSS: user => `http://twitrss.me/twitter_user_to_rss/?user=${encodeURIComponent(user)}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 	WEATHER: (key, query) => `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${key}&units=metric`,
 	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${query}&output=json`,
