@@ -129,7 +129,7 @@ class ExtensionManager extends DJSClient {
 				timeout: context.versionDocument.timeout,
 				sandbox: new Sandbox(this, context, context.versionDocument.scopes),
 			});
-			vm.run(code);
+			await vm.run(`(async function() {${code}})()`);
 			return { success: true, err: null };
 		} catch (err) {
 			winston.debug(`Failed to run ${context.versionDocument.type} extension "${context.extensionDocument.name}"`,

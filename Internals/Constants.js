@@ -150,6 +150,16 @@ Constants.Text = {
 			},
 		},
 	}),
+	EXTENSION_FAIL: extensionName => ({
+		embed: {
+			color: Constants.Colors.ERROR,
+			title: "Something went wrong! ⚙",
+			description: `An error has occurred while executing **${extensionName}**.`,
+			footer: {
+				text: "GAB is most likely not at fault; contact a Server Admin or the Extension Author to resolve this issue.",
+			},
+		},
+	}),
 	GUILD_VERIFICATION_LEVEL: level => Constants.GUILD_VERIFICATION_LEVELS[level],
 };
 

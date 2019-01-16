@@ -401,8 +401,9 @@ class MessageCreate extends BaseEvent {
 										// Do the normal things for commands
 										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelQueryDocument, msg), this.setCooldown(serverDocument, channelDocument, channelQueryDocument)]);
 										const m = await msg.send(Constants.Text.EXTENSION_RUN(extensionDocument.name));
-										await this.client.runExtension(msg, serverDocument.extensions[i]);
-										await m.delete().catch(() => null);
+										const result = await this.client.runExtension(msg, serverDocument.extensions[i]);
+										if (result.success) await m.delete().catch(() => null);
+										else await m.edit(Constants.Text.EXTENSION_FAIL(extensionDocument.name));
 									} else if (versionDocument && versionDocument.type === "keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
 										if (((serverDocument.extensions[i].keywords.length > 1 || serverDocument.extensions[i].keywords[0] !== "*") && keywordMatch.selectedKeyword > -1) || (serverDocument.extensions[i].keywords.length === 1 && serverDocument.extensions[i].keywords[0] === "*")) {
