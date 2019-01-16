@@ -1,3 +1,6 @@
+const { Collection } = require("discord.js");
+const { Error: GABError } = require("../../../Errors");
+
 class Utils {
 	constructor () {
 		throw new Error(`The ${this.constructor.name} class may not be instantiated.`);
@@ -65,6 +68,64 @@ class Utils {
 		}
 
 		return color;
+	}
+
+	/**
+	 * Parses the arguments supplied to a message sending or editing function
+	 * @param {String|Object} content -
+	 * @param {Object} [embed] -
+	 * @returns {Object}
+	 */
+	static parseSendMessageOptions (content, embed) {
+		const editOptions = {};
+		if (typeof content === "string" && typeof embed === "object") {
+			editOptions.content = content;
+			editOptions.embed = embed;
+		} else if (typeof content === "string") {
+			editOptions.content = content;
+		} else if (typeof content === "object") {
+			editOptions.embed = content;
+		} else if (!content) {
+			throw new GABError("API_ERROR", "Message cannot be edited without content.");
+		}
+		return editOptions;
+	}
+
+	/**
+	 * Wraps a Collection of D.js Objects into a Collection of instances of a safe API Class.
+	 * @param {Discord.Collection} collection - The Collection to be wrapped
+	 * @param {Function} APIClass - The API Class to wrap the Collection elements in
+	 * @param {Object} API -
+	 * @param {ExtensionManager} client -
+	 * @param {Array<String>} scopes -
+	 * @returns {Discord.Collection<*>}
+	 */
+	static wrapCollection (collection, APIClass, { API, client, scopes }) {
+		const safeCollection = new Collection();
+		collection.forEach((item, key) => safeCollection.set(key, new APIClass(API, client, item, scopes)));
+		return safeCollection;
+	}
+
+	/**
+	 * Wraps an Array into an Array of instances of a safe API Class.
+	 * @param {Array} array - The Array to be wrapped
+	 * @param {Function} APIClass - The API Class to wrap the Array elements in
+	 * @param {Object} API -
+	 * @param {ExtensionManager} client -
+	 * @param {Array<String>} scopes -
+	 * @returns {Array<*>}
+	 */
+	static wrapArray (array, APIClass, { API, client, scopes }) {
+		return array.map(item => new APIClass(API, client, item, scopes));
+	}
+
+	/**
+	 * Serialize an Error returned from Discord.js for usage within the ECA.
+	 * @param {Error} err - The error to serialize
+	 * @throws {GABError}
+	 */
+	static serializeError (err) {
+		throw new GABError("DISCORD_ERROR", err);
 	}
 }
 

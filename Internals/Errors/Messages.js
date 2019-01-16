@@ -37,8 +37,10 @@ const Messages = {
 	// Errors related to Extension Faults
 	UNKNOWN_MODULE: module => `${module} is not a valid GAwesomeScript module`,
 	MISSING_SCOPES: module => module ? `Your extension did not register sufficient scopes to require module ${module}` : `Your extension did not register sufficient scopes to perform this action`,
-	STORAGE_MAX_SIZE: `Extension Storage has reached it's maximum size`,
+	STORAGE_MAX_SIZE: `Extension Storage has reached its maximum size`,
 	STORAGE_EMPTY: `The Extension Storage is empty!`,
+	DISCORD_ERROR: err => err.message,
+	API_ERROR: msg => msg,
 
 	MISSING_GIPHY_QUERY: `You need to provide a query for Giphy!`,
 	NO_GIPHY_RESULT: `There were to Giphy results for your query!`,

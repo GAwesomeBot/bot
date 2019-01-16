@@ -8,7 +8,7 @@ const {
 	},
 } = require("../../index");
 class Sandbox {
-	constructor (rawBot, { extensionDocument, msg, guild, serverDocument, extensionConfigDocument, eventData }, scopes) {
+	constructor (rawClient, { extensionDocument, msg, guild, serverDocument, extensionConfigDocument, eventData }, scopes) {
 		const modules = {};
 
 		// Import Third-Party Modules
@@ -36,7 +36,7 @@ class Sandbox {
 		}
 		if (msg) {
 			modules.message = {
-				module: () => new API.Message(msg, scopes),
+				module: () => new API.Message(API, rawClient, msg, scopes, true),
 				custom: true,
 			};
 		}
@@ -68,7 +68,7 @@ class Sandbox {
 			custom: true,
 		};
 		modules.bot = {
-			module: () => new API.Client(rawBot, guild, serverDocument, scopes),
+			module: () => new API.Client(rawClient, guild, serverDocument, scopes),
 			custom: true,
 		};
 

@@ -3,9 +3,8 @@ const { VM } = require("vm2");
 const DJSClient = require("discord.js").Client;
 const { AllowedEvents } = require("../Constants");
 const DB = require("../../Database/Driver");
-const API = require("./API");
+const Sandbox = require("./API/Sandbox");
 const EventsHandler = require("./EventsHandler");
-const { Sandbox } = API;
 
 /**
  * Manages all operations of extensions on the Shard Worker.
