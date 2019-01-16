@@ -9,6 +9,7 @@ class UsernameUpdater extends BaseEvent {
 		let userDocument = await Users.findOne(oldUser.id);
 		if (!userDocument) userDocument = await Users.new({ _id: oldUser.id });
 		userDocument.query.set("username", newUser.tag);
+		if (userDocument.past_names && !userDocument.past_names.includes(oldUser.username)) userDocument.query.push("past_names", oldUser.username);
 		userDocument.save();
 	}
 }

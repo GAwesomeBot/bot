@@ -369,7 +369,7 @@ controllers.status.post = async (req, res) => {
 							}
 						// Fallthrough
 						case "type":
-							serverQueryDocument.set(`config.moderation.status_messages.${status_message}.${key}`, req.body[`${status_message}-${key}`]);
+							if (req.body[`${status_message}-${key}`]) serverQueryDocument.set(`config.moderation.status_messages.${status_message}.${key}`, req.body[`${status_message}-${key}`]);
 							break;
 					}
 				}
