@@ -77,7 +77,7 @@ class MessageDelete extends BaseEvent {
 				// Send message in same channel
 			} else if (statusMessageDocument.type === "msg") {
 				if (!channelDocument || channelDocument.bot_enabled) {
-					msg.send({
+					msg.channel.send({
 						embed: StatusMessages.MESSAGE_DELETED(statusMessageDocument.type, msg, serverDocument, this.client),
 						disableEveryone: true,
 					});

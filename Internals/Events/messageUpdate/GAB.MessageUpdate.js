@@ -31,7 +31,7 @@ class MessageUpdate extends BaseEvent {
 			} else if (statusMessageDocument.type === "msg") {
 				const channelDocument = serverDocument.channels[msg.channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) {
-					msg.send({
+					msg.channel.send({
 						embed: StatusMessages.MESSAGE_EDITED(statusMessageDocument.type, msg, oldMsg, serverDocument, this.client),
 						disableEveryone: true,
 					});
