@@ -715,7 +715,7 @@ module.exports = class GABClient extends DJSClient {
 		const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
 		const userQueryDocument = userDocument.query;
 
-		roleID = roleID.id || roleID;
+		roleID = roleID ? roleID.id || roleID : null;
 		this.logMessage(serverDocument, LoggingLevels.INFO, `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
 
 		// Deduct 50 GAwesomePoints if necessary
@@ -1083,7 +1083,7 @@ module.exports = class GABClient extends DJSClient {
 	 */
 	async runExtension (msg, extensionConfigDocument) {
 		const result = await this.workerManager.sendValueToWorker(WorkerTypes.EXTENSION, {
-			msg: msg.id, guild: msg.guild.id, ch: msg.channel.id,
+			msg: msg.id, suffix: msg.suffix, guild: msg.guild.id, ch: msg.channel.id,
 			ext: extensionConfigDocument._id, extv: extensionConfigDocument.version,
 		});
 		if (result === false) winston.debug(`Failed to run message extension in guild.`, { msgid: msg.id, svrid: msg.guild.id, extid: extensionConfigDocument._id, extv: extensionConfigDocument.version });

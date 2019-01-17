@@ -208,7 +208,7 @@ class MessageCreate extends BaseEvent {
 						}
 						this.client.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.client.getName(serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 					}
-					await userDocument.save().catch(err => {
+					return userDocument.save().catch(err => {
 						winston.verbose(`Failed to save user document...`, err);
 					});
 				}

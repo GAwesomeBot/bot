@@ -8,7 +8,7 @@ const {
 	},
 } = require("../../index");
 class Sandbox {
-	constructor (rawClient, { extensionDocument, msg, guild, serverDocument, extensionConfigDocument, eventData }, scopes) {
+	constructor (rawClient, { extensionDocument, versionDocument, msg, guild, serverDocument, extensionConfigDocument, eventData }, scopes) {
 		const modules = {};
 
 		// Import Third-Party Modules
@@ -18,19 +18,21 @@ class Sandbox {
 		modules.xmlparser = { module: "xml-parser" };
 
 		// Import global GAwesomeBot variables
-		if (extensionDocument.type === "command") {
+		if (versionDocument.type === "command") {
 			modules.command = {
 				module: () => ({
-					prefix: guild.commandPrefix,
+					prefix: serverDocument.config.command_prefix,
 					suffix: msg.suffix.trim(),
-					key: extensionDocument.key,
+					key: extensionConfigDocument.key,
 				}),
 				custom: true,
 			};
 		}
-		if (extensionDocument.type === "keyword" && extensionConfigDocument.keywords) {
+		if (versionDocument.type === "keyword" && extensionConfigDocument.keywords) {
 			modules.keyword = {
-				module: () => extensionConfigDocument.keywords,
+				module: () => ({
+					keywords: extensionConfigDocument.keywords,
+				}),
 				custom: true,
 			};
 		}
@@ -74,7 +76,7 @@ class Sandbox {
 
 		this.require = name => {
 			const module = modules[name];
-			if (!module) throw new GABError("UNKNOWN_MODULE");
+			if (!module) throw new GABError("UNKNOWN_MODULE", name);
 			if (module.scope && !scopes.includes(module.scope)) throw new GABError("MISSING_SCOPES");
 			if (module.key && !module.custom) {
 				return require(module.module)[module.key];

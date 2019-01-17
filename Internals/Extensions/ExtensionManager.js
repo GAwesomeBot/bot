@@ -87,13 +87,16 @@ class ExtensionManager extends DJSClient {
 	 * @returns {Promise<{ code: number, description: string }>}
 	 */
 	async handleRunResult (result, serverDocument, extensionConfigDocument) {
-		if (result.success || !result.err) return extensionConfigDocument.status;
 		const extensionStatusQueryDocument = serverDocument.query.id("extensions", extensionConfigDocument._id).prop("status");
-		extensionStatusQueryDocument.set("code", 2);
-		if (result.err instanceof Error && typeof result.err.message === "string") {
-			extensionStatusQueryDocument.set("description", result.err.message);
+		if (result.success || !result.err) {
+			extensionStatusQueryDocument.set("code", 0).set("description", null);
 		} else {
-			extensionStatusQueryDocument.set("description", "Something went wrong!");
+			extensionStatusQueryDocument.set("code", 2);
+			if (result.err instanceof Error && typeof result.err.message === "string") {
+				extensionStatusQueryDocument.set("description", result.err.message);
+			} else {
+				extensionStatusQueryDocument.set("description", "Something went wrong!");
+			}
 		}
 
 		await serverDocument.save();
@@ -129,7 +132,7 @@ class ExtensionManager extends DJSClient {
 				timeout: context.versionDocument.timeout,
 				sandbox: new Sandbox(this, context, context.versionDocument.scopes),
 			});
-			await vm.run(`(async function() {${code}})()`);
+			await vm.run(`(async () => {\n${code}\n})()`);
 			return { success: true, err: null };
 		} catch (err) {
 			winston.debug(`Failed to run ${context.versionDocument.type} extension "${context.extensionDocument.name}"`,

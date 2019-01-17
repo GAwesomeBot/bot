@@ -77,6 +77,7 @@ p.on("runExtension", async (data, callback) => {
 	if (!channel) return callback(false);
 	const msg = await channel.messages.fetch(data.msg);
 	if (!msg) return callback(false);
+	msg.suffix = data.suffix;
 
 	const serverDocument = await Servers.findOne(guild.id);
 	if (!serverDocument) return callback(false);
@@ -90,6 +91,10 @@ p.on("runExtension", async (data, callback) => {
 	} catch (err) {
 		callback(false);
 	}
+});
+
+process.on("unhandledRejection", err => {
+	winston.debug(`An extension failed to handle a Promise rejection`, err);
 });
 
 (async () => {
