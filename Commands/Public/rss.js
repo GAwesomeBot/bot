@@ -69,7 +69,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 				embed: {
 					color: Colors.INFO,
 					title: `The following feeds are available: 📑`,
-					description: `${info.join("\\n\\t")}`,
+					description: `${info.join("\n\t")}`,
 				},
 			});
 		} else {
