@@ -3,7 +3,7 @@ const { Gist, RegExpMaker } = require("../../Modules/Utils/");
 module.exports = async (main, msg, commandData) => {
 	if (msg.suffix) {
 		const hrstart = process.hrtime();
-		const forceUnsafe = msg.suffix.split(" ")[0] === "--unsafe";
+		const forceUnsafe = msg.suffix.split(" ")[0].toLowerCase() === "--unsafe";
 		let { suffix } = msg;
 		if (forceUnsafe) suffix = suffix.split(" ").splice(1).join(" ");
 		try {
