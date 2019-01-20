@@ -46,7 +46,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
-				description: "I'm currently not tracking any streamers. A Server Admin can add a streamer to track in the dashboard! 🌐",
+				description: "I'm not tracking any streamers yet!\nA Server Admin can add a streamer to track on the dashboard! 🌐",
 			},
 		});
 	}
