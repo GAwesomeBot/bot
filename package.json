@@ -32,7 +32,7 @@
     "discord.js": "github:discordjs/discord.js",
     "ejs": "^2.6.1",
     "erlpack": "github:discordapp/erlpack",
-    "express": "^4.16.3",
+    "express": "^4.16.4",
     "express-rate-limit": "^2.11.0",
     "express-session": "^1.15.6",
     "fast-levenshtein": "^2.0.6",
