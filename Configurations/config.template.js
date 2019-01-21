@@ -1,38 +1,39 @@
 module.exports = {
 	/*
 	 * Represents how many shards the bot will have.
-	 * It *must* be a integer, aka *1*, *52* etc. OR "auto"
+	 * Must be either an interger or the string "auto".
 	 */
-	shardTotal: 2,
+	shardTotal: 1,
 	/*
-	 * The URL all the bot commands should point to.
-	 * Example: /about shows this link for the web interface
+	 * The base URL used in links posted by the bot.
+	 * The URL *must* end with a forward slash ("/")
 	 */
 	hostingURL: "https://dev.gawesomebot.com/",
 	/*
-	 * The server IP the web inteface should point itself to.
-	 * Preferably, you leave it as *0.0.0.0* so that it is on the local machine
+	 * The IP the Web Server should bind to.
+	 * You should probably leave this as "0.0.0.0" which binds to all incoming connections
 	 */
 	serverIP: "0.0.0.0",
 	/*
-	 * The HTTP / HTTPS ports the bot should use. If you use Cloudflare, you should just keep httpPort to *80*
-	 * They are both Integers
+	 * The HTTP / HTTPS ports the bot should use.
+	 * If you use a reverse proxy which is listening on the default ports these should be changed to something else.
+	 * Both values are integers.
 	 */
 	httpPort: 80,
 	httpsPort: 433,
 	/*
-	 * Certificate / Private Key paths to the files, required for HTTPS.
+	 * Certificate / Private Key paths to the cert files, required for HTTPS.
 	 * If you are on Windows, make sure to escape the *\*
 	 */
 	cert: "",
 	privateKey: "",
 	/*
 	 * If the bot should try to automatically redirect to https.
-	 * Needs cert and privateKey to be fulfilled
+	 * Required a cert and privateKey to exist.
 	 */
 	httpsRedirect: false,
 	/*
-	 * The database connection options
+	 * Connection options for the database
 	 */
 	database: {
 		/*
@@ -45,19 +46,15 @@ module.exports = {
 		db: "gabbe",
 	},
 	/*
-	 * MaxVoiceChannels should remain as is.
-	 */
-	maxVoiceChannels: 2,
-	/*
 	 * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
-	 * Otherwise. !! DO NOT TOUCH !!
+	 * Otherwise: !! DO NOT TOUCH !!
 	 */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot&permissions=470281471",
 	/*
-	 * Level of output the console should display. List of levels:
+	 * Minimum log level the console should display. List of available levels:
 	 * error, warn, info, debug and verbose.
-	 * Recommended to stay as info to prevent console cluttering.
-	 * fileLevel determines the output to master/shard.gawesomebot.log and verbose.gawesomebot.log files.
+	 * Recommended to stay at "info" to prevent console cluttering.
+	 * `fileLevel` determines the output to master/shard.gawesomebot.log and verbose.gawesomebot.log files.
 	 * Note that setting these values to a level lower than `info` might influence your bot's performance.
 	 */
 	consoleLevel: "info",
@@ -69,36 +66,31 @@ module.exports = {
 	 */
 	secret: "vFEvmrQl811q2E8CZelg4438l9YFwAYd",
 	/**
-	 * A secure, random password used to separate your main encryption key from
-	 * someone elses.
+	 * A secure, random password used to encrypt and decrypt some database values.
 	 * YOU SHOULD CHANGE THIS.
-	 * And DO NOT CHANGE IT AFTERWARDS.
+	 * And DO NOT CHANGE IT AFTERWARDS. Otherwise you will loose access to some of the bot's data.
 	 * Use https://passwordsgenerator.net/ to generate something big and secure!
 	 */
 	encryptionPassword: "fEmH!bRP4S8a4^*fpQ=%",
 	/**
-	 * The initial value that will be used in the encryption of data
+	 * An initial value that will be used to encrypt data.
 	 * YOU MUST CHANGE THIS.
 	 * And whatever you do. DO NOT CHANGE THIS AFTERWARDS.
 	 * The encrypted data will be lost otherwise.
 	 * So, set it to something secore, then never ever touch it. Save it in a file!
 	 * Hell, it can even be a random word! Just remember: never share this.
-	 * Make sure it isn't longer than 16 characters!
+	 * Make sure it *isn't longer than 16 characters*!
 	 * You can use https://passwordsgenerator.net/ to generate an encryption iv.
 	 */
 	encryptionIv: "usM9^y5KHtF_UCn?",
 	/*
-	 * Discord channel and server where any errors should be outputted,
-	 * whenever applicable
-	 * debugChannel: The Channel ID in the server
-	 */
-	discord: {
-		debugChannel: ``,
-	},
-	/*
-	 * Optional: If you want your bot to have an invite link to your guild, for support or things.
+	 * Optional: If you want your bot to show an invite link to your guild in the about/help commands.
 	 */
 	discordLink: "https://discord.gg/NZwzJ9Q",
+	/*
+	 * Data to populate the donation list on the /donate web page.
+	 */
+	donateSubtitle: "The GAwesomeBot team currently doesn't accept direct payments. (<a href='/wiki/FAQs#donations'>here's why</a>) Instead, you can use the following methods to support the project!",
 	donateCharities: [
 		{
 			icon_url: "http://i.imgur.com/1C08tFT.png",
@@ -107,9 +99,8 @@ module.exports = {
 			country: "WW",
 		},
 	],
-	donateSubtitle: "The GAwesomeBot team currently doesn't accept direct payments. (<a href='/wiki/FAQs#donations'>here's why</a>) Instead, you can use the following methods to support the project!",
 	/*
-	 * These last values should remain untouched.
+	 * These last values can remain untouched.
 	 */
 	moment_date_format: "ddd MMMM Do YYYY [at] H:mm:ss",
 	voteTriggers: [

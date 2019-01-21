@@ -8,7 +8,7 @@ module.exports = {
 		discordBotsOrg: "",
 		discordList: "",
 		discordBots: "",
-		giphyAPI: "dc6zaTOxFJmzC",
+		giphyAPI: "",
 		googleCSEID: "",
 		googleAPI: "",
 		imgurClientID: "",
