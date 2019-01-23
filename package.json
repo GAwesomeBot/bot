@@ -37,6 +37,7 @@
     "express-session": "^1.15.6",
     "fast-levenshtein": "^2.0.6",
     "feed-read": "0.0.1",
+    "figlet": "^1.2.1"
     "fs-nextra": "^0.3.5",
     "gifwrap": "^0.7.5",
     "jimp": "^0.2.28",
