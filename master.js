@@ -1,13 +1,4 @@
 /* eslint-disable max-len */
-const ascii = `
-  _____                                               ____        _
- / ____|   /\\                                        |  _ \\      | |
-| |  __   /  \\__      _____  ___  ___  _ __ ___   ___| |_) | ___ | |_
-| | |_ | / /\\ \\ \\ /\\ / / _ \\/ __|/ _ \\| '_ \` _ \\ / _ \\  _ < / _ \\| __|
-| |__| |/ ____ \\ V  V /  __/\\__ \\ (_) | | | | | |  __/ |_) | (_) | |_
- \\_____/_/    \\_\\_/\\_/ \\___||___/\\___/|_| |_| |_|\\___|____/ \\___/ \\__|
-			`;
-
 const { Traffic, Updater } = require("./Modules");
 const { Boot, Sharder } = require("./Internals");
 const { Stopwatch } = require("./Modules/Utils");
@@ -17,6 +8,7 @@ const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
 const configWarnings = [];
+const figlet = require('figlet');
 
 const scope = { safeMode: false };
 
@@ -128,7 +120,13 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 					winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 					// Use console.log because winston never lets us have anything fun, MOM
 					// eslint-disable-next-line no-console
-					console.log(ascii);
+					figlet('GAwesomeBot', (err, res) => {
+						if (err) {
+							winston.error(err);
+						} else {
+							console.log(res);
+						}
+					})
 					sharder.finished = -1;
 					sharder.IPC.send("postAllData", {}, 0);
 					if (process.argv.includes("--build")) {
