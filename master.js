@@ -22,7 +22,7 @@ const scope = { safeMode: false };
 
 Boot({ configJS, configJSON, auth }, scope).then(() => {
 	if (scope.migrating) return;
-	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { url: configJS.databaseURL });
+	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { URL: configJS.database.URL, db: configJS.database.db });
 
 	// eslint-disable-next-line promise/catch-or-return
 	database.initialize(configJS.database).catch(err => {
