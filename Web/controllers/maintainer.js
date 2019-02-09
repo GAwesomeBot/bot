@@ -13,7 +13,7 @@ const moment = require("moment");
 const { Tail } = require("tail");
 
 const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo, renderError } = require("../helpers");
-const Updater = require("../../Modules/Updater");
+const Updater = require("../../Modules/GAwesomeClient");
 const { GetGuild } = require("../../Modules").getGuild;
 
 const controllers = module.exports;
@@ -377,7 +377,7 @@ controllers.management.version = async (req, { res }) => {
 
 	res.setPageData({
 		disabled: version === 404,
-		latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
+		latestVersion: version.latest,
 		utd: version["up-to-date"],
 		page: "maintainer-version.ejs",
 	}).setConfigData({

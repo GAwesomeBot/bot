@@ -237,6 +237,63 @@ html, body {
     align-items: center;
 }
 
+.box.generic-feature .generic-feature-box-group {
+    display: flex;
+    flex-direction: row;
+}
+.generic-feature .generic-feature-box.version-box {
+    flex-grow: 1;
+    transition: flex-grow 1s;
+    cursor: pointer;
+}
+.generic-feature .generic-feature-box.version-box .generic-feature-box-description {
+    flex-grow: 1;
+    flex-direction: column;
+    padding: .5rem 0 0 0;
+}
+.generic-feature-box.version-box .generic-feature-box-description .subtitle {
+    margin-bottom: 0;
+}
+.generic-feature .generic-feature-box.version-box:hover {
+    flex-grow: 4;
+}
+.version-update-indicator {
+    padding-left: 2em;
+    padding-right: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation-duration: 4s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+@keyframes version-update-indicator-install {
+    0% {
+        color: inherit;
+    }
+    25% {
+        color: hsl(171, 100%, 41%);
+    }
+    50% {
+        color: inherit;
+    }
+    75% {
+        color: hsl(171, 100%, 41%);
+    }
+    100% {
+        color: inherit;
+    }
+}
+.generic-feature-box-description .progress.is-appended {
+    border-radius: 0;
+    margin-top: auto;
+    height: 0;
+    transition: height 100ms ease-in;
+}
+.message.installer-log .message-body {
+    transition: border-color .5s ease-out;
+}
+
 .installer {
     display: flex;
     flex-flow: column;

@@ -1,4 +1,4 @@
-const Updater = require("../../Modules/Updater");
+const Updater = require("../../Modules/GAwesomeClient");
 const os = require("os");
 
 module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandData) => {

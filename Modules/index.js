@@ -1,4 +1,6 @@
 module.exports = {
+	GAwesomeClient: require("./GAwesomeClient.js"),
+
 	ConversionHandler: require("./ConversionHandler.js"),
 	Encryption: require("./Encryption"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
@@ -19,7 +21,6 @@ module.exports = {
 	StringJS: require("./String"),
 	Traffic: require("./Traffic.js"),
 	Trivia: require("./Trivia.js"),
-	Updater: require("./Updater.js"),
 	Utils: require("./Utils/index"),
 	VoiceStatsCollector: require("./VoiceStatsCollector"),
 	Voicetext: require("./Voicetext"),

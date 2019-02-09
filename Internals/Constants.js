@@ -490,10 +490,12 @@ Constants.APIs = {
 };
 
 /**
- * Address of GAB's versioning server. Changing this value is not recommended and will almost certainly cause major issues.
+ * Endpoints of GAB's CENTRAL API. Changing this value is not recommended and will almost certainly cause major issues.
  * @type {string}
  */
-Constants.APIs.VERSIONING = "https://status.gawesomebot.com";
+Constants.CENTRAL = {
+	VERSIONING: "https://status.gawesomebot.com/api/versions/",
+};
 
 /**
  * Default value of the useragent header on all requests made to third-party endpoints.
