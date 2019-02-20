@@ -68,7 +68,7 @@ module.exports = {
 	/**
 	 * A secure, random password used to encrypt and decrypt some database values.
 	 * YOU SHOULD CHANGE THIS.
-	 * And DO NOT CHANGE IT AFTERWARDS. Otherwise you will loose access to some of the bot's data.
+	 * And DO NOT CHANGE IT AFTERWARDS. Otherwise you will lose access to some of the bot's data.
 	 * Use https://passwordsgenerator.net/ to generate something big and secure!
 	 */
 	encryptionPassword: "fEmH!bRP4S8a4^*fpQ=%",
