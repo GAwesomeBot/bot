@@ -77,7 +77,7 @@ module.exports = {
 	 * YOU MUST CHANGE THIS.
 	 * And whatever you do. DO NOT CHANGE THIS AFTERWARDS.
 	 * The encrypted data will be lost otherwise.
-	 * So, set it to something secore, then never ever touch it. Save it in a file!
+	 * So, set it to something secure, then never ever touch it. Save it in a file!
 	 * Hell, it can even be a random word! Just remember: never share this.
 	 * Make sure it *isn't longer than 16 characters*!
 	 * You can use https://passwordsgenerator.net/ to generate an encryption iv.
