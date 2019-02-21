@@ -39,6 +39,13 @@
 					<% if (extensionData) { %>
 					<div class="box is-paddingless generic-feature" id="extension-<%= extensionData._id %>">
 						<div class="generic-feature-box">
+							<% if (extensionData.level === "third" && (!extensionData.published_version || extensionData.latest_version !== extensionConfigDocument.version || !extensionData.accepted)) { %>
+								<div class="generic-feature-box-slider has-text-grey" title="This extension is currently being reviewed by maintainers.">
+									<span class="icon is-medium">
+										<i class="fa fa-circle-o fa-2x"></i>
+									</span>
+								</div>
+							<% } else { %>
 							<% switch (extensionConfigDocument.status.code) { case 0: %>
 							<div class="generic-feature-box-slider has-text-success" title="This extension is operating normally.">
 							<% break; case 1: %>
@@ -51,6 +58,7 @@
                             		<i class="fa fa-circle-o fa-2x"></i>
 								</span>
 							</div>
+							<% } %>
 							<div class="generic-feature-box-description">
 								<p>
 									<strong><%= extensionData.name %></strong>
@@ -61,7 +69,11 @@
 									<% if (extensionData.level === "gallery" && extensionData.published_version && extensionData.published_version !== extensionConfigDocument.version) { %>
 									&nbsp;
 									<span class="tag is-danger">Updates Available</span>
-									<% } else if (extensionData.level === "third") { %>
+									<% } else if (extensionData.level === "third" && (!extensionData.published_version || extensionData.latest_version !== extensionConfigDocument.version || !extensionData.accepted)) { %>
+									&nbsp;
+									<span class="tag is-danger">Update Under Review</span>
+									<% } %>
+									<% if (extensionData.level === "third") { %>
 									&nbsp;
 									<span class="tag is-warning">Local</span>
 									<% } %>
@@ -69,7 +81,7 @@
 							</div>
 							<div class="generic-feature-box-addon">
 								<div class="buttons">
-									<% if (extensionData.status !== "saved") { %>
+									<% if (extensionData.status !== "saved" && extensionData.level === "gallery") { %>
 									<a class="button is-outlined" href="/extensions/<%= extensionData.status === "version_queue" ? "queue" : extensionData.status %>?id=<%= extensionConfigDocument._id %>">
 										<span class="icon">
 											<i class="fa fa-eye"></i>

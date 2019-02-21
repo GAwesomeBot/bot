@@ -178,14 +178,14 @@
 								<a class="card-footer-item" onclick="GAwesomeUtil.acceptExtension('<%= extension._id %>');">
 									Accept
 								</a>
-								<% if (authUser.id !== extension.owner.id) { %>
+								<% if (authUser.id !== extension.owner.id || extension.level === "third") { %>
 									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.rejectExtension('<%= extension._id %>');">
 										Reject
 									</a>
 								<% } %>
 							<% } %>
 						<% } %>
-						<% if (authUser.id === extension.owner.id) { %>
+						<% if (authUser.id === extension.owner.id && extension.level === "gallery") { %>
 							<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.unpublishExtension('<%= extension._id %>');">
 								Unpublish
 							</a>
