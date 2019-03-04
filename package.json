@@ -34,7 +34,7 @@
     "ejs": "^2.6.1",
     "erlpack": "github:discordapp/erlpack",
     "express": "^4.16.4",
-    "express-rate-limit": "^2.11.0",
+    "express-rate-limit": "^3.4.0",
     "express-session": "^1.15.6",
     "fast-levenshtein": "^2.0.6",
     "feed-read": "0.0.1",
