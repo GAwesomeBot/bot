@@ -44,6 +44,10 @@ active-handles@^1.1.0:
     function-origin "~1.1.0"
     xtend "~4.0.0"
 
+adm-zip@^0.4.13:
+  version "0.4.13"
+  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.13.tgz#597e2f8cc3672151e1307d3e95cddbc75672314a"
+
 after@0.8.2:
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/after/-/after-0.8.2.tgz#fedb394f9f0e02aa9768e702bda23b505fae7e1f"
@@ -342,9 +346,9 @@ camelcase@^4.1.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
 "canvas-constructor@github:kyranet/canvasConstructor":
-  version "1.1.0"
-  uid c79631f29ede1dc4411409d67ba55dfd5f4b59b3
-  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/c79631f29ede1dc4411409d67ba55dfd5f4b59b3"
+  version "3.0.1"
+  uid "05aef97a53c99d26d8409fb2529aafb81d577dbe"
+  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/05aef97a53c99d26d8409fb2529aafb81d577dbe"
 
 canvas-prebuilt@^2.0.0-alpha.12:
   version "2.0.0-alpha.12"
