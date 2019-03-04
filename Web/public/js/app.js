@@ -664,6 +664,9 @@ GAwesomeUtil.dashboard.connect = () => GAwesomeUtil.dashboardWrapper(() => {
 			$("#update-modal").addClass("is-active");
 		}
 	});
+	GAwesomeData.dashboard.socket.on("err", data => {
+		GAwesomeUtil[data.fatal ? "error" : "warn"](`Dashboard Socket responded with a ${data.error} error code.`);
+	});
 	GAwesomeData.dashboard.socket.on("logs", data => {
 		const line = `[${data.timestamp}] [${data.level}] ${data.message}`;
 		GAwesomeData.dashboard.terminal.print(line);

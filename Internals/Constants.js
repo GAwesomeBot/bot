@@ -494,8 +494,11 @@ Constants.APIs = {
  * @type {string}
  */
 Constants.CENTRAL = {
-	VERSIONING: "https://status.gawesomebot.com/api/versions/",
+	VERSIONING: "http://127.0.0.1:1243/api/versions/",
+	CODEBASE: "https://codeload.github.com/GilbertGobbels/GAwesomeBot/zip/",
 };
+
+Constants.CODEBASE_TOTAL_CHUNK_SIZE = 10300000;
 
 /**
  * Default value of the useragent header on all requests made to third-party endpoints.

@@ -19,6 +19,7 @@ module.exports = {
 	PostTotalData: require("./PostTotalData.js"),
 	RandomAnimals: require("./RandomAnimals.js"),
 	StringJS: require("./String"),
+	Temp: require("./Temp"),
 	Traffic: require("./Traffic.js"),
 	Trivia: require("./Trivia.js"),
 	Utils: require("./Utils/index"),

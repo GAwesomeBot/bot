@@ -1,13 +1,106 @@
 /* eslint-disable max-len */
-let finished = false;
+$(document).ready(() => {
+	window.GAwesomeUtil = window.GAwesomeUtil || {};
+	GAwesomeUtil.dashboard.versioning = {};
+	GAwesomeData.IHTML = {
+		article: "<article id='{ID}' class='message installer-log is-{LEVEL}'><div class='message-body'><div class='content'>{LOG}</div></div></article>",
+		colors: {
+			EJS: "danger",
+			HTML: "danger",
+			JS: "warning",
+			CSS: "primary",
+			JSON: "info",
+			info: "info",
+			error: "danger",
+			warn: "warning",
+			success: "success",
+		},
+	};
 
-const ecolors = {
-	EJS: "is-danger",
-	HTML: "is-danger",
-	JS: "is-warning",
-	CSS: "is-primary",
-	JSON: "is-info",
-};
+	let totalCountedChunks = 0;
+	let totalChunks = 0;
+
+	GAwesomeUtil.dashboard.versioning.downloadVersion = (button, branch, tag) => {
+		totalCountedChunks = 0;
+
+		const progress = $("progress.is-appended");
+		progress.attr("value", 0);
+		if (button.html() !== "Install") {
+			progress.css("height", ".5rem");
+		}
+		button.addClass("is-loading");
+		const setProgress = percentage => {
+			progress.attr("value", Math.round(percentage));
+		};
+
+		GAwesomeData.dashboard.socket.on("totalChunks", chunks => {
+			totalChunks = chunks;
+		});
+		GAwesomeData.dashboard.socket.on("downloadSuccess", () => {
+			GAwesomeUtil.log(`[UPDATE] Version Download finished with total of ${totalCountedChunks} bytes. (100%)`);
+			button.html("Install").removeClass("is-loading");
+			$(".version-update-indicator").css("animation-name", "none");
+			setProgress(100);
+			return setTimeout(() => progress.css("height", "0"), 100);
+		});
+		GAwesomeData.dashboard.socket.on("chunk", chunk => {
+			totalCountedChunks += chunk;
+			let percentage = (totalCountedChunks / totalChunks) * 100;
+			if (percentage > 95) percentage = 95;
+			setProgress(percentage);
+			GAwesomeUtil.log(`[UPDATE] Received Chunk Size: ${chunk} (${percentage}%)`);
+		});
+
+		GAwesomeUtil.log("[UPDATE] Starting Version Download...");
+		GAwesomeData.dashboard.socket.emit("download", {
+			branch,
+			tag,
+		});
+	};
+
+	GAwesomeUtil.dashboard.versioning.installVersion = (button, branch, tag) => {
+		$(".version-update-indicator").css("animation-name", "version-update-indicator-install");
+		$("#version-installer").slideToggle();
+		button.addClass("is-loading");
+
+		const onDisconnect = err => {};
+		GAwesomeData.dashboard.socket.on("disconnect", () => onDisconnect("disconnect"));
+		GAwesomeData.dashboard.socket.on("err", onDisconnect);
+		GAwesomeData.dashboard.socket.on("installLog", log => {
+			const logMessage = $(`#${log.id}`);
+			if (!logMessage[0]) {
+				$("#installer-logs").prepend(GAwesomeData.IHTML.article.replace("{ID}", log.id)
+					.replace("{LEVEL}", GAwesomeData.IHTML.colors[log.type])
+					.replace("{LOG}", log.msg));
+			} else {
+				logMessage.removeClass("is-info").removeClass("is-warning").removeClass("is-error");
+				logMessage.addClass(`is-${GAwesomeData.IHTML.colors[log.type]}`);
+				logMessage.find(".content").html(log.msg);
+			}
+		});
+		GAwesomeData.dashboard.socket.on("installFinish", () => {
+
+		});
+		GAwesomeData.dashboard.socket.emit("install", {
+			branch,
+			tag,
+		});
+	};
+
+
+	let downloaded = false;
+	const button = $("#update-btn");
+	button.click(() => {
+		if (!downloaded) {
+			GAwesomeUtil.dashboard.versioning.downloadVersion(button, button.data("branch"), button.data("tag"));
+			downloaded = true;
+		} else {
+			GAwesomeUtil.dashboard.versioning.installVersion(button, button.data("branch"), button.data("tag"));
+		}
+	});
+});
+
+let finished = false;
 
 const t = {
 	confirm: `

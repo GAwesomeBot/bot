@@ -1,6 +1,6 @@
 const process = require("process");
 
-const { Encryption, Utils, getGuild, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries } = require("./Modules/index");
+const { Encryption, Utils, getGuild, PostTotalData, Traffic, Trivia, Polls, Giveaways, Lotteries, GAwesomeClient, Temp: TemporaryStorage } = require("./Modules/index");
 const { handler: getGuildMessageHandler } = getGuild;
 const { ObjectDefines, MessageOfTheDay } = Utils;
 const Timeouts = require("./Modules/Timeouts/index");
@@ -48,6 +48,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	client.events = new EventHandler(client, configJS);
 	await client.events.init();
 	client.traffic = new Traffic(client.IPC, true);
+	client.central = new GAwesomeClient(client);
+	client.tempStorage = new TemporaryStorage();
 
 	client.IPC.on("getGuild", async (msg, callback) => {
 		if (msg.target === "*") {
