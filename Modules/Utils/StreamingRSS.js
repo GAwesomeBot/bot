@@ -58,16 +58,20 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 			for (let i = 0; i < feedDocument.streaming.enabled_channel_ids.length; i++) {
 				const channel = server.channels.get(feedDocument.streaming.enabled_channel_ids[i]);
 				if (channel) {
-					await channel.send({
-						embed: {
-							color: 0x3669FA,
-							description: `${info.length} new in feed **${feedDocument._id}**:`,
-						},
-					});
-					for (const embed of info) {
-						channel.send({
-							embed: embed,
+					try {
+						await channel.send({
+							embed: {
+								color: 0x3669FA,
+								description: `${info.length} new in feed **${feedDocument._id}**:`,
+							},
 						});
+						for (const embed of info) {
+							await channel.send({
+								embed: embed,
+							});
+						}
+					} catch (err) {
+						winston.debug(`Failed to send RSS Streaming updates to server.`, { svrid: server.id, chid: channel.id });
 					}
 				}
 			}

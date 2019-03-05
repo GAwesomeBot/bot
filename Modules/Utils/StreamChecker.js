@@ -16,7 +16,7 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 			if (channel) {
 				const channelDocument = serverDocument.channels[channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) {
-					channel.send(StreamingTemplate(data));
+					await channel.send(StreamingTemplate(data));
 				}
 			}
 		} else if (!data) {

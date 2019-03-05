@@ -22,10 +22,14 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 				serverConfigQueryDocument.set("message_of_the_day.last_run", Date.now());
 				await serverDocument.save().catch(err => {
 					winston.warn(`Failed to save message of the day data... 😞\n`, err);
-					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", null, channel.id);
+					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", channel.id);
 				});
-				channel.send(serverConfigDocument.message_of_the_day.message_content);
-				client.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", null, channel.id);
+				try {
+					await channel.send(serverConfigDocument.message_of_the_day.message_content);
+					client.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", channel.id);
+				} catch (err) {
+					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to send Message Of The Day!", channel.id);
+				}
 			} else {
 				client.logMessage(serverDocument, LoggingLevels.ERROR, "Couldn't find the channel for MOTD... Please reconfigure your MOTD! (*-*)", null);
 			}

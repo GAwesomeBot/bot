@@ -17,15 +17,15 @@ module.exports = async (client, userDocument, reminderDocument) => {
 			const newUserDocument = await Users.findOne(userDocument._id);
 			const newReminderQueryDocument = newUserDocument.query.id("reminders", reminderDocument._id);
 			const newReminderDocument = newReminderQueryDocument.val;
-			usr.send({
-				embed: {
-					color: 0x3669FA,
-					title: `Hey, here's the reminder you set!`,
-					description: `${newReminderDocument.name}`,
-				},
-			});
-			newReminderQueryDocument.remove();
 			try {
+				await usr.send({
+					embed: {
+						color: 0x3669FA,
+						title: `Hey, here's the reminder you set!`,
+						description: `${newReminderDocument.name}`,
+					},
+				});
+				newReminderQueryDocument.remove();
 				await newUserDocument.save();
 				winston.verbose(`Reminded user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id });
 			} catch (err) {
