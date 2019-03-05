@@ -15,7 +15,7 @@ class VoiceStateUpdate extends BaseEvent {
 		} else if (!oldState.mute && state.mute && !state.member.user.bot && state.channel !== state.guild.afkChannelID) {
 			VoiceStatsCollector.stopTiming(this.client, state.guild, serverDocument, state.member);
 		} else if (oldState.mute && !state.mute && !state.member.user.bot && state.channel !== state.guild.afkChannelID) {
-			VoiceStatsCollector.startTiming(this.client, state.guild, serverDocument, state.member);
+			VoiceStatsCollector.startTiming(serverDocument, state.member);
 		}
 	}
 
