@@ -9,6 +9,7 @@ const md = new showdown.Converter({
 	tasklists: true,
 	smoothLivePreview: true,
 	smartIndentationFix: true,
+	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
 const { Constants } = require("../Internals");

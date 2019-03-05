@@ -7,6 +7,7 @@ const md = new showdown.Converter({
 	tasklists: true,
 	smoothLivePreview: true,
 	smartIndentationFix: true,
+	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
 const moment = require("moment");
@@ -375,6 +376,7 @@ controllers.management.injection.post = async (req, res) => {
 
 controllers.management.version = async (req, { res }) => {
 	const version = await req.app.client.central.API("versions").branch(configJSON.branch).get(configJSON.version);
+	if (version && version.metadata) version.metadata.changelog = md.makeHtml(version.metadata.changelog);
 	const checkData = await version.check();
 	if (checkData.current) checkData.current.metadata.changelog = md.makeHtml(checkData.current.metadata.changelog);
 
