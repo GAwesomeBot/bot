@@ -58,6 +58,7 @@
     "require-reload": "^0.2.2",
     "rss-parser": "^3.6.0",
     "showdown": "^1.8.6",
+    "showdown-xss-filter": "^0.2.0",
     "snekfetch": "^4.0.4",
     "socket.io": "^2.1.1",
     "tail": "^2.0.2",
