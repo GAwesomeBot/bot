@@ -29,7 +29,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-server"></i>
 									</span>
-									Server<%= pageData.serverCount==1 ? "" : "s" %>
+									Server<%= pageData.serverCount === 1 ? "" : "s" %>
 								</div>
 								<div class="title">
                                     <%= pageData.serverCount %>
@@ -38,7 +38,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-user"></i>
 									</span>
-									User<%= pageData.userCount==1 ? "" : "s" %>
+									User<%= pageData.userCount === 1 ? "" : "s" %>
 								</div>
 								<div class="title">
                                     <%= pageData.userCount %>
@@ -51,7 +51,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-comments-o"></i>
 									</span>
-									Message<%= pageData.totalMessageCount==1 ? "" : "s" %> today
+									Message<%= pageData.totalMessageCount === 1 ? "" : "s" %> today
 								</div>
 								<div class="title">
                                     <%= pageData.totalMessageCount %>
@@ -60,7 +60,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-file"></i>
 									</span>
-									View<%= pageData.trafficData.hour==1 ? "" : "s" %> the past hour
+									Views the past hour
 								</div>
 								<div class="title">
                                     <%= pageData.trafficData.hour %>
@@ -95,7 +95,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-code-fork"></i>
 									</span>
-									Bot Version
+									Installed Version
 								</div>
 								<div class="title">
                                     <%= configData.version %>
@@ -107,25 +107,25 @@
 									Latest Version
 								</div>
 								<div class="title">
-                                    <%if (configData.disabled) { %> <%= configData.version %> <% } else { %> <%= configData.latestVersion %> <% } %>
+                                    <% if (configData.disabled) { %> <%= configData.version %> <% } else { %> <%= configData.currentVersion %> <% } %>
 								</div>
 							</a>
 						</div>
 					</div>
 					<div class="traffic-chart-container">
-					<h4 class="title is-4">Web Interface Traffic</h4>
-					<div class="box">
-					<h4 class="subtitle">Today</h4>
-					<div id="traffic-chart-day" class="traffic-chart" style=""></div>
-					</div>
-					<div class="box">
-					<h4 class="subtitle">Last Week</h4>
-					<div id="traffic-chart-week" class="traffic-chart" style="margin-top: 15px;"></div>
-					</div>
-					<div class="box">
-					<h4 class="subtitle">Last Month</h4>
-					<div id="traffic-chart-month" class="traffic-chart" style="margin-top: 15px;"></div>
-					</div>
+						<h4 class="title is-4">Web Interface Traffic</h4>
+						<div class="box">
+							<h4 class="subtitle">Today</h4>
+							<div id="traffic-chart-day" class="traffic-chart" style=""></div>
+						</div>
+						<div class="box">
+							<h4 class="subtitle">Last Week</h4>
+							<div id="traffic-chart-week" class="traffic-chart" style="margin-top: 15px;"></div>
+						</div>
+						<div class="box">
+							<h4 class="subtitle">Last Month</h4>
+							<div id="traffic-chart-month" class="traffic-chart" style="margin-top: 15px;"></div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -141,7 +141,7 @@
 	  new Morris.Line({
 		element: "traffic-chart-month",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= Object.values(pageData.trafficData.days) %>],
+		data: <%- JSON.stringify(Object.values(pageData.trafficData.days)) %>,
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
@@ -150,17 +150,17 @@
 	  new Morris.Line({
 		element: "traffic-chart-week",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= pageData.trafficData.week %>],
+		data: <%- JSON.stringify(pageData.trafficData.week) %>,
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
 		dateFormat: parseDate,
 	  });
-	  <% if (pageData.trafficData.day.length === 0) pageData.trafficData.day[0] = "{_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}" %>
+	  <% if (pageData.trafficData.day.length === 0) pageData.trafficData.day[0] = {_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}; %>
 	  new Morris.Line({
 		element: "traffic-chart-day",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],
-		data: [<%= pageData.trafficData.day %>],
+		data: <%- JSON.stringify(pageData.trafficData.day) %>,
 		xkey: "_id",
 		ykeys: ["pageViews", "authViews", "uniqueUsers"],
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],

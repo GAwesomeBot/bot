@@ -35,6 +35,7 @@ const galleryRouting = router => {
 	setupPage(router, "/extensions/(|gallery|queue)", [], controllers.extensions.gallery);
 	setupPage(router, "/extensions/my", [], controllers.extensions.my, true);
 	setupPage(router, "/extensions/builder", [], controllers.extensions.builder, true);
+	setupPage(router, "/extensions/:extid/install", [], controllers.extensions.installer);
 	router.routes.push(new Route(router, "/extensions/builder", [middleware.checkUnavailable], controllers.extensions.builder.post, "post", "general"));
 	router.routes.push(new Route(router, "/extensions/:extid", [middleware.checkUnavailableAPI], controllers.extensions.download, "get", "general"));
 	router.routes.push(new Route(router, "/extensions/:extid/:action", [middleware.checkUnavailableAPI], controllers.extensions.gallery.modify, "post", "general"));
@@ -65,6 +66,11 @@ const blogRouting = router => {
 	router.routes.push(new Route(router, "/blog/:id/react", [middleware.checkUnavailable], controllers.blog.article.react, "post", "general"));
 };
 
+const officialRouting = router => {
+	if (!router.app.client.officialMode) return;
+	setupPage(router, "/paperwork", [], controllers.paperwork);
+};
+
 module.exports = app => {
 	const routers = {
 		general: express.Router(),
@@ -84,6 +90,7 @@ module.exports = app => {
 	galleryRouting(routers.general);
 	wikiRouting(routers.general);
 	blogRouting(routers.general);
+	officialRouting(routers.general);
 	dashboardRouting(routers.dashboard);
 	maintainerDashboardRouting(routers.maintainerDashboard);
 	setupAPI(routers.API);

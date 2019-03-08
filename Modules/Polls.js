@@ -3,33 +3,37 @@ const { Colors } = require("../Internals/Constants");
 
 module.exports = {
 	start: async (client, svr, serverDocument, usr, ch, channelDocument, title, options) => {
+		const pollQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("poll");
+
 		if (!channelDocument.poll.isOngoing) {
-			channelDocument.poll.isOngoing = true;
-			channelDocument.poll.created_timestamp = Date.now();
-			channelDocument.poll.creator_id = usr.id;
-			channelDocument.poll.title = title;
-			channelDocument.poll.options = options;
-			channelDocument.poll.responses = [];
+			pollQueryDocument.set("isOngoing", true)
+				.set("created_timestamp", Date.now())
+				.set("creator_id", usr.id)
+				.set("title", title)
+				.set("options", options)
+				.set("responses", []);
 
 			let map = options.map((option, i) => [
 				`» ${i + 1} «`,
 				`\t**${option}**`,
 			].join("\n"));
 			map = map.chunk(10);
-			const description = [];
+			const descriptions = [];
 			for (const innerArray of map) {
-				description.push(innerArray.join("\n"));
+				descriptions.push(innerArray.join("\n"));
 			}
 			const menu = new PaginatedEmbed({
 				channel: ch,
 				author: {
 					id: usr.id,
 				},
-			}, description, {
+			}, {
 				title: `🍻 A poll named "__${title}__" has started!`,
 				color: Colors.INFO,
 				description: `${usr} has started a poll in here! Run \`${svr.commandPrefix}poll\` to see all available choices!\nThe following options are available:\n\n{description}`,
 				footer: `Use "${svr.commandPrefix}poll <option no.>" here or PM me "poll ${svr}|#${ch.name}" to vote.`,
+			}, {
+				descriptions,
 			});
 			await menu.init();
 		}
@@ -67,8 +71,10 @@ module.exports = {
 		};
 	},
 	end: async (serverDocument, ch, channelDocument) => {
+		const pollQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("poll");
+
 		if (channelDocument.poll.isOngoing) {
-			channelDocument.poll.isOngoing = false;
+			pollQueryDocument.set("isOngoing", false);
 			const results = await module.exports.getResults(channelDocument.poll);
 			const fields = channelDocument.poll.options.map(option => ({
 				name: option,

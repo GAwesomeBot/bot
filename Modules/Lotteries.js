@@ -11,35 +11,37 @@ module.exports = {
 	multipliers,
 	start: (client, svr, serverDocument, usr, ch, channelDocument, multiplier) => {
 		if (!channelDocument.lottery.isOngoing) {
-			channelDocument.lottery.isOngoing = true;
-			channelDocument.lottery.expiry_timestamp = Date.now() + 3600000;
-			channelDocument.lottery.creator_id = usr.id;
-			channelDocument.lottery.participant_ids = [];
-			channelDocument.lottery.multiplier = multiplier ? multiplier : 2;
-			setTimeout(() => {
-				module.exports.end(client, svr, serverDocument, ch, channelDocument);
+			const channelQueryDocument = serverDocument.query.id("channels", channelDocument._id).prop("lottery");
+
+			channelQueryDocument.set("isOngoing", true)
+				.set("expiry_timestamp", Date.now() + 3600000)
+				.set("creator_id", usr.id)
+				.set("participant_ids", [])
+				.set("multiplier", multiplier ? multiplier : 2);
+			setTimeout(async () => {
+				const newServerDocument = await Servers.findOne(serverDocument._id);
+				module.exports.end(client, svr, newServerDocument, ch, newServerDocument.channels[channelDocument._id]);
+				newServerDocument.save().catch(err => {
+					winston.debug(`Failed to automatically end ongoing lottery.`, err);
+					client.logMessage(newServerDocument, "error", "Something went wrong while trying to end a lottery!", ch.id);
+				});
 			}, 3600000);
 		}
 	},
 	end: async (client, svr, serverDocument, ch, channelDocument) => {
+		const channelQueryDocument = serverDocument.query.id("channels", channelDocument._id);
+
 		if (channelDocument.lottery.isOngoing) {
-			channelDocument.lottery.isOngoing = false;
-			let winner;
-			while (!winner && channelDocument.lottery.participant_ids.length > 1) {
-				const i = Math.floor(Math.random() * channelDocument.lottery.participant_ids.length);
-				const member = svr.members.get(channelDocument.lottery.participant_ids[i]);
-				if (member) {
-					winner = member;
-				} else {
-					channelDocument.lottery.participant_ids.splice(i, 1);
-				}
-			}
+			channelQueryDocument.set("lottery.isOngoing", false);
+
+			const participants = channelDocument.lottery.participant_ids.filter(a => svr.members.has(a));
+			const i = Math.floor(Math.random() * participants.length);
+			const winner = svr.members.get(participants[i]);
 			try {
-				await serverDocument.save();
 				if (winner) {
 					const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
 					const userDocument = await Users.findOne({ _id: winner.id });
-					userDocument.points += prize;
+					userDocument.query.inc("points", prize);
 					try {
 						await userDocument.save();
 					} catch (_) {
@@ -58,6 +60,7 @@ module.exports = {
 						},
 					});
 				}
+				channelQueryDocument.set("lottery.participant_ids", []);
 				return winner;
 			} catch (err) {
 				winston.debug(`An error occurred while attempting to end a lottery (*0*)\n`, err);

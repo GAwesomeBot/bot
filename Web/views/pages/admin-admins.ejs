@@ -3,9 +3,6 @@
 <head>
 	<title><%= serverData.name %> Admins - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
     <script>
 	function newAdmin() {
 		var newAdminRole = $("#new-admin-role_id");
@@ -23,7 +20,7 @@
 		}
 
 		if(newAdminRole.val() && newAdminLevel.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -96,7 +93,7 @@
 										<%= admin.level %>
 									</td>
 									<td>
-										<button class="button is-small is-danger" name="<%= admin._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this);">
+										<button class="button is-small is-danger" name="<%= admin._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this);">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>
@@ -108,21 +105,21 @@
 								</tbody>
 							</table>
 						</div>
-						<% if(roleData.length>0) { %>
+						<% if (pageData.roleData.length > 0) { %>
 							<div class="field is-horizontal">
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control">
 											<span class="select is-primary">
 												<select id="new-admin-role_id">
-													<% for(var i=0; i<roleData.length; i++) { %>
-														<option value="<%= roleData[i].id %>"><%= roleData[i].name %></option>
-													<% } %>
+													<% pageData.roleData.forEach( role => { %>
+														<option value="<%= role.id %>"><%= role.name %></option>
+													<% }); %>
 												</select>
 											</span>
 										</div>
 										<div class="control">
-											<input id="new-admin-level" class="input is-primary" type="number" value="1" min="1" max="3" title="Admin permission level" onkeypress="return event.keyCode != 13;">
+											<input id="new-admin-level" class="input is-primary" type="number" value="1" min="1" max="3" title="Admin permission level" onkeypress="return event.keyCode !== 13;">
 										</div>
 										<div class="control">
 											<a class="button is-primary" onclick="newAdmin(); return false;">

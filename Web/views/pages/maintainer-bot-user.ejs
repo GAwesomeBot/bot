@@ -3,9 +3,8 @@
 <head>
 	<title>Bot User - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -26,7 +25,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="columns">
 							<div class="column is-one-third">
 								<div class="field">
@@ -83,7 +82,7 @@
 										</div>
 	 									<div class="column">
 											<label class="label">Game</label>
-											<div class="field<%= !configData.game_default ? " has-addons" : ""%>" style="margin-bottom: 0px;">
+											<div class="field is-embedded-message<%= !configData.game_default ? " has-addons" : ""%>">
 												<div class="control has-icons-left is-expanded">
 													<input name="game" id="user-game" class="input is-primary" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
 													<span class="icon"><i class="fa fa-gamepad"></i></span>
@@ -102,7 +101,7 @@
 								</div>
 								<div id="twitch-url-container" class="field<%= configData.type!=="STREAMING" ? " is-hidden" : "" %>">
 									<label class="label">Twitch URL</label>
-									<div class="field" style="margin-bottom: 0px;">
+									<div class="field is-embedded-message">
 										<div class="control has-icons-left is-expanded">
 											<input name="twitch" id="user-twitch" class="input is-primary" type="text" value="<%= configData.twitchURL %>" style="width: 100%;">
 											<span class="icon"><i class="fa fa-twitch"></i></span>

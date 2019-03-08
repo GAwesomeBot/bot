@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const { public: commands } = require("./../../Configurations/commands.js");
+const Schema = require("./Schema");
+const { public: commands } = require("../../Configurations/commands.js");
 
 // Get command(s) structure for server config schema below
 const getCommands = () => {
 	const commandsStructure = {};
 	for (const command in commands) {
-		commandsStructure[command] = {
+		commandsStructure[command] = new Schema({
 			isEnabled: {
 				type: Boolean,
 				default: commands[command].defaults.isEnabled,
@@ -17,14 +17,14 @@ const getCommands = () => {
 				max: 4,
 			},
 			disabled_channel_ids: [String],
-		};
+		});
 	}
 	return commandsStructure;
 };
 
 // Server configs (commands, admins, etc..)
-module.exports = {
-	admins: [new mongoose.Schema({
+module.exports = new Schema({
+	admins: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -34,22 +34,22 @@ module.exports = {
 			default: 1,
 			enum: [1, 2, 3],
 		},
-	}, { usePushEach: true })],
+	})],
 	blocked: [String],
-	chatterbot: {
+	chatterbot: new Schema({
 		isEnabled: {
 			type: Boolean,
 			default: true,
 		},
 		disabled_channel_ids: [String],
-	},
+	}),
 	command_cooldown: {
 		type: Number,
 		default: 0,
 		min: 0,
 		max: 300000,
 	},
-	command_fetch_properties: {
+	command_fetch_properties: new Schema({
 		default_count: {
 			type: Number,
 			default: 3,
@@ -62,15 +62,15 @@ module.exports = {
 			min: 1,
 			max: 25,
 		},
-	},
+	}),
 	command_prefix: {
 		type: String,
 		default: "@mention",
 		maxlength: 25,
 		minlength: 1,
 	},
-	commands: getCommands(),
-	count_data: [new mongoose.Schema({
+	commands: new Schema(getCommands()),
+	count_data: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -81,8 +81,8 @@ module.exports = {
 			default: 0,
 			min: 0,
 		},
-	}, { usePushEach: true })],
-	countdown_data: [new mongoose.Schema({
+	})],
+	countdown_data: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -95,17 +95,22 @@ module.exports = {
 			type: Date,
 			required: true,
 		},
-	}, { usePushEach: true })],
-	custom_api_keys: {
+	})],
+	custom_api_keys: new Schema({
 		google_api_key: String,
 		google_cse_id: String,
-	},
+		imgur_client_id: String,
+	}),
 	custom_roles: [String],
 	delete_command_messages: {
 		type: Boolean,
 		default: false,
 	},
-	list_data: [new mongoose.Schema({
+	list_data: [new Schema({
+		_id: {
+			type: Number,
+			required: true,
+		},
 		content: {
 			type: String,
 			required: true,
@@ -113,10 +118,9 @@ module.exports = {
 		isCompleted: {
 			type: Boolean,
 			default: false,
-			required: true,
 		},
-	}, { usePushEach: true })],
-	message_of_the_day: {
+	})],
+	message_of_the_day: new Schema({
 		isEnabled: {
 			type: Boolean,
 			default: false,
@@ -133,14 +137,14 @@ module.exports = {
 			max: 172800000,
 		},
 		last_run: Date,
-	},
-	moderation: {
+	}),
+	moderation: new Schema({
 		isEnabled: {
 			type: Boolean,
 			default: false,
 		},
-		filters: {
-			spam_filter: {
+		filters: new Schema({
+			spam_filter: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
@@ -164,8 +168,8 @@ module.exports = {
 					type: String,
 					default: "",
 				},
-			},
-			mention_filter: {
+			}),
+			mention_filter: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
@@ -194,8 +198,8 @@ module.exports = {
 					type: String,
 					default: "",
 				},
-			},
-			nsfw_filter: {
+			}),
+			nsfw_filter: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: true,
@@ -214,8 +218,8 @@ module.exports = {
 					type: String,
 					default: "",
 				},
-			},
-			custom_filter: {
+			}),
+			custom_filter: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
@@ -235,98 +239,98 @@ module.exports = {
 					type: String,
 					default: "",
 				},
-			},
-		},
-		status_messages: {
-			server_name_updated_message: {
+			}),
+		}),
+		status_messages: new Schema({
+			server_name_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			server_icon_updated_message: {
+			}),
+			server_icon_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			server_region_updated_message: {
+			}),
+			server_region_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			new_member_message: {
+			}),
+			new_member_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				messages: [String],
-			},
-			new_member_pm: {
+			}),
+			new_member_pm: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				message_content: String,
-			},
-			member_online_message: {
+			}),
+			member_online_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				messages: [String],
-			},
-			member_streaming_message: {
+			}),
+			member_streaming_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				enabled_user_ids: [String],
-			},
-			member_offline_message: {
+			}),
+			member_offline_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				messages: [String],
-			},
-			member_username_updated_message: {
+			}),
+			member_username_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			member_nick_updated_message: {
+			}),
+			member_nick_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			member_avatar_updated_message: {
+			}),
+			member_avatar_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			member_game_updated_message: {
+			}),
+			member_game_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
-			},
-			member_rank_updated_message: {
+			}),
+			member_rank_updated_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
@@ -337,39 +341,39 @@ module.exports = {
 					default: "message",
 					enum: ["message", "pm"],
 				},
-			},
-			member_removed_message: {
+			}),
+			member_removed_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				messages: [String],
-			},
-			member_removed_pm: {
+			}),
+			member_removed_pm: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				message_content: String,
-			},
-			member_banned_message: {
+			}),
+			member_banned_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				messages: [String],
-			},
-			member_unbanned_message: {
+			}),
+			member_unbanned_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
 				},
 				channel_id: String,
 				messages: [String],
-			},
-			message_edited_message: {
+			}),
+			message_edited_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
@@ -381,8 +385,8 @@ module.exports = {
 				},
 				channel_id: String,
 				enabled_channel_ids: [String],
-			},
-			message_deleted_message: {
+			}),
+			message_deleted_message: new Schema({
 				isEnabled: {
 					type: Boolean,
 					default: false,
@@ -394,10 +398,10 @@ module.exports = {
 				},
 				channel_id: String,
 				enabled_channel_ids: [String],
-			},
-		},
+			}),
+		}),
 		new_member_roles: [String],
-		autokick_members: {
+		autokick_members: new Schema({
 			isEnabled: {
 				type: Boolean,
 				default: false,
@@ -408,9 +412,9 @@ module.exports = {
 				min: 7200000,
 				max: 2592000000,
 			},
-		},
-	},
-	name_display: {
+		}),
+	}),
+	name_display: new Schema({
 		use_nick: {
 			type: Boolean,
 			default: false,
@@ -419,13 +423,13 @@ module.exports = {
 			type: Boolean,
 			default: false,
 		},
-	},
-	public_data: {
+	}),
+	public_data: new Schema({
 		isShown: {
 			type: Boolean,
 			default: true,
 		},
-		server_listing: {
+		server_listing: new Schema({
 			isEnabled: {
 				type: Boolean,
 				default: false,
@@ -447,9 +451,9 @@ module.exports = {
 				maxlength: 3000,
 			},
 			invite_link: String,
-		},
-	},
-	ranks_list: [new mongoose.Schema({
+		}),
+	}),
+	ranks_list: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -461,8 +465,8 @@ module.exports = {
 			required: true,
 		},
 		role_id: String,
-	}, { usePushEach: true })],
-	room_data: [new mongoose.Schema({
+	})],
+	room_data: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -471,8 +475,12 @@ module.exports = {
 			type: Date,
 			default: Date.now,
 		},
-	}, { usePushEach: true })],
-	rss_feeds: [new mongoose.Schema({
+	})],
+	room_category: {
+		type: String,
+		required: false,
+	},
+	rss_feeds: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -483,16 +491,16 @@ module.exports = {
 			type: String,
 			required: true,
 		},
-		streaming: {
+		streaming: new Schema({
 			isEnabled: {
 				type: Boolean,
 				default: false,
 			},
 			enabled_channel_ids: [String],
 			last_article_title: String,
-		},
-	}, { usePushEach: true })],
-	streamers_data: [new mongoose.Schema({
+		}),
+	})],
+	streamers_data: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -507,16 +515,16 @@ module.exports = {
 			type: Boolean,
 			default: false,
 		},
-	}, { usePushEach: true })],
-	tag_reaction: {
+	})],
+	tag_reaction: new Schema({
 		isEnabled: {
 			type: Boolean,
 			default: false,
 		},
 		messages: [String],
-	},
-	tags: {
-		list: [new mongoose.Schema({
+	}),
+	tags: new Schema({
+		list: [new Schema({
 			_id: {
 				type: String,
 				required: true,
@@ -536,7 +544,7 @@ module.exports = {
 				type: Boolean,
 				default: false,
 			},
-		}, { usePushEach: true })],
+		})],
 		listIsAdminOnly: {
 			type: Boolean,
 			default: false,
@@ -557,8 +565,8 @@ module.exports = {
 			type: Boolean,
 			default: true,
 		},
-	},
-	translated_messages: [new mongoose.Schema({
+	}),
+	translated_messages: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -571,10 +579,10 @@ module.exports = {
 			maxlength: 6,
 		},
 		enabled_channel_ids: [String],
-	}, { usePushEach: true })],
-	trivia_sets: [new mongoose.Schema({
+	})],
+	trivia_sets: [new Schema({
 		_id: String,
-		items: [new mongoose.Schema({
+		items: [new Schema({
 			category: {
 				type: String,
 				required: true,
@@ -588,10 +596,10 @@ module.exports = {
 				required: true,
 			},
 		})],
-	}, { usePushEach: true })],
+	})],
 	voicetext_channels: [String],
 	ban_gif: {
 		type: String,
 		default: "https://i.imgur.com/3QPLumg.gif",
 	},
-};
+});

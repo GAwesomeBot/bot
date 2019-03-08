@@ -9,9 +9,20 @@ const moment = require("moment");
  */
 /* eslint-disable require-await*/
 module.exports = async (client, server, serverDocument, feedDocument) => {
-	const articles = await getRSS(feedDocument.url, 100);
+	const feedQueryDocument = serverDocument.query.id("config.rss_feeds", feedDocument._id);
+
+	let articles;
+	try {
+		articles = await getRSS(feedDocument.url, 100);
+	} catch (err) {
+		if (err === "invalid") {
+			await client.logMessage(serverDocument, "warn", `Failed to fetch articles for RSS Feed ${feedDocument._id}. URL might be configured incorrectly!`);
+		} else {
+			throw err;
+		}
+	}
 	if (articles && articles.length > 0 && articles[0]) {
-		let info = [];
+		const info = [];
 		if (feedDocument.streaming.last_article_title !== articles[0].link) {
 			const getNewArticles = forceAdd => {
 				let adding = forceAdd;
@@ -22,12 +33,12 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 						info.push({
 							color: 0x3669FA,
 							footer: {
-								text: `Published at ${moment(articles[i].published).format("DD MMMM YYYY [at] HH:mm Z [UK Time]")}`,
+								text: `Published at ${moment(articles[i].isoDate).format("DD MMMM YYYY [at] HH:mm Z [UK Time]")}`,
 							},
 							title: `${articles[i].title}`,
 							url: articles[i].link || "",
 							author: {
-								name: articles[i].author || articles[i].feed.name,
+								name: articles[i].creator,
 							},
 							description: `Read more [here](${articles[i].link})`,
 						});
@@ -35,29 +46,32 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 				}
 			};
 			getNewArticles(feedDocument.streaming.last_article_title === "");
-			info = info.slice(1);
 			if (info.length === 0) getNewArticles(true);
 		}
 
 		if (info.length > 0) {
-			feedDocument.streaming.last_article_title = articles[0].link;
+			feedQueryDocument.set("streaming.last_article_title", articles[0].link);
 			await serverDocument.save().catch(err => {
 				winston.warn(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, err);
 			});
-			winston.info(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });
+			winston.debug(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });
 			for (let i = 0; i < feedDocument.streaming.enabled_channel_ids.length; i++) {
 				const channel = server.channels.get(feedDocument.streaming.enabled_channel_ids[i]);
 				if (channel) {
-					await channel.send({
-						embed: {
-							color: 0x3669FA,
-							description: `${info.length} new in feed **${feedDocument._id}**:`,
-						},
-					});
-					for (const embed of info) {
-						channel.send({
-							embed: embed,
+					try {
+						await channel.send({
+							embed: {
+								color: 0x3669FA,
+								description: `${info.length} new in feed **${feedDocument._id}**:`,
+							},
 						});
+						for (const embed of info) {
+							await channel.send({
+								embed: embed,
+							});
+						}
+					} catch (err) {
+						winston.debug(`Failed to send RSS Streaming updates to server.`, { svrid: server.id, chid: channel.id });
 					}
 				}
 			}

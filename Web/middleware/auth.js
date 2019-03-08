@@ -23,7 +23,7 @@ module.exports = middleware => {
 					// Get server data from Database
 					let serverDocument;
 					try {
-						serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+						serverDocument = await Servers.findOne(svr.id);
 					} catch (err) {
 						if (req.isAPI) return res.sendStatus(500);
 						renderError(res, "Something went wrong while fetching your server data.");
@@ -44,6 +44,8 @@ module.exports = middleware => {
 							req.consolemember.level = adminLevel;
 							req.svr = svr;
 							req.svr.document = serverDocument;
+							req.svr.queryDocument = serverDocument.query;
+							res.res.populateDashboard(req);
 							return next();
 						} catch (err) {
 							winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, {
@@ -135,6 +137,31 @@ module.exports = middleware => {
 			}
 		} else {
 			res.redirect("/login");
+		}
+	};
+
+	middleware.authorizeConsoleSocketAccess = socket => {
+		if (socket.request.user && socket.request.user.logged_in) {
+			if (configJSON.maintainers.includes(socket.request.user.id)) {
+				const { perm } = socket.request;
+				if (perm === "maintainer" || canDo(perm, socket.request.user.id)) {
+					socket.request.isAuthorized = true;
+					socket.request.level = process.env.GAB_HOST !== socket.request.user.id ? configJSON.sudoMaintainers.includes(socket.request.user.id) ? 2 : 1 : 0;
+					return true;
+				} else {
+					socket.emit("err", { error: 403, fatal: true });
+					socket.disconnect();
+					return false;
+				}
+			} else {
+				socket.emit("err", { error: 403, fatal: true });
+				socket.disconnect();
+				return false;
+			}
+		} else {
+			socket.emit("err", { error: 401, fatal: true });
+			socket.disconnect();
+			return false;
 		}
 	};
 

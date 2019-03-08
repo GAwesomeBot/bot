@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 
 // Schema for wiki entries
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	_id: {
 		type: String,
 		minlength: 3,
@@ -12,7 +12,7 @@ module.exports = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	reactions: [{
+	reactions: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -21,8 +21,8 @@ module.exports = new mongoose.Schema({
 			type: Number,
 			enum: [-1, 1],
 		},
-	}],
-	updates: [{
+	})],
+	updates: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -34,5 +34,5 @@ module.exports = new mongoose.Schema({
 		diff: {
 			type: String,
 		},
-	}],
-}, { usePushEach: true });
+	})],
+});

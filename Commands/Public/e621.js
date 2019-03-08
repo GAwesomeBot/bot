@@ -2,18 +2,10 @@ const { get } = require("snekfetch");
 const S = require("../../Modules/String");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent } }, { serverDocument }, msg, commandData) => {
 	if (msg.channel.nsfw) {
 		if (msg.suffix) {
-			const m = await msg.channel.send({
-				embed: {
-					color: Colors.INFO,
-					description: `We're fetching the requested images...`,
-					footer: {
-						text: `This might take a while!`,
-					},
-				},
-			});
+			const m = await msg.channel.send(Text.THIRD_PARTY_FETCH("We're fetching the requested images"));
 			let query = msg.suffix.substring(0, msg.suffix.lastIndexOf(" "));
 			let num = msg.suffix.substring(msg.suffix.lastIndexOf(" ") + 1);
 			if (!query || isNaN(num)) {
@@ -25,13 +17,13 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 			}
 			const { body, statusCode } = await get(APIs.E621(query)).set({
 				Accept: "application/json",
-				"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+				"User-Agent": UserAgent,
 			});
-			if (body && statusCode === 200) {
+			if (body && statusCode === 200 && body.length) {
 				const unparsed = [], descriptions = [], fields = [], images = [];
 				for (let i = 0; i < num; i++) {
 					const random = Math.floor(Math.random() * body.length);
-					unparsed.push(body[random]);
+					if (body[random] && !unparsed.includes(body[random])) unparsed.push(body[random]);
 				}
 				for (let i = 0; i < unparsed.length; i++) {
 					const tempDesc = [
@@ -63,10 +55,14 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 					images.push(`${unparsed[i].file_url}`);
 					descriptions.push(tempDesc.join("\n"));
 				}
-				const menu = new PaginatedEmbed(msg, descriptions, {
+				const menu = new PaginatedEmbed(msg, {
 					color: Colors.RESPONSE,
-					footer: `Result {current description} out of {total descriptions} results`,
-				}, images, fields);
+					footer: `Result {currentPage} out of {totalPages} results`,
+				}, {
+					descriptions,
+					fields,
+					images,
+				});
 				await m.delete();
 				await menu.init();
 			} else {
@@ -81,13 +77,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs } }, { serv
 			}
 		} else {
 			winston.verbose(`Parameters not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-			msg.send({
-				embed: {
-					color: Colors.INVALID,
-					title: Text.NSFW_INVALID(),
-					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				},
-			});
+			msg.sendInvalidUsage(commandData, Text.NSFW_INVALID());
 		}
 	} else {
 		msg.send(NSFWEmbed);

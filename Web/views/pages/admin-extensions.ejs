@@ -3,138 +3,250 @@
 <head>
 	<title><%= serverData.name %> Extensions - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script src="/static/js/form-change-listener.js"></script>
-	<script>
-	function updateExtensionFromGallery(extid) {
-		$.ajax({
-			type: "POST",
-			url: "<%= currentPage %>",
-			data: {
-				"new-gallery": extid
-			},
-			success: function(data) {
-			  Turbolinks.visit("");
-			}
-		});
-	}
-	</script>
 </head>
-<body onload="saveFormState();">
-	<% include ../partials/dashboard-header %>
-	<% include ../partials/dashboard-socket-updates %>
+<body>
+<% include ../partials/dashboard-header %>
+<% include ../partials/dashboard-socket-updates %>
 
-	<section class="section is-white">
-		<div class="container">
-			<div class="columns">
-				<div id="menu" class="column is-one-quarter">
-					<% include ../partials/admin-menu %>
-				</div>
-				<div class="column">
-					<h1 class="title">
-						Extensions
-					</h1>
-					<div class="container">
-						<article class="message is-primary">
-							<div class="message-body">
-								<div class="content">
-									Extensions! You can write custom addons for AwesomeBot on your server, including <strong>commands</strong>, <strong>keyword responses</strong>, and extensions that run on a <strong>timer</strong>. Extensions are written in <strong>JavaScript</strong> and run in a sandbox with access to the AwesomeBot API. Read the docs <a href="/wiki/Extensions">here</a>.
+<section class="section is-white">
+	<div class="container">
+		<div class="columns">
+			<div id="menu" class="column is-one-quarter">
+				<% include ../partials/admin-menu %>
+			</div>
+			<div class="column">
+				<h1 class="title">
+					Extensions
+				</h1>
+				<article class="message is-primary">
+					<div class="message-body">
+						<div class="content">
+							Extensions! With extensions, you can write custom addons for GAwesomeBot on your server, including <strong>commands</strong>, <strong>keyword responses</strong>, and extensions that run on a <strong>timer</strong> or <strong>event</strong>. Extensions are written in <strong>JavaScript</strong> and run in a sandbox with access to the GAwesomeBot Code API. Read the docs <a href="/wiki/Extensions">here</a>.
+							<br>
+							<ul>
+								Extensions can either be local or public.
+								<li><strong>Local</strong> extensions are extensions exclusive to your server, all <strong>Server Admins</strong> can edit the extension and it cannot be installed by other servers or published to the <strong>gallery</strong>.</li>
+								<li><strong>Public</strong> extensions are extensions that can be published to the <strong>gallery</strong>. Only the <strong>extension author</strong> can edit their own extensions. Once published, public extensions can be installed by any server.</li>
+							</ul>
+						</div>
+					</div>
+				</article>
+				<%- include("../partials/no-results", { isHidden: configData.extensions.length, isSearchQuery: false, description: "There are no extensions installed on this server. Head over to the <a href='/extensions'>Extension Gallery</a> to install one or build your own." }) %>
+				<% let extensionData; %>
+				<div class="extensions field">
+				<% configData.extensions.forEach(extensionConfigDocument => { %>
+					<% extensionData = pageData.extensionData.id(extensionConfigDocument._id); %>
+					<% if (extensionData) { %>
+					<div class="box is-paddingless generic-feature" id="extension-<%= extensionData._id %>">
+						<div class="generic-feature-box">
+							<% if (extensionData.level === "third" && (!extensionData.published_version || extensionData.latest_version !== extensionConfigDocument.version || !extensionData.accepted)) { %>
+								<div class="generic-feature-box-slider has-text-grey" title="This extension is currently being reviewed by maintainers.">
+									<span class="icon is-medium">
+										<i class="fa fa-circle-o fa-2x"></i>
+									</span>
+								</div>
+							<% } else { %>
+							<% switch (extensionConfigDocument.status.code) { case 0: %>
+							<div class="generic-feature-box-slider has-text-success" title="This extension is operating normally.">
+							<% break; case 1: %>
+							<div class="generic-feature-box-slider has-text-warning" title="This extension has encountered possible issues with configuration: <%= extensionConfigDocument.status.description %>">
+							<% break; case 2: %>
+							<div class="generic-feature-box-slider has-text-danger" title="This extension has ran into an exception and is unable to operate: <%= extensionConfigDocument.status.description %>">
+							<% break; %>
+							<% } %>
+								<span class="icon is-medium">
+                            		<i class="fa fa-circle-o fa-2x"></i>
+								</span>
+							</div>
+							<% } %>
+							<div class="generic-feature-box-description">
+								<p>
+									<strong><%= extensionData.name %></strong>
+									&nbsp;
+									<span class="tag is-info">V<%= extensionConfigDocument.version %></span>
+									&nbsp;
+									<span class="tag is-primary"><%= `${extensionData.type.charAt(0).toUpperCase()}${extensionData.type.substring(1)}` %></span>
+									<% if (extensionData.level === "gallery" && extensionData.published_version && extensionData.published_version !== extensionConfigDocument.version) { %>
+									&nbsp;
+									<span class="tag is-danger">Updates Available</span>
+									<% } else if (extensionData.level === "third" && (!extensionData.published_version || extensionData.latest_version !== extensionConfigDocument.version || !extensionData.accepted)) { %>
+									&nbsp;
+									<span class="tag is-danger">Update Under Review</span>
+									<% } %>
+									<% if (extensionData.level === "third") { %>
+									&nbsp;
+									<span class="tag is-warning">Local</span>
+									<% } %>
+								</p>
+							</div>
+							<div class="generic-feature-box-addon">
+								<div class="buttons">
+									<% if (extensionData.status !== "saved" && extensionData.level === "gallery") { %>
+									<a class="button is-outlined" href="/extensions/<%= extensionData.status === "version_queue" ? "queue" : extensionData.status %>?id=<%= extensionConfigDocument._id %>">
+										<span class="icon">
+											<i class="fa fa-eye"></i>
+										</span>
+										<span>View</span>
+									</a>
+									<% } %>
+									<% if (extensionData.level === "gallery" && extensionData.published_version && extensionData.published_version !== extensionConfigDocument.version) { %>
+									<button class="button is-primary is-outlined" onclick="GAwesomeUtil.openExtensionInstaller('<%= extensionData._id %>', <%= extensionData.published_version %>, '<%= serverData.id %>')">
+										<span class="icon">
+											<i class="fa fa-arrow-circle-up"></i>
+										</span>
+										<span>Update</span>
+									</button>
+									<% } %>
+									<% if (extensionData.level === "gallery" && ["command", "keyword", "timer"].includes(extensionData.type)) { %>
+									<button class="button is-info is-outlined" data-toggle-gfa="extension-<%= extensionData._id %>-options">
+										<span class="icon">
+											<i class="fa fa-pencil"></i>
+										</span>
+										<span>Edit</span>
+									</button>
+									<% } else if (extensionData.level === "third") { %>
+									<a class="button is-info is-outlined" href="extension-builder?extid=<%= extensionData._id %>">
+										<span class="icon">
+											<i class="fa fa-code"></i>
+										</span>
+										<span>Edit</span>
+									</a>
+									<% } %>
+									<% if (extensionData.level === "gallery") { %>
+									<button class="button is-danger is-outlined" onclick="GAwesomeUtil.uninstallExtension('<%= extensionData._id%>')">
+										<span class="icon">
+											<i class="fa fa-times"></i>
+										</span>
+										<span>Uninstall</span>
+									</button>
+									<% } else { %>
+									<button class="button is-danger is-outlined" onclick="GAwesomeUtil.deleteExtension('<%= extensionData._id %>', 'extension-<%= extensionData._id %>')">
+										<span class="icon">
+											<i class="fa fa-trash"></i>
+										</span>
+										<span>Delete</span>
+									</button>
+									<% } %>
 								</div>
 							</div>
-						</article>
-					</div>
-					<br>
-					<div class="container">
-						<form id="form" action="<%= currentPage %>" method="post">
-							<div style="overflow-x: scroll;">
-								<% if(configData.extensions.length>0) { %>
-									<table class="table">
-										<thead>
-											<tr>
-												<th>Name</th>
-												<th>ID</th>
-												<th>Type</th>
-												<th>Store Size</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.extensions.length; i++) { %>
-												<tr>
-													<td>
-														<%= configData.extensions[i].name %>
-														<% if(configData.extensions[i].updates_available>0) { %>
-															&nbsp;
-															<a class="tag is-primary" onclick="updateExtensionFromGallery('<%= configData.extensions[i]._id %>');" title="Updating from gallery will overwrite your changes">
-																<%= configData.extensions[i].updates_available %> update<%= configData.extensions[i].updates_available==1 ? "" : "s" %> available
-															</a>
-														<% } %>
-													</td>
-													<td>
-														<%= configData.extensions[i]._id %>
-													</td>
-													<td>
-														<%= configData.extensions[i].type.charAt(0).toUpperCase() + configData.extensions[i].type.slice(1) %>
-													</td>
-													<td>
-														<%= configData.extensions[i].store %> KB
-													</td>
-													<td>
-														<a class="button is-small is-primary" href="/dashboard/<%= serverData.id %>/other/extension-builder?extid=<%= configData.extensions[i]._id %>">
-															<span class="icon is-small">
-																<i class="fa fa-pencil"></i>
-															</span>
-															<span>Edit</span>
-														</a>
-														<button class="button is-small is-danger" name="extension-<%= i %>-removed" onclick="saveFormState();">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message">
-										<div class="message-header">
-											<span class="icon">
-												<i class="fa fa-meh-o"></i>
-											</span>
-											<span>Nothing to see here</span>
-										</div>
-										<div class="message-body">
-											You haven't created any extensions yet. Head over to the <a href="/dashboard/<%= serverData.id %>/other/extension-builder">extension builder</a> to get started building one!
-										</div>
-									</article>
-									<br>
+						</div>
+						<div id="extension-<%= extensionData._id %>-options" class="generic-feature-addon" style="display: none;">
+							<form id="extension-update-form-<%= extensionData._id %>" onsubmit="return false;">
+								<h4 class="title is-4">Extension Settings</h4>
+								<% switch (extensionData.type) { case "command": %>
+								<div class="field">
+									<label class="label">Command key</label>
+									<div class="control">
+										<input name="key" class="input is-primary" type="text" value="<%- extensionConfigDocument.key %>" minlength="3" maxlength="25" pattern="[^ ]+" required>
+										<span class="help">This string will be used to call the command. No spaces allowed.</span>
+									</div>
+								</div>
+								<% break; case "keyword": %>
+								<div class="field">
+									<label class="label">Keywords</label>
+									<div class="control">
+										<input name="keywords" class="input is-primary" type="text" value="<%- extensionConfigDocument.keywords ? extensionConfigDocument.keywords.join(',') : '' %>" required>
+										<span class="help">Comma-separated list of words or phrases that a message must contain to activate the extension.</span>
+									</div>
+								</div>
+								<div class="field">
+									<label class="label">Case-sensitivity</label>
+									<div class="control">
+										<label class="checkbox">
+											<input name="caseSensitive" type="checkbox" <%= extensionConfigDocument.case_sensitive ? "checked" : "" %>>
+											Extension keyword matching is case-sensitive
+										</label>
+									</div>
+								</div>
+								<% break; case "timer": %>
+								<div class="field">
+									<label class="label">Interval</label>
+									<div class="control">
+										<input name="interval" class="input is-primary" type="number" value="<%- extensionConfigDocument.interval %>" min="300000" max="86400000" required>
+										<span class="help">Number of milliseconds between each run of the extension.</span>
+									</div>
+								</div>
+								<% break; %>
 								<% } %>
-							</div>
-							<div class="control is-horizontal is-grouped">
-								<a class="button" href="/dashboard/<%= serverData.id %>/other/extension-builder">
+								<% if (["command", "keyword"].includes(extensionData.type)) { %>
+								<hr>
+								<h4 class="title is-4">Command Options</h4>
+								<div class="field">
+									<label class="label">Permissions</label>
+									<div class="control">
+                                        <span class="select is-primary">
+                                            <select name="adminLevel">
+                                                <option value="0"<%= extensionConfigDocument.admin_level === 0 ? " selected" : ""%>>@everyone</option>
+                                                <option value="1"<%= extensionConfigDocument.admin_level === 1 ? " selected" : ""%>>Admin level &ge;1</option>
+                                                <option value="2"<%= extensionConfigDocument.admin_level === 2 ? " selected" : ""%>>Admin level &ge;2</option>
+                                                <option value="3"<%= extensionConfigDocument.admin_level === 3 ? " selected" : ""%>>Admin level &ge;3</option>
+                                            </select>
+                                        </span>
+									</div>
+									<span class="help">The command will only respond to members that have the selected bot admin level (or higher).</span>
+								</div>
+								<div class="field">
+									<label class="label">Channel(s)</label>
+									<% serverData.channelData.forEach(channel => { %>
+									<label class="checkbox">
+										<input name="enabled_channel_ids-<%= channel.id %>" class="disabled_channel_ids-<%= extensionData._id %>" type="checkbox"<%= extensionConfigDocument.disabled_channel_ids.includes(channel.id) ? "" : "checked" %>>
+										#<%= channel.name %>
+									</label>
+									<br>
+									<% }); %>
+								</div>
+								<div class="field">
+									<div class="control has-addons">
+										<a class="button is-small" onclick="GAwesomeUtil.toggleChannels('disabled_channel_ids-<%= extensionData._id %>', true);">
+											<span>Select All</span>
+										</a>
+										<a class="button is-small" onclick="GAwesomeUtil.toggleChannels('disabled_channel_ids-<%= extensionData._id %>', false);">
+											<span>Deselect All</span>
+										</a>
+									</div>
+									<span class="help">The command will run only in these channels.</span>
+								</div>
+								<% } %>
+								<br>
+								<input class="is-hidden" name="id" value="<%= extensionData._id %>">
+								<input class="is-hidden" name="v" value="<%= extensionConfigDocument.version %>">
+								<button id="form-submit" type="submit" class="button is-primary" value="Submit" onclick="GAwesomeUtil.updateExtension($(this));" data-extid="<%= extensionData._id %>">
 									<span class="icon">
-								        <i class="fa fa-code"></i>
-								    </span>
-								    <span>Build an extension</span>
-								</a>
-								&nbsp;&nbsp;
-								<a class="button" href="/extensions">
-									<span class="icon">
-								        <i class="fa fa-eye"></i>
-								    </span>
-								    <span>Discover extensions</span>
-								</a>
-							</div>
-						</form>
+										<i class="fa fa-check"></i>
+									</span>
+									<span>Save</span>
+								</button>
+							</form>
+						</div>
+					</div>
+					<% } %>
+				<% }); %>
+				</div>
+				<br>
+				<div class="columns">
+					<div class="column is-half">
+						<a class="button is-warning is-outlined is-fullwidth" href="extension-builder">
+							<span class="icon">
+								<i class="fa fa-code"></i>
+							</span>
+							<span>Build New Local Extension</span>
+						</a>
+					</div>
+					<div class="column is-half">
+						<a class="button is-info is-outlined is-fullwidth" href="/extensions/builder">
+							<span class="icon">
+								<i class="fa fa-code"></i>
+							</span>
+							<span>Build New Public Extension</span>
+						</a>
 					</div>
 				</div>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 
-	<% include ../partials/footer %>
-	<% include ../partials/scroll-top-button %>
+<% include ../partials/footer %>
+<% include ../partials/scroll-top-button %>
 </body>
 </html>

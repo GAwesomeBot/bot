@@ -1,8 +1,8 @@
 module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocument, channelDocument, memberDocument }, msg, commandData) => {
 	const getRankText = (rank, amount = 10) => msg.guild.members.filter(member => {
-		const targetMemberDocument = serverDocument.members.id(member.id);
+		const targetMemberDocument = serverDocument.members[member.id];
 		return targetMemberDocument && targetMemberDocument.rank === rank;
-	}).sort((memberA, memberB) => serverDocument.members.id(memberB.id).rank_score - serverDocument.members.id(memberA.id).rank_score)
+	}).sort((memberA, memberB) => serverDocument.members[memberB.id].rank_score - serverDocument.members[memberA.id].rank_score)
 		.first(amount ? amount : 10)
 		.map(member => `@${client.getName(serverDocument, member)}`)
 		.join("\n");
@@ -52,7 +52,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 						},
 					});
 				} else {
-					const targetMemberDocument = serverDocument.members.id(member.id);
+					const targetMemberDocument = serverDocument.members[member.id];
 					if (targetMemberDocument && targetMemberDocument.rank) {
 						msg.send({
 							embed: {
@@ -90,7 +90,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocumen
 				return rank;
 			});
 		msg.guild.members.forEach(member => {
-			const targetMemberDocument = serverDocument.members.id(member.id);
+			const targetMemberDocument = serverDocument.members[member.id];
 			if (!targetMemberDocument) return;
 			const rankDocument = ranks.find(rank => rank._id === targetMemberDocument.rank);
 			if (rankDocument) rankDocument.members++;

@@ -9,7 +9,7 @@
 		<strong><%= commandData.name %></strong> <span class="tag is-small<%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) === "NSFW" ? " is-danger" : "" %>"><%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) %></span> &bull; <%- commandData.description %>
 	</div>
 	<div class="is-pulled-right command-item-section command-item-section-options">
-		<a id="command-<%= commandData.name %>-settings" class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level==0 ? (commandData.disabled_channel_ids.length === channelData.length ? "Dis" : "En") : ("Admin level &ge;" + commandData.admin_level + (commandData.disabled_channel_ids.length === channelData.length ? ", dis" : ", en")) %>abled in <%= commandData.disabled_channel_ids.length==0 || commandData.disabled_channel_ids.length === channelData.length ? "all" : (channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((channelData.length - commandData.disabled_channel_ids.length)==1 && commandData.disabled_channel_ids.length>0) ? "" : "s" %></a>
+		<a id="command-<%= commandData.name %>-settings" class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level === 0 ? (commandData.disabled_channel_ids.length === pageData.channelData.length ? "Dis" : "En") : ("Admin level &ge;" + commandData.admin_level + (commandData.disabled_channel_ids.length === pageData.channelData.length ? ", dis" : ", en")) %>abled in <%= commandData.disabled_channel_ids.length === 0 || commandData.disabled_channel_ids.length === pageData.channelData.length ? "all" : (pageData.channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((pageData.channelData.length - commandData.disabled_channel_ids.length) === 1 && commandData.disabled_channel_ids.length > 0) ? "" : "s" %></a>
 	</div>
 	<div id="command-<%= commandData.name %>-modal" class="modal command-item-modal" data-target="#command-<%= commandData.name%>-settings">
 		<div class="modal-background"></div>
@@ -24,10 +24,10 @@
 						<div class="control">
 						<span class="select is-primary">
 							<select name="<%= commandData.name %>-adminLevel">
-								<option value="0" <%= commandData.admin_level==0 ? "" : "selected" %>>@everyone</option>
-								<option value="1" <%= commandData.admin_level==1 ? "selected" : "" %>>Admin level &ge;1</option>
-								<option value="2" <%= commandData.admin_level==2 ? "selected" : "" %>>Admin level &ge;2</option>
-								<option value="3" <%= commandData.admin_level==3 ? "selected" : "" %>>Admin level &ge;3</option>
+								<option value="0" <%= commandData.admin_level === 0 ? "" : "selected" %>>@everyone</option>
+								<option value="1" <%= commandData.admin_level === 1 ? "selected" : "" %>>Admin level &ge;1</option>
+								<option value="2" <%= commandData.admin_level === 2 ? "selected" : "" %>>Admin level &ge;2</option>
+								<option value="3" <%= commandData.admin_level === 3 ? "selected" : "" %>>Admin level &ge;3</option>
 							</select>
 						</span>
 						</div>
@@ -35,13 +35,13 @@
 					</div>
 					<div class="field">
 						<label class="label">Channel(s)</label>
-                        <% for(var i=0; i<channelData.length; i++) { %>
+                        <% pageData.channelData.forEach(channel => { %>
 						<label class="checkbox">
-							<input name="<%= commandData.name %>-disabled_channel_ids-<%= channelData[i].id %>" class="<%= commandData.name %>-disabled_channel_ids" type="checkbox" <%= commandData.disabled_channel_ids.indexOf(channelData[i].id)==-1 ? "checked" : "" %>>
-							#<%= channelData[i].name %>
+							<input name="<%= commandData.name %>-disabled_channel_ids-<%= channel.id %>" class="<%= commandData.name %>-disabled_channel_ids" type="checkbox" <%= !commandData.disabled_channel_ids.includes(channel.id) ? "checked" : "" %>>
+							#<%= channel.name %>
 						</label>
 						<br>
-                        <% } %>
+                        <% }); %>
 					</div>
 					<div class="field">
 						<div class="control has-addons">

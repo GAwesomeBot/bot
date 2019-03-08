@@ -125,11 +125,12 @@ module.exports = class Client {
 			return;
 		}
 		if (!member.user.bot) {
-			const userDocument = (await Users.findOrCreate({ _id: member.id })).doc;
-			let memberDocument = serverDocument.members.id(member.id);
+			let userDocument = await Users.findOne(member.id);
+			if (!userDocument) userDocument = await Users.new({ _id: member.id });
+			let memberDocument = serverDocument.members[member.id];
 			if (!memberDocument) {
 				serverDocument.members.push({ _id: member.id });
-				memberDocument = serverDocument.members.id(member.id);
+				memberDocument = serverDocument.members[member.id];
 			}
 			return bot.handleViolation(server, serverDocument, ch, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID);
 		}

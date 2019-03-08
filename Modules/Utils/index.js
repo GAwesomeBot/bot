@@ -1,5 +1,7 @@
 module.exports = {
+	CLI: require("./CLI/"),
 	ClearServerStats: require("./ClearServerStats.js"),
+	FileExists: require("./FileExists.js"),
 	FilterChecker: require("./FilterChecker.js"),
 	Gag: require("./Gag.js"),
 	GetFlagForRegion: require("./GetFlagForRegion.js"),
@@ -22,5 +24,5 @@ module.exports = {
 	StreamerUtils: require("./StreamerUtils.js"),
 	StreamingRSS: require("./StreamingRSS.js"),
 	StructureExtender: require("./StructureExtender.js"),
-	CLI: require("./CLI/"),
+	TitlecasePermissions: require("./TitlecasePermissions.js"),
 };

@@ -6,7 +6,7 @@
 
 	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -25,11 +25,11 @@
 							GAwesomeBot constantly records information about <strong>message, voice, and game activity</strong> on your server. You can view this data in the <code>stats</code> command, on the <a href="/dashboard/<%= serverData.id %>/overview">overview page</a>, and more.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="command-items">
-						<% var commandData = configData.commands.stats;commandData.name = "stats";commandData.description = commandDescriptions.stats;commandData.category = commandCategories.stats; %>
+						<% var commandData = configData.commands.stats; commandData.name = "stats"; commandData.description = pageData.commandDescriptions.stats; commandData.category = pageData.commandCategories.stats; %>
 						<% include ../partials/admin-command-item %>
-						<% var commandData = configData.commands.messages;commandData.name = "messages";commandData.description = commandDescriptions.messages;commandData.category = commandCategories.messages; %>
+						<% commandData = configData.commands.messages; commandData.name = "messages"; commandData.description = pageData.commandDescriptions.messages; commandData.category = pageData.commandCategories.messages; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 						<br>

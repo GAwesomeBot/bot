@@ -4,7 +4,6 @@ const { MicrosoftTranslate: mstranslate, Utils } = require("../../../Modules/ind
 const {
 	Gist,
 	FilterChecker: checkFiltered,
-	Gag,
 } = Utils;
 const {
 	Errors: {
@@ -12,12 +11,12 @@ const {
 	},
 	Constants,
 } = require("../../index");
-const { LoggingLevels, Colors } = Constants;
+const { LoggingLevels, Colors, UserAgent } = Constants;
 const snekfetch = require("snekfetch");
 
 class MessageCreate extends BaseEvent {
 	requirements (msg) {
-		if (!msg.channel.postable) return false;
+		if (!msg.channel.postable || msg.type !== "DEFAULT") return false;
 		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
 				return false;
@@ -78,8 +77,7 @@ class MessageCreate extends BaseEvent {
 			}
 			const commandFunction = this.client.getPMCommand(msg.command);
 			if (commandFunction) {
-				const userDocument = await Users.findOne({ _id: msg.author.id });
-				msg.author.userDocument = userDocument;
+				msg.author.userDocument = await Users.findOne(msg.author.id);
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM command`, { usrid: msg.author.id, cmd: msg.command, suffix: msg.suffix });
 				try {
 					await commandFunction({
@@ -94,16 +92,7 @@ class MessageCreate extends BaseEvent {
 					});
 				} catch (err) {
 					winston.warn(`Failed to process PM command "${msg.command}"`, { usrid: msg.author.id }, err);
-					msg.author.send({
-						embed: {
-							color: Colors.ERROR,
-							title: `Something went wrong! 😱`,
-							description: `**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
-							footer: {
-								text: `Contact your Server Admin for support!`,
-							},
-						},
-					});
+					msg.sendError(msg.command, err.stack);
 				}
 				await msg.author.userDocument.save().catch(err => {
 					winston.verbose(`Failed to save user document...`, err);
@@ -142,44 +131,47 @@ class MessageCreate extends BaseEvent {
 			}
 		} else {
 			// Handle public messages
-			const serverDocument = await this.client.cache.get(msg.guild.id);
+			const serverDocument = await Servers.findOne(msg.guild.id);
 			if (serverDocument) {
+				const serverQueryDocument = serverDocument.query;
 				// Get channel data
-				let channelDocument = serverDocument.channels.id(msg.channel.id);
+				let channelDocument = serverDocument.channels[msg.channel.id];
 				// Create channel data if not found
 				if (!channelDocument) {
-					serverDocument.channels.push({ _id: msg.channel.id });
-					channelDocument = serverDocument.channels.id(msg.channel.id);
+					serverDocument.query.prop("channels").push({ _id: msg.channel.id });
+					channelDocument = serverDocument.channels[msg.channel.id];
 				}
+				const channelQueryDocument = serverQueryDocument.clone.id("channels", msg.channel.id);
 				// Get member data (for this server)
-				let memberDocument = serverDocument.members.id(msg.author.id);
+				let memberDocument = serverDocument.members[msg.author.id];
 				// Create member data if not found
 				if (!memberDocument) {
-					serverDocument.members.push({ _id: msg.author.id });
-					memberDocument = serverDocument.members.id(msg.author.id);
+					serverDocument.query.prop("members").push({ _id: msg.author.id });
+					memberDocument = serverDocument.members[msg.author.id];
 				}
+				const memberQueryDocument = serverQueryDocument.clone.id("members", msg.author.id);
 				const memberBotAdminLevel = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member);
 				// Increment today's message count for server
-				if (!msg.editedAt) serverDocument.messages_today++;
+				if (!msg.editedAt) serverQueryDocument.inc("messages_today");
 				// Count server stats if enabled in this channel
 				if (channelDocument.isStatsEnabled) {
 					// Increment this week's message count for member
-					if (!msg.editedAt) memberDocument.messages++;
+					if (!msg.editedAt) memberQueryDocument.inc("messages");
 					// Set now as the last active time for member
-					memberDocument.last_active = Date.now();
+					memberQueryDocument.set("last_active", Date.now());
 					// Check if the user has leveled up a rank
-					this.client.checkRank(msg.guild, serverDocument, msg.member, memberDocument);
+					this.client.checkRank(msg.guild, serverDocument, serverQueryDocument.clone, msg.member, memberDocument);
 				}
 
 				// Check for start command from server admin
 				if (!channelDocument.bot_enabled && memberBotAdminLevel > 1) {
 					if (msg.command === "start") {
-						channelDocument.bot_enabled = true;
+						channelQueryDocument.set("bot_enabled", true);
 						let inAllChannels = false;
 						if (msg.suffix && msg.suffix.toLowerCase().trim() === "all") {
 							inAllChannels = true;
-							serverDocument.channels.forEach(targetChannelDocument => {
-								targetChannelDocument.bot_enabled = true;
+							Object.values(serverDocument.channels).forEach(targetChannelDocument => {
+								serverQueryDocument.set(`channels.${targetChannelDocument._id}.bot_enabled`, true);
 							});
 						}
 						msg.send({
@@ -189,11 +181,12 @@ class MessageCreate extends BaseEvent {
 							},
 						});
 						this.client.logMessage(serverDocument, LoggingLevels.INFO, `I was reactivated in ${inAllChannels ? "all channels!" : "a channel."}`, msg.channel.id, msg.author.id);
+						await serverDocument.save();
 						return;
 					}
 				}
 
-				// TODO: Move this lel
+				// TODO: Move this to seperate file
 				// Check if using a filtered word
 				if (checkFiltered(serverDocument, msg.channel, msg.content, false, true)) {
 					// Delete offending message if necessary
@@ -206,7 +199,7 @@ class MessageCreate extends BaseEvent {
 						}
 					}
 					// Get user data
-					const userDocument = await Users.findOne({ _id: msg.author.id });
+					const userDocument = await Users.findOne(msg.author.id);
 					if (userDocument) {
 						// Handle this as a violation
 						let violatorRoleID = null;
@@ -215,7 +208,7 @@ class MessageCreate extends BaseEvent {
 						}
 						this.client.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You used a filtered word in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.client.getName(serverDocument, msg.member, true)}** used a filtered word (\`${msg.cleanContent}\`) in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Word filter violation ("${msg.cleanContent}") in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.custom_filter.action, violatorRoleID);
 					}
-					await userDocument.save().catch(err => {
+					return userDocument.save().catch(err => {
 						winston.verbose(`Failed to save user document...`, err);
 					});
 				}
@@ -239,7 +232,7 @@ class MessageCreate extends BaseEvent {
 						}
 
 						// Get user data
-						const userDocument = await Users.findOne({ _id: msg.author.id });
+						const userDocument = await Users.findOne(msg.author.id);
 						if (userDocument) {
 							// Handle this as a violation
 							let violatorRoleID = null;
@@ -258,35 +251,37 @@ class MessageCreate extends BaseEvent {
 				// Only keep responding if the bot is on in the channel and author isn't blocked on the server
 				if (channelDocument.bot_enabled && !serverDocument.config.blocked.includes(msg.author.id)) {
 					// Translate message if necessary
-					const translatedDocument = serverDocument.config.translated_messages.id(msg.author.id);
-					if (translatedDocument) {
-						// Detect the language (not always accurate; used only to exclude English messages from being translated to English)
-						mstranslate.detect({ text: msg.cleanContent }, (err, res) => {
-							if (err) {
-								winston.debug(`Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, usrid: msg.author.id }, err);
-								this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
-							} else if (res.toLowerCase() !== "en") {
-								// If the message is not in English, attempt to translate it from the language defined for the user
-								mstranslate.translate({ text: msg.cleanContent, from: translatedDocument.source_language, to: "EN" }, (translateErr, translateRes) => {
-									if (translateErr) {
-										winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
-										this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
-									} else {
-										msg.send({
-											embed: {
-												color: Colors.INFO,
-												title: `**@${this.client.getName(serverDocument, msg.member)}** said:`,
-												description: `\`\`\`${translateRes}\`\`\``,
-												footer: {
-													text: `Translated using Microsoft Translator. The translated text might not be accurate!`,
+					const translateMessage = () => {
+						const translatedDocument = serverQueryDocument.clone.id("config.translated_messages", msg.author.id).val;
+						if (translatedDocument) {
+							// Detect the language (not always accurate; used only to exclude English messages from being translated to English)
+							mstranslate.detect({ text: msg.cleanContent }, (err, res) => {
+								if (err) {
+									winston.debug(`Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, usrid: msg.author.id }, err);
+									this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to auto-detect language for message "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+								} else if (res.toLowerCase() !== "en") {
+									// If the message is not in English, attempt to translate it from the language defined for the user
+									mstranslate.translate({ text: msg.cleanContent, from: translatedDocument.source_language, to: "EN" }, (translateErr, translateRes) => {
+										if (translateErr) {
+											winston.debug(`Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.channel.guild.id, usrid: msg.author.id }, translateErr);
+											this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to translate "${msg.cleanContent}" from member "${msg.author.tag}"`, msg.channel.id, msg.author.id);
+										} else {
+											msg.channel.send({
+												embed: {
+													color: Colors.INFO,
+													title: `**@${this.client.getName(serverDocument, msg.member)}** said:`,
+													description: `\`\`\`${translateRes}\`\`\``,
+													footer: {
+														text: `Translated using Microsoft Translator. The translated text might not be 100% accurate!`,
+													},
 												},
-											},
-										});
-									}
-								});
-							}
-						});
-					}
+											});
+										}
+									});
+								}
+							});
+						}
+					};
 
 					// Only keep responding if there isn't an ongoing command cooldown in the channel
 					if (!channelDocument.isCommandCooldownOngoing || memberBotAdminLevel > 0) {
@@ -304,7 +299,7 @@ class MessageCreate extends BaseEvent {
 							// Increment command usage count
 							this.incrementCommandUsage(serverDocument, cmd);
 							// Get User data
-							const userDocument = await Users.findOne({ _id: msg.author.id });
+							const userDocument = await Users.findOne(msg.author.id);
 							if (userDocument) {
 								// NSFW filter for command suffix
 								if (memberBotAdminLevel < 1 && metadata.defaults.isNSFWFiltered && checkFiltered(serverDocument, msg.channel, msg.suffix, true, false)) {
@@ -327,7 +322,7 @@ class MessageCreate extends BaseEvent {
 									// Assume its a command, lets run it!
 									winston.verbose(`Treating "${msg.cleanContent}" as a command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 									this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a command`, msg.channel.id, msg.author.id);
-									this.deleteCommandMessage(serverDocument, channelDocument, msg);
+									this.deleteCommandMessage(serverDocument, channelQueryDocument, msg);
 									const commandFunction = this.client.getPublicCommand(cmd);
 									if (!commandFunction) {
 										const commandList = this.client.getPublicCommandList()
@@ -354,9 +349,13 @@ class MessageCreate extends BaseEvent {
 											};
 											const documents = {
 												serverDocument,
+												serverQueryDocument,
 												channelDocument,
+												channelQueryDocument,
 												memberDocument,
+												memberQueryDocument,
 												userDocument,
+												userQueryDocument: userDocument.query,
 											};
 											const commandData = {
 												name: cmd,
@@ -367,20 +366,10 @@ class MessageCreate extends BaseEvent {
 										} catch (err) {
 											winston.warn(`Failed to process command "${cmd}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 											this.client.logMessage(serverDocument, LoggingLevels.ERROR, `Failed to process command "${cmd}" X.X`, msg.channel.id, msg.author.id);
-											const description = !Gag(process.argv.slice(2)).owo ? `Something went wrong while executing \`${cmd}\`!\n**Error Message**: \`\`\`js\n${err.stack}\`\`\`` : "OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!";
-											msg.send({
-												embed: {
-													color: Colors.ERROR,
-													title: `Something went wrong! 😱`,
-													description,
-													footer: {
-														text: `Contact your GAB maintainer for more support.`,
-													},
-												},
-											});
+											msg.sendError(cmd, err.stack);
 										}
 									}
-									await this.setCooldown(serverDocument, channelDocument);
+									await this.setCooldown(serverDocument, channelDocument, channelQueryDocument);
 								}
 								await userDocument.save().catch(err => {
 									winston.verbose(`Failed to save user document...`, err);
@@ -390,32 +379,37 @@ class MessageCreate extends BaseEvent {
 						} else if (serverDocument.config.tags.list.id(msg.command) && serverDocument.config.tags.list.id(msg.command).isCommand) {
 							winston.verbose(`Treating "${msg.cleanContent}" as a tag command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 							this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a tag command`, msg.channel.id, msg.author.id);
-							this.deleteCommandMessage(serverDocument, channelDocument, msg);
+							this.deleteCommandMessage(serverDocument, channelQueryDocument, msg);
 							msg.send(`${serverDocument.config.tags.list.id(msg.command).content}`, {
 								disableEveryone: true,
 							});
-							await this.setCooldown(serverDocument, channelDocument);
+							await this.setCooldown(serverDocument, channelDocument, channelQueryDocument);
 						} else {
 							// Check if it's a command or keyword extension trigger
 							let extensionApplied = false;
 							const extensionLength = serverDocument.extensions.length;
 							for (let i = 0; i < extensionLength; i++) {
-								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && serverDocument.extensions[i].enabled_channel_ids.includes(msg.channel.id)) {
+								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && !serverDocument.extensions[i].disabled_channel_ids.includes(msg.channel.id)) {
+									const extensionDocument = await Gallery.findOneByObjectID(serverDocument.extensions[i]._id);
+									const versionDocument = extensionDocument ? extensionDocument.versions.id(serverDocument.extensions[i].version) : null;
 									// Command extensions
-									if (serverDocument.extensions[i].type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
+									if (versionDocument && versionDocument.type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
 										winston.verbose(`Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
 										this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
 										extensionApplied = true;
 
 										// Do the normal things for commands
-										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelDocument, msg), this.setCooldown(serverDocument, channelDocument)]);
-										// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, commandObject.suffix, null);
-									} else if (serverDocument.extensions[i].type === "keyword") {
+										await Promise.all([this.incrementCommandUsage(serverDocument, msg.command), this.deleteCommandMessage(serverDocument, channelQueryDocument, msg), this.setCooldown(serverDocument, channelDocument, channelQueryDocument)]);
+										const m = await msg.send(Constants.Text.EXTENSION_RUN(extensionDocument.name));
+										const result = await this.client.runExtension(msg, serverDocument.extensions[i]);
+										if (result.success) await m.delete().catch(() => null);
+										else await m.edit(Constants.Text.EXTENSION_FAIL(extensionDocument.name));
+									} else if (versionDocument && versionDocument.type === "keyword") {
 										const keywordMatch = msg.content.containsArray(serverDocument.extensions[i].keywords, serverDocument.extensions[i].case_sensitive);
 										if (((serverDocument.extensions[i].keywords.length > 1 || serverDocument.extensions[i].keywords[0] !== "*") && keywordMatch.selectedKeyword > -1) || (serverDocument.extensions[i].keywords.length === 1 && serverDocument.extensions[i].keywords[0] === "*")) {
 											winston.verbose(`Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });
 											this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a trigger for keyword extension "${serverDocument.extensions[i].name}"`, msg.channel.id, msg.author.id);
-											// TODO: runExtension(bot, db, msg.guild, serverDocument, msg.channel, serverDocument.extensions[i], msg, null, keywordMatch);
+											await this.client.runExtension(msg, serverDocument.extensions[i]);
 										}
 									}
 								}
@@ -437,7 +431,8 @@ class MessageCreate extends BaseEvent {
 							}
 							// Check if it's a chatterbot prompt
 							if (!extensionApplied && shouldRunChatterbot && serverDocument.config.chatterbot.isEnabled && !serverDocument.config.chatterbot.disabled_channel_ids.includes(msg.channel.id) && (msg.content.startsWith(`<@${this.client.user.id}>`) || msg.content.startsWith(`<@!${this.client.user.id}>`)) && msg.content.includes(" ") && msg.content.length > msg.content.indexOf(" ") && !this.client.getSharedCommand(msg.command)) {
-								await this.setCooldown(serverDocument, channelDocument);
+								translateMessage();
+								await this.setCooldown(serverDocument, channelDocument, channelQueryDocument);
 								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 								this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
 								msg.send({
@@ -469,33 +464,27 @@ class MessageCreate extends BaseEvent {
 									});
 								}
 							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.client.user.id) && serverDocument.config.tag_reaction.isEnabled && !this.client.getSharedCommand(msg.command)) {
-								const random = serverDocument.config.tag_reaction.messages.random.replaceAll("@user", `**@${this.client.getName(serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
+								const { random } = serverDocument.config.tag_reaction.messages;
 								if (random) {
+									const content = random.replaceAll("@user", `**@${this.client.getName(serverDocument, msg.member)}**`).replaceAll("@mention", `<@!${msg.author.id}>`);
 									msg.send({
-										content: random,
+										content,
 										disableEveryone: true,
 									});
-								} else {
-									msg.send({
-										embed: {
-											color: Colors.SOFT_ERR,
-											title: `Uh-oh`,
-											description: `Something went wrong! 😱`,
-											footer: {
-												text: `Contact your server Admins for more support.`,
-											},
-										},
-									});
 								}
+							} else if (!extensionApplied) {
+								translateMessage();
 							}
 						}
+					} else {
+						translateMessage();
 					}
 				}
+				await serverDocument.save();
 			}
 		}
-		// Keep this here, to remind us to delete it!
-		// Even if Travis cries
-		console.log(`Time for CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms`);
+
+		winston.verbose(`Successfully finished handling Discord Message. CommandHandler took: ${process.hrtime(proctime)[0]}s ${Math.floor(process.hrtime(proctime)[1] / 1000000)}ms\t`, { content: msg.content, msgid: msg.id, svrid: msg.guild ? msg.guild.id : undefined, chid: msg.channel.id, usrid: msg.author.id });
 	}
 
 	/**
@@ -510,7 +499,7 @@ class MessageCreate extends BaseEvent {
 			res = await snekfetch.get(`http://api.program-o.com/v2/chatbot/?bot_id=6&say=${encodeURIComponent(prompt)}&convo_id=${userOrUserID.id ? userOrUserID.id : userOrUserID}&format=json`)
 				.set({
 					Accept: "application/json",
-					"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+					"User-Agent": UserAgent,
 				});
 		} catch (err) {
 			throw err;
@@ -530,19 +519,19 @@ class MessageCreate extends BaseEvent {
 	/**
 	 * Delete command message if necessary
 	 * @param {Document} serverDocument
-	 * @param {Document} channelDocument
+	 * @param {Query} channelQueryDocument
 	 * @param {Message} msg
 	 */
-	async deleteCommandMessage (serverDocument, channelDocument, msg) {
+	async deleteCommandMessage (serverDocument, channelQueryDocument, msg) {
 		if (serverDocument.config.delete_command_messages && msg.channel.permissionsFor(msg.guild.me).has("MANAGE_MESSAGES")) {
-			channelDocument.isMessageDeletedDisabled = true;
+			channelQueryDocument.set("isMessageDeletedDisabled", true);
 			try {
 				await msg.delete();
 			} catch (err) {
 				winston.debug(`Failed to delete command message..`, err);
 				this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to delete command message in channel`, msg.channel.id, msg.author.id);
 			}
-			channelDocument.isMessageDeletedDisabled = false;
+			channelQueryDocument.set("isMessageDeletedDisabled", false);
 		}
 	}
 
@@ -550,15 +539,16 @@ class MessageCreate extends BaseEvent {
 	 * Set a command cooldown in a channel
 	 * @param {Document} serverDocument
 	 * @param {Document} channelDocument
+	 * @param {Query} channelQueryDocument
 	 */
-	async setCooldown (serverDocument, channelDocument) {
+	async setCooldown (serverDocument, channelDocument, channelQueryDocument) {
 		if (channelDocument.command_cooldown > 0 || serverDocument.config.command_cooldown > 0) {
-			channelDocument.isCommandCooldownOngoing = true;
+			channelQueryDocument.set("isCommandCooldownOngoing", true);
 			// End cooldown after interval (favor channel config over server)
 			this.client.setTimeout(async () => {
-				const newServerDocument = await this.client.cache.get(serverDocument._id);
-				const newChannelDocument = newServerDocument.channels.id(channelDocument._id);
-				newChannelDocument.isCommandCooldownOngoing = false;
+				const newServerDocument = await Servers.findOne(serverDocument._id);
+				const newChannelDocument = newServerDocument.query.id("channels", channelDocument._id);
+				newChannelDocument.set("isCommandCooldownOngoing", false);
 				await newServerDocument.save().catch(err => {
 					winston.debug(`Failed to save server data for command cooldown...`, { svrid: serverDocument._id }, err);
 					this.client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to save server data for command cooldown!`);
@@ -573,16 +563,17 @@ class MessageCreate extends BaseEvent {
 	 * @param {?String} command
 	 */
 	async incrementCommandUsage (serverDocument, command) {
+		const serverQueryDocument = serverDocument.query;
+
 		if (!serverDocument.command_usage) {
-			serverDocument.command_usage = {};
+			serverQueryDocument.set("command_usage", {});
 		}
 
 		if (serverDocument.command_usage[command] === null || isNaN(serverDocument.command_usage[command])) {
-			serverDocument.command_usage[command] = 0;
+			serverQueryDocument.set(`command_usage.${command}`, 0);
 		}
 
-		serverDocument.command_usage[command]++;
-		serverDocument.markModified("command_usage");
+		serverQueryDocument.inc(`command_usage.${command}`);
 	}
 }
 

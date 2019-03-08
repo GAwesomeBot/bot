@@ -3,10 +3,6 @@
 <head>
 	<title>Maintainers - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newMaintainer() {
 		let newMaintainerUser = $("#new-maintainer-user");
@@ -17,7 +13,7 @@
 		}
 
 		if(newMaintainerUser.val() && <%= isSudoMaintainer %>) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -33,7 +29,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -117,7 +113,7 @@
 									<td>
 										<div class="field is-grouped">
 											<div class="control">
-												<button class="button is-small is-danger" name="maintainer-removed" value="<%= maintainer.id %>" onclick="hide_update_modal = true;"<% if (!isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
+												<button class="button is-small is-danger" name="maintainer-removed" value="<%= maintainer.id %>" onclick="GAwesomeData.HUM = true;"<% if (!isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
 													<span>Remove</span>
 													<span class="icon is-small">
 														<i class="fa fa-times"></i>
@@ -126,7 +122,7 @@
 											</div>
 											<div class="control">
 												<button class="button is-small <% if (maintainer.isSudoMaintainer) { %>is-warning<% } else { %>is-primary<% } %>" name="maintainer-sudo" value="<%= maintainer.id %>"
-														onclick="hide_update_modal = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers?<% } %>');"<% if(!
+														onclick="GAwesomeData.HUM = true; return confirm('Are you sure<% if (maintainer.isSudoMaintainer) { %> you want to revoke Sudo Powers from <%= maintainer.name%>?<% } else { %> you want to grant <%= maintainer.name%> Sudo Powers?<% } %>');"<% if(!
 																isSudoMaintainer || authUser.id === maintainer.id) { %> disabled<% } %>>
 													<% if (maintainer.isSudoMaintainer) { %>
 														<span>Revoke Sudo</span>
@@ -145,7 +141,7 @@
 								</tbody>
 							</table>
 							<% } else { %>
-							<article class="message" style="margin-bottom: 0px;">
+							<article class="message is-embedded-message">
 								<div class="message-header">
 									<p>
 										<span class="icon">
@@ -166,7 +162,7 @@
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-maintainer-user" class="input is-primary user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode != 13;">
+										<input id="new-maintainer-user" class="input is-primary user-autocomplete" type="text" placeholder="Username or ID" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<div class="select is-primary">
@@ -190,7 +186,7 @@
 						<% } %>
 					</form>
 					<br>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<input name="additional-perms" value="true" style="display: none;">
 						<h4 class="subtitle is-4">
 							Additional Permissions
@@ -209,8 +205,8 @@
 										</div>
 									</dt>
 									<dd>&bull; Can run the <code>eval</code> command</dd>
-									<dd>&bull; Can access the Eval section in the Maintainer Console</dd>
-									<dd>&bull; Can elevate their permissions to The Host</dd>
+									<dd>&bull; Can access the Evaluate section in the Maintainer Console</dd>
+									<dd class="is-danger-colored" title="Users with the Eval permission can evaluate code in GAB without restrictions, and thus have full control.">&bull; Can elevate their permissions</dd>
 								</div>
 								<div class="field">
 									<dt>
@@ -249,7 +245,7 @@
 											</select>
 										</div>
 									</dt>
-									<dd>&bull; Can enter the Global Option sections in the Maintainer Console</dd>
+									<dd>&bull; Can enter the Global Options sections in the Maintainer Console</dd>
 									<dd>&bull; Can run any Maintainer Commands that modify the Bot User, such as <code>username</code></dd>
 									<dd>&bull; Can reload any command using the <code>reload</code> command</dd>
 								</div>

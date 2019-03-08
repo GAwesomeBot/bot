@@ -24,7 +24,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 					},
 				});
 			}
-			const mDoc = serverDocument.members.id(member.id);
+			const mDoc = serverDocument.members[member.id];
 			return msg.send({
 				embed: {
 					author: {
@@ -45,12 +45,12 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 		}
 	}
 
-	const sortedMembers = serverDocument.members.filter(m => m.messages && msg.guild.members.has(m.id)).sort((a, b) => b.messages - a.messages);
+	const sortedMembers = Object.values(serverDocument.members).filter(m => m.messages && msg.guild.members.has(m._id)).sort((a, b) => b.messages - a.messages);
 	const totalMessages = sortedMembers.reduce((a, b) => (a.messages || a) + b.messages, 0);
 	const description = sortedMembers
 		.slice(0, 8)
 		.map(mDoc => {
-			const member = msg.guild.members.get(mDoc.id);
+			const member = msg.guild.members.get(mDoc._id);
 			return [
 				`» **${client.getName(serverDocument, member)}** «`,
 				`\t**${mDoc.messages}** messages`,
@@ -71,7 +71,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, mem
 		msg.send({
 			embed: {
 				color: Colors.INFO,
-				description: "*This server is literally dead (✖╭╮✖)",
+				description: "This server is literally dead (✖╭╮✖)",
 				footer: {
 					text: "There were no messages sent this week at all.",
 				},

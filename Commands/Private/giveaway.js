@@ -12,7 +12,7 @@ module.exports = {
 		server = main.client.guilds.get(filter.str);
 		if (checkServer(server)) return server.id;
 
-		const userDocument = await Users.findOne({ _id: filter.usrid }).exec();
+		const userDocument = await Users.findOne(filter.usrid);
 		if (userDocument) {
 			const svrnick = userDocument.server_nicks.id(filter.str.toLowerCase());
 			if (svrnick) {
@@ -32,7 +32,7 @@ module.exports = {
 
 			const svr = main.client.guilds.get(guildid);
 			const member = svr.members.get(usr.id);
-			const { serverDocument } = svr;
+			const serverDocument = await Servers.findOne(svr.id);
 
 			if (serverDocument.config.blocked.includes(usr.id)) return;
 
@@ -52,13 +52,16 @@ module.exports = {
 			}
 
 			if (ch && ch.type === "text") {
-				let channelDocument = serverDocument.channels.id(ch.id);
+				const serverQueryDocument = serverDocument.query;
+
+				let channelDocument = serverDocument.channels[ch.id];
 				if (!channelDocument) {
-					serverDocument.channels.push({ _id: ch.id });
-					channelDocument = serverDocument.channels.id(ch.id);
+					serverQueryDocument.push("channels", { _id: ch.id });
+					channelDocument = serverDocument.channels[ch.id];
 				}
 
 				if (channelDocument.giveaway.isOngoing) {
+					const channelQueryDocument = serverQueryDocument.clone.id("channels", channelDocument._id);
 					if (channelDocument.giveaway.creator_id === usr.id) {
 						await initMsg.edit({
 							embed: {
@@ -78,7 +81,7 @@ module.exports = {
 						}
 						if (response.content) response = response.content;
 						if (main.configJS.yesStrings.includes(response.toLowerCase().trim())) {
-							await Giveaways.end(main.client, svr, ch);
+							await Giveaways.end(main.client, svr, ch, serverDocument);
 							serverDocument.save();
 						} else {
 							usrch.send({
@@ -107,7 +110,7 @@ module.exports = {
 						}
 						if (response.content) response = response.content;
 						if (main.configJS.yesStrings.includes(response.toLowerCase().trim())) {
-							channelDocument.giveaway.participant_ids.splice(channelDocument.giveaway.participant_ids.indexOf(usr.id), 1);
+							channelQueryDocument.pull("giveaway.participant_ids", usr.id);
 							await serverDocument.save();
 							usrch.send({
 								embed: {
@@ -133,7 +136,7 @@ module.exports = {
 								title: `There's a giveaway called "${channelDocument.giveaway.title}" going on in #${ch.name}.`,
 								description: "Do you want to join for a chance to win? 🤑",
 								footer: {
-									text: "You have 1 minute to respond.",
+									text: "You have 1 minute to respond with yes or no.",
 								},
 							},
 						});
@@ -145,7 +148,7 @@ module.exports = {
 						}
 						if (response.content) response = response.content;
 						if (main.configJS.yesStrings.includes(response.toLowerCase().trim())) {
-							channelDocument.giveaway.participant_ids.push(usr.id);
+							channelQueryDocument.push("giveaway.participant_ids", usr.id);
 							await serverDocument.save();
 							usrch.send({
 								embed: {
@@ -234,6 +237,7 @@ module.exports = {
 						duration = 3600000;
 					}
 					Giveaways.start(main.client, svr, serverDocument, usr, ch, channelDocument, title, secret, duration);
+					await serverDocument.save();
 					usrch.send({
 						embed: {
 							color: Colors.SUCCESS,

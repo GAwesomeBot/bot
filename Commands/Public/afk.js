@@ -1,8 +1,7 @@
-module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
-	const { memberDocument } = documents;
+module.exports = async ({ Constants: { Colors } }, { memberDocument, memberQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix === ".") {
-			memberDocument.afk_message = null;
+			memberQueryDocument.set("afk_message", null);
 			msg.send({
 				embed: {
 					color: Colors.GREEN,
@@ -14,7 +13,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				},
 			});
 		} else {
-			memberDocument.afk_message = msg.suffix;
+			memberQueryDocument.set("afk_message", msg.suffix);
 			msg.send({
 				embed: {
 					color: Colors.GREEN,

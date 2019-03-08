@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 
 /*
  * Server's channel data (giveaway, trivia, etc.)
  */
-module.exports = new mongoose.Schema({
+module.exports = Schema.Map({
 	_id: {
 		type: String,
 		required: true,
@@ -33,7 +33,7 @@ module.exports = new mongoose.Schema({
 		default: false,
 	},
 	spam_filter_data: [
-		new mongoose.Schema({
+		new Schema({
 			_id: {
 				type: String,
 				required: true,
@@ -45,7 +45,7 @@ module.exports = new mongoose.Schema({
 			last_message_content: String,
 		}),
 	],
-	trivia: {
+	trivia: new Schema({
 		isOngoing: {
 			type: Boolean,
 			default: false,
@@ -58,7 +58,7 @@ module.exports = new mongoose.Schema({
 			min: 0,
 		},
 		responders: [
-			new mongoose.Schema({
+			new Schema({
 				_id: String,
 				score: {
 					type: Number,
@@ -67,15 +67,15 @@ module.exports = new mongoose.Schema({
 				},
 			}),
 		],
-		current_question: {
+		current_question: new Schema({
 			answer: String,
 			attempts: {
 				type: Number,
 				default: 0,
 			},
-		},
-	},
-	poll: {
+		}),
+	}),
+	poll: new Schema({
 		isOngoing: {
 			type: Boolean,
 			default: false,
@@ -85,7 +85,7 @@ module.exports = new mongoose.Schema({
 		title: String,
 		options: [String],
 		responses: [
-			new mongoose.Schema({
+			new Schema({
 				_id: String,
 				vote: {
 					type: Number,
@@ -93,8 +93,8 @@ module.exports = new mongoose.Schema({
 				},
 			}),
 		],
-	},
-	giveaway: {
+	}),
+	giveaway: new Schema({
 		isOngoing: {
 			type: Boolean,
 			default: false,
@@ -104,8 +104,8 @@ module.exports = new mongoose.Schema({
 		title: String,
 		secret: String,
 		participant_ids: [String],
-	},
-	lottery: {
+	}),
+	lottery: new Schema({
 		isOngoing: {
 			type: Boolean,
 			default: false,
@@ -117,5 +117,5 @@ module.exports = new mongoose.Schema({
 			type: Number,
 			enum: [1, 2, 5, 10, 100],
 		},
-	},
-}, { usePushEach: true });
+	}),
+});

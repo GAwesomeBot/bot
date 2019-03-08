@@ -4,7 +4,6 @@
 	<title><%= serverData.name %> Ranks - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newRank() {
 		var newRankName = $("#new-rank-name");
@@ -31,7 +30,7 @@
 					"new-role_id": $("#new-rank-role_id").val()
 				},
 				success: function() {
-					saveFormState();
+					GAwesomeUtil.SFS();
 					$("#form").submit();
 				    Turbolinks.visit('');
 				}
@@ -40,7 +39,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -59,7 +58,7 @@
 							Ranks <strong>classify members by activity</strong> in both voice and text chat. Each rank you add will have a <strong>maximum activity score</strong> for members to have that rank before they receive the next-highest rank. Activity scores are calculated with this formula: <code>no. messages + minutes active on voice</code>. You can also set ranks to automatically assign a role on the server.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field" style="overflow-x: scroll;">
                             <%- include("../partials/no-results", { isHidden: configData.ranks_list.length, isSearchQuery: false, description: "All the default ranks are gone! Fill out the form below to add your own rank." }) %>
 							<table class="table is-fullwidth<%= configData.ranks_list.length ? "" : " is-hidden" %>">
@@ -88,9 +87,9 @@
 												<span class="select is-primary is-small">
 													<select name="rank-<%= rankDocument._id %>-role_id">
 														<option value="">None</option>
-														<% for(var j=0; j<roleData.length; j++) { %>
-															<option value="<%= roleData[j].id %>" <%= rankDocument.role_id==roleData[j].id ? "selected" : "" %>><%= roleData[j].name %></option>
-														<% } %>
+														<% pageData.roleData.forEach( role => { %>
+															<option value="<%= role.id %>"<%= rankDocument.role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+														<% }); %>
 													</select>
 												</span>
 											</p>
@@ -99,7 +98,7 @@
 											<%= rankDocument.members %>
 										</td>
 										<td>
-											<button class="button is-small is-danger" name="<%= rankDocument._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+											<button class="button is-small is-danger" name="<%= rankDocument._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
 												<span>Remove</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>
@@ -120,22 +119,22 @@
 						</div>
 						<div class="field">
 							<div class="control is-expanded">
-								<input id="new-rank-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+								<input id="new-rank-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 							</div>
 						</div>
 						<div class="field is-horizontal">
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-rank-max_score" class="input is-primary" type="number" min="1" placeholder="Max. activity score" onkeypress="return event.keyCode != 13;">
+										<input id="new-rank-max_score" class="input is-primary" type="number" min="1" placeholder="Max. activity score" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<span class="select is-primary">
 											<select id="new-rank-role_id">
 												<option value="">No Role</option>
-												<% for(var i=0; i<roleData.length; i++) { %>
-													<option value="<%= roleData[i].id %>"><%= roleData[i].name %></option>
-												<% } %>
+												<% pageData.roleData.forEach( role => { %>
+													<option value="<%= role.id %>"><%= role.name %></option>
+												<% }); %>
 											</select>
 										</span>
 									</div>

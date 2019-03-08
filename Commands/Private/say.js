@@ -12,7 +12,7 @@ module.exports = {
 		server = main.client.guilds.get(filter.str);
 		if (checkServer(server)) return server.id;
 
-		const userDocument = await Users.findOne({ _id: filter.usrid }).exec();
+		const userDocument = await Users.findOne(filter.usrid);
 		if (userDocument) {
 			const svrnick = userDocument.server_nicks.id(filter.str.toLowerCase());
 			if (svrnick) {
@@ -32,6 +32,7 @@ module.exports = {
 
 			const svr = main.client.guilds.get(guildid);
 			const member = svr.members.get(usr.id);
+			await svr.populateDocument();
 			const { serverDocument } = svr;
 
 			if (serverDocument.config.blocked.includes(usr.id)) return;

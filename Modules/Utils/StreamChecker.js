@@ -4,21 +4,23 @@ const { Templates: { StreamingTemplate }, LoggingLevels } = require("../../Inter
 // Checks if a user is streaming on Twitch, YouTube Gaming, and posts message in server channel if necessary
 module.exports = async (client, server, serverDocument, streamerDocument) => {
 	try {
+		const streamerQueryDocument = serverDocument.query.id("config.streamers_data", streamerDocument._id);
+
 		const data = await isStreaming(streamerDocument.type, streamerDocument._id);
 
 		if (data && !streamerDocument.live_state) {
 			winston.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
-			streamerDocument.live_state = true;
+			streamerQueryDocument.set("live_state", true);
 
 			const channel = streamerDocument.channel_id ? server.channels.get(streamerDocument.channel_id) : server.defaultChannel;
 			if (channel) {
-				const channelDocument = serverDocument.channels.id(channel.id);
+				const channelDocument = serverDocument.channels[channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) {
-					channel.send(StreamingTemplate(data));
+					await channel.send(StreamingTemplate(data));
 				}
 			}
 		} else if (!data) {
-			streamerDocument.live_state = false;
+			streamerQueryDocument.set("live_state", false);
 		}
 
 		// Save serverDocument if necessary
@@ -27,6 +29,6 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 		});
 	} catch (err) {
 		winston.debug(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err.message);
-		client.logMessage(serverDocument, LoggingLevels.ERROR, `Streamer ${streamerDocument._id} is not configured correctly, and I failed to fetch their streaming status!`, streamerDocument.channel_id);
+		client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to fetch streamer ${streamerDocument._id}, they might not be configured correctly!`, streamerDocument.channel_id);
 	}
 };

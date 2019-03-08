@@ -28,6 +28,7 @@ class Shard {
 		return this.IPC.send(event, data, timeout || undefined);
 	}
 
+	// noinspection JSAnnotator
 	eval (code) {
 		return new Promise(resolve => this.IPC.send("eval", code).then(res => resolve(res)));
 	}

@@ -54,8 +54,8 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				msg.send({
 					embed: {
 						color: Colors.ERR,
-						title: Text.COMMAND_ERR(),
-						description: `\`\`\`css\n${err}\`\`\``,
+						title: Text.ERROR_TITLE(),
+						description: Text.ERROR_BODY("calc", err),
 						footer: {
 							text: `I'm sorry :(`,
 						},
@@ -65,15 +65,6 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 		}
 	} else {
 		winston.verbose(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `What would you like to calculate today? 🤓`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				footer: {
-					text: `I may be smart but I can't guess what you'd want to calculate!`,
-				},
-			},
-		});
+		msg.sendInvalidUsage(commandData, "What would you like to calculate today? 🤓", "I may be smart but I can't guess what you'd want to calculate!");
 	}
 };

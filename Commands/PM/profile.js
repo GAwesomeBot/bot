@@ -11,7 +11,7 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 	if (msg.suffix === "setup") {
 		let m = await msg.reply({
 			embed: {
-				color: Colors.LIGHT_GREEN,
+				color: Colors.LIGHT_BLUE,
 				author: {
 					name: `Profile setup for ${msg.author.tag}`,
 				},
@@ -51,7 +51,7 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 
 		m = await msg.reply({
 			embed: {
-				color: Colors.LIGHT_GREEN,
+				color: Colors.LIGHT_BLUE,
 				title: `Next, here's your current backround.`,
 				image: {
 					url: IsURL(msg.author.userDocument.profile_background_image) ? msg.author.userDocument.profile_background_image : ``,
@@ -100,7 +100,7 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 
 		m = await msg.reply({
 			embed: {
-				color: Colors.LIGHT_GREEN,
+				color: Colors.LIGHT_BLUE,
 				title: `Done! That will be your new picture. 🏖`,
 				description: `Now, can you please tell us a little about yourself...? (max 2000 characters)`,
 				thumbnail: {
@@ -144,15 +144,15 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 				changes.Bio = message.content.trim();
 			}
 		}
-		msg.author.userDocument.isProfilePublic = changes.isProfilePublic;
-		msg.author.userDocument.profile_background_image = changes.profile_background_image;
-		if (!msg.author.userDocument.profile_fields) msg.author.userDocument.profile_fields = {};
+		const userQueryDocument = msg.author.userDocument.query;
+		userQueryDocument.set("isProfilePublic", changes.isProfilePublic)
+			.set("profile_background_image", changes.profile_background_image);
+		if (!msg.author.userDocument.profile_fields) userQueryDocument.set("profile_fields", {});
 		if (changes.Bio === "delete") {
-			delete msg.author.userDocument.profile_fields.Bio;
+			userQueryDocument.remove("profile_fields.Bio");
 		} else if (changes.Bio) {
-			msg.author.userDocument.profile_fields.Bio = changes.Bio;
+			userQueryDocument.set("profile_fields.Bio", changes.Bio);
 		}
-		msg.author.userDocument.markModified("profile_fields");
 		await msg.author.userDocument.save().catch(err => {
 			winston.warn(`Failed to save user data for profile setup`, err);
 		});

@@ -28,7 +28,7 @@ const commands = {
 			usage: `<server> | <channel>`,
 		},
 		servernick: {
-			usage: `[<nick>] [ | <server>]`,
+			usage: `[<nick>] [ | <server ID>]`,
 		},
 	},
 	public: {
@@ -114,7 +114,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		ban: {
-			usage: `<user> [|] [<reason>]`,
+			usage: `<user> [|] [<days>] [|] [<reason>]`,
 			description: `Bans the user from this server and deletes 1 day's worth of messages.`,
 			defaults: {
 				isEnabled: true,
@@ -479,7 +479,7 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		nick: {
-			usage: `[<user>|<nickname> or <name>]`,
+			usage: `[<user>|][<nickname> or <name>]`,
 			description: `Changes a members nickname on the server`,
 			defaults: {
 				isEnabled: true,
@@ -582,7 +582,7 @@ const commands = {
 		},
 		profile: {
 			usage: `[<user> or "me"]`,
-			description: `An all-in-one command to view informations about users`,
+			description: `An all-in-one command to view information about users`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -631,7 +631,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		remindme: {
-			usage: `<time from now> | <reminder>`,
+			usage: `"to" <reminder> "in" <time from now>`,
 			description: `Reminds you in DMs about things`,
 			defaults: {
 				isEnabled: true,
@@ -672,7 +672,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		room: {
-			usage: `"text" or "voice" or "both" [<user 1>] [|] [<user 2>] [|] [...]`,
+			usage: `"text" or "voice" [<user 1>] [<user 2>] [...]`,
 			description: `Creates a temporary text or voice channel with a few members`,
 			defaults: {
 				isEnabled: true,
@@ -730,16 +730,6 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
-		},
-		softban: {
-			usage: `<user> [|] [<reason>]`,
-			description: `Bans the user from this server without deleting their messages`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 3,
-			},
-			category: `Moderation ⚒`,
 		},
 		stats: {
 			usage: `["clear"]`,
@@ -804,7 +794,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		translate: {
-			usage: `<text> <"?" or source language> [to] <target language>`,
+			usage: `<"?" or source language> [to] <target language> <text>`,
 			description: `Uses Microsoft Translate to translate a word / phrase into another language`,
 			defaults: {
 				isEnabled: true,
@@ -814,7 +804,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		trivia: {
-			usage: `[todo do usage]`,
+			usage: `["start"|<answer>|"skip"/"next"|"end"/"."]`,
 			description: `A fun question-and-answer group quiz game`,
 			defaults: {
 				isEnabled: true,
@@ -939,14 +929,14 @@ const commands = {
 			perm: "eval",
 		},
 		reload: {
-			usage: `...<pm or public>.<command> or "*"`,
+			usage: `[<type>"."]<command> or [<type>"."]"*"`,
 			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
 			perm: "administration",
 		},
 		debug: {
 			usage: `["-h"]`,
-			description: `Provides information about the bot, optionally, some system architecture information`,
+			description: `Provides information about the bot and, optionally, some system architecture information`,
 			perm: "none",
 		},
 	},

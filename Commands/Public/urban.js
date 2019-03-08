@@ -1,7 +1,7 @@
 const { get } = require("snekfetch");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, commandData) => {
 	const { body, statusCode, statusText } = await get(APIs.URBAN(msg.suffix || null));
 	if (statusCode === 200 && body) {
 		if (!body.list.length) {
@@ -19,14 +19,13 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 		const descriptions = [];
 		const fields = [];
 		body.list.forEach(d => {
-			let description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition}`;
-			const example = d.example ? `\n\n_${d.example}_` : "";
-			if (description.length + example.length > 2000) {
-				description = `${description.substring(0, 1997 - example.length)}...`;
-				// This weird thing is to retain the formatting of the example (the underscores)
+			const description = `${!msg.suffix ? `**${d.word}**:\n\n` : ""}${d.definition.replace(/[_*~]/g, "\\$&")}`;
+			let merged = `${description}${d.example ? `\n\n_${d.example.replace(/[_*~]/g, "\\$&")}_` : ""}`
+				.replace(/\[.+?\]/g, m => `${m}(http://urbandictionary.com/define.php?term=${encodeURIComponent(m.slice(1, -1))})`);
+			if (merged.length > 2048) {
+				merged = `${merged.substring(0, 2044)}_...`;
 			}
-			description += example;
-			descriptions.push(description);
+			descriptions.push(merged);
 			fields.push([
 				{
 					name: "Author",
@@ -45,11 +44,14 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 				},
 			]);
 		});
-		const menu = new PaginatedEmbed(msg, descriptions, {
+		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
-			title: `${!msg.suffix ? "Random d" : "D"}efinition {current description} out of {total descriptions}${msg.suffix ? ` for '${msg.suffix}'` : ""}:`,
+			title: `${!msg.suffix ? "Random d" : "D"}efinition {currentPage} out of {totalPages}${msg.suffix ? ` for '${msg.suffix}'` : ""}:`,
 			footer: body.tags && body.tags.length ? `Tags: ${body.tags.join(", ")}` : "",
-		}, [], fields);
+		}, {
+			descriptions,
+			fields,
+		});
 		await menu.init();
 	} else {
 		winston.debug(`Failed to fetch Urban Dictionary results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });

@@ -5,16 +5,16 @@ const BaseEvent = require("../BaseEvent");
  */
 class UsernameHandler extends BaseEvent {
 	requirements (msg) {
-		return !msg.author.bot;
+		return !msg.author.bot && msg.type === "DEFAULT";
 	}
 
 	async prerequisite (msg) {
-		this.userDocument = await Users.findOne({ _id: msg.author.id });
+		this.userDocument = await Users.findOne(msg.author.id);
 	}
 
 	async handle (msg) {
 		if (this.userDocument && this.userDocument.username !== msg.author.tag) {
-			this.userDocument.username = msg.author.tag;
+			this.userDocument.query.set("username", msg.author.tag);
 			await this.userDocument.save();
 		}
 	}

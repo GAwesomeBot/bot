@@ -17,7 +17,9 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 		if (serverDocument.extensions.length) {
 			for (const extension of serverDocument.extensions) {
 				if (extension.type === "command" && msg.suffix.trim().toLowerCase() === extension.key) {
-					description.push(getCommandHelp(extension.key, "Extension", extension.usage_help, extension.extended_help));
+					const extensionDocument = await Gallery.findOneByObjectID(extension._id);
+					const versionDocument = extensionDocument.versions.id(extension.version);
+					description.push(getCommandHelp(extension.key, "Extension", versionDocument.usage_help, versionDocument.extended_help));
 					// We won't add any more extensions with the same key
 					// If you have two or more of them, you're doing it wrong!
 					break;
@@ -59,7 +61,9 @@ module.exports = async ({ client, Constants: { Colors, CategoryEmojiMap, HelpMen
 			if (memberBotAdminLevel >= extension.admin_level) {
 				const string = `${msg.guild.commandPrefix}${extension.key}`;
 				if (string.length > longest) longest = string.length;
-				commands["Extensions ⚙️"].temp.push([string, extension.usage_help || "No usage help provided."]);
+				const extensionDocument = await Gallery.findOneByObjectID(extension._id);
+				const versionDocument = extensionDocument.versions.id(extension.version);
+				commands["Extensions ⚙️"].temp.push([string, versionDocument.usage_help || "No usage help provided."]);
 			}
 		}
 	}

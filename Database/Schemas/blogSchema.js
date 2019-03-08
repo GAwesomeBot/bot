@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+const Schema = require("./Schema");
 
 /*
  * Schema for Blog Entries
  */
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	title: {
 		type: String,
 		minlength: 10,
@@ -33,17 +33,15 @@ module.exports = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	reactions: [
-		{
-			_id: {
-				type: String,
-				required: true,
-			},
-			value: {
-				type: Number,
-				min: -1,
-				max: 1,
-			},
+	reactions: [new Schema({
+		_id: {
+			type: String,
+			required: true,
 		},
-	],
-}, { usePushEach: true });
+		value: {
+			type: Number,
+			min: -1,
+			max: 1,
+		},
+	})],
+});

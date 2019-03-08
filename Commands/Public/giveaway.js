@@ -1,6 +1,6 @@
 const { Giveaways } = require("../../Modules/");
 
-module.exports = async ({ client, Constants: { Colors } }, { serverDocument, channelDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors } }, { serverDocument, channelDocument, channelQueryDocument }, msg, commandData) => {
 	if (channelDocument.giveaway.isOngoing) {
 		if (msg.suffix) {
 			if (["enroll", "join"].includes(msg.suffix.toLowerCase().trim())) {
@@ -22,7 +22,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, cha
 						},
 					});
 				} else {
-					channelDocument.giveaway.participant_ids.push(msg.author.id);
+					channelQueryDocument.push("giveaway.participant_ids", msg.author.id);
 					msg.reply({
 						embed: {
 							color: Colors.SUCCESS,

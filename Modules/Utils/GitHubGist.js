@@ -1,5 +1,6 @@
 const RegExpMaker = require("./RegExpMaker.js");
 const snekfetch = require("snekfetch");
+const { UserAgent } = require("../../Internals/Constants");
 const { discord, tokens } = require("../../Configurations/auth.js");
 const { gistKey } = tokens;
 
@@ -8,7 +9,7 @@ module.exports = class GitHubGist {
 		this.client = client;
 		this.public = gistKey === "";
 		this.headers = {
-			"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+			"User-Agent": UserAgent,
 			Accept: "application/json",
 			"Content-Type": "application/json",
 		};

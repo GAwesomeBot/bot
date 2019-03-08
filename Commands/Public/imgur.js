@@ -2,8 +2,8 @@ const { Imgur } = require("../../Modules/index");
 const { IsURL } = require("../../Modules/Utils/index");
 const { tokens: { imgurClientID } } = require("../../Configurations/auth");
 
-module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
-	const imgur = new Imgur(imgurClientID);
+module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg, commandData) => {
+	const imgur = new Imgur(serverDocument.config.custom_api_keys.imgur_client_id || imgurClientID);
 
 	if (msg.suffix === "credits" && configJSON.maintainers.includes(msg.author.id)) {
 		const c = await imgur.getCredits();
@@ -25,16 +25,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		filesToUpload = filesToUpload.concat(msg.suffix.split(" ").trimAll().filter(IsURL));
 	}
 	if (!filesToUpload.length) {
-		return msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `What should I upload? 😕`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				footer: {
-					text: `Protip: You can use multiple URLs (separated by spaces) or attachments to upload them in one album!`,
-				},
-			},
-		});
+		return msg.sendInvalidUsage(commandData, "What should I upload? 😕", "Protip: You can use multiple URLs (separated by spaces) or attachments to upload them in one album!");
 	}
 	await msg.send({
 		embed: {

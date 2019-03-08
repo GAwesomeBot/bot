@@ -3,7 +3,6 @@
 <head>
 	<title><%= serverData.name %> Tags - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTag() {
 		var newTagName = $("#new-tag-name");
@@ -23,7 +22,7 @@
 		}
 
 		if(newTagName.val() && newTagContent.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -33,7 +32,7 @@
 					"new-content": newTagContent.val()
 				},
 				success: function() {
-					hide_update_modal = true;
+					GAwesomeData.HUM = true;
 				  	Turbolinks.visit('');
 				}
 			});
@@ -41,7 +40,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -60,12 +59,12 @@
 							GAwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax. Locking a tag prevents the tag from being removed using the <code>tag</code> command, admins excluded.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<h4 class="subtitle is-4">
 							General
 						</h4>
 						<div class="command-items">
-						<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
+						<% const commandData = configData.commands.tag; commandData.name = "tag"; commandData.description = pageData.commandDescriptions.tag; commandData.category = pageData.commandCategories.tag; %>
 						<% include ../partials/admin-command-item %>
 						</div>
 							<div class="field tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
@@ -73,8 +72,8 @@
 									List all tags:
 									<div class="select is-primary is-small">
 										<select name="listIsAdminOnly">
-											<option value="false" <%= configData.tags.listIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.listIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.listIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.listIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</div>
 								</div>
@@ -82,8 +81,8 @@
 									Add tags:
 									<div class="select is-primary is-small">
 										<select name="addingIsAdminOnly">
-											<option value="false" <%= configData.tags.addingIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.addingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.addingIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.addingIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</div>
 								</div>
@@ -91,8 +90,8 @@
 									Add tag commands:
 									<span class="select is-primary is-small">
 										<select name="addingCommandIsAdminOnly">
-											<option value="false" <%= configData.tags.addingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.addingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.addingCommandIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.addingCommandIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -100,8 +99,8 @@
 									Remove tags:
 									<span class="select is-primary is-small">
 										<select name="removingIsAdminOnly">
-											<option value="false" <%= configData.tags.removingIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.removingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.removingIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.removingIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -109,8 +108,8 @@
 									Remove tag commands:
 									<span class="select is-primary is-small">
 										<select name="removingCommandIsAdminOnly">
-											<option value="false" <%= configData.tags.removingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.removingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.removingCommandIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.removingCommandIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -132,20 +131,20 @@
 										</tr>
 									</thead>
 									<tbody>
-										<% for(var i=0; i<configData.tags.list.length; i++) { %>
+										<% configData.tags.list.forEach(tag => { %>
 											<tr>
 												<td>
-													<%= configData.tags.list[i]._id %>
+													<%= tag._id %>
 												</td>
 												<td>
-													<%- configData.tags.list[i].content %>
+													<%- tag.content %>
 												</td>
 												<td>
 													<p class="control">
 														<span class="select is-primary is-small">
-															<select name="tag-<%= configData.tags.list[i]._id %>-isCommand">
-																<option value="text" <%= configData.tags.list[i].isCommand ? "" : "selected" %>>Text</option>
-																<option value="command" <%= configData.tags.list[i].isCommand ? "selected" : "" %>>Command</option>
+															<select name="tag-<%= tag._id %>-isCommand">
+																<option value="text"<%= tag.isCommand ? "" : " selected" %>>Text</option>
+																<option value="command"<%= tag.isCommand ? " selected" : "" %>>Command</option>
 															</select>
 														</span>
 													</p>
@@ -153,12 +152,12 @@
 												<td>
 													<p class="control">
 														<label class="checkbox">
-															<input name="tag-<%= configData.tags.list[i]._id %>-isLocked" type="checkbox" <%= configData.tags.list[i].isLocked ? "checked" : "" %>>
+															<input name="tag-<%= tag._id %>-isLocked" type="checkbox"<%= tag.isLocked ? " checked" : "" %>>
 														</label>
 													</p>
 												</td>
 												<td>
-													<button class="button is-small is-danger" name="<%= configData.tags.list[i]._id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+													<button class="button is-small is-danger" name="<%= tag._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
@@ -166,7 +165,7 @@
 													</button>
 												</td>
 											</tr>
-										<% } %>
+										<% }); %>
 									</tbody>
 								</table>
 							</div>
@@ -174,7 +173,7 @@
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-tag-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+											<input id="new-tag-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 										</div>
 										<div class="control">
 											<span class="select is-primary">

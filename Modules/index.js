@@ -1,5 +1,6 @@
 module.exports = {
-	Cache: require("./Cache.js"),
+	GAwesomeClient: require("./GAwesomeClient.js"),
+
 	ConversionHandler: require("./ConversionHandler.js"),
 	Encryption: require("./Encryption"),
 	ExtensionRunner: require("./ExtensionRunner.js"),
@@ -18,8 +19,10 @@ module.exports = {
 	PostTotalData: require("./PostTotalData.js"),
 	RandomAnimals: require("./RandomAnimals.js"),
 	StringJS: require("./String"),
+	Temp: require("./Temp"),
 	Traffic: require("./Traffic.js"),
 	Trivia: require("./Trivia.js"),
-	Updater: require("./Updater.js"),
 	Utils: require("./Utils/index"),
+	VoiceStatsCollector: require("./VoiceStatsCollector"),
+	Voicetext: require("./Voicetext"),
 };

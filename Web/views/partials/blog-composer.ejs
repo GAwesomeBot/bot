@@ -1,11 +1,11 @@
 <h3 class="subtitle is-3">
-    <%- data.title ? ("Edit <strong>" + data.title + "</strong>") : "Write a new post" %>
+    <%- pageData.data.title ? ("Edit <strong>" + pageData.data.title + "</strong>") : "Write a new post" %>
 </h3>
-<form id="form" action="/blog/<%= data.id ? data.id : "new" %>/compose" method="post">
+<form id="form" action="/blog/<%= pageData.data.id ? pageData.data.id : "new" %>/compose" method="post">
     <div class="field">
         <label class="label">Title</label>
 	    <div class="control">
-		    <input id="composer-title" name="title" class="input is-primary" type="text" value="<%= data.title %>" minlength="10" maxlength="100" required>
+		    <input id="composer-title" name="title" class="input is-primary" type="text" value="<%= pageData.data.title %>" minlength="10" maxlength="100" required>
 		    <span class="help">Name of the post. Be concise and informative.</span>
 	    </div>
     </div>
@@ -15,11 +15,11 @@
         <div class="control">
             <span class="select is-primary">
                 <select name="category">
-                    <option <%= data.category=="Development" ? "selected" : "" %>>Development</option>
-                    <option <%= data.category=="Announcement" ? "selected" : "" %>>Announcement</option>
-                    <option <%= data.category=="New Stuff" ? "selected" : "" %>>New Stuff</option>
-                    <option <%= data.category=="Tutorial" ? "selected" : "" %>>Tutorial</option>
-                    <option <%= data.category=="Random" ? "selected" : "" %>>Random</option>
+                    <option <%= pageData.data.category === "Development" ? "selected" : "" %>>Development</option>
+                    <option <%= pageData.data.category === "Announcement" ? "selected" : "" %>>Announcement</option>
+                    <option <%= pageData.data.category === "New Stuff" ? "selected" : "" %>>New Stuff</option>
+                    <option <%= pageData.data.category === "Tutorial" ? "selected" : "" %>>Tutorial</option>
+                    <option <%= pageData.data.category === "Random" ? "selected" : "" %>>Random</option>
                 </select>
             </span>
         </div>
@@ -28,9 +28,7 @@
     <div class="field">
         <label class="label">Content</label>
         <div class="control">
-        <textarea name="content" id="composer-content" class="textarea is-primary" placeholder="Post content, in markdown" required><%= data.content %></textarea>
-        <script>
-        </script>
+            <textarea name="content" id="composer-content" class="textarea is-primary" placeholder="Post content, in markdown" required><%= pageData.data.content %></textarea>
         </div>
         <span class="help" style="float: right;margin-right: 15px; margin-top: 10px;">Editor by <strong>SimpleMDE</strong></span>
     </div>

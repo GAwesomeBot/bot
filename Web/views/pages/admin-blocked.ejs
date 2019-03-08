@@ -3,9 +3,6 @@
 <head>
 	<title><%= serverData.name %> Blocked - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function newBlock() {
 		var newBlockMember = $("#new-block-member");
@@ -16,7 +13,7 @@
 		}
 
 		if(newBlockMember.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
 				url: "<%= currentPage %>",
@@ -72,16 +69,16 @@
 										</td>
 										<td>
 											<%= blockDocument.name %>
-											<% if(blockDocument.isGlobal) { %>
+											<% if (blockDocument.isGlobal) { %>
 												&nbsp;
 												<span class="tag">Global</span>
-												<% } %>
+											<% } %>
 										</td>
 										<td>
 											<%= blockDocument.id %>
 										</td>
 										<td>
-											<button class="button is-small is-danger" name="<%= blockDocument.id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+											<button class="button is-small is-danger" name="<%= blockDocument.id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
 												<span>Remove</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>
@@ -89,7 +86,7 @@
 											</button>
 										</td>
 									</tr>
-								<% }) %>
+								<% }); %>
 								</tbody>
 							</table>
 						</div>

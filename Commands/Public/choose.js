@@ -15,11 +15,6 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 		});
 	} else {
 		winston.verbose(`No options given for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		msg.sendInvalidUsage(commandData);
 	}
 };

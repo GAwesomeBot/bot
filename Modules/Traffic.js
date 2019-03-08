@@ -29,13 +29,13 @@ class Traffic {
 
 	async flush () {
 		this.winston.verbose(`Flushing traffic data to DB`);
-		this.db.traffic.create({
+		await this.db.traffic.create({
 			_id: Date.now(),
 			pageViews: this.pageViews,
 			authViews: this.authViews,
 			uniqueUsers: this.uniqueUsers,
 		});
-		this.db.traffic.remove({ _id: { $lt: Date.now() - 2629746000 } }).exec();
+		await this.db.traffic.delete({ _id: { $lt: Date.now() - 2629746000 } });
 	}
 
 	async fetch () {
@@ -62,14 +62,13 @@ class Traffic {
 	async data () {
 		const data = {};
 		data.hour = this.pageViews;
-		if (!this.db.traffic) this.db = this.db.get();
-		const rawData = await this.db.traffic.find().exec();
+		const rawData = await this.db.traffic.find({}).exec();
 		data.day = rawData.filter(traffic => (Date.now() - 86400000) < traffic._id);
 		data.days = {};
 		rawData.forEach(traffic => {
 			const day = new Date(traffic._id).getDate();
 			if (!data.days[day]) {
-				data.days[day] = traffic;
+				data.days[day] = traffic.toObject();
 			} else {
 				data.days[day].pageViews += traffic.pageViews;
 				data.days[day].authViews += traffic.authViews;
@@ -78,11 +77,6 @@ class Traffic {
 		});
 		data.week = Object.values(data.days).filter(traffic => (Date.now() - 604800000) < traffic._id);
 		return data;
-	}
-
-	// Temp
-	init () {
-		return true;
 	}
 }
 

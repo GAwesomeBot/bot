@@ -1,49 +1,3 @@
-<% if (serverData) { %>
-<script>
-	GAwesomeData.extensions.servers = <%- JSON.stringify(serverData || []) %>;
-	GAwesomeData.extensions.extensions = <%- JSON.stringify(extensions || []) %>;
-</script>
-<div id="installer-modal" class="modal">
-	<div class="modal-background"></div>
-	<div class="modal-card" style="height: 80%;">
-		<div class="modal-card-head">
-			<p id="installer-title" class="modal-card-title">Installing Extension</p>
-			<button class="delete" aria-label="close" onclick="GAwesomeUtil.cancelInstall();"></button>
-		</div>
-		<div id="installer-box" class="modal-card-body" style="height: 100%;">
-			<div style="height: 90%; overflow: overlay;">
-				<h4 id="installer-subtitle" class="subtitle has-text-centered is-4">Extension Information</h4>
-				<form id="installer-form" onsubmit="return false;">
-                    <div id="installer-selector" class="field">
-                        <div class="control has-text-centered">
-                            <div class="select is-primary">
-                                <select id="installer-serverSelect" onchange="$('#installer-loading').show(); GAwesomeUtil.switchInstallTarget();">
-                                    <option value="select">Select a server</option>
-                                    <% serverData.forEach(server => { %>
-                                        <option value="<%= server.id %>"><%- server.name %></option>
-                                    <% }); %>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="installer-content" class="has-text-centered">
-                    </div>
-					<div id="installer-loading" class="installspinner" style="display: none;">
-						<div class="cube1"></div>
-						<div class="cube2"></div>
-					</div>
-				</form>
-			</div>
-			<div id="installer-control" class="has-text-centered" style="height: 10%; visibility: hidden;">
-				<button id="installer-continue" class="button is-info" onclick="GAwesomeUtil.advanceInstall();">Install</button>
-			</div>
-		</div>
-		<div class="modal-card-foot">
-			<progress id="installer-progress" class="progress is-info" value="0" max="100"></progress>
-		</div>
-	</div>
-</div>
-<% } %>
 <div id="typeDescription-event" class="modal">
 	<div class="modal-background"></div>
 	<div class="modal-content">
@@ -128,85 +82,111 @@
 	<button class="modal-close is-large"></button>
 </div>
 
-<% if(extensions.length>0) { %>
+<div id="extensions-gallery">
+	<% if (pageData.mode === "queue") { %>
+	<article class="message is-danger" title="Even Speedwagon is afraid!">
+		<div class="message-body">
+			<div class="has-text-centered">
+				<h5 class="title is-5 is-danger-colored">
+					<span class="icon">
+						<i class="fa fa-exclamation-triangle"></i>
+					</span>
+					Stay safe!
+					<span class="icon">
+						<i class="fa fa-exclamation-triangle"></i>
+					</span>
+				</h5>
+			</div>
+			<br>
+			<div class="content">
+				Extensions in the <strong>Gallery Queue</strong> have not been tested or approved by <strong>GAwesomeBot Maintainers</strong>. Extensions from the queue may cause harm to your server or contain offensive or otherwise dangerous content. GAwesomeBot Maintainers are not responsible for any actions taken by unapproved extensions. <strong>You're on your own, kid.</strong>
+			</div>
+		</div>
+	</article>
+	<% } %>
+	<% if (pageData.extensions.length > 0) { %>
 	<div class="columns">
-	<% for(var i=0; i<extensions.length; i++) { %>
-		<div id="card-<%= extensions[i]._id %>" class="column is-one-third">
+	<% pageData.extensions.forEach((extension, i) => { %>
+		<div id="card-<%= extension._id %>" class="column is-one-third">
 			<div class="card is-fullwidth">
 				<header class="card-header">
 					<p class="card-header-title">
-						<%= extensions[i].name %>
+						<%= extension.name %>
 						&nbsp;
-						<span id="featured-<%= extensions[i]._id %>">
-							<% if (extensions[i].featured) { %>
+						<% if (extension.version !== 1) { %>
+							<span class="tag is-info">V<%= extension.version %></span>
+							&nbsp;
+						<% } %>
+						<span id="featured-<%= extension._id %>">
+							<% if (extension.featured) { %>
 								<span class="tag is-primary">Featured</span>
 								&nbsp;
 							<% } %>
 						</span>
 						<span class="tag is-warning">
-							<span id="points-<%= extensions[i]._id %>"><%= extensions[i].points %></span>
+							<span id="points-<%= extension._id %>"><%= extension.points %></span>
 							&nbsp;
 							<span class="icon is-small">
 		                        <i class="fa fa-star"></i>
 		                    </span>
 						</span>
 					</p>
-					<span class="card-header-icon modal-button" title="<%= extensions[i].typeDescription %>" data-target="#typeDescription-<%= extensions[i].type %>">
-						<i class="fa fa-<%= extensions[i].typeIcon %>"></i>
+					<span class="card-header-icon modal-button" title="<%= extension.typeDescription %>" data-target="#typeDescription-<%= extension.type %>">
+						<i class="fa fa-<%= extension.typeIcon %>"></i>
 					</span>
 				</header>
 				<div class="card-content" style="max-height: 155px;overflow-y: scroll;">
 					<div class="content">
-						<%- extensions[i].description %>
+						<%- extension.description %>
 					</div>
 					<div class="media">
 						<div class="media-left">
 							<figure class="image is-32x32">
-								<img src="<%= extensions[i].owner.avatar %>" alt="<%= extensions[i].owner.id %>">
+								<img src="<%= extension.owner.avatar %>" alt="<%= extension.owner.id %>">
 							</figure>
 						</div>
 						<div class="media-content">
-							<p class="title is-5"><%= extensions[i].owner.name + "#" + extensions[i].owner.discriminator %></p>
-							<p class="subtitle is-6" title="<%= extensions[i].rawLastUpdated %>">Last updated <strong><%= extensions[i].relativeLastUpdated %></strong></p>
+							<p class="title is-5"><%= extension.owner.name + "#" + extension.owner.discriminator %></p>
+							<p class="subtitle is-6" title="<%= extension.rawLastUpdated %>">Last updated <strong><%= extension.relativeLastUpdated %></strong></p>
 						</div>
 					</div>
 				</div>
 				<footer class="card-footer">
-					<% if (authUser && serverData.length > 0) { %>
-						<a class="card-footer-item" onclick="GAwesomeUtil.installExtension('<%= extensions[i]._id %>');">
+					<% if (authUser && pageData.serverData.length > 0) { %>
+						<a class="card-footer-item" onclick="GAwesomeUtil.openExtensionInstaller('<%= extension._id %>', <%= extension.version %>);">
 							Install
 						</a>
 					<% } %>
-					<a class="card-footer-item" href="/extensions/<%= extensions[i]._id %>" download="<%= extensions[i].name %>.gabext">
+					<a class="card-footer-item" href="/extensions/<%= extension._id %>" download="<%= extension.name %>.gabext">
 						Download
 					</a>
 					<% if (authUser) { %>
-						<a id="vote-<%= extensions[i]._id %>" class="card-footer-item" onclick="GAwesomeUtil.voteExtension('<%= extensions[i]._id %>');">
-							<%= !upvotedData.includes(String(extensions[i]._id)) ? "+1" : "-1" %>
+						<a id="vote-<%= extension._id %>" class="card-footer-item" onclick="GAwesomeUtil.voteExtension('<%= extension._id %>');">
+							<%= !pageData.upvotedData.includes(String(extension._id)) ? "+1" : "-1" %>
 						</a>
 						<% if (isMaintainer) { %>
-							<% if (mode === "gallery") { %>
-								<a id="feature-<%= extensions[i]._id %>" class="card-footer-item" onclick="GAwesomeUtil.featureExtension('<%= extensions[i]._id %>');">
-									<%= extensions[i].featured ? "Unfeature" : "Feature" %>
+							<% if (pageData.mode === "gallery") { %>
+								<a id="feature-<%= extension._id %>" class="card-footer-item" onclick="GAwesomeUtil.featureExtension('<%= extension._id %>');">
+									<%= extension.featured ? "Unfeature" : "Feature" %>
 								</a>
-                    			<% if (authUser.id !== extensions[i].owner.id) { %>
-									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.removeExtension('<%= extensions[i]._id %>');">
+                    			<% if (authUser.id !== extension.owner.id) { %>
+									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.removeExtension('<%= extension._id %>');">
 										Remove
 									</a>
 								<% } %>
-							<% } else if (mode === "queue") { %>
-								<a class="card-footer-item" onclick="GAwesomeUtil.acceptExtension('<%= extensions[i]._id %>');">
+							<% } else if (pageData.mode === "queue") { %>
+								<a class="card-footer-item" onclick="GAwesomeUtil.acceptExtension('<%= extension._id %>');">
 									Accept
 								</a>
-								<% if (authUser.id !== extensions[i].owner.id) { %>
-									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.rejectExtension('<%= extensions[i]._id %>');">
+								<% if (authUser.id !== extension.owner.id || extension.level === "third") { %>
+									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.rejectExtension('<%= extension._id %>');">
 										Reject
 									</a>
 								<% } %>
 							<% } %>
 						<% } %>
-						<% if (authUser.id === extensions[i].owner.id) { %>
-							<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.unpublishExtension('<%= extensions[i]._id %>');">
+						<% if (authUser.id === extension.owner.id && extension.level === "gallery") { %>
+							<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.unpublishExtension('<%= extension._id %>');">
 								Unpublish
 							</a>
 						<% } %>
@@ -215,63 +195,64 @@
 			</div>
 		</div>
 
-		<% if(i % 3==2 && i!=extensions.length-1 && i!=0) { %>
+		<% if (i % 3 === 2 && i !== pageData.extensions.length - 1 && i !== 0) { %>
 			</div>
 			<div class="columns">
 		<% } %>
-	<% } %>
+	<% }); %>
 	</div>
 <% } else { %>
-	<% var resetUrl = "/extensions/" + mode; %>
-	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode }) %>
+	<% const resetUrl = "/extensions/" + pageData.mode; %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery: pageData.activeSearchQuery, resetUrl, mode: pageData.mode }) %>
 <% } %>
-<% if(numPages>1) { %>
+<% if (pageData.numPages > 1) { %>
 	<br>
 	<nav class="pagination">
 		<ul>
-			<% if(currentPage>2) { %>
+			<% if (pageData.currentPage > 2) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=1">
+					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=1">
 						1
 					</a>
 				</li>
 			<% } %>
-			<% if(currentPage>3) { %>
+			<% if (pageData.currentPage > 3) { %>
 				<li>
 					<span>...</span>
 				</li>
 			<% } %>
-			<% if(currentPage>1) { %>
+			<% if (pageData.currentPage > 1) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= currentPage-1 %>">
-						<%= currentPage-1 %>
+					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage - 1 %>">
+						<%= pageData.currentPage - 1 %>
 					</a>
 				</li>
 			<% } %>
 			<li>
-				<a class="button is-primary" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= currentPage %>">
-					<%= currentPage %>
+				<a class="button is-primary" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>">
+					<%= pageData.currentPage %>
 				</a>
 			</li>
-			<% if(currentPage<numPages) { %>
+			<% if (pageData.currentPage < pageData.numPages) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= currentPage+1 %>">
-						<%= currentPage+1 %>
+					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage + 1 %>">
+						<%= pageData.currentPage + 1 %>
 					</a>
 				</li>
 			<% } %>
-			<% if(currentPage<numPages-2) { %>
+			<% if(pageData.currentPage < pageData.numPages - 2) { %>
 				<li>
 					<span>...</span>
 				</li>
 			<% } %>
-			<% if(currentPage<numPages-1) { %>
+			<% if(pageData.currentPage < pageData.numPages - 1) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= numPages %>">
-						<%= numPages %>
+					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.numPages %>">
+						<%= pageData.numPages %>
 					</a>
 				</li>
 			<% } %>
 		</ul>
 	</nav>
 <% } %>
+</div>

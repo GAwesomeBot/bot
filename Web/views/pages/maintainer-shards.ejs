@@ -218,7 +218,7 @@
                         </a>
                         <% } else { %>
                         <div class="card-footer-item" style="opacity: 0.5; cursor: not-allowed; user-select: none;">
-                            You are not authorized to manage this shard.
+                            You are not authorized to manage the master.
                         </div>
                         <% } %>
                     </footer>
@@ -273,6 +273,20 @@
                                     Shard is running with PID <strong><%= configData.data.shards[i].PID %></strong>
                                 </div>
                             </div>
+                            <footer class="card-footer">
+                                <div class="card-footer-item">
+                                    <span class="has-text-<%= configData.data.shards[i].worker.status ? "success" : "danger" %>">
+                                        <span class="icon">
+                                            <i class="fa fa-circle-o"></i>
+                                        </span>
+                                        <% if (configData.data.shards[i].worker.status) { %>
+                                        Extension Worker Online with PID <%= configData.data.shards[i].worker.PID %>
+                                        <% } else { %>
+                                        Extension Worker Offline
+                                        <% } %>
+                                    </span>
+                                </div>
+                            </footer>
                             <footer class="card-footer">
                                 <% if (accessPrivileges.includes("shutdown")) { %>
                                 <% if (!configData.data.shards[i].isFrozen) { %><a id="freeze-<%= configData.data.shards[i].ID %>" class="card-footer-item" href="javascript:freezeShard(<%= configData.data.shards[i].ID %>)">Freeze</a><% } %>

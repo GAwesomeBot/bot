@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const ejs = require("ejs");
 const session = require("express-session");
-const mongooseSessionStore = require("connect-mongo")(session);
+const mongoSessionStore = require("connect-mongo")(session);
 const passport = require("passport");
 const passportSocketIo = require("passport.socketio");
 const discordStrategy = require("passport-discord").Strategy;
@@ -24,16 +24,16 @@ const app = express();
 const listen = async configJS => {
 	const servers = {};
 
-	if (global.configJS.cert && configJS.privKey && configJS.httpsPort) {
+	if (configJS.cert && configJS.privateKey && configJS.httpsPort) {
 		if (configJS.httpsRedirect) {
 			app.use(middleware.enforceProtocol);
 		}
 		let credentials;
 		try {
-			const privKey = await fsn.readFile(configJS.privKey, "utf8");
+			const privateKey = await fsn.readFile(configJS.privateKey, "utf8");
 			const cert = await fsn.readFile(configJS.cert, "utf8");
 			credentials = {
-				key: privKey,
+				key: privateKey,
 				cert: cert,
 			};
 		} catch (err) {
@@ -119,8 +119,8 @@ exports.open = async (client, auth, configJS, winston) => {
 		done(null, id);
 	});
 
-	const sessionStore = new mongooseSessionStore({
-		mongooseConnection: Database.Raw,
+	const sessionStore = new mongoSessionStore({
+		db: Database.client,
 	});
 
 	app.use(session({
@@ -138,11 +138,13 @@ exports.open = async (client, auth, configJS, winston) => {
 	app.use(middleware.logRequest);
 
 	// (Horribly) serve public dir
-	app.use("/static/:type", (req, res, next) => {
-		if (req.get("Accept") && req.get("Accept").includes("image/webp") && req.params.type === "img" && ![".gif", "webp"].includes(req.path.substr(req.path.length - 4))) {
-			res.redirect(`/static/img${req.path.substring(0, req.path.lastIndexOf("."))}.webp`);
+	const staticRouter = express.static(`${__dirname}/public/`, { maxAge: 86400000 });
+	app.use("/static", (req, res, next) => {
+		const fileExtension = req.path.substr(req.path.lastIndexOf("."));
+		if (req.get("Accept") && req.get("Accept").includes("image/webp") && req.path.startsWith("/img") && ![".gif", ".webp"].includes(fileExtension)) {
+			res.redirect(`/static${req.path.substring(0, req.path.lastIndexOf("."))}.webp`);
 		} else {
-			return express.static(`${__dirname}/public/${req.params.type}`, { maxAge: 86400000 })(req, res, next);
+			return staticRouter(req, res, next);
 		}
 	});
 
@@ -162,7 +164,7 @@ exports.open = async (client, auth, configJS, winston) => {
 		const { namespace } = msg;
 		const param = msg.location;
 		try {
-			io.of(namespace).emit("update", param);
+			io.of(namespace).emit("update", { location: param, author: msg.author });
 			if (param === "maintainer") global.configJSON = reload("../Configurations/config.json");
 		} catch (err) {
 			winston.warn("An error occurred while handling a dashboard WebSocket!", err);

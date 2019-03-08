@@ -4,6 +4,8 @@ const ArgParser = require("../../Modules/MessageUtils/Parser");
 module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { serverDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		let [inputMember, ...reason] = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
+		let days = 1;
+		if (!isNaN(reason[0]) && parseInt(reason[0]) < 31) days = parseInt(reason.splice(0, 1));
 		const isJustUserID = /^\d+$/.test(inputMember);
 		let isGuildMember = false, hasReason = true, member = null;
 		if (isJustUserID) {
@@ -29,11 +31,11 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			}
 		}
 		reason = (hasReason && reason.length && reason.join(" ")) || "Unspecified reason...";
-		const { canClientBan, memberAboveAffected } = await client.canDoActionOnMember(msg.guild, msg.member, (isGuildMember && member) || null, "ban");
+		const { canClientBan, memberAboveAffected } = client.canDoActionOnMember(msg.guild, msg.member, (isGuildMember && member) || null, "ban");
 		if (!canClientBan) {
 			return msg.send({
 				embed: {
-					color: Colors.RED,
+					color: Colors.SOFT_ERR,
 					title: `I'm sorry, but I can't do that... 😔`,
 					description: `I'm missing permissions to ban that user!\nEither they are above me or I don't have the **Ban Members** permission.`,
 				},
@@ -42,7 +44,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 		if (!memberAboveAffected) {
 			return msg.send({
 				embed: {
-					color: Colors.RED,
+					color: Colors.MISSING_PERMS,
 					title: `I'm sorry, but I cannot let you do that! 😶`,
 					description: `You cannot ban someone who's above you! That's dumb!`,
 				},
@@ -63,7 +65,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					await client.users.get(id).send({
 						embed: {
 							color: Colors.RED,
-							description: `Oh snap, you just got banned from \`${msg.guild}\`!`,
+							description: `Oh snap, you just got banned from \`${msg.guild}\`! 🔨`,
 							fields: [
 								{
 									name: `Reason`,
@@ -71,7 +73,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 									inline: true,
 								},
 								{
-									name: `Staff Member`,
+									name: `Moderator`,
 									value: `@${msg.author.tag}`,
 									inline: true,
 								},
@@ -90,7 +92,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			msg.send({
 				embed: {
 					color: Colors.INPUT,
-					title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input..`,
+					title: `Waiting on @__${client.getName(serverDocument, msg.member)}__'s input...`,
 					description: `${isJustUserID ? `Are you sure you want to ban **@${isGuildMember ? `${client.getName(serverDocument, member)} (${member})` : member.tag}**?` : `Are you sure you want to ban **@${client.getName(serverDocument, member)} (${member})**?`}\n\nThey will be banned for\`\`\`css\n${reason}\`\`\``,
 					footer: {
 						text: `They won't be able to join again until they get unbanned!`,
@@ -115,9 +117,9 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					}
 					if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
 						if (isGuildMember) {
-							member.ban({ days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+							member.ban({ days, reason: `${reason} | Command issued by @${msg.author.tag}` });
 						} else {
-							msg.guild.members.ban(member.id, { days: 1, reason: `${reason} | Command issued by @${msg.author.tag}` });
+							msg.guild.members.ban(member.id, { days, reason: `${reason} | Command issued by @${msg.author.tag}` });
 						}
 						dmBanned(member.id);
 						await CreateModLog(msg.guild, "Ban", member, msg.author, reason);
@@ -136,21 +138,15 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
-					description: `I couldn't find a matching member on this server...`,
+					description: `I couldn't find a matching member in this guild... 🧐`,
 					footer: {
-						text: `If you have a user ID you can run "${msg.guild.commandPrefix}${commandData.name} ID" to ban them!`,
+						text: `If you have a user ID you can run "${msg.guild.commandPrefix}${commandData.name} <ID>" to ban them!`,
 					},
 				},
 			});
 		}
 	} else {
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `Do you want me to ban you? 😮`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		msg.sendInvalidUsage(commandData, "Do you want me to ban you? 😮");
 		const collector = msg.channel.createMessageCollector(
 			m => m.author.id === msg.author.id,
 			{ time: 60000 }
@@ -162,15 +158,15 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 			}
 			if (message.content) {
 				collector.stop();
-				try {
-					await message.delete();
-				} catch (_) {
-					// Meh
-				}
 				if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
+					try {
+						await message.delete();
+					} catch (_) {
+						// Meh
+					}
 					msg.send({
 						embed: {
-							color: Colors.SOFT_ERR,
+							color: Colors.LIGHT_RED,
 							description: `Ok! Bye-Bye!`,
 							footer: {
 								text: `Just kidding! I'd never ban you. ❤️`,

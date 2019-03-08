@@ -2,7 +2,7 @@ const GetValue = require("./GetValue.js");
 
 /* eslint-disable max-len */
 module.exports = client => {
-	const properties = 9;
+	const properties = 10;
 	/**
 	 * Removes null objects from an array
 	 * @returns {Array} The array without the null objects
@@ -16,6 +16,12 @@ module.exports = client => {
 				}
 			}
 			return this;
+		},
+	});
+
+	Object.assign(Array.prototype, {
+		id (id) {
+			return this.find(a => a._id === id || a.id === id);
 		},
 	});
 
@@ -133,21 +139,23 @@ module.exports = client => {
 		return original;
 	};
 
-	/**
-	 * Total count of users or guilds across all shards.
-	 * @returns {Number}
-	 */
-	Object.defineProperty(client.guilds, "totalCount", {
-		get: async function get () {
-			return GetValue(client, "guilds.size", "int");
-		},
-	});
+	if (client) {
+		/**
+		 * Total count of users or guilds across all shards.
+		 * @returns {Number}
+		 */
+		Object.defineProperty(client.guilds, "totalCount", {
+			get: async function get () {
+				return GetValue(client, "guilds.size", "int");
+			},
+		});
 
-	Object.defineProperty(client.users, "totalCount", {
-		get: async function get () {
-			return GetValue(client, "users.size", "int");
-		},
-	});
+		Object.defineProperty(client.users, "totalCount", {
+			get: async function get () {
+				return GetValue(client, "users.size", "int");
+			},
+		});
+	}
 
 	winston.silly(`Loaded ${properties} Object.assigns`);
 };

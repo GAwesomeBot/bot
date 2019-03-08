@@ -3,10 +3,6 @@
 <head>
 	<title><%= serverData.name %> Muted - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newMute() {
 		var newMutedMember = $("#new-mute-member");
@@ -27,7 +23,7 @@
 					"new-channel_id": newMutedChannel.val()
 				},
 				success: function() {
-					saveFormState();
+					GAwesomeUtil.SFS();
 				  	Turbolinks.visit('');
 				}
 			});
@@ -35,7 +31,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -56,10 +52,10 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field" style="overflow-x: scroll;">
-                            <%- include("../partials/no-results", { isHidden: muted.length, isSearchQuery: false, description: "There are no muted members in any channel on this server. Type the name of a user below to mute someone." }) %>
-							<table class="table is-fullwidth<%= muted.length ? "" : " is-hidden" %>">
+                            <%- include("../partials/no-results", { isHidden: configData.muted.length, isSearchQuery: false, description: "There are no muted members in any channel on this server. Type the name of a user below to mute someone." }) %>
+							<table class="table is-fullwidth<%= configData.muted.length ? "" : " is-hidden" %>">
 								<thead>
 									<tr>
 										<th></th>
@@ -69,7 +65,7 @@
 									</tr>
 								</thead>
 								<tbody>
-									<% muted.forEach(muteDocument => { %>
+									<% configData.muted.forEach(muteDocument => { %>
 										<tr>
 											<td>
 												<img class="image is-24x24" src="<%= muteDocument.avatar %>" alt="<%= muteDocument.id %>">
@@ -87,7 +83,7 @@
 													</span>
 													<span>Channels</span>
 												</a>
-												<button class="button is-small is-danger" name="<%= muteDocument.id %>" onclick="GAwesomeUtil.dashboard.removeElement(this); return false;">
+												<button class="button is-small is-danger" name="<%= muteDocument.id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
 													<span>Remove</span>
 													<span class="icon is-small">
 														<i class="fa fa-times"></i>
@@ -101,13 +97,13 @@
 																<h4 class="subtitle is-4">
 																	Muted channels for <strong>@<%= muteDocument.name %></strong>
 																</h4>
-                                                        		<% for(var j=0; j<channelData.length; j++) { %>
+                                                        		<% pageData.channelData.forEach(channel => { %>
 																	<label class="checkbox">
-																		<input name="muted-<%= muteDocument.id %>-<%= channelData[j].id %>" type="checkbox" <%= muteDocument.channels.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-																		#<%= channelData[j].name %>
+																		<input name="muted-<%= muteDocument.id %>-<%= channel.id %>" type="checkbox" <%= muteDocument.channels.includes(channel.id) ? "checked" : "" %>>
+																		#<%= channel.name %>
 																	</label>
 																	<br>
-																<% } %>
+																<% }); %>
 															</div>
 														</div>
 													</div>
@@ -125,14 +121,14 @@
 									<div class="control">
 										<span class="select is-primary">
 											<select id="new-mute-channel_id">
-												<% for(var i=0; i<channelData.length; i++) { %>
-													<option value="<%= channelData[i].id %>">#<%= channelData[i].name %></option>
-												<% } %>
+												<% pageData.channelData.forEach(channel => { %>
+													<option value="<%= channel.id %>">#<%= channel.name %></option>
+												<% }); %>
 											</select>
 										</span>
 									</div>
 									<div class="control is-expanded">
-										<input id="new-mute-member" class="input is-primary user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-mute-member" class="input is-primary user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<a class="button is-primary" onclick="newMute(); return false;">

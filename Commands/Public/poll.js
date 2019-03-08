@@ -1,7 +1,7 @@
 const { Polls } = require("../../Modules/");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors } }, { channelDocument, channelQueryDocument }, msg, commandData) => {
 	if (channelDocument.poll.isOngoing) {
 		if (msg.suffix) {
 			const voteDocument = channelDocument.poll.responses.id(msg.author.id);
@@ -26,7 +26,7 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocu
 				}
 
 				if (vote || vote === 0) {
-					channelDocument.poll.responses.push({
+					channelQueryDocument.push("poll.responses", {
 						_id: msg.author.id,
 						vote,
 					});
@@ -58,15 +58,17 @@ module.exports = async ({ Constants: { Colors } }, { serverDocument, channelDocu
 				].join("\n"));
 			});
 			map = map.chunk(10);
-			const options = [];
+			const descriptions = [];
 			for (const innerArray of map) {
-				options.push(innerArray.join("\n"));
+				descriptions.push(innerArray.join("\n"));
 			}
-			const menu = new PaginatedEmbed(msg, options, {
+			const menu = new PaginatedEmbed(msg, {
 				footer: `So far, the winner is "${results.winner || "nobody!"}" They have the most votes out of ${channelDocument.poll.responses.length} total vote${channelDocument.poll.responses.length === 1 ? "" : "s"} ✅`,
 				color: Colors.INFO,
 				title: `🔮 Ongoing results for the poll "${channelDocument.poll.title}"`,
 				description: `Use \`${msg.guild.commandPrefix}poll <no. of option>\` here or PM me \`poll ${msg.guild.name} | #${msg.channel.name}\` to vote. 🗳\n\n{description}`,
+			}, {
+				descriptions,
 			});
 			await menu.init();
 		}

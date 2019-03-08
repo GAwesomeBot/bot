@@ -78,22 +78,10 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 			}
 		} else {
 			winston.verbose(`Invalid parameter received for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-			msg.send({
-				embed: {
-					color: Colors.INVALID,
-					title: `That doesn't seem right to me. 🤔`,
-					description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				},
-			});
+			msg.sendInvalidUsage(commandData, "That doesn't seem right to me. 🤔");
 		}
 	} else {
 		winston.verbose(`URL not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `What URL would you want to expand today?`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		msg.sendInvalidUsage(commandData, "What URL would you want to expand today?");
 	}
 };

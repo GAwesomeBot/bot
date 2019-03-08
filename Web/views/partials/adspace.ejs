@@ -1,0 +1,10 @@
+<% if (officialMode && adsense.isEnabled) { %>
+    <%# Ads are enabled by maintainer and adsPreference cookie, but may still not be displayed on client due to, for example, adblocking software %>
+    <p>
+        <i>Advertisement - <a href="/donate" class="hero-text-link">Hide ads</a></i>
+    </p>
+    <%# Your ad here! %>
+    <br>
+<% } else { %>
+    <%# Ads are disabled by maintainer or adsPreference %>
+<% } %>

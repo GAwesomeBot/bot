@@ -3,9 +3,8 @@
 <head>
 	<title><%= serverData.name %> Command List - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -34,7 +33,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field">
 							<a class="button modal-button" data-target="#command-preset-modal">
 								<span class="icon is-small">
@@ -67,13 +66,13 @@
 										</div>
 										<div class="field">
 											<label class="label">Channel(s)</label>
-											<% for(var i=0; i<channelData.length; i++) { %>
+											<% pageData.channelData.forEach(channel => { %>
 												<label class="checkbox">
-												<input name="preset-disabled_channel_ids-<%= channelData[i].id %>" class="preset-disabled_channel_ids" type="checkbox" checked>
-													#<%= channelData[i].name %>
+												<input name="preset-disabled_channel_ids-<%= channel.id %>" class="preset-disabled_channel_ids" type="checkbox" checked>
+													#<%= channel.name %>
 												</label>
 												<br>
-											<% } %>
+											<% }); %>
 										</div>
 										<div class="field">
 											<div class="control has-addons">
@@ -87,7 +86,7 @@
 											<span class="help">Commands will run only in these channels.</span>
 										</div>
 										<input type="checkbox" id="preset-applied" name="preset-applied" style="display: none;">
-										<button name="preset-applied" class="button is-primary" onclick="$('#preset-applied').attr('checked', true); saveFormState(); Turbolinks.visit('');">
+										<button name="preset-applied" class="button is-primary" onclick="$('#preset-applied').attr('checked', true); GAwesomeUtil.SFS(); Turbolinks.visit('');">
 											<span class="icon is-small">
 												<i class="fa fa-asterisk"></i>
 											</span>
@@ -98,12 +97,12 @@
 							</div>
 							<a class="modal-close"></a>
 						</div>
-							<% for (var category in commandCategories) { %>
+							<% for (var category in pageData.commandCategories) { %>
 								<div class="is-divider" data-content="<%= category %>"></div>
 								<div class="command-items">
-									<% for (let command of commandCategories[category]) { %>
+									<% for (let command of pageData.commandCategories[category]) { %>
 										<% if (command.name !== "stats") { %>
-											<% var commandData = configData.commands[command.name];commandData.name = command.name;commandData.description = command.description;commandData.category = command.category; %>
+											<% const commandData = configData.commands[command.name]; commandData.name = command.name; commandData.description = command.description; commandData.category = command.category; %>
 											<% include ../partials/admin-command-item %>
 										<% } %>
 									<% } %>

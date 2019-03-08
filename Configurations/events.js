@@ -22,7 +22,7 @@ module.exports = {
 		"GAB.GuildDelete",
 	],
 	guildUpdate: [
-
+		"GAB.GuildUpdate",
 	],
 	guildUnavailable: [
 		"GAB.GuildUnavailable",
@@ -34,10 +34,10 @@ module.exports = {
 		"GAB.GuildMemberAdd",
 	],
 	guildMemberRemove: [
-
+		"GAB.GuildMemberRemove",
 	],
 	guildMemberUpdate: [
-
+		"GAB.GuildMemberUpdate",
 	],
 	guildMemberAvailable: [
 
@@ -52,7 +52,7 @@ module.exports = {
 
 	],
 	roleDelete: [
-
+		"GAB.RoleDelete",
 	],
 	roleUpdate: [
 
@@ -67,16 +67,16 @@ module.exports = {
 
 	],
 	guildBanAdd: [
-
+		"GAB.GuildBanAdd",
 	],
 	guildBanRemove: [
-
+		"GAB.GuildBanRemove",
 	],
 	channelCreate: [
 
 	],
 	channelDelete: [
-
+		"GAB.ChannelDelete",
 	],
 	channelUpdate: [
 
@@ -95,10 +95,11 @@ module.exports = {
 		// "GAB.OtherFilters",
 	],
 	messageDelete: [
-
+		"GAB.MessageDelete",
 	],
 	messageUpdate: [
 		"GAB.MessageCommandUpdateHandler",
+		"GAB.MessageUpdate",
 	],
 	messageDeleteBulk: [
 
@@ -114,12 +115,13 @@ module.exports = {
 	],
 	userUpdate: [
 		"GAB.UpdateUsername",
+		"GAB.UserUpdate",
 	],
 	presenceUpdate: [
-
+		"GAB.PresenceUpdate",
 	],
 	voiceStateUpdate: [
-
+		"GAB.VoiceStateUpdate",
 	],
 	disconnect: [
 

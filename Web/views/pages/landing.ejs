@@ -5,48 +5,31 @@
 	<% include ../partials/head %>
 
 	<style type="text/css">
-	@media screen and (max-width: 420px) {
-		#gawesomebot-title {
-			font-size: 42px;
-		}
-	}
-	@media screen and (min-width: 321px) and (max-width: 768px) {
-		#gawesomebot-title {
-			font-size: 46px;
-		}
-		#gawesomebot-subtitle {
-			font-size: 30px;
-		}
+	@media screen and (max-width: 768px) {
 		#gawesomebot-discord {
-			height: 31px;
+			height: 1.5rem;
 		}
 	}
 	@media screen and (min-width: 769px) {
-		#gawesomebot-title {
-			font-size: 96px;
-		}
-		#gawesomebot-subtitle {
-			font-size: 40px;
-		}
 		#gawesomebot-discord {
-			height: 42px;
+			height: 2.5rem;
 		}
 	}
 	</style>
 </head>
 <body>
-	<section id="header" class="hero is-primary is-fullheight is-bold" style="background: url('/header-image');background-size: cover;">
+	<section id="header" class="main-header-section hero is-primary is-fullheight is-bold">
 		<div class="hero-head">
 			<% include ../partials/header %>
 		</div>
 		<div class="hero-body">
 			<div class="container has-text-centered">
 				<img src="/static/img/icon.png" style="border-radius: 100%;width:200px;">
-				<h1 id="gawesomebot-title" class="title is-1" style="font-family: Montserrat;">
+				<h1 id="gawesomebot-title" class="title is-1 is-size-3-mobile" style="font-family: Montserrat;">
 					<span style="display: inline-block;">GAwesomeBot</span>
 				</h1>
-				<h2 id="gawesomebot-subtitle" class="title is-2">
-					The best <img id="gawesomebot-discord" src="/static/img/discord-logo.png" style="vertical-align: top;"> bot!
+				<h2 id="gawesomebot-subtitle" class="title is-2 is-size-4-mobile">
+					The best <img id="gawesomebot-discord" src="/static/img/discord-logo.png" style="vertical-align: middle;padding-bottom: 4px;"> bot!
 				</h2>
 				<br>
 
@@ -60,9 +43,9 @@
 				</p>
 				<br>
 
-				<% if(bannerMessage) { %>
+				<% if (pageData.bannerMessage) { %>
 					<br><br>
-					<h3 class="subtitle is-3"><%- bannerMessage %></h3>
+					<h3 class="subtitle is-3"><%- pageData.bannerMessage %></h3>
 				<% } %>
 			</div>
 		</div>
@@ -219,20 +202,20 @@
 				<nav class="level is-mobile">
 					<div class="level-item has-text-centered">
 						<div>
-							<p class="heading">Server<%= rawServerCount==1 ? "" : "s" %></p>
-							<p class="subtitle is-2"><%= rawServerCount %></p>
+							<p class="heading">Server<%= pageData.rawServerCount === 1 ? "" : "s" %></p>
+							<p class="subtitle is-2"><%= pageData.rawServerCount %></p>
 						</div>
 					</div>
 					<div class="level-item has-text-centered">
 						<div>
-							<p class="heading">User<%= rawUserCount==1 ? "" : "s" %></p>
-							<p class="subtitle is-2"><%= rawUserCount %></p>
+							<p class="heading">User<%= pageData.rawUserCount === 1 ? "" : "s" %></p>
+							<p class="subtitle is-2"><%= pageData.rawUserCount %></p>
 						</div>
 					</div>
-					<div class="level-item has-text-centered" title="<%= rawUptime %>">
+					<div class="level-item has-text-centered" title="<%= pageData.rawUptime %>">
 						<div>
 							<p class="heading">Uptime</p>
-							<p class="subtitle is-2"><%= roundedUptime %></p>
+							<p class="subtitle is-2"><%= pageData.roundedUptime %></p>
 						</div>
 					</div>
 				</nav>
@@ -374,8 +357,8 @@
 		<div class="hero-body">
 			<div class="container has-text-centered">
 				<h2 class="subtitle is-2">
-					<% if (roundedServerCount === 0) {roundedServerCount = rawServerCount} %>
-					There's a reason over <strong><%= roundedServerCount %></strong> servers trust GAwesomeBot.
+					<% if (pageData.roundedServerCount === 0) { pageData.roundedServerCount = pageData.rawServerCount } %>
+					There's a reason over <strong><%= pageData.roundedServerCount %></strong> servers trust GAwesomeBot.
 				</h2>
 				<h3 class="title is-4">
 					It's fun, easy-to-use, and feature-packed.

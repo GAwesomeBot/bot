@@ -9,19 +9,21 @@ const md = new showdown.Converter({
 	tasklists: true,
 	smoothLivePreview: true,
 	smartIndentationFix: true,
+	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
+const { Constants } = require("../Internals");
 const { GetGuild } = require("../Modules").getGuild;
 
 const parsers = module.exports;
 
 parsers.serverData = async (req, serverDocument, webp = false) => {
-	let data;
+	let data = null;
 	const svr = new GetGuild(req.app.client, serverDocument._id);
 	await svr.initialize(["OWNER", req.app.client.user.id]);
 	await svr.fetchProperty("createdAt");
 	if (svr.success) {
-		const owner = req.app.client.users.get(svr.ownerID) || svr.members[svr.ownerID].user;
+		const owner = req.app.client.users.get(svr.ownerID) || svr.members[svr.ownerID] ? svr.members[svr.ownerID].user : { username: "invalid-user", id: "invalid-user" };
 		data = {
 			name: svr.name,
 			id: svr.id,
@@ -99,7 +101,7 @@ parsers.userData = async (req, usr, userDocument) => {
 		userProfile.pastNames = userDocument.past_names;
 		userProfile.afkMessage = userDocument.afk_message;
 		for (const svr of mutualServers) {
-			const owner = svr.members[svr.ownerID];
+			const owner = svr.members[svr.ownerID] || { username: "invalid-user" };
 			userProfile.mutualServers.push({
 				name: svr.name,
 				id: svr.id,
@@ -111,38 +113,50 @@ parsers.userData = async (req, usr, userDocument) => {
 	return userProfile;
 };
 
-parsers.extensionData = async (req, galleryDocument) => {
+parsers.extensionData = async (req, galleryDocument, versionTag) => {
 	const owner = await req.app.client.users.fetch(galleryDocument.owner_id, true) || {};
+	const versionDocument = galleryDocument.versions.id(versionTag || galleryDocument.published_version);
+	if (!versionDocument) return null;
 	let typeIcon, typeDescription;
-	switch (galleryDocument.type) {
+	const typeInfo = {};
+	switch (versionDocument.type) {
 		case "command":
 			typeIcon = "magic";
-			typeDescription = galleryDocument.key;
+			typeDescription = versionDocument.key;
+			typeInfo.key = versionDocument.key;
 			break;
 		case "keyword":
 			typeIcon = "key";
-			typeDescription = galleryDocument.keywords.join(", ");
+			typeDescription = versionDocument.keywords.join(", ");
+			typeInfo.keywords = versionDocument.keywords;
+			typeInfo.case_sensitive = versionDocument.case_sensitive;
 			break;
 		case "timer":
 			typeIcon = "clock-o";
-			if (moment(galleryDocument.interval)) {
-				const interval = moment.duration(galleryDocument.interval);
+			if (moment(versionDocument.interval)) {
+				const interval = moment.duration(versionDocument.interval);
 				typeDescription = `${interval.hours()} hour(s) and ${interval.minutes()} minute(s)`;
 			} else {
-				typeDescription = `${galleryDocument.interval}ms`;
+				typeDescription = `${versionDocument.interval}ms`;
 			}
+			typeInfo.interval = versionDocument.interval;
 			break;
 		case "event":
 			typeIcon = "code";
-			typeDescription = `${galleryDocument.event}`;
+			typeDescription = `${versionDocument.event}`;
+			typeInfo.event = versionDocument.event;
 			break;
 	}
+	const scopes = versionDocument.scopes.map(scope => Constants.Scopes[scope]);
+
 	return {
-		_id: galleryDocument._id,
+		_id: galleryDocument._id.toString(),
 		name: galleryDocument.name,
-		type: galleryDocument.type,
+		version: versionTag || galleryDocument.published_version,
+		type: versionDocument.type,
 		typeIcon,
 		typeDescription,
+		typeInfo,
 		description: md.makeHtml(xssFilters.inHTMLData(galleryDocument.description)),
 		featured: galleryDocument.featured,
 		owner: {
@@ -152,12 +166,14 @@ parsers.extensionData = async (req, galleryDocument) => {
 			avatar: owner.avatarURL() || "/static/img/discord-icon.png",
 		},
 		status: galleryDocument.state,
+		level: galleryDocument.level,
+		accepted: versionDocument.accepted,
 		points: galleryDocument.points,
 		relativeLastUpdated: moment(galleryDocument.last_updated).fromNow(),
 		rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),
-		scopes: galleryDocument.scopes,
-		fields: galleryDocument.fields,
-		timeout: galleryDocument.timeout,
+		scopes,
+		fields: versionDocument.fields,
+		timeout: versionDocument.timeout,
 	};
 };
 
@@ -186,7 +202,7 @@ parsers.blogData = async (req, blogDocument) => {
 	}
 	const avatarURL = (await req.app.client.users.fetch(blogDocument.author_id, true)).avatarURL();
 	return {
-		id: blogDocument._id,
+		id: blogDocument._id.toString(),
 		title: blogDocument.title,
 		author: {
 			name: author.username,
@@ -203,20 +219,21 @@ parsers.blogData = async (req, blogDocument) => {
 
 parsers.commandOptions = (req, command, data) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	const commandData = req.app.client.getPublicCommandMetadata(command);
 	if (commandData) {
 		if (!serverDocument.config.commands[command]) {
-			serverDocument.config.commands[command] = {};
+			serverQueryDocument.set(`config.commands.${command}`, {});
 		}
 		if (commandData.defaults.adminLevel < 4) {
-			serverDocument.config.commands[command].isEnabled = data[`${command}-isEnabled`] === "on";
-			serverDocument.config.commands[command].admin_level = data[`${command}-adminLevel`] || 0;
-			serverDocument.config.commands[command].disabled_channel_ids = [];
+			serverQueryDocument.set(`config.commands.${command}.isEnabled`, data[`${command}-isEnabled`] === "on")
+				.set(`config.commands.${command}.admin_level`, parseInt(data[`${command}-adminLevel`]) || 0)
+				.set(`config.commands.${command}.disabled_channel_ids`, []);
 			Object.values(req.svr.channels).forEach(ch => {
 				if (ch.type === "text") {
 					if (!data[`${command}-disabled_channel_ids-${ch.id}`]) {
-						serverDocument.config.commands[command].disabled_channel_ids.push(ch.id);
+						serverQueryDocument.push(`config.commands.${command}.disabled_channel_ids`, ch.id);
 					}
 				}
 			});

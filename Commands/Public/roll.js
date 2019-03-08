@@ -1,33 +1,20 @@
-module.exports = async ({ Constants: { Colors, Text }, Utils: { PromiseWait } }, documents, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text } }, documents, msg, commandData) => {
 	let min = 1;
 	let max = 6;
 	if (msg.suffix) {
 		const choices = msg.suffix.split(" ");
 		if (choices.length === 1) {
 			max = +choices[0];
-		} else if (choices.length > 2) {
+		} else if (choices.length > 1) {
 			min = +choices[0];
 			max = +choices[1];
 		}
 	}
 	if (!isFinite(min) || !isFinite(max)) {
-		return msg.send({
-			embed: {
-				color: Colors.INVALID,
-				title: "Those aren't valid numbers! 🔢",
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		return msg.sendInvalidUsage(commandData, "Those aren't valid numbers! 🔢");
 	}
 	if (min > max) [min, max] = [max, min];
 	const randNum = Math.floor(Math.random() * (max - min + 1)) + min;
-	await msg.send({
-		embed: {
-			color: Colors.INFO,
-			description: "Rolling your number... 🎲",
-		},
-	});
-	await PromiseWait(2000);
 	msg.send({
 		embed: {
 			color: Colors.SUCCESS,

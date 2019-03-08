@@ -2,15 +2,15 @@ const { parseAuthUser, fetchMaintainerPrivileges } = require("../helpers");
 
 class GABResponse {
 	constructor (req, res, page) {
-		if (!req.user) req.user = {};
-
 		this.template = {
 			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
 			currentPage: `${req.baseUrl}${req.path}`,
-			isMaintainer: true,
-			isSudoMaintainer: req.level === 2,
-			isHost: req.level === 0,
-			accessPrivileges: fetchMaintainerPrivileges(req.user.id),
+			officialMode: req.app.client.officialMode ? true : undefined,
+			adsense: {
+				isEnabled: req.cookies.adsPreference !== "false",
+				ID: req.app.client.officialMode ? configJS.adsenseID : undefined,
+			},
+			injection: configJSON.injection,
 		};
 
 		this.serverData = {
@@ -21,11 +21,35 @@ class GABResponse {
 		this.configData = {};
 		this.pageData = {};
 
+		if (req.perm && req.user) {
+			Object.assign(this.template, {
+				isContributor: true,
+				isMaintainer: true,
+				isSudoMaintainer: req.level === 2 || req.level === 0,
+				isHost: req.level === 0,
+				accessPrivileges: fetchMaintainerPrivileges(req.user.id),
+			});
+			this.serverData.isMaintainer = true;
+		} else if (req.user) {
+			Object.assign(this.template, {
+				isContributor: req.isAuthenticated() ? configJSON.wikiContributors.includes(req.user.id) || configJSON.maintainers.includes(req.user.id) : false,
+				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(parseAuthUser(req.user).id) : false,
+				isSudoMaintainer: req.isAuthenticated() ? configJSON.sudoMaintainers.includes(parseAuthUser(req.user).id) : false,
+			});
+		} else {
+			Object.assign(this.template, {
+				isContributor: false,
+				isMaintainer: false,
+				isSudoMaintainer: false,
+			});
+		}
+
 		this._client = req.app.client;
 		this._page = page;
 		this.sendStatus = res.sendStatus.bind(res);
 		this.status = res.status.bind(res);
 		this.redirect = res.redirect.bind(res);
+		this.json = res.json.bind(res);
 		this._render = res.render.bind(res);
 	}
 
@@ -47,9 +71,18 @@ class GABResponse {
 		return this;
 	}
 
+	setServerData (key, data) {
+		if (!data && typeof key === "object") {
+			this.serverData = key;
+		} else {
+			this.serverData[key] = data;
+		}
+		return this;
+	}
+
 	async render (page, template) {
+		if (!page && !this.pageData.page) return this.sendStatus(500);
 		if (!page) page = `pages/${this.pageData.page}`;
-		if (!this.pageData.page) return this.sendStatus(500);
 		this._render(page, template || {
 			...this.template,
 			serverData: this.serverData,
@@ -57,6 +90,21 @@ class GABResponse {
 			pageData: this.pageData,
 		});
 		return this;
+	}
+
+	populateDashboard (req) {
+		if (!req.svr.members[req.svr.ownerID]) req.svr.members[req.svr.ownerID] = { user: { username: "invalid-user", id: "invalid-user" } };
+		this.serverData = {
+			name: req.svr.name,
+			id: req.svr.id,
+			icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
+			owner: {
+				username: req.svr.members[req.svr.ownerID].user.username,
+				id: req.svr.members[req.svr.ownerID].user.id,
+				avatar: req.app.client.getAvatarURL(req.svr.members[req.svr.ownerID].user.id, req.svr.members[req.svr.ownerID].user.avatar) || "/static/img/discord-icon.png",
+			},
+		};
+		this.template.sudo = req.isSudo;
 	}
 }
 
@@ -109,7 +157,8 @@ middleware.setHeaders = (req, res, next) => {
 };
 
 middleware.logRequest = (req, res, next) => {
-	winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path });
+	// eslint-disable-next-line max-len
+	winston.verbose(`Incoming ${req.protocol} ${req.method} on ${req.path}.`, { params: req.params, query: req.query, protocol: req.protocol, method: req.method, path: req.path, useragent: req.header("User-Agent") });
 	next();
 };
 

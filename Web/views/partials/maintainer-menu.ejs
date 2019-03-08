@@ -78,6 +78,11 @@
 			<% } else { %>
 			<a href="/dashboard/maintainer/management/shards">Shards</a>
             <% } %>
+			<% if (currentPage === "/dashboard/maintainer/management/injection") { %>
+			<a class="is-active" href="#">Script Injection</a>
+			<% } else { %>
+			<a href="/dashboard/maintainer/management/injection">Script Injection</a>
+			<% } %>
             <% if (currentPage === "/dashboard/maintainer/management/version") { %>
 			<a class="is-active" href="#">GAB Version</a>
             <% } else { %>

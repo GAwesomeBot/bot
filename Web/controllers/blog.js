@@ -1,25 +1,4 @@
-/* Old;
-	const getPageTitle = () => [
-		"Dolphin Musings",
-		"The Fault in Our Syntax",
-		"How to Become Popular",
-		"I wish I were a GAB",
-		"A Robot's Thoughts",
-		"My Meme Library",
-		"Top 10 Prank Channels",
-		"Why do we exist?",
-		"What is Love?",
-		"Updating GAB; My Story",
-		"What did I ever do to you?",
-		"Welcome back to",
-		"BitQuote made this happen",
-		"I didn't want this either",
-		"The tragic story",
-		"Developer Vs. Bot",
-		"What did we mess up today?",
-		"Where are your fingers?"
-	][Math.floor(Math.random() * 17)]
- */
+const { ObjectID } = require("mongodb");
 const showdown = require("showdown");
 const md = new showdown.Converter({
 	tables: true,
@@ -28,15 +7,16 @@ const md = new showdown.Converter({
 	tasklists: true,
 	smoothLivePreview: true,
 	smartIndentationFix: true,
+	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
 
-const { renderError, parseAuthUser } = require("../helpers");
+const { renderError } = require("../helpers");
 const parsers = require("../parsers");
 
 const controllers = module.exports;
 
-controllers.index = async (req, res) => {
+controllers.index = async (req, { res }) => {
 	let count;
 	if (!req.query.count || isNaN(req.query.count)) {
 		count = 4;
@@ -56,7 +36,7 @@ controllers.index = async (req, res) => {
 			rawCount = 0;
 		}
 
-		const blogDocuments = await Blog.find({}).sort("-published_timestamp").skip(count * (page - 1))
+		const blogDocuments = await Blog.find({}).sort({ published_timestamp: -1 }).skip(count * (page - 1))
 			.limit(count)
 			.exec();
 		let blogPosts = [];
@@ -71,24 +51,23 @@ controllers.index = async (req, res) => {
 				return data;
 			}));
 		}
-		res.render("pages/blog.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
+
+		res.setPageData({
+			page: "blog.ejs",
 			mode: "list",
 			currentPage: page,
 			numPages: Math.ceil(rawCount / (count === 0 ? rawCount : count)),
 			pageTitle: "GAwesomeBot Blog",
 			data: blogPosts,
 		});
+		res.render();
 	} catch (err) {
 		renderError(res, "An error occurred while fetching blog data.");
 	}
 };
 
-controllers.article = async (req, res) => {
-	const blogDocument = await Blog.findOne({
-		_id: req.params.id,
-	}).exec();
+controllers.article = async (req, { res }) => {
+	const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 	if (!blogDocument) {
 		renderError(res, "Sorry, that blog doesn't exist!");
 	} else {
@@ -102,29 +81,31 @@ controllers.article = async (req, res) => {
 			data.userReaction = blogDocument.reactions.id(req.user.id) || {};
 		}
 		data.content = md.makeHtml(data.content);
-		res.render("pages/blog.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			isMaintainer: req.isAuthenticated() ? configJSON.maintainers.indexOf(req.user.id) > -1 : false,
+
+		res.setPageData({
+			page: "blog.ejs",
 			mode: "article",
 			pageTitle: `${blogDocument.title} - GAwesomeBot Blog`,
 			blogPost: data,
 		});
+		res.render();
 	}
 };
 
-controllers.article.compose = async (req, res) => {
+controllers.article.compose = async (req, { res }) => {
 	const renderPage = data => {
-		res.render("pages/blog.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			isMaintainer: true,
+		res.setPageData({
+			page: "blog.ejs",
 			pageTitle: `${data.title ? `Edit ${data.title}` : "New Post"} - GAwesomeBot Blog`,
 			mode: "compose",
 			data,
 		});
+
+		res.render();
 	};
 
 	if (req.params.id) {
-		const blogDocument = await Blog.findOne({ _id: req.params.id }).exec();
+		const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 		if (!blogDocument) {
 			renderPage({});
 		} else {
@@ -142,56 +123,56 @@ controllers.article.compose = async (req, res) => {
 
 controllers.article.compose.post = async (req, res) => {
 	if (req.params.id) {
-		const blogDocument = await Blog.findOne({ _id: req.params.id }).exec();
+		const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 		if (!blogDocument) {
 			renderError(res, "Sorry, that blog post was not found.");
 		} else {
-			blogDocument.title = req.body.title;
-			blogDocument.category = req.body.category;
-			blogDocument.content = req.body.content;
+			blogDocument.query.set("title", req.body.title)
+				.set("category", req.body.category)
+				.set("content", req.body.content);
 
-			blogDocument.save(() => {
-				res.redirect(`/blog/${blogDocument._id}`);
-			});
+			blogDocument.save().then(() => {
+				res.redirect(`/blog/${blogDocument._id.toString()}`);
+			}).catch(() => res.sendStatus(500));
 		}
 	} else {
-		const blogDocument = new Blog({
+		const blogDocument = Blog.new({
 			title: req.body.title,
 			author_id: req.user.id,
 			category: req.body.category,
 			content: req.body.content,
 		});
-		blogDocument.save(() => {
-			res.redirect(`/blog/${blogDocument._id}`);
-		});
+		blogDocument.save().then(() => {
+			res.redirect(`/blog/${blogDocument._id.toString()}`);
+		}).catch(() => res.sendStatus(500));
 	}
 };
 
 controllers.article.react = async (req, res) => {
 	if (req.isAuthenticated()) {
-		const blogDocument = await Blog.findOne({ _id: req.params.id }).exec();
+		const blogDocument = await Blog.findOne(new ObjectID(req.params.id));
 		if (!blogDocument) {
 			res.sendStatus(404);
 		} else {
 			req.query.value = parseInt(req.query.value);
 
-			const userReactionDocument = blogDocument.reactions.id(req.user.id);
-			if (userReactionDocument) {
-				if (userReactionDocument.value === req.query.value) {
-					userReactionDocument.remove();
+			const userReactionQueryDocument = blogDocument.query.id("reactions", req.user.id);
+			if (userReactionQueryDocument.val) {
+				if (userReactionQueryDocument.val.value === req.query.value) {
+					userReactionQueryDocument.remove();
 				} else {
-					userReactionDocument.value = req.query.value;
+					userReactionQueryDocument.set("value", req.query.value);
 				}
 			} else {
-				blogDocument.reactions.push({
+				blogDocument.query.push("reactions", {
 					_id: req.user.id,
 					value: req.query.value,
 				});
 			}
 
-			blogDocument.save(err => {
-				res.sendStatus(err ? 500 : 200);
-			});
+			blogDocument.save().then(() => {
+				res.sendStatus(200);
+			}).catch(() => res.sendStatus(500));
 		}
 	} else {
 		res.sendStatus(403);
@@ -199,7 +180,7 @@ controllers.article.react = async (req, res) => {
 };
 
 controllers.article.delete = (req, res) => {
-	Blog.findByIdAndRemove(req.params.id, err => {
-		res.sendStatus(err ? 500 : 200);
-	});
+	Blog.delete({ _id: new ObjectID(req.params.id) }).then(() => {
+		res.sendStatus(200);
+	}).catch(() => res.sendStatus(500));
 };

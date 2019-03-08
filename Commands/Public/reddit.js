@@ -2,7 +2,7 @@ const moment = require("moment");
 const { get } = require("snekfetch");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
-module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { serverDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, documents, msg, commandData) => {
 	let subreddit = msg.suffix;
 	if (!subreddit) {
 		subreddit = "all";
@@ -83,11 +83,15 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, { ser
 				},
 			});
 		}
-		new PaginatedEmbed(msg, descriptions, {
+		await new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
-			title: `Submission {current description} out of {total descriptions} in r/${subreddit}`,
+			title: `Submission {currentPage} out of {totalPages} in r/${subreddit}`,
 			footer: nsfwFiltered ? `${nsfwFiltered} post${nsfwFiltered > 1 ? "s were" : " was"} filtered for being marked NSFW as this channel is not marked as such.` : "",
-		}, [], fields, thumbnails).init();
+		}, {
+			descriptions,
+			fields,
+			thumbnails,
+		}).init();
 	} else {
 		winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({

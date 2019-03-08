@@ -1,62 +1,57 @@
-const { parseAuthUser, getChannelData, saveAdminConsoleOptions: save, renderError, findQueryUser } = require("../../helpers");
+const { getChannelData, saveAdminConsoleOptions: save, renderError, findQueryUser } = require("../../helpers");
 const parsers = require("../../parsers");
 
 const controllers = module.exports;
 
-controllers.options = async (req, res) => {
+controllers.options = async (req, { res }) => {
 	await req.svr.fetchCollection("channels");
-	res.render("pages/admin-command-options.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: req.svr.name,
-			id: req.svr.id,
-			icon: req.app.client.getAvatarURL(req.svr.id, req.svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			chatterbot: req.svr.document.config.chatterbot,
-			command_cooldown: req.svr.document.config.command_cooldown,
-			command_fetch_properties: req.svr.document.config.command_fetch_properties,
-			command_prefix: req.svr.document.config.command_prefix,
-			delete_command_messages: req.svr.document.config.delete_command_messages,
-			ban_gif: req.svr.document.config.ban_gif,
-		},
+
+	res.setConfigData({
+		chatterbot: req.svr.document.config.chatterbot,
+		command_cooldown: req.svr.document.config.command_cooldown,
+		command_fetch_properties: req.svr.document.config.command_fetch_properties,
+		command_prefix: req.svr.document.config.command_prefix,
+		delete_command_messages: req.svr.document.config.delete_command_messages,
+		ban_gif: req.svr.document.config.ban_gif,
+	});
+	res.setPageData({
+		page: "admin-command-options.ejs",
 		channelData: getChannelData(req.svr),
 		botName: req.svr.members[req.app.client.user.id].nickname || req.app.client.user.username,
 	});
+	res.render();
 };
 controllers.options.post = async (req, res) => {
 	if (req.body.command_prefix !== req.app.client.getCommandPrefix(req.svr, req.svr.document)) {
-		req.svr.document.config.command_prefix = req.body.command_prefix;
+		req.svr.queryDocument.set("config.command_prefix", req.body.command_prefix);
 	}
 
-	req.svr.document.config.delete_command_messages = req.body.delete_command_messages === "on";
-	req.svr.document.config.chatterbot.isEnabled = req.body["chatterbot-isEnabled"] === "on";
-	req.svr.document.config.ban_gif = req.body.ban_gif;
+	req.svr.queryDocument.set("config.delete_command_messages", req.body.delete_command_messages === "on")
+		.set("config.chatterbot.isEnabled", req.body["chatterbot-isEnabled"] === "on")
+		.set("config.ban_gif", req.body.ban_gif);
 
-	if (req.body.ban_gif === "Default") req.svr.document.config.ban_gif = "https://imgur.com/3QPLumg.gif";
+	if (req.body.ban_gif === "Default") req.svr.queryDocument.set("config.ban_gif", "https://imgur.com/3QPLumg.gif");
 	if (req.body["chatterbot-isEnabled"] === "on") {
 		const channels = getChannelData(req.svr).map(ch => ch.id);
 		const enabledChannels = Object.keys(req.body).filter(key => key.startsWith("chatterbot_enabled_channel_ids")).map(chstring => chstring.split("-")[1]);
 		channels.forEach(ch => {
 			if (!enabledChannels.some(id => ch === id)) {
-				req.svr.document.config.chatterbot.disabled_channel_ids.push(ch);
-			} else if (req.svr.document.config.chatterbot.disabled_channel_ids.indexOf(ch) > -1) {
-				req.svr.document.config.chatterbot.disabled_channel_ids = req.svr.document.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch);
+				req.svr.queryDocument.push("config.chatterbot.disabled_channel_ids", ch);
+			} else if (req.svr.document.config.chatterbot.disabled_channel_ids.includes(ch)) {
+				req.svr.queryDocument.set("config.chatterbot.disabled_channel_ids", req.svr.document.config.chatterbot.disabled_channel_ids.filter(svrch => ch !== svrch));
 			}
 		});
 	}
 
-	req.svr.document.config.command_cooldown = parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown);
+	req.svr.queryDocument.set("config.command_cooldown", parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown));
 	const defaultCount = req.svr.document.config.command_fetch_properties.default_count;
-	req.svr.document.config.command_fetch_properties.default_count = isNaN(parseInt(req.body.default_count)) ? defaultCount : parseInt(req.body.default_count);
-	req.svr.document.config.command_fetch_properties.max_count = isNaN(parseInt(req.body.max_count)) ? req.svr.document.config.command_fetch_properties.max_count : parseInt(req.body.max_count);
+	req.svr.queryDocument.set("config.command_fetch_properties.default_count", isNaN(parseInt(req.body.default_count)) ? defaultCount : parseInt(req.body.default_count))
+		.set("config.command_fetch_properties.max_count", isNaN(parseInt(req.body.max_count)) ? req.svr.document.config.command_fetch_properties.max_count : parseInt(req.body.max_count));
 
 	save(req, res, true);
 };
 
-controllers.list = async (req, res) => {
+controllers.list = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
@@ -68,24 +63,19 @@ controllers.list = async (req, res) => {
 		if (!commandCategories[commandData.category]) commandCategories[commandData.category] = [];
 		commandCategories[commandData.category].push(data);
 	});
-	res.render("pages/admin-command-list.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
+
+	res.setConfigData({
+		commands: serverDocument.config.commands,
+	});
+	res.setPageData({
+		page: "admin-command-list.ejs",
 		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			commands: serverDocument.toObject().config.commands,
-		},
 		commandCategories,
 	});
+	res.render();
 };
 controllers.list.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const { document: serverDocument, queryDocument: serverQueryDocument } = req.svr;
 
 	if (req.body["preset-applied"]) {
 		const disabled_channel_ids = [];
@@ -96,13 +86,13 @@ controllers.list.post = async (req, res) => {
 				}
 			}
 		});
-		for (const command in serverDocument.toObject().config.commands) {
+		for (const command in serverDocument.config.commands) {
 			if (!serverDocument.config.commands[command]) continue;
-			serverDocument.config.commands[command].admin_level = req.body["preset-admin_level"] || 0;
-			serverDocument.config.commands[command].disabled_channel_ids = disabled_channel_ids;
+			serverQueryDocument.set(`config.commands.${command}.admin_level`, parseInt(req.body["preset-admin_level"]) || 0);
+			serverQueryDocument.set(`config.commands.${command}.disabled_channel_ids`, disabled_channel_ids);
 		}
 	} else {
-		for (const command in serverDocument.toObject().config.commands) {
+		for (const command in serverDocument.config.commands) {
 			parsers.commandOptions(req, command, req.body);
 		}
 	}
@@ -110,30 +100,23 @@ controllers.list.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.rss = async (req, res) => {
+controllers.rss = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-rss-feeds.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			rss_feeds: serverDocument.config.rss_feeds,
-			commands: {
-				rss: serverDocument.config.commands.rss,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia ? serverDocument.config.commands.trivia.isEnabled : null,
-				},
+	res.setConfigData({
+		rss_feeds: serverDocument.config.rss_feeds,
+		commands: {
+			rss: serverDocument.config.commands.rss,
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia ? serverDocument.config.commands.trivia.isEnabled : null,
 			},
 		},
+	});
+	res.setPageData({
+		page: "admin-rss-feeds.ejs",
+		channelData: getChannelData(svr),
 		commandDescriptions: {
 			rss: client.getPublicCommandMetadata("rss").description,
 		},
@@ -141,57 +124,52 @@ controllers.rss = async (req, res) => {
 			rss: client.getPublicCommandMetadata("rss").category,
 		},
 	});
+	res.render();
 };
 controllers.rss.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"].replace(/\s/g, ""))) {
-		serverDocument.config.rss_feeds.push({
+		serverQueryDocument.push("config.rss_feeds", {
 			_id: req.body["new-name"],
 			url: req.body["new-url"],
 		});
 	} else {
 		parsers.commandOptions(req, "rss", req.body);
-		for (let i = 0; i < serverDocument.config.rss_feeds.length; i++) {
-			serverDocument.config.rss_feeds[i].streaming.isEnabled = req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-isEnabled`] === "on";
-			serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids = [];
+		serverDocument.config.rss_feeds.forEach((feedDocument, i) => {
+			serverQueryDocument.set(`config.rss_feeds.${i}.streaming.isEnabled`, req.body[`rss-${feedDocument._id}-streaming-isEnabled`] === "on");
+			serverQueryDocument.set(`config.rss_feeds.${i}.streaming.enabled_channel_ids`, []);
 			req.svr.channels.forEach(ch => {
 				if (ch.type === "text") {
-					if (req.body[`rss-${serverDocument.config.rss_feeds[i]._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
-						serverDocument.config.rss_feeds[i].streaming.enabled_channel_ids.push(ch.id);
+					if (req.body[`rss-${feedDocument._id}-streaming-enabled_channel_ids-${ch.id}`] === "on") {
+						serverQueryDocument.push(`config.rss_feeds.${i}.streaming.enabled_channel_ids`, ch.id);
 					}
 				}
 			});
-		}
+		});
 	}
 
 	save(req, res, true);
 };
 
-controllers.streamers = async (req, res) => {
+controllers.streamers = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-streamers.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			streamers_data: serverDocument.config.streamers_data,
-			commands: {
-				streamers: serverDocument.config.commands.streamers,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
+	res.setConfigData({
+		streamers_data: serverDocument.config.streamers_data,
+		commands: {
+			streamers: serverDocument.config.commands.streamers,
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia.isEnabled,
 			},
 		},
+	});
+	res.setPageData({
+		page: "admin-streamers.ejs",
+		channelData: getChannelData(svr),
 		commandDescriptions: {
 			streamers: client.getPublicCommandMetadata("streamers").description,
 		},
@@ -199,56 +177,52 @@ controllers.streamers = async (req, res) => {
 			streamers: client.getPublicCommandMetadata("streamers").category,
 		},
 	});
+	res.render();
 };
 controllers.streamers.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-type"] && !serverDocument.config.streamers_data.id(req.body["new-name"])) {
-		serverDocument.config.streamers_data.push({
+		serverQueryDocument.push("config.streamers_data", {
 			_id: req.body["new-name"],
 			type: req.body["new-type"],
 		});
 	} else {
 		parsers.commandOptions(req, "streamers", req.body);
-		for (let i = 0; i < serverDocument.config.streamers_data.length; i++) {
-			serverDocument.config.streamers_data[i].channel_id = req.body[`streamer-${serverDocument.config.streamers_data[i]._id}-channel_id`];
-		}
+		serverDocument.config.streamers_data.forEach(streamerDocument => {
+			const streamerQueryDocument = serverQueryDocument.clone.id("config.streamers_data", streamerDocument._id);
+			if (req.body[`streamer-${streamerDocument._id}-channel_id`]) streamerQueryDocument.set("channel_id", req.body[`streamer-${streamerDocument._id}-channel_id`]);
+		});
 	}
 
 	save(req, res, true);
 };
 
-controllers.tags = async (req, res) => {
+controllers.tags = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	const data = {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			tags: serverDocument.config.tags,
-			commands: {
-				tag: serverDocument.config.commands.tag,
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
+	const configData = {
+		tags: serverDocument.config.tags,
+		commands: {
+			tag: serverDocument.config.commands.tag,
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia.isEnabled,
 			},
 		},
+	};
+	res.setPageData({
+		page: "admin-tags.ejs",
+		channelData: getChannelData(svr),
 		commandDescriptions: {
 			tag: client.getPublicCommandMetadata("tag").description,
 		},
 		commandCategories: {
 			tag: client.getPublicCommandMetadata("tag").category,
 		},
-	};
+	});
 
 	const cleanTag = async content => {
 		let cleanContent = "";
@@ -282,71 +256,72 @@ controllers.tags = async (req, res) => {
 		return cleanContent;
 	};
 
-	for (let i = 0; i < data.configData.tags.list.length; i++) {
-		data.configData.tags.list[i].content = await cleanTag(data.configData.tags.list[i].content);
-		data.configData.tags.list[i].index = i;
+	for (let i = 0; i < configData.tags.list.length; i++) {
+		configData.tags.list[i].content = await cleanTag(configData.tags.list[i].content);
+		configData.tags.list[i].index = i;
 	}
-	data.configData.tags.list.sort((a, b) => a._id.localeCompare(b._id));
-	res.render("pages/admin-tags.ejs", data);
+	configData.tags.list.sort((a, b) => a._id.localeCompare(b._id));
+
+	res.setConfigData(configData);
+	res.render();
 };
 controllers.tags.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-type"] && req.body["new-content"] && !serverDocument.config.tags.list.id(req.body["new-name"])) {
-		serverDocument.config.tags.list.push({
+		serverQueryDocument.push("config.tags.list", {
 			_id: req.body["new-name"],
 			content: req.body["new-content"],
 			isCommand: req.body["new-type"] === "command",
 		});
 	} else {
 		parsers.commandOptions(req, "tag", req.body);
-		serverDocument.config.tags.listIsAdminOnly = req.body.listIsAdminOnly === "true";
-		serverDocument.config.tags.addingIsAdminOnly = req.body.addingIsAdminOnly === "true";
-		serverDocument.config.tags.addingCommandIsAdminOnly = req.body.addingCommandIsAdminOnly === "true";
-		serverDocument.config.tags.removingIsAdminOnly = req.body.removingIsAdminOnly === "true";
-		serverDocument.config.tags.removingCommandIsAdminOnly = req.body.removingCommandIsAdminOnly === "true";
+		serverQueryDocument.set("config.tags.listIsAdminOnly", req.body.listIsAdminOnly === "true")
+			.set("config.tags.addingIsAdminOnly", req.body.addingIsAdminOnly === "true")
+			.set("config.tags.addingCommandIsAdminOnly", req.body.addingCommandIsAdminOnly === "true")
+			.set("config.tags.removingIsAdminOnly", req.body.removingIsAdminOnly === "true")
+			.set("config.tags.removingCommandIsAdminOnly", req.body.removingCommandIsAdminOnly === "true");
 		serverDocument.config.tags.list.forEach(tag => {
-			tag.isCommand = req.body[`tag-${tag._id}-isCommand`] === "command";
-			tag.isLocked = req.body[`tag-${tag._id}-isLocked`] === "on";
+			serverQueryDocument.clone.id("config.tags.list", tag._id)
+				.set("isCommand", req.body[`tag-${tag._id}-isCommand`] === "command")
+				.set("isLocked", req.body[`tag-${tag._id}-isLocked`] === "on");
 		});
 	}
 
 	save(req, res, true);
 };
 
-controllers.translation = async (req, res) => {
+controllers.translation = async (req, { res }) => {
 	const { client } = req.app;
 	const { svr } = req;
 	const serverDocument = req.svr.document;
 
-	const data = {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		channelData: getChannelData(svr),
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			translated_messages: serverDocument.config.translated_messages,
-			commands: {
-				trivia: {
-					isEnabled: serverDocument.config.commands.trivia.isEnabled,
-				},
+	const configData = {
+		translated_messages: serverDocument.config.translated_messages,
+		commands: {
+			trivia: {
+				isEnabled: serverDocument.config.commands.trivia.isEnabled,
 			},
 		},
 	};
-	for (let i = 0; i < data.configData.translated_messages.length; i++) {
-		const usr = await req.app.client.users.fetch(data.configData.translated_messages[i]._id);
-		data.configData.translated_messages[i].username = usr.username;
-		data.configData.translated_messages[i].avatar = client.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png";
-	}
-	res.render("pages/admin-auto-translation.ejs", data);
+	res.setPageData({
+		page: "admin-auto-translation.ejs",
+		channelData: getChannelData(svr),
+	});
+
+	await Promise.all(configData.translated_messages.map(async translatedMessage => {
+		const usr = await req.app.client.users.fetch(translatedMessage._id);
+		translatedMessage.username = usr.username;
+		translatedMessage.avatar = client.getAvatarURL(usr.id, usr.avatar) || "/static/img/discord-icon.png";
+	}));
+
+	res.setConfigData(configData);
+	res.render();
 };
 controllers.translation.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-member"] && req.body["new-source_language"]) {
 		const member = await findQueryUser(req.body["new-member"], req.svr);
@@ -360,7 +335,7 @@ controllers.translation.post = async (req, res) => {
 				}
 			});
 
-			serverDocument.config.translated_messages.push({
+			serverQueryDocument.push("config.translated_messages", {
 				_id: member.userID,
 				source_language: req.body["new-source_language"],
 				enabled_channel_ids: enabled_channel_ids,
@@ -368,11 +343,12 @@ controllers.translation.post = async (req, res) => {
 		}
 	} else {
 		serverDocument.config.translated_messages.forEach(autoTranslateDocument => {
-			autoTranslateDocument.enabled_channel_ids = [];
+			const autoTranslateQueryDocument = serverQueryDocument.clone.id("config.translated_messages", autoTranslateDocument._id);
+			autoTranslateQueryDocument.set("enabled_channel_ids", []);
 			req.svr.channels.forEach(ch => {
 				if (ch.type === "text") {
 					if (req.body[`translated_messages-${autoTranslateDocument._id}-enabled_channel_ids-${ch.id}`] === "on") {
-						autoTranslateDocument.enabled_channel_ids.push(ch.id);
+						autoTranslateQueryDocument.push("enabled_channel_ids", ch.id);
 					}
 				}
 			});
@@ -381,9 +357,7 @@ controllers.translation.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.trivia = async (req, res) => {
-	const { client } = req.app;
-	const { svr } = req;
+controllers.trivia = async (req, { res }) => {
 	const serverDocument = req.svr.document;
 
 	if (req.query.i) {
@@ -394,37 +368,29 @@ controllers.trivia = async (req, res) => {
 			renderError(res, "Are you sure that trivia set exists?", null, 404);
 		}
 	} else {
-		res.render("pages/admin-trivia-sets.ejs", {
-			authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-			sudo: req.isSudo,
-			serverData: {
-				name: svr.name,
-				id: svr.id,
-				icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-			},
-			currentPage: `${req.baseUrl}${req.path}`,
-			configData: {
-				trivia_sets: serverDocument.config.trivia_sets,
-				commands: {
-					trivia: {
-						isEnabled: serverDocument.config.commands.trivia.isEnabled,
-					},
+		res.setConfigData({
+			trivia_sets: serverDocument.config.trivia_sets,
+			commands: {
+				trivia: {
+					isEnabled: serverDocument.config.commands.trivia.isEnabled,
 				},
 			},
 		});
+		res.render("pages/admin-trivia-sets.ejs");
 	}
 };
 controllers.trivia.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-items"] && !serverDocument.config.trivia_sets.id(req.body["new-name"])) {
 		try {
-			serverDocument.config.trivia_sets.push({
+			serverQueryDocument.push("config.trivia_sets", {
 				_id: req.body["new-name"],
 				items: JSON.parse(req.body["new-items"]),
 			});
 		} catch (err) {
-			renderError(res, "That doesn't look like valid JSON to me!", null, 400);
+			renderError(res, "That doesn't look like a valid trivia set to me!", null, 400);
 			return;
 		}
 	}
@@ -432,66 +398,41 @@ controllers.trivia.post = async (req, res) => {
 	save(req, res, true);
 };
 
-controllers.APIKeys = async (req, res) => {
-	const { client } = req.app;
-	const { svr } = req;
+controllers.APIKeys = async (req, { res }) => {
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-api-keys.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			custom_api_keys: serverDocument.config.custom_api_keys || {},
-		},
-	});
+	res.setConfigData("custom_api_keys", serverDocument.config.custom_api_keys || {});
+	res.render("pages/admin-api-keys.ejs");
 };
 controllers.APIKeys.post = async (req, res) => {
-	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
-	serverDocument.config.custom_api_keys.google_api_key = req.body.google_api_key;
-	serverDocument.config.custom_api_keys.google_cse_id = req.body.google_cse_id;
+	serverQueryDocument.set("config.custom_api_keys.google_api_key", req.body.google_api_key);
+	serverQueryDocument.set("config.custom_api_keys.google_cse_id", req.body.google_cse_id);
+	serverQueryDocument.set("config.custom_api_keys.imgur_client_id", req.body.imgur_client_id);
 
 	save(req, res, true);
 };
 
-controllers.reaction = async (req, res) => {
-	const { client } = req.app;
-	const { svr } = req;
+controllers.reaction = async (req, { res }) => {
 	const serverDocument = req.svr.document;
 
-	res.render("pages/admin-tag-reaction.ejs", {
-		authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-		sudo: req.isSudo,
-		serverData: {
-			name: svr.name,
-			id: svr.id,
-			icon: client.getAvatarURL(svr.id, svr.icon, "icons") || "/static/img/discord-icon.png",
-		},
-		currentPage: `${req.baseUrl}${req.path}`,
-		configData: {
-			tag_reaction: serverDocument.config.tag_reaction,
-		},
-	});
+	res.setConfigData("tag_reaction", serverDocument.config.tag_reaction);
+	res.render("pages/admin-tag-reaction.ejs");
 };
 controllers.reaction.post = async (req, res) => {
 	const serverDocument = req.svr.document;
+	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-message"] && req.body["new-message"].length <= 2000) {
-		serverDocument.config.tag_reaction.messages.push(req.body["new-message"]);
+		serverQueryDocument.push("config.tag_reaction.messages", req.body["new-message"]);
 	} else {
-		serverDocument.config.tag_reaction.isEnabled = req.body.isEnabled === "on";
-		for (let i = 0; i < serverDocument.config.tag_reaction.messages.length; i++) {
+		serverQueryDocument.set("config.tag_reaction.isEnabled", req.body.isEnabled === "on");
+		serverDocument.config.tag_reaction.messages.forEach((message, i) => {
 			if (req.body[`tag_reaction-${i}-removed`]) {
-				serverDocument.config.tag_reaction.messages[i] = null;
+				serverQueryDocument.pull("config.tag_reaction.messages", message);
 			}
-		}
-		serverDocument.config.tag_reaction.messages.spliceNullElements();
+		});
 	}
 
 	save(req, res, true);

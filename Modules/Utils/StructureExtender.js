@@ -1,3 +1,5 @@
+const { Text, Colors } = require("../../Internals/Constants");
+const Gag = require("./Gag");
 const { Structures, splitMessage, MessageAttachment, MessageEmbed } = require("discord.js");
 
 const IsObject = input => input && input.constructor === Object;
@@ -5,6 +7,10 @@ const IsObject = input => input && input.constructor === Object;
 module.exports = () => {
 	Structures.extend("Guild", Guild => {
 		class GABGuild extends Guild {
+			async populateDocument () {
+				this.serverDocument = await Servers.findOne(this.id);
+			}
+
 			get defaultChannel () {
 				if (this.channels.filter(c => c.type === "text").size === 0) return null;
 
@@ -17,10 +23,6 @@ module.exports = () => {
 					.first();
 				if (!defaultChannel) return null;
 				return defaultChannel;
-			}
-
-			get serverDocument () {
-				return this.client.cache.getSync(this.id);
 			}
 
 			get commandPrefix () {
@@ -46,22 +48,31 @@ module.exports = () => {
 				this.responses = null;
 			}
 
-			_patch (data) {
-				super._patch(data);
+			async build () {
+				const { content } = this;
+
 				if (this.guild && this.client.isReady) {
-					this.client.checkCommandTag(data.content, this.guild.serverDocument)
+					await this.guild.populateDocument();
+					const { serverDocument } = this.guild;
+					this.client.checkCommandTag(content, serverDocument)
 						.then(object => {
-							Object.defineProperty(this, "_commandObject", {
-								enumerable: false,
-								value: object,
-							});
+							if (this._commandObject) {
+								this._commandObject.command = object.command;
+								this._commandObject.suffix = object.suffix;
+							} else {
+								Object.defineProperty(this, "_commandObject", {
+									enumerable: false,
+									value: object,
+									writable: true,
+								});
+							}
 						}).catch();
 				} else if (this.client.isReady) {
-					let command = data.content.toLowerCase().trim();
+					let command = content.toLowerCase().trim();
 					let suffix = null;
 					if (command.includes(" ")) {
 						command = command.split(/\s+/)[0].trim();
-						suffix = data.content.replace(/[\r\n\t]/g, match => {
+						suffix = content.replace(/[\r\n\t]/g, match => {
 							const escapes = {
 								"\r": "{r}",
 								"\n": "{n}",
@@ -74,65 +85,19 @@ module.exports = () => {
 							.format({ n: "\n", r: "\r", t: "\t" })
 							.trim();
 					}
-					Object.defineProperty(this, "_commandObject", {
-						enumerable: false,
-						value: {
-							command,
-							suffix,
-						},
-					});
-				}
-			}
-
-			patch (data) {
-				super.patch(data);
-				if ("content" in data) {
-					if (this.guild && this.client.isReady) {
-						this.client.checkCommandTag(data.content, this.guild.serverDocument)
-							.then(object => {
-								if (this._commandObject) {
-									this._commandObject.command = object.command;
-									this._commandObject.suffix = object.suffix;
-								} else {
-									Object.defineProperty(this, "_commandObject", {
-										enumerable: false,
-										value: object,
-										writable: true,
-									});
-								}
-							}).catch();
-					} else if (this.client.isReady) {
-						let command = data.content.toLowerCase().trim();
-						let suffix = null;
-						if (command.includes(" ")) {
-							command = command.split(/\s+/)[0].trim();
-							suffix = data.content.replace(/[\r\n\t]/g, match => {
-								const escapes = {
-									"\r": "{r}",
-									"\n": "{n}",
-									"\t": "{t}",
-								};
-								return escapes[match] || match;
-							}).split(/\s+/)
-								.splice(1)
-								.join(" ")
-								.format({ n: "\n", r: "\r", t: "\t" })
-								.trim();
-						}
-						if (this._commandObject) {
-							this._commandObject.command = command;
-							this._commandObject.suffix = suffix;
-						} else {
-							Object.defineProperty(this, "_commandObject", {
-								enumerable: false,
-								value: {
-									command,
-									suffix,
-								},
-								writable: true,
-								configurable: true,
-							});
-						}
+					if (this._commandObject) {
+						this._commandObject.command = command;
+						this._commandObject.suffix = suffix;
+					} else {
+						Object.defineProperty(this, "_commandObject", {
+							enumerable: false,
+							value: {
+								command,
+								suffix,
+							},
+							writable: true,
+							configurable: true,
+						});
 					}
 				}
 			}
@@ -171,6 +136,33 @@ module.exports = () => {
 				return this.responses.length === 1 ? this.responses[0] : this.responses;
 			}
 
+			sendError (cmd, stack) {
+				if (!this.client.debugMode) stack = "";
+				return this.send({
+					embed: {
+						color: Colors.ERROR,
+						title: Text.ERROR_TITLE(),
+						description: !Gag(process.argv.slice(2)).owo ? Text.ERROR_BODY(cmd, stack) : Text.OWO_ERROR_BODY(),
+						footer: {
+							text: `Contact your GAB maintainer for more support.`,
+						},
+					},
+				});
+			}
+
+			sendInvalidUsage (commandData, title = "", footer = "") {
+				return this.send({
+					embed: {
+						color: Colors.INVALID,
+						title,
+						description: Text.INVALID_USAGE(commandData, this.guild ? this.guild.commandPrefix : undefined),
+						footer: {
+							text: footer,
+						},
+					},
+				});
+			}
+
 			static combineContentOptions (content, options) {
 				if (!options) return IsObject(content) ? content : { content };
 				return { ...options, content };
@@ -197,10 +189,10 @@ module.exports = () => {
 	Structures.extend("GuildMember", GuildMember => {
 		class GABGuildMember extends GuildMember {
 			get memberDocument () {
-				let doc = this.guild.serverDocument.members.id(this.id);
+				let doc = this.guild.serverDocument.members[this.id];
 				if (!doc) {
-					this.guild.serverDocument.members.push({ _id: this.id });
-					doc = this.guild.serverDocument.members.id(this.id);
+					this.guild.serverDocument.query.push("members", { _id: this.id });
+					doc = this.guild.serverDocument.members[this.id];
 				}
 				return doc;
 			}

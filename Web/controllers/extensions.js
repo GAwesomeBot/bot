@@ -1,39 +1,15 @@
 const path = require("path");
 const fs = require("fs-nextra");
+const { ObjectID } = require("mongodb");
 
 const parsers = require("../parsers");
 const { GetGuild } = require("../../Modules").getGuild;
-const { AllowedEvents, Colors } = require("../../Internals/Constants");
-const { renderError, parseAuthUser, dashboardUpdate, generateCodeID } = require("../helpers");
-
-// eslint-disable-next-line max-len
-const validateExtensionData = data => ((data.type === "command" && data.key) || (data.type === "keyword" && data.keywords) || (data.type === "timer" && data.interval) || (data.type === "event" && data.event)) && data.code;
-const writeExtensionData = (extensionDocument, data) => {
-	extensionDocument.name = data.name;
-	extensionDocument.type = data.type;
-	extensionDocument.key = data.type === "command" ? data.key : null;
-	extensionDocument.keywords = data.type === "keyword" ? data.keywords.split(",") : null;
-	extensionDocument.case_sensitive = data.type === "keyword" ? data.case_sensitive === "on" : null;
-	extensionDocument.interval = data.type === "timer" ? data.interval : null;
-	extensionDocument.usage_help = data.type === "command" ? data.usage_help : null;
-	extensionDocument.extended_help = data.type === "command" ? data.extended_help : null;
-	extensionDocument.event = data.type === "event" ? data.event : undefined;
-	extensionDocument.last_updated = Date.now();
-	extensionDocument.timeout = data.timeout;
-	extensionDocument.code_id = generateCodeID(data.code);
-	extensionDocument.scopes = [];
-	Object.keys(data).forEach(val => {
-		if (val.startsWith("scope_")) {
-			extensionDocument.scopes.push(val.split("scope_")[1]);
-		}
-	});
-
-	return extensionDocument;
-};
+const { AllowedEvents, Colors, Scopes } = require("../../Internals/Constants");
+const { renderError, dashboardUpdate, generateCodeID, getChannelData, validateExtensionData, writeExtensionData } = require("../helpers");
 
 const controllers = module.exports;
 
-controllers.gallery = async (req, res) => {
+controllers.gallery = async (req, { res }) => {
 	let count;
 	if (!req.query.count) {
 		count = 18;
@@ -49,34 +25,38 @@ controllers.gallery = async (req, res) => {
 
 	const renderPage = async (upvotedData, serverData) => {
 		const extensionState = req.path.substring(req.path.lastIndexOf("/") + 1);
+		const extensionLevel = extensionState === "gallery" ? ["gallery"] : configJSON.maintainers.includes(req.user.id) ? ["gallery", "third"] : ["gallery"];
 		try {
 			let rawCount = await Gallery.count({
-				state: extensionState,
-			}).exec();
+				state: { $in: ["version_queue", extensionState] },
+				level: { $in: extensionLevel },
+			});
 			if (!rawCount) {
 				rawCount = 0;
 			}
 
 			const matchCriteria = {
-				state: extensionState,
+				state: { $in: ["version_queue", extensionState] },
+				level: { $in: extensionLevel },
 			};
 			if (req.query.id) {
-				matchCriteria._id = req.query.id;
+				matchCriteria._id = new ObjectID(req.query.id);
 			} else if (req.query.q) {
 				matchCriteria.$text = {
 					$search: req.query.q,
 				};
 			}
 
-			const galleryDocuments = await Gallery.find(matchCriteria).sort("-featured -points -last_updated").skip(count * (page - 1))
+			const galleryDocuments = await Gallery.find(matchCriteria).sort({ featured: -1, points: -1, last_updated: -1 }).skip(count * (page - 1))
 				.limit(count)
 				.exec();
 			const pageTitle = `${extensionState.charAt(0).toUpperCase() + extensionState.slice(1)} - GAwesomeBot Extensions`;
-			const extensionData = await Promise.all(galleryDocuments.map(a => parsers.extensionData(req, a)));
+			const extensionData = await Promise.all(galleryDocuments.filter(galleryDocument => (galleryDocument.published_version !== null && !isNaN(galleryDocument.published_version)) ||
+				extensionState === "queue")
+				.map(a => parsers.extensionData(req, a, extensionState === "queue" ? a.version : a.published_version)));
 
-			res.render("pages/extensions.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				isMaintainer: req.isAuthenticated() ? configJSON.maintainers.includes(req.user.id) : false,
+			res.setPageData({
+				page: "extensions.ejs",
 				pageTitle,
 				serverData,
 				activeSearchQuery: req.query.id || req.query.q,
@@ -88,6 +68,8 @@ controllers.gallery = async (req, res) => {
 				extensions: extensionData,
 				upvotedData,
 			});
+
+			res.render();
 		} catch (err) {
 			renderError(res, "An error occurred while fetching extension data.");
 		}
@@ -103,7 +85,7 @@ controllers.gallery = async (req, res) => {
 				await svr.initialize(usr.id);
 				if (svr.success) {
 					try {
-						const serverDocument = await Servers.findOne({ _id: svr.id }).exec();
+						const serverDocument = await Servers.findOne(svr.id);
 						if (serverDocument) {
 							const member = svr.members[usr.id];
 							if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
@@ -132,7 +114,7 @@ controllers.gallery = async (req, res) => {
 		};
 		addServerData(0, async () => {
 			serverData.sort((a, b) => a.name.localeCompare(b.name));
-			const userDocument = await Users.findOne({ _id: req.user.id }).exec();
+			const userDocument = await Users.findOne(req.user.id);
 			if (userDocument) {
 				renderPage(userDocument.upvoted_gallery_extensions, serverData);
 			} else {
@@ -144,15 +126,95 @@ controllers.gallery = async (req, res) => {
 	}
 };
 
-controllers.my = async (req, res) => {
+controllers.installer = async (req, { res }) => {
+	if (!req.isAuthenticated()) return res.redirect("/login");
+
+	let id;
+	try {
+		id = new ObjectID(req.params.extid);
+	} catch (err) {
+		return renderError(res, "That extension doesn't exist!", undefined, 404);
+	}
+	const galleryDocument = await Gallery.findOne(id);
+	if (!galleryDocument) return renderError(res, "That extension doesn't exist!", undefined, 404);
+	const versionTag = parseInt(req.query.v) || galleryDocument.published_version;
+	if (!galleryDocument.versions.id(versionTag)) return renderError(res, "That extension version doesn't exist!", undefined, 404);
+	const extensionData = await parsers.extensionData(req, galleryDocument, versionTag);
+	if ((!extensionData.accepted && !configJSON.maintainers.includes(req.user.id)) || galleryDocument.level === "third") {
+		return renderError(res, "You do not have sufficient permission to install this extension.", undefined, 403);
+	}
+
+	if (!req.query.svrid) {
+		const serverData = [];
+		const addServerData = async (i, callback) => {
+			if (req.user.guilds && i < req.user.guilds.length) {
+				const svr = new GetGuild(req.app.client, req.user.guilds[i].id);
+				await svr.initialize(req.user.id);
+				if (svr.success) {
+					const serverDocument = await Servers.findOne(svr.id).catch(() => null);
+					if (serverDocument) {
+						const member = svr.members[req.user.id];
+						if (req.app.client.getUserBotAdmin(svr, serverDocument, member) >= 3) {
+							serverData.push({
+								name: req.user.guilds[i].name,
+								id: req.user.guilds[i].id,
+								icon: req.user.guilds[i].icon ? `https://cdn.discordapp.com/icons/${req.user.guilds[i].id}/${req.user.guilds[i].icon}.jpg` : "/static/img/discord-icon.png",
+								prefix: serverDocument.config.command_prefix,
+							});
+						}
+					}
+					addServerData(++i, callback);
+				} else {
+					addServerData(++i, callback);
+				}
+			} else {
+				try {
+					return callback();
+				} catch (err) {
+					renderError(res, "An error occurred while fetching user data.");
+				}
+			}
+		};
+		addServerData(0, async () => {
+			serverData.sort((a, b) => a.name.localeCompare(b.name));
+			res.setServerData(serverData)
+				.setPageData({
+					page: "extension-installer.ejs",
+					mode: "select",
+					extensionData,
+				})
+				.render();
+		});
+	} else {
+		const serverDocument = await Servers.findOne(req.query.svrid);
+		if (!serverDocument) return renderError(res, "That server doesn't exist!", undefined, 404);
+		const serverData = await parsers.serverData(req, serverDocument);
+		const svr = new GetGuild(req.app.client, serverDocument._id);
+		await svr.initialize();
+		if (serverData) {
+			res.setServerData(serverData)
+				.setPageData({
+					page: "extension-installer.ejs",
+					mode: req.query.update ? "update" : "install",
+					extensionData,
+					channelData: getChannelData(svr),
+				}).render();
+		} else {
+			return renderError(res, "That server doesn't exist!", undefined, 404);
+		}
+	}
+};
+
+controllers.my = async (req, { res }) => {
 	if (req.isAuthenticated()) {
 		try {
 			const galleryDocuments = await Gallery.find({
+				level: "gallery",
 				owner_id: req.user.id,
 			}).exec();
-			res.render("pages/extensions.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				currentPage: `${req.baseUrl}${req.path}`,
+
+			res.setPageData({
+				page: "extensions.ejs",
 				pageTitle: "My GAwesomeBot Extensions",
 				serverData: {
 					id: req.user.id,
@@ -162,6 +224,7 @@ controllers.my = async (req, res) => {
 				rawCount: (galleryDocuments || []).length,
 				extensions: galleryDocuments || [],
 			});
+			res.render();
 		} catch (err) {
 			renderError(res, "An error occurred while fetching extension data.");
 		}
@@ -170,32 +233,34 @@ controllers.my = async (req, res) => {
 	}
 };
 
-controllers.builder = async (req, res) => {
+controllers.builder = async (req, { res }) => {
 	if (req.isAuthenticated()) {
 		const renderPage = extensionData => {
-			res.render("pages/extensions.ejs", {
-				authUser: req.isAuthenticated() ? parseAuthUser(req.user) : null,
-				currentPage: `${req.baseUrl}${req.path}`,
+			res.setServerData("id", req.user.id);
+
+			res.setPageData({
+				page: "extensions.ejs",
 				pageTitle: `${extensionData.name ? `${extensionData.name} - ` : ""}GAwesomeBot Extension Builder`,
-				serverData: {
-					id: req.user.id,
-				},
 				activeSearchQuery: req.query.q,
 				mode: "builder",
 				extensionData,
+				versionData: extensionData.versions ? extensionData.versions.id(extensionData.version) : {},
 				events: AllowedEvents,
+				scopes: Scopes,
 			});
+
+			res.render();
 		};
 
 		if (req.query.extid) {
 			try {
 				const galleryDocument = await Gallery.findOne({
-					_id: req.query.extid,
+					_id: new ObjectID(req.query.extid),
 					owner_id: req.user.id,
-				}).exec();
+				});
 				if (galleryDocument) {
 					try {
-						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.code_id}.gabext`);
+						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.versions.id(galleryDocument.version).code_id}.gabext`);
 					} catch (err) {
 						galleryDocument.code = "";
 					}
@@ -236,30 +301,26 @@ controllers.builder.post = async (req, res) => {
 					}
 				}
 			};
-			const saveExtensionData = (galleryDocument, isUpdate) => {
-				galleryDocument.level = "gallery";
-				galleryDocument.state = "saved";
-				galleryDocument.description = req.body.description;
-				const oldName = galleryDocument.name;
-				const oldID = galleryDocument.code_id;
-				writeExtensionData(galleryDocument, req.body);
+			const saveExtensionData = async (galleryDocument, isUpdate) => {
+				const galleryQueryDocument = galleryDocument.query;
+
+				galleryQueryDocument.set("level", "gallery")
+					.set("description", req.body.description);
+				const newVersion = writeExtensionData(galleryDocument, req.body);
+				if (newVersion && isUpdate) galleryQueryDocument.set("state", galleryDocument.state === "saved" ? "saved" : "version_queue");
+				else if (newVersion) galleryQueryDocument.set("state", "saved");
 
 				if (!isUpdate) {
-					galleryDocument.owner_id = req.user.id;
+					galleryQueryDocument.set("owner_id", req.user.id);
 					dashboardUpdate(req, "/extensions/my", req.user.id);
-				} else {
-					galleryDocument.versions.push({
-						_id: oldName,
-						code_id: oldID,
-					});
-					if (oldName === req.body.name) galleryDocument.name = `${galleryDocument.name} (2)`;
 				}
-				const validation = galleryDocument.validateSync();
+
+				const validation = galleryDocument.validate();
 				if (validation) {
 					winston.warn("Failed to validate extension data", { err: validation });
 					return sendResponse(true);
 				}
-				galleryDocument.save().catch(err => {
+				await galleryDocument.save().catch(err => {
 					winston.warn(`Failed to save extension metadata: ${err}`);
 					sendResponse(true);
 				});
@@ -268,16 +329,16 @@ controllers.builder.post = async (req, res) => {
 
 			if (req.query.extid) {
 				const galleryDocument = await Gallery.findOne({
-					_id: req.query.extid,
+					_id: new ObjectID(req.query.extid),
 					owner_id: req.user.id,
-				}).exec();
+				});
 				if (galleryDocument) {
-					saveExtensionData(galleryDocument, true);
+					await saveExtensionData(galleryDocument, true);
 				} else {
-					saveExtensionData(new Gallery(), false);
+					await saveExtensionData(await Gallery.new(), false);
 				}
 			} else {
-				saveExtensionData(new Gallery(), false);
+				await saveExtensionData(await Gallery.new(), false);
 			}
 		} else {
 			renderError(res, "Failed to verify extension data!", undefined, 400);
@@ -290,17 +351,20 @@ controllers.builder.post = async (req, res) => {
 controllers.download = async (req, res) => {
 	let extensionDocument;
 	try {
-		extensionDocument = await Gallery.findOne({ _id: req.params.extid }).exec();
+		extensionDocument = await Gallery.findOne(new ObjectID(req.params.extid));
 	} catch (err) {
 		return res.sendStatus(500);
 	}
 	if (extensionDocument && extensionDocument.state !== "saved") {
+		const versionTag = req.query.v || extensionDocument.published_version;
+		const versionDocument = extensionDocument.versions.id(versionTag);
+		if (!versionDocument) return res.sendStatus(404);
 		try {
 			res.set({
-				"Content-Disposition": `${"attachment; filename='"}${extensionDocument.name}.gabext${"'"}`,
+				"Content-Disposition": `${"attachment; filename="}${extensionDocument.name}.gabext`,
 				"Content-Type": "text/javascript",
 			});
-			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${extensionDocument.code_id}.gabext`));
+			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${versionDocument.code_id}.gabext`));
 		} catch (err) {
 			res.sendStatus(500);
 		}
@@ -320,7 +384,7 @@ controllers.gallery.modify = async (req, res) => {
 			const getGalleryDocument = async () => {
 				let doc;
 				try {
-					doc = await Gallery.findOne({ _id: req.params.extid }).exec();
+					doc = await Gallery.findOne(new ObjectID(req.params.extid));
 				} catch (err) {
 					res.sendStatus(500);
 					return null;
@@ -332,12 +396,12 @@ controllers.gallery.modify = async (req, res) => {
 				return doc;
 			};
 			const getUserDocument = async () => {
-				let userDocument = await Users.findOne({ _id: req.user.id });
+				let userDocument = await Users.findOne(req.user.id);
 				if (userDocument) {
 					return userDocument;
 				} else {
 					try {
-						userDocument = await Users.create(new Users({ _id: req.user.id }));
+						userDocument = await Users.new({ _id: req.user.id });
 					} catch (err) {
 						res.sendStatus(500);
 						return null;
@@ -356,32 +420,35 @@ controllers.gallery.modify = async (req, res) => {
 
 			const galleryDocument = await getGalleryDocument();
 			if (!galleryDocument) return;
+			const galleryQueryDocument = galleryDocument.query;
 			switch (req.params.action) {
 				case "upvote": {
 					const userDocument = await getUserDocument();
 					if (!userDocument) return;
 
-					const vote = userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id) === -1 ? 1 : -1;
+					const vote = !userDocument.upvoted_gallery_extensions.includes(galleryDocument._id.toString()) ? 1 : -1;
 					if (vote === 1) {
-						userDocument.upvoted_gallery_extensions.push(galleryDocument._id);
+						userDocument.query.push("upvoted_gallery_extensions", galleryDocument._id.toString());
 					} else {
-						userDocument.upvoted_gallery_extensions.splice(userDocument.upvoted_gallery_extensions.indexOf(galleryDocument._id), 1);
+						userDocument.query.pull("upvoted_gallery_extensions", galleryDocument._id.toString());
 					}
-					galleryDocument.points += vote;
+					galleryQueryDocument.inc("points", vote);
 
 					await galleryDocument.save();
 					await userDocument.save();
 
-					let ownerUserDocument = await Users.findOne({ _id: galleryDocument.owner_id });
-					if (!ownerUserDocument) ownerUserDocument = await Users.create(new Users({ _id: galleryDocument.owner_id }));
-					ownerUserDocument.points += vote * 10;
+					let ownerUserDocument = await Users.findOne(galleryDocument.owner_id);
+					if (!ownerUserDocument) ownerUserDocument = await Users.new({ _id: galleryDocument.owner_id });
+					ownerUserDocument.query.inc("points", vote * 10);
 					await ownerUserDocument.save();
 
 					res.sendStatus(200);
 					break;
 				}
 				case "accept": {
-					galleryDocument.state = "gallery";
+					galleryQueryDocument.set("state", "gallery");
+					galleryQueryDocument.clone.id("versions", galleryDocument.version).set("accepted", true);
+					galleryQueryDocument.set("published_version", galleryDocument.version);
 
 					try {
 						await galleryDocument.save();
@@ -390,29 +457,11 @@ controllers.gallery.modify = async (req, res) => {
 					}
 					res.sendStatus(200);
 
-					const serverDocuments = await Servers.find({
-						extensions: {
-							$elemMatch: {
-								_id: galleryDocument._id,
-							},
-						},
-					}).exec();
-					if (serverDocuments) {
-						serverDocuments.forEach(serverDocument => {
-							serverDocument.extensions.id(galleryDocument._id).updates_available++;
-							serverDocument.save(err => {
-								if (err) {
-									winston.error("Failed to save server data for extension update", { svrid: serverDocument._id }, err);
-								}
-							});
-						});
-					}
-
 					messageOwner(galleryDocument.owner_id, {
 						embed: {
 							color: Colors.GREEN,
 							title: `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉`,
-							description: `View your creation [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id})!`,
+							description: `View your creation [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id.toString()})!`,
 						},
 					});
 					break;
@@ -423,29 +472,31 @@ controllers.gallery.modify = async (req, res) => {
 							embed: {
 								color: Colors.GREEN,
 								title: `Your extension ${galleryDocument.name} has been featured on the GAwesomeBot extension gallery! 🌟`,
-								description: `View your achievement [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id})`,
+								description: `View your achievement [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id.toString()})`,
 							},
 						});
 					}
 
-					galleryDocument.featured = galleryDocument.featured !== true;
-					galleryDocument.save(err => {
-						res.sendStatus(err ? 500 : 200);
-					});
+					galleryQueryDocument.set("featured", galleryDocument.featured !== true);
+					galleryDocument.save()
+						.then(() => res.sendStatus(200))
+						.catch(() => res.sendStatus(500));
 					break;
 				case "reject":
 				case "remove": {
-					const ownerUserDocument2 = await Users.findOne({ _id: galleryDocument.owner_id });
+					const ownerUserDocument2 = await Users.findOne(galleryDocument.owner_id);
 					if (ownerUserDocument2) {
-						ownerUserDocument2.points -= galleryDocument.points * 10;
+						ownerUserDocument2.query.inc("points", -(galleryDocument.points * 10));
 						await ownerUserDocument2.save();
 					}
 
-					galleryDocument.state = "saved";
-					galleryDocument.featured = false;
-					galleryDocument.save(err => {
-						res.sendStatus(err ? 500 : 200);
-					});
+					galleryQueryDocument.clone.id("versions", req.params.action === "remove" ? galleryDocument.published_version : galleryDocument.version).set("accepted", false);
+					galleryQueryDocument.set("state", "saved")
+						.set("featured", false)
+						.set("published_version", null);
+					galleryDocument.save()
+						.then(() => res.sendStatus(200))
+						.catch(() => res.sendStatus(500));
 
 					messageOwner(galleryDocument.owner_id, {
 						embed: {
@@ -459,7 +510,7 @@ controllers.gallery.modify = async (req, res) => {
 				case "publish":
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
 
-					galleryDocument.state = "queue";
+					galleryQueryDocument.set("state", "queue");
 					await galleryDocument.save();
 
 					res.sendStatus(200);
@@ -467,7 +518,8 @@ controllers.gallery.modify = async (req, res) => {
 				case "delete":
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(404);
 
-					await Gallery.findByIdAndRemove(galleryDocument._id).exec();
+					await Gallery.delete({ _id: galleryDocument._id });
+					await Servers.update({ extensions: { $elemMatch: { _id: galleryDocument._id.toString() } } }, { $pull: { extensions: { _id: galleryDocument._id.toString() } } }, { multi: true });
 					dashboardUpdate(req, req.path, req.user.id);
 
 					try {
@@ -481,8 +533,9 @@ controllers.gallery.modify = async (req, res) => {
 				case "unpublish":
 					if (galleryDocument.owner_id !== req.user.id) return res.sendStatus(403);
 
-					galleryDocument.state = "saved";
-					galleryDocument.featured = false;
+					galleryQueryDocument.set("state", "saved")
+						.set("featured", false)
+						.set("published_version", null);
 					await galleryDocument.save();
 
 					res.sendStatus(200);

@@ -1,11 +1,11 @@
 const moment = require("moment");
 const parseDuration = require("parse-duration");
 
-module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocument }, msg, commandData) => {
+module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocument, channelQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix === "." || msg.suffix.trim().toLowerCase() === "clear") {
-			channelDocument.command_cooldown = 0;
-			channelDocument.isCommandCooldownOngoing = false;
+			channelQueryDocument.set("command_cooldown", 0);
+			channelQueryDocument.set("isCommandCooldownOngoing", false);
 			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
@@ -18,7 +18,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 		} else {
 			const cooldown = parseDuration(msg.suffix.trim());
 			if (cooldown && cooldown > 0 && cooldown <= 300000) {
-				channelDocument.command_cooldown = cooldown;
+				channelQueryDocument.set("command_cooldown", cooldown);
 				msg.send({
 					embed: {
 						color: Colors.SUCCESS,

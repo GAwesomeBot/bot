@@ -4,7 +4,7 @@ const { Colors } = require("../../Constants");
 class VoteHandler extends BaseEvent {
 	requirements (msg) {
 		if (!msg.guild) return false;
-		if (msg.editedAt) return false;
+		if (msg.editedAt || msg.type !== "DEFAULT") return false;
 		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
 				return false;
@@ -16,7 +16,7 @@ class VoteHandler extends BaseEvent {
 		return true;
 	}
 	async prerequisite (msg) {
-		this.serverDocument = await this.client.cache.get(msg.guild.id);
+		this.serverDocument = await Servers.findOne(msg.guild.id);
 	}
 
 	async handle (msg) {
@@ -33,8 +33,10 @@ class VoteHandler extends BaseEvent {
 			}
 			const voteString = msg.content.split(/\s+/).slice(1).join(" ");
 			if (member && ![this.client.user.id, msg.author.id].includes(member.id) && !member.user.bot) {
-				const targetUserDocument = await Users.findOne({ _id: member.id });
-				if (targetUserDocument) {
+				const targetUserDocument = await Users.findOne(member.id);
+				// Get author data
+				const authorDocument = await Users.findOne(msg.author.id);
+				if (targetUserDocument && authorDocument) {
 					let voteAction = null;
 
 					// Check for +1 triggers
@@ -42,7 +44,8 @@ class VoteHandler extends BaseEvent {
 						if (voteString.startsWith(voteTrigger)) {
 							voteAction = "upvoted";
 							// Increment points and exit loop
-							targetUserDocument.points++;
+							targetUserDocument.query.inc("points");
+							authorDocument.query.inc("points", -1);
 							break;
 						}
 					}
@@ -57,22 +60,20 @@ class VoteHandler extends BaseEvent {
 						const saveTargetUserDocument = async () => {
 							try {
 								await targetUserDocument.save();
+								await authorDocument.save().catch(err => {
+									winston.debug("Failed to save user data for points", { usrid: msg.author.id }, err);
+								});
 							} catch (err) {
 								winston.debug(`Failed to save user data for points`, { usrid: member.id }, err);
 							}
-							winston.silly(`User "${member.user.tag}" ${voteAction} by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+							winston.verbose(`User "${member.user.tag}" ${voteAction} by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 						};
 
 						if (voteAction === "gilded") {
-							// Get author data
-							const authorDocument = await Users.findOne({ _id: msg.author.id });
 							if (authorDocument) {
 								if (authorDocument.points > 10) {
-									authorDocument.points -= 10;
-									await authorDocument.save().catch(err => {
-										winston.debug("Failed to save user data for points", { usrid: msg.author.id }, err);
-									});
-									targetUserDocument.points += 10;
+									authorDocument.query.inc("points", -10);
+									targetUserDocument.query.inc("points", 10);
 									await saveTargetUserDocument();
 								} else {
 									winston.verbose(`User "${msg.author.tag}" does not have enough points to gild "${member.user.tag}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
@@ -103,12 +104,12 @@ class VoteHandler extends BaseEvent {
 				const message = fetchedMessages && fetchedMessages.first();
 				if (message && ![this.client.user.id, msg.author.id].includes(message.author.id) && !message.author.bot) {
 					// Get target user data
-					const targetUserDocument = await Users.findOne({ _id: message.author.id });
+					const targetUserDocument = await Users.findOne(message.author.id);
 					if (targetUserDocument) {
-						winston.info(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+						winston.verbose(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 
 						// Increment points
-						targetUserDocument.points++;
+						targetUserDocument.query.inc("points");
 
 						// Save changes to targetUserDocument2
 						await targetUserDocument.save().catch(err => {

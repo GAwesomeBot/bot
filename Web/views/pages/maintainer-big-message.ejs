@@ -4,7 +4,7 @@
 	<title>BigMessage - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 
 	<section class="section is-white">
@@ -24,7 +24,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field">
 							<div class="control">
 								<textarea name="message" class="textarea is-primary" maxlength="2000" placeholder="Message to send, in markdown"></textarea>

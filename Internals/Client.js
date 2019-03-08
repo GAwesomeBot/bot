@@ -12,6 +12,7 @@ const { RemoveFormatting } = require("../Modules/Utils/index");
 const {
 	Constants: {
 		LoggingLevels,
+		WorkerTypes,
 	},
 	Errors: {
 		Error: GABError,
@@ -31,6 +32,10 @@ module.exports = class GABClient extends DJSClient {
 		super(options);
 		// Value set once READY triggers
 		this.isReady = false;
+
+		this.debugMode = options.debugMode || false;
+
+		this.officialMode = ["344473886337007617", "231849525185216512"].includes(auth.discord.clientID);
 
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Collection();
@@ -110,7 +115,8 @@ module.exports = class GABClient extends DJSClient {
 
 			this.messageListeners[channel.id][user.id] = entry;
 
-			this.setTimeout(() => {
+			if (this.messageListeners[channel.id][user.id].timeout) this.clearTimeout(this.messageListeners[channel.id][user.id].timeout);
+			this.messageListeners[channel.id][user.id].timeout = this.setTimeout(() => {
 				if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
 					this.deleteAwaitPMMessage(channel, user);
 				}
@@ -193,7 +199,7 @@ module.exports = class GABClient extends DJSClient {
 		try {
 			privateCommandModules[command] = reload(`../Commands/PM/${command}.js`);
 		} catch (err) {
-			winston.verbose(`Failed to reload private command "${command}"`, err);
+			winston.debug(`Failed to reload private command "${command}"`, err);
 			if (returnError) return err;
 		}
 	}
@@ -203,7 +209,7 @@ module.exports = class GABClient extends DJSClient {
 			command = this.getPublicCommandName(command);
 			commandModules[command] = reload(`../Commands/Public/${command}.js`);
 		} catch (err) {
-			winston.verbose(`Failed to reload public command "${command}"`, err);
+			winston.debug(`Failed to reload public command "${command}"`, err);
 			if (returnError) return err;
 		}
 	}
@@ -213,7 +219,7 @@ module.exports = class GABClient extends DJSClient {
 			command = this.getSharedCommandName(command);
 			sharedModules[command] = reload(`../Commands/Shared/${command}.js`);
 		} catch (err) {
-			winston.verbose(`Failed to reload shared command "${command}"`, err);
+			winston.debug(`Failed to reload shared command "${command}"`, err);
 			if (returnError) return err;
 		}
 	}
@@ -507,7 +513,7 @@ module.exports = class GABClient extends DJSClient {
 	 * @param {Discord.GuildMember} [affectedUser] The affected member
 	 * @returns {Object} Object containing the results
 	 */
-	async canDoActionOnMember (guild, member, affectedUser = null, type = null) {
+	canDoActionOnMember (guild, member, affectedUser = null, type = null) {
 		if (type) {
 			switch (type.toLowerCase()) {
 				case "ban": {
@@ -526,6 +532,56 @@ module.exports = class GABClient extends DJSClient {
 						obj.canClientBan = guild.me.permissions.has("BAN_MEMBERS");
 						obj.memberAboveAffected = true;
 					}
+					return obj;
+				}
+				case "kick": {
+					const obj = {
+						canClientKick: false,
+						memberAboveAffected: false,
+					};
+					if (affectedUser && affectedUser.bannable) obj.canClientKick = true;
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					if (affectedUser === null) {
+						obj.canClientKick = guild.me.permissions.has("KICK_MEMBERS");
+						obj.memberAboveAffected = true;
+					}
+					return obj;
+				}
+				case "manage": {
+					const obj = {
+						canClientManage: false,
+						memberAboveAffected: false,
+					};
+					if (affectedUser && affectedUser.manageable) obj.canClientManage = true;
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					if (affectedUser === null) {
+						obj.canClientManage = guild.me.permissions.has("MANAGE_NICKNAMES");
+						obj.memberAboveAffected = true;
+					}
+					return obj;
+				}
+				case "mute": {
+					const obj = {
+						canClientMute: false,
+						memberAboveAffected: false,
+					};
+					if (member.roles.highest && affectedUser && affectedUser.roles.highest) {
+						if (member.roles.highest.comparePositionTo(affectedUser.roles.highest) > 0) {
+							obj.memberAboveAffected = true;
+						}
+					}
+					if (member.id === guild.ownerID) obj.memberAboveAffected = true;
+					obj.canClientMute = guild.me.permissions.has("MANAGE_ROLES");
 					return obj;
 				}
 			}
@@ -555,13 +611,15 @@ module.exports = class GABClient extends DJSClient {
 	 * Check if a user has leveled up a rank.
 	 * @param {Discord.Guild} server The guild containing the member.
 	 * @param {Document} serverDocument The database server document for the guild.
+	 * @param {Query} serverQueryDocument The Query Document
 	 * @param {Discord.GuildMember} member The GuildMember to check if he leveled up.
-	 * @param {Document} memberDocument The database member document from the guild.
+	 * @param {Object} memberDocument The database member document from the guild.
 	 * @param {Boolean} [override=false] A boolean that represents if the rank score should be calculated with the new scores or not.
 	 * @returns {?Promise<?String>} String containing the new role ID for leveling up.
 	 */
-	async checkRank (server, serverDocument, member, memberDocument, override = false) {
+	async checkRank (server, serverDocument, serverQueryDocument, member, memberDocument, override = false) {
 		if (member && member.id !== this.user.id && !member.user.bot && server) {
+			const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
 			const currentRankScore = memberDocument.rank_score + (override ? 0 : computeRankScores(memberDocument.messages, memberDocument.voice));
 			const ranks = serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score);
 			let returnRank;
@@ -569,14 +627,14 @@ module.exports = class GABClient extends DJSClient {
 				if (returnRank) return;
 				if (currentRankScore <= rank.max_score || i === serverDocument.config.ranks_list.length - 1) {
 					if (memberDocument.rank !== rank._id && !override) {
-						memberDocument.rank = rank._id;
+						memberQueryDocument.set("rank", rank._id);
 						if (serverDocument.config.ranks_list) {
 							if (serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.status_messages.member_rank_updated_message.isEnabled) {
 								// Send member_rank_updated_message if necessary
 								if (serverDocument.config.moderation.status_messages.member_rank_updated_message.type === "message") {
 									const ch = server.channels.get(serverDocument.config.moderation.status_messages.member_rank_updated_message.channel_id);
 									if (ch) {
-										const channelDocument = serverDocument.channels.id(ch.id);
+										const channelDocument = serverQueryDocument.clone.id("channels", ch.id).val;
 										if (!channelDocument || channelDocument.bot_enabled) {
 											ch.send({
 												content: `${member},`,
@@ -601,7 +659,7 @@ module.exports = class GABClient extends DJSClient {
 								Users.findOne({ _id: member.id })
 									.then(async userDocument => {
 										if (userDocument) {
-											userDocument.points += 100;
+											userDocument.query.inc("points", 100);
 											await userDocument.save();
 										}
 									})
@@ -614,7 +672,7 @@ module.exports = class GABClient extends DJSClient {
 								const role = server.roles.get(rank.role_id);
 								if (role) {
 									try {
-										member.roles.add(role, `Added member to the role for leveling up in ranks.`)
+										member.roles.add(role, `Added member to role for leveling up in ranks.`)
 											.catch(err => {
 												throw err;
 											});
@@ -653,20 +711,24 @@ module.exports = class GABClient extends DJSClient {
 	 */
 	// TODO: Rewrite this to hell
 	async handleViolation (server, serverDocument, channel, member, userDocument, memberDocument, userMessage, adminMessage, strikeMessage, action, roleID) {
-		roleID = roleID.id || roleID;
+		const serverQueryDocument = serverDocument.query;
+		const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
+		const userQueryDocument = userDocument.query;
+
+		roleID = roleID ? roleID.id || roleID : null;
 		this.logMessage(serverDocument, LoggingLevels.INFO, `Handling a violation by member "${member.user.tag}"; ${adminMessage}`, null, member.id);
 
 		// Deduct 50 GAwesomePoints if necessary
 		if (serverDocument.config.commands.points.isEnabled) {
-			userDocument.points -= 50;
+			userQueryDocument.inc("points", -50);
 			await userDocument.save().catch(userErr => {
 				winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
 			});
 		}
 
 		// Add a strike for the user
-		memberDocument.strikes.push({
-			_id: this.user.id,
+		memberQueryDocument.push("strikes", {
+			admin: this.user.id,
 			reason: strikeMessage,
 		});
 
@@ -684,7 +746,7 @@ module.exports = class GABClient extends DJSClient {
 
 		const blockMember = async failedAction => {
 			if (!serverDocument.config.blocked.includes(member.id)) {
-				serverDocument.config.blocked.push(member.id);
+				serverQueryDocument.push("config.blocked", member.id);
 			}
 			try {
 				await member.send({
@@ -901,8 +963,8 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	/**
- 	 * Mutes a member of a server in a channel
- 	 * @param {Discord.TextChannel} channel The channel to mute in
+	 * Mutes a member of a server in a channel
+	 * @param {Discord.TextChannel} channel The channel to mute in
 	 * @param {Discord.GuildMember} member The member to mute
 	 * @param {String} [reason] Optional reason for the mute
 	 */
@@ -920,8 +982,8 @@ module.exports = class GABClient extends DJSClient {
 	}
 
 	/**
- 	 * Unmute a member of a server in a channel
- 	 * @param {Discord.GuildChannel} channel The channel to unmute in
+	 * Unmute a member of a server in a channel
+	 * @param {Discord.GuildChannel} channel The channel to unmute in
 	 * @param {Discord.GuildMember} member The member to unmute
 	 * @param {String} [reason] Optional reason for the unmute
 	 */
@@ -929,8 +991,8 @@ module.exports = class GABClient extends DJSClient {
 		if (this.isMuted(channel, member) && channel.type === "text") {
 			const overwrite = channel.permissionOverwrites.get(member.id);
 			if (overwrite) {
-				const allowedPerms = overwrite.allowed;
-				const deniedPerms = overwrite.denied;
+				const allowedPerms = overwrite.allow;
+				const deniedPerms = overwrite.deny;
 				if (this.hasOverwritePerms(allowedPerms) || this.hasOverwritePerms(deniedPerms)) {
 					try {
 						await channel.updateOverwrite(member.id, {
@@ -991,7 +1053,7 @@ module.exports = class GABClient extends DJSClient {
 	async logMessage (serverDocument, level, content, chid, usrid) {
 		try {
 			if (serverDocument && level && content) {
-				const logCount = (await Servers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]).exec())[0].logs;
+				const logCount = (await Servers.aggregate([{ $match: { _id: serverDocument._id } }, { $project: { logs: { $size: "$logs" } } }]))[0].logs;
 				Servers.update({ _id: serverDocument._id }, {
 					$push: {
 						logs: {
@@ -999,17 +1061,33 @@ module.exports = class GABClient extends DJSClient {
 							content: content,
 							channelid: chid ? chid : undefined,
 							userid: usrid ? usrid : undefined,
+							timestamp: Date.now(),
 						},
 					},
-				}).exec();
+				});
 				if (logCount >= 200) {
-					await Servers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } }).exec();
+					await Servers.update({ _id: serverDocument._id }, { $pop: { logs: -1 } });
 				}
 			}
 		} catch (err) {
 			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
 		}
 		return serverDocument;
+	}
+
+	/**
+	 * Runs a message (command or keyword) extension on the extension worker
+	 * @param {GABMessage} msg
+	 * @param {Object} extensionConfigDocument
+	 * @returns {Promise<*>}
+	 */
+	async runExtension (msg, extensionConfigDocument) {
+		const result = await this.workerManager.sendValueToWorker(WorkerTypes.EXTENSION, {
+			msg: msg.id, suffix: msg.suffix, guild: msg.guild.id, ch: msg.channel.id,
+			ext: extensionConfigDocument._id, extv: extensionConfigDocument.version,
+		});
+		if (result === false) winston.debug(`Failed to run message extension in guild.`, { msgid: msg.id, svrid: msg.guild.id, extid: extensionConfigDocument._id, extv: extensionConfigDocument.version });
+		return result;
 	}
 
 	/**
@@ -1080,7 +1158,7 @@ module.exports = class GABClient extends DJSClient {
 		for (const i of this._intervals) Timeouts.clearInterval(i);
 		this._timeouts.clear();
 		this._intervals.clear();
-		return this.manager.destroy();
+		return super.destroy();
 	}
 
 	async init () {

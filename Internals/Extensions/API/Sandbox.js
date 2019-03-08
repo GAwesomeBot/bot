@@ -3,93 +3,87 @@ const {
 	Errors: {
 		Error: GABError,
 	},
+	Constants: {
+		Scopes,
+	},
 } = require("../../index");
 class Sandbox {
-	constructor (rawBot, serverDocument, extensionDocument, rawParams, scopes) {
+	constructor (rawClient, { extensionDocument, versionDocument, msg, guild, serverDocument, extensionConfigDocument, eventData }, scopes) {
 		const modules = {};
-
-		// Import Basic Global Objects and Functions
-		this.Array = Array;
-		this.Date = Date;
-		this.JSON = JSON;
-		this.Math = Math;
-		this.Number = Number;
-		this.Object = Object;
-		this.RegExp = RegExp;
-		this.decodeURI = decodeURI;
-		this.decodeURIComponent = decodeURIComponent;
-		this.encodeURI = encodeURI;
-		this.encodeURIComponent = encodeURIComponent;
-		this.isFinite = isFinite;
-		this.isNaN = isNaN;
-		this.parseFloat = parseFloat;
-		this.parseInt = parseInt;
 
 		// Import Third-Party Modules
 		modules.rss = { module: "feed-read", key: "get" };
 		modules.moment = { module: "moment" };
-		modules.fetch = { module: "snekfetch" };
+		modules.fetch = { module: "chainfetch" };
 		modules.xmlparser = { module: "xml-parser" };
 
 		// Import global GAwesomeBot variables
-		if (extensionDocument.type === "command") {
+		if (versionDocument.type === "command") {
 			modules.command = {
-				module: {
-					prefix: rawParams.guild.commandPrefix,
-					suffix: rawParams.suffix.trim(),
-					key: extensionDocument.key,
-				},
+				module: () => ({
+					prefix: serverDocument.config.command_prefix,
+					suffix: msg.suffix.trim(),
+					key: extensionConfigDocument.key,
+				}),
 				custom: true,
 			};
 		}
-		if (extensionDocument.type === "keyword" && rawParams.keywordMatch) {
+		if (versionDocument.type === "keyword" && extensionConfigDocument.keywords) {
 			modules.keyword = {
-				module: rawParams.keywordMatch,
+				module: () => ({
+					keywords: extensionConfigDocument.keywords,
+				}),
 				custom: true,
 			};
 		}
-		if (rawParams.msg) {
+		if (msg) {
 			modules.message = {
-				module: new API.Message(rawParams.msg, scopes),
+				module: () => new API.Message(API, rawClient, msg, scopes, true),
 				custom: true,
 			};
 		}
-		if (rawParams.ch) {
+		if (msg) {
 			modules.channel = {
-				module: new API.Channel(rawParams.ch, scopes),
+				module: () => new API.Channel(msg.channel, scopes),
 				custom: true,
-				scope: scopes.channels.read,
+				scope: Scopes.channels_read.scope,
+			};
+		}
+		if (eventData) {
+			modules.event = {
+				module: () => new API.Event(eventData, scopes),
+				custom: true,
 			};
 		}
 		modules.guild = {
-			module: new API.Guild(rawParams.guild, scopes),
+			module: () => new API.Guild(guild, scopes),
 			custom: true,
-			scope: scopes.guild.read,
+			scope: Scopes.guild_read.scope,
 		};
 		modules.config = {
-			module: serverDocument.toObject().config,
+			module: () => serverDocument.config,
 			custom: true,
-			scope: scopes.accessDocument,
+			scope: Scopes.config.scope,
 		};
 		modules.extension = {
-			module: new API.Extension(extensionDocument, serverDocument),
+			module: () => new API.Extension(extensionDocument, serverDocument),
 			custom: true,
 		};
 		modules.bot = {
-			module: new API.Client(rawBot, rawParams.guild, serverDocument, scopes),
+			module: () => new API.Client(rawClient, guild, serverDocument, scopes),
 			custom: true,
 		};
 
 		this.require = name => {
 			const module = modules[name];
-			if (!module) throw new GABError("UNKNOWN_MODULE");
-			if (module.scope && !module.scope) throw new GABError("MISSING_SCOPES");
+			if (!module) throw new GABError("UNKNOWN_MODULE", name);
+			if (module.scope && !scopes.includes(module.scope)) throw new GABError("MISSING_SCOPES");
 			if (module.key && !module.custom) {
 				return require(module.module)[module.key];
-			} else if (!module.key && !module.custom) {
+			} else if (!module.custom) {
 				return require(module.module);
 			} else {
-				return module.module;
+				return module.module();
 			}
 		};
 	}
