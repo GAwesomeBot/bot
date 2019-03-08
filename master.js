@@ -9,7 +9,7 @@ const ascii = `
 			`;
 
 const { Traffic, GAwesomeClient } = require("./Modules");
-const { Boot, Sharder } = require("./Internals");
+const { Boot, Sharder, CLI } = require("./Internals");
 const { Stopwatch } = require("./Modules/Utils");
 const centralClient = new GAwesomeClient(null);
 
@@ -114,9 +114,11 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 		sharder.cluster.on("online", worker => {
 			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
-
 		if (!scope.safeMode) {
 			sharder.traffic = new Traffic(sharder.IPC, false);
+
+			winston.silly("Creating a STDIN CLI instance.");
+			const cli = new CLI(sharder, db, sharder.traffic);
 
 			// Sharder events
 			sharder.ready = 0;
@@ -125,6 +127,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				sharder.ready++;
 				if (sharder.ready === sharder.count) {
 					winston.info("All shards connected.");
+					cli.setup();
 				}
 			});
 

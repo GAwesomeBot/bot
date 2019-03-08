@@ -940,6 +940,45 @@ const commands = {
 			perm: "none",
 		},
 	},
+
+	cli: {
+		/*
+		__base: {
+			description: "Hi there!",
+			usage: "[optional] <required>",
+			isMultiline: false,
+		}*/
+		shutdown: {
+			description: "Shuts down the bot.",
+		},
+		restart: {
+			description: "Restarts the bot.",
+		},
+		help: {
+			description: "Gives help.",
+		},
+		leval: {
+			description: "Evaluates something in the command's context.",
+			usage: "[code]",
+			isMultiline: true,
+		},
+		seval: {
+			description: "Evaluates something in the shard context.",
+			usage: "[shard] <code>",
+			isMultiline: true,
+		},
+
+		promote: {
+			description: "Adds/removes (sudo) maintainers.",
+			usage: "<add|remove> [sudo] <ids...>",
+		},
+
+		bigmessage: {
+			description: "Sends a BigMessage.",
+			usage: "<message>",
+			isMultiline: true,
+		},
+	},
 };
 
 module.exports = commands;

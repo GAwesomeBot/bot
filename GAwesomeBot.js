@@ -51,6 +51,16 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	client.central = new GAwesomeClient(client);
 	client.tempStorage = new TemporaryStorage();
 
+	client.IPC.on("updateConfig", async (msg, callback) => {
+		try {
+			delete require.cache[require.resolve("./Configurations/config.json")];
+			global.configJSON = require("./Configurations/config.json");
+			return callback({ error: false });
+		} catch (err) {
+			return callback({ error: true });
+		}
+	});
+
 	client.IPC.on("getGuild", async (msg, callback) => {
 		if (msg.target === "*") {
 			let result = {};
@@ -87,7 +97,6 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		const guild = client.guilds.get(msg.guild);
 		const channel = guild.channels.get(msg.channel);
 		const member = guild.members.get(msg.member);
-
 		await client.muteMember(channel, member);
 	});
 
@@ -928,3 +937,4 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 }).catch(err => {
 	throw err;
 });
+

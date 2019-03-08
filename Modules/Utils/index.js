@@ -1,4 +1,5 @@
 module.exports = {
+	CLI: require("./CLI/"),
 	ClearServerStats: require("./ClearServerStats.js"),
 	FileExists: require("./FileExists.js"),
 	FilterChecker: require("./FilterChecker.js"),

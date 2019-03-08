@@ -22,6 +22,19 @@ const Messages = {
 	UNAUTHORIZED_USER: user => `"${user.tag}" is not part of the sudo or normal maintainer list.`,
 	SHARED_INVALID_MODE: (mode, command) => `"${mode}" is an invalid mode for command ${command}`,
 
+	// CLI errors
+	CLI_PARAM_INVALID: (paramName, receivedType, allowedTypes) => {
+		const mapTo = string => {
+			if (typeof string !== "string") string = string.constructor.name;
+			return string;
+		};
+
+		if (Array.isArray(allowedTypes)) {
+			allowedTypes = allowedTypes.map(mapTo).join("|");
+		}
+		if (typeof allowedTypes !== "string") allowedTypes = mapTo(allowedTypes);
+		return `Invalid type of "${paramName}" argument: should be ${allowedTypes}, passed ${receivedType}`;
+	},
 	// Action-related
 	MISSING_ACTION_TYPE: `You forgot to specify a type!`,
 
