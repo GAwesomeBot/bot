@@ -44,6 +44,10 @@ active-handles@^1.1.0:
     function-origin "~1.1.0"
     xtend "~4.0.0"
 
+adm-zip@^0.4.13:
+  version "0.4.13"
+  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.13.tgz#597e2f8cc3672151e1307d3e95cddbc75672314a"
+
 after@0.8.2:
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/after/-/after-0.8.2.tgz#fedb394f9f0e02aa9768e702bda23b505fae7e1f"
@@ -342,9 +346,9 @@ camelcase@^4.1.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
 "canvas-constructor@github:kyranet/canvasConstructor":
-  version "1.1.0"
-  uid c79631f29ede1dc4411409d67ba55dfd5f4b59b3
-  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/c79631f29ede1dc4411409d67ba55dfd5f4b59b3"
+  version "3.0.1"
+  uid "7f16166aac9028a57d59addea2aad71b76b47bab"
+  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/7f16166aac9028a57d59addea2aad71b76b47bab"
 
 canvas-prebuilt@^2.0.0-alpha.12:
   version "2.0.0-alpha.12"
@@ -472,6 +476,10 @@ commander@2.x, commander@>=0.3.0:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
+commander@^2.9.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.19.0.tgz#f6198aa84e5b83c46054b94ddedbfed5ee9ff12a"
+
 commander@~2.13.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
@@ -591,6 +599,10 @@ cryptiles@3.x.x:
   resolved "https://registry.yarnpkg.com/cryptiles/-/cryptiles-3.1.2.tgz#a89fbb220f5ce25ec56e8c4aa8a4fd7b5b0d29fe"
   dependencies:
     boom "5.x.x"
+
+cssfilter@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/cssfilter/-/cssfilter-0.0.8.tgz#6564caccba8a76dd9b4b920668b9fb7fda50e54c"
 
 cycle@1.0.x, cycle@~1.0.3:
   version "1.0.3"
@@ -2615,6 +2627,12 @@ shebang-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
 
+showdown-xss-filter@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/showdown-xss-filter/-/showdown-xss-filter-0.2.0.tgz#39857bae56d6184979f26876b187bb87e9f4f04c"
+  dependencies:
+    xss "0.2.x"
+
 showdown@^1.8.6:
   version "1.8.6"
   resolved "https://registry.yarnpkg.com/showdown/-/showdown-1.8.6.tgz#91ea4ee3b7a5448aaca6820a4e27e690c6ad771c"
@@ -3164,6 +3182,13 @@ xmlhttprequest-ssl@~1.5.4:
 xss-filters@^1.2.7:
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/xss-filters/-/xss-filters-1.2.7.tgz#59fa1de201f36f2f3470dcac5f58ccc2830b0a9a"
+
+xss@0.2.x:
+  version "0.2.18"
+  resolved "https://registry.yarnpkg.com/xss/-/xss-0.2.18.tgz#6df5fb5ca28bdc51e78624ff63f19e13ebd73bab"
+  dependencies:
+    commander "^2.9.0"
+    cssfilter "^0.0.8"
 
 xtend@^4.0.0, xtend@~4.0.0:
   version "4.0.1"
