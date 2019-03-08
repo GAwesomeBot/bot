@@ -116,7 +116,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 		});
 		if (!scope.safeMode) {
 			sharder.traffic = new Traffic(sharder.IPC, false);
-			
+
 			winston.silly("Creating a STDIN CLI instance.");
 			const cli = new CLI(sharder, db, sharder.traffic);
 
