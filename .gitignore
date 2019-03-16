@@ -3,6 +3,7 @@ Configurations/config.js
 Configurations/auth.js
 node_modules/
 .idea/
+.env
 package-cache*.json
 
 Temp/*.json

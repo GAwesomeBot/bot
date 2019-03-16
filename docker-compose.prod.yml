@@ -1,0 +1,11 @@
+version: "3"
+services:
+
+  bot:
+    image: "${DOCKER_REPO}/${DOCKER_IMAGE}"
+    restart: always
+    volumes:
+      - ./Configurations/auth.js:/home/node/GAwesomeBot/Configurations/auth.js
+      - ./Configurations/config.js:/home/node/GAwesomeBot/Configurations/config.js
+      - ./Configurations/config.json:/home/node/GAwesomeBot/Configurations/config.json
+      - ./logs:/home/node/GAwesomeBot/logs

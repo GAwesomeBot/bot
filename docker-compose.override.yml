@@ -1,0 +1,17 @@
+version: "3"
+services:
+
+  bot:
+    image: "${DOCKER_IMAGE}"
+    build:
+      context: .
+      args:
+        - NODE_VER=${NODE_VER}
+    volumes:
+      - ./:/home/node/GAwesomeBot
+      - node_modules_volume:/home/node/GAwesomeBot/node_modules
+    ports:
+      - ${NODE_DEBUG}:${NODE_DEBUG}
+
+volumes:
+  node_modules_volume:
