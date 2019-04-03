@@ -2,7 +2,7 @@ const Extendable = require("../ExtendableBase");
 
 module.exports = class extends Extendable {
 	constructor () {
-		super(["GroupDMChannel", "DMChannel", "TextChannel"], "postable");
+		super(["DMChannel", "TextChannel"], "postable");
 	}
 
 	get extend () {
