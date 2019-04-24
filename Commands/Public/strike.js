@@ -35,7 +35,7 @@ module.exports = async ({ Constants: { Text, Colors }, client }, { serverDocumen
 		}
 
 		let ModLogID = await ModLog.create(msg.guild, "Strike", member, msg.member, reason);
-		if (isNaN(ModLogID) && !["INVALID_MODLOG_CHANNEL", "MISSING_MODLOG_CHANNEL"].includes(ModLogID.type)) throw ModLogID;
+		if (ModLogID && isNaN(ModLogID) && !["INVALID_MODLOG_CHANNEL", "MISSING_MODLOG_CHANNEL"].includes(ModLogID.code)) throw ModLogID;
 		else if (isNaN(ModLogID)) ModLogID = null;
 
 		targetMemberQueryDocument.push("strikes", {
