@@ -21,7 +21,7 @@
     "async-dl-github-repo": "^2.0.0",
     "body-parser": "^1.18.3",
     "canvas-constructor": "github:kyranet/canvasConstructor",
-    "canvas-prebuilt": "^2.0.0-alpha.12",
+    "canvas-prebuilt": "^2.0.0-alpha.14",
     "chainfetch": "^1.2.0",
     "chalk": "^1.1.3",
     "circular-json": "^0.5.5",
