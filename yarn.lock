@@ -2546,9 +2546,9 @@ showdown-xss-filter@^0.2.0:
   dependencies:
     xss "0.2.x"
 
-showdown@^1.8.6:
-  version "1.8.6"
-  resolved "https://registry.yarnpkg.com/showdown/-/showdown-1.8.6.tgz#91ea4ee3b7a5448aaca6820a4e27e690c6ad771c"
+showdown@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/showdown/-/showdown-1.9.0.tgz#d49d2a0b6db21b7c2e96ef855f7b3b2a28ef46f4"
   dependencies:
     yargs "^10.0.3"
 
