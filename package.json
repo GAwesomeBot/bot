@@ -57,7 +57,7 @@
     "process-as-promised": "^1.0.1",
     "remove-markdown": "^0.3.0",
     "require-reload": "^0.2.2",
-    "rss-parser": "^3.6.0",
+    "rss-parser": "^3.7.0",
     "showdown": "^1.9.0",
     "showdown-xss-filter": "^0.2.0",
     "snekfetch": "^4.0.4",
