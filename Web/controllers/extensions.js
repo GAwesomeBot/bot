@@ -25,9 +25,11 @@ controllers.gallery = async (req, { res }) => {
 
 	const renderPage = async (upvotedData, serverData) => {
 		const extensionState = req.path.substring(req.path.lastIndexOf("/") + 1);
+		const extensionLevel = extensionState === "gallery" ? ["gallery"] : configJSON.maintainers.includes(req.user.id) ? ["gallery", "third"] : ["gallery"];
 		try {
 			let rawCount = await Gallery.count({
 				state: { $in: ["version_queue", extensionState] },
+				level: { $in: extensionLevel },
 			});
 			if (!rawCount) {
 				rawCount = 0;
@@ -35,6 +37,7 @@ controllers.gallery = async (req, { res }) => {
 
 			const matchCriteria = {
 				state: { $in: ["version_queue", extensionState] },
+				level: { $in: extensionLevel },
 			};
 			if (req.query.id) {
 				matchCriteria._id = new ObjectID(req.query.id);
@@ -137,6 +140,9 @@ controllers.installer = async (req, { res }) => {
 	const versionTag = parseInt(req.query.v) || galleryDocument.published_version;
 	if (!galleryDocument.versions.id(versionTag)) return renderError(res, "That extension version doesn't exist!", undefined, 404);
 	const extensionData = await parsers.extensionData(req, galleryDocument, versionTag);
+	if ((!extensionData.accepted && !configJSON.maintainers.includes(req.user.id)) || galleryDocument.level === "third") {
+		return renderError(res, "You do not have sufficient permission to install this extension.", undefined, 403);
+	}
 
 	if (!req.query.svrid) {
 		const serverData = [];

@@ -1,8 +1,7 @@
-const Updater = require("../../Modules/Updater");
 const os = require("os");
 
 module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandData) => {
-	const version = await Updater.get(configJSON.branch, configJSON.version);
+	const version = await client.central.API("versions").branch(configJSON.branch).get(configJSON.version);
 	if (msg.suffix) {
 		const args = msg.suffix.split(" ");
 		if (args.includes("-h") || args.includes("--help")) {
@@ -53,16 +52,16 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				});
 			}
 			if (args.includes("-v") || args.includes("--version")) {
-				if (version === 404) {
+				if (!version.valid) {
 					fields.push({
 						name: "GAwesomeBot Version Information",
-						value: `💽 Currently running an unknown version of GAwesomeBot labeled as **${configJSON.version}** on branch **${configJSON.branch}**.`,
+						value: `💽 Currently running an unknown version of GAwesomeBot tagged as **${configJSON.version}** on branch **${configJSON.branch}**.`,
 					});
 				} else {
 					fields.push({
 						name: "GAwesomeBot Version Information",
-						value: `💽 Currently running GAwesomeBot **${version.config.name}**, on branch **${version.branch}**
-								\n🔄 Version is synced with commit **${version.sha}**, and labeled with unique tag **${version.version}**`,
+						value: `💽 Currently running GAwesomeBot **${version.metadata.name}**, on branch **${version.branch}**
+								\n🔄 Version is synced with commit **${version.sha}**, and tagged with unique tag **${version.tag}**`,
 					});
 				}
 			}
@@ -140,7 +139,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 			msg.send({
 				embed: {
 					color: Colors.RESPONSE,
-					title: `GAwesomeBot Debug Information`,
+					title: showDefault ? `GAwesomeBot Debug Information` : ``,
 					description: showDefault ? `Currently on shard with ID ${client.shardID}, out of ${process.env.SHARD_COUNT} shards total.
 											\nShard's ${process.release.name} process is using ${Math.ceil(process.memoryUsage().heapTotal / 1000000)}MB RAM, with PID ${process.pid}.
 											\nShard has been connected to Discord for ${Math.floor(client.uptime / 3600000)} hours, and manages ${client.guilds.size} guild${client.guilds.size === 1 ? "" : "s"} with a ping of ${Math.floor(client.ws.ping)}ms.` : null,
@@ -155,7 +154,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 		msg.send({
 			embed: {
 				color: Colors.INFO,
-				title: `${client.user.tag} running ${version !== 404 ? `GAwesomeBot version ${version.config.name}` : "an unknown GAwesomeBot version"}`,
+				title: `${client.user.tag} running ${version.valid ? `GAwesomeBot version ${version.metadata.name}` : "an unknown GAwesomeBot version"}`,
 				description: `Currently on shard with ID ${client.shardID}, out of ${process.env.SHARD_COUNT} shards total.
 											\nShard's ${process.release.name} process is using ${Math.ceil(process.memoryUsage().heapTotal / 1000000)}MB RAM, with PID ${process.pid}.
 											\nShard has been connected to Discord for ${Math.floor(client.uptime / 3600000)} hours, and manages ${client.guilds.size} guild${client.guilds.size === 1 ? "" : "s"} with a ping of ${Math.floor(client.ws.ping)}ms.`,

@@ -196,6 +196,7 @@ controllers.extensions = async (req, { res }) => {
 		if (!extensionDocument) return null;
 		const obj = await parsers.extensionData(req, extensionDocument, serverExtensionDocument.version);
 		obj.published_version = extensionDocument.published_version;
+		obj.latest_version = extensionDocument.version;
 		obj.level = extensionDocument.level;
 		return obj;
 	}));
@@ -365,7 +366,7 @@ controllers.extensionBuilder.post = async (req, res) => {
 
 			galleryQueryDocument.set("level", "third")
 				.set("description", req.body.description)
-				.set("state", "saved");
+				.set("state", "queue");
 			writeExtensionData(galleryDocument, req.body);
 
 			if (!isUpdate) galleryQueryDocument.set("owner_id", req.user.id);

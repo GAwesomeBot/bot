@@ -12,11 +12,11 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 			winston.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
 			streamerQueryDocument.set("live_state", true);
 
-			const channel = streamerDocument.channel_id ? server.channels.get(streamerDocument.channel_id) : server.defaultChannel;
+			const channel = streamerDocument.channel_id ? server.channels.get(streamerDocument.channel_id) : null;
 			if (channel) {
 				const channelDocument = serverDocument.channels[channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) {
-					channel.send(StreamingTemplate(data));
+					await channel.send(StreamingTemplate(data));
 				}
 			}
 		} else if (!data) {

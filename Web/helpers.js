@@ -41,7 +41,6 @@ module.exports = {
 		controller.post = controller.post ? controller.post : (req, res) => res.sendStatus(405);
 		router.routes.push(new (require("./routes/Route")).DashboardRoute(router, `/:svrid${route}`, middleware, middlewarePOST, controller, controller.post, pullEndpointKey));
 		router.app.io.of(`/dashboard/:svrid${route}`).on("connection", socket => {
-			socket.on("disconnect", () => undefined);
 			if (controller.socket) controller.socket(socket);
 		});
 	},
@@ -50,10 +49,15 @@ module.exports = {
 		middleware = [mw.checkUnavailable, ...middleware, mw.registerTraffic];
 		middlewarePOST = [mw.checkUnavailableAPI, ...middlewarePOST];
 		controller.post = controller.post ? controller.post : (req, res) => res.sendStatus(405);
-		router.routes.push(new (require("./routes/Route")).ConsoleRoute(router, route, permission, middleware, middlewarePOST, controller, controller.post));
+		const newRoute = new (require("./routes/Route")).ConsoleRoute(router, route, permission, middleware, middlewarePOST, controller, controller.post);
+		router.routes.push(newRoute);
 		router.app.io.of(`/dashboard/maintainer${route}`).on("connection", socket => {
-			socket.on("disconnect", () => undefined);
-			if (controller.socket) controller.socket(socket);
+			if (controller.socket) {
+				socket.route = newRoute;
+				socket.request.perm = newRoute.perm;
+				if (!mw.authorizeConsoleSocketAccess(socket)) return;
+				controller.socket(socket);
+			}
 		});
 	},
 

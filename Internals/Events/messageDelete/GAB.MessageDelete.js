@@ -20,7 +20,7 @@ class MessageDelete extends BaseEvent {
 		}
 
 		// Decrement today's message count for server
-		serverQueryDocument.inc("messages_today", -1);
+		if (serverDocument.messages_today > 0) serverQueryDocument.inc("messages_today", -1);
 
 		// Count server stats if enabled in this channel
 		if (channelDocument.isStatsEnabled) {
@@ -48,7 +48,7 @@ class MessageDelete extends BaseEvent {
 					if (!userDocument) userDocument = Users.new({ _id: message.author.id });
 
 					// Decrement points
-					userDocument.inc("points", -1);
+					userDocument.query.inc("points", -1);
 
 					userDocument.save().catch(err => {
 						winston.warn("Failed to save user data for points decrementing", { usrid: message.author.id, err });

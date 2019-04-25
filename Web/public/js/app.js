@@ -664,6 +664,9 @@ GAwesomeUtil.dashboard.connect = () => GAwesomeUtil.dashboardWrapper(() => {
 			$("#update-modal").addClass("is-active");
 		}
 	});
+	GAwesomeData.dashboard.socket.on("err", data => {
+		GAwesomeUtil[data.fatal ? "error" : "warn"](`Dashboard Socket responded with a ${data.error} error code.`);
+	});
 	GAwesomeData.dashboard.socket.on("logs", data => {
 		const line = `[${data.timestamp}] [${data.level}] ${data.message}`;
 		GAwesomeData.dashboard.terminal.print(line);
@@ -744,6 +747,52 @@ GAwesomeUtil.dashboard.post = payload => new Promise((resolve, reject) => {
 	}).success(resolve)
 		.fail(reject);
 });
+
+GAwesomeUtil.dashboard.downloadVersion = btn => {
+	const progress = $("progress.is-appended");
+	const button = $(btn);
+	progress.attr("value", 0);
+	if (button.html() === "Install") {
+		$(".version-update-indicator").css("animation-name", "version-update-indicator-install");
+		$("#version-installer").slideToggle();
+	} else {
+		progress.css("height", ".5rem");
+	}
+	button.addClass("is-loading");
+	const trickle = () => {
+		if (parseInt(progress.attr("value")) > 100) {
+			button.html("Install").removeClass("is-loading");
+			$(".version-update-indicator").css("animation-name", "none");
+			return progress.css("height", "0");
+		}
+		const randomTrickleVal = Math.floor(Math.random() * 10);
+		const randomTrickleTimer = Math.floor(Math.random() * 1000);
+		progress.attr("value", (parseInt(progress.attr("value")) || 0) + randomTrickleVal);
+		console.log(`TRICKLING: ${randomTrickleVal} (RTV) ${randomTrickleTimer} (RTT)`);
+
+		if (button.html() === "Install") {
+			const val = parseInt(progress.attr("value"));
+			if (val > 0 && val < 50) $("#files").fadeIn() && $("#file-content").html(`Installing file ${randomTrickleTimer} from version cache...`);
+			if (val > 50 && val < 80) $("#configs").fadeIn() && $("#files").removeClass("is-info").addClass("is-dark") && $("#file-content").html("Successfully patched 251 new files.");
+			if (val > 80) $("#finish").fadeIn() && $("#configs").removeClass("is-info").addClass("is-dark") && $("#config-content").html("Successfully patched 5 new config files.");
+			if (val >= 100) $("#finish").removeClass("is-info").addClass("is-success") && $("#finish-content").html("Successfully completed installation of version v5.0-ex.") && $("#update-warning").fadeOut();
+		}
+
+		setTimeout(trickle, randomTrickleTimer);
+	};
+	trickle();
+};
+
+GAwesomeUtil.dashboard.switchBranch = elem => {
+	swal("Are you sure?", "Switching branches can lead to unintended side effects and other insanely infuriating issues. Still want to venture into the dark? Switching branches will result in a full reinstall the next time you update.\n\nOnly the strong should continue, you have been warned.", {
+		dangerMode: true,
+		buttons: ["Nevermind", "Switch Branches"],
+	}).then(res => {
+		if (!res) return;
+		$("#branch-selector").attr("disabled", false).focus();
+		$(elem).attr("disabled", true);
+	}).catch(() => null);
+};
 
 GAwesomePaths.landing = () => {
 	$(".section-shortcut-link").click(function handler () {

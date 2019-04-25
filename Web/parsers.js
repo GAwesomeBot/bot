@@ -9,6 +9,7 @@ const md = new showdown.Converter({
 	tasklists: true,
 	smoothLivePreview: true,
 	smartIndentationFix: true,
+	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
 const { Constants } = require("../Internals");
@@ -165,6 +166,8 @@ parsers.extensionData = async (req, galleryDocument, versionTag) => {
 			avatar: owner.avatarURL() || "/static/img/discord-icon.png",
 		},
 		status: galleryDocument.state,
+		level: galleryDocument.level,
+		accepted: versionDocument.accepted,
 		points: galleryDocument.points,
 		relativeLastUpdated: moment(galleryDocument.last_updated).fromNow(),
 		rawLastUpdated: moment(galleryDocument.last_updated).format(configJS.moment_date_format),

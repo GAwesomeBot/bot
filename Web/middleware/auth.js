@@ -140,6 +140,31 @@ module.exports = middleware => {
 		}
 	};
 
+	middleware.authorizeConsoleSocketAccess = socket => {
+		if (socket.request.user && socket.request.user.logged_in) {
+			if (configJSON.maintainers.includes(socket.request.user.id)) {
+				const { perm } = socket.request;
+				if (perm === "maintainer" || canDo(perm, socket.request.user.id)) {
+					socket.request.isAuthorized = true;
+					socket.request.level = process.env.GAB_HOST !== socket.request.user.id ? configJSON.sudoMaintainers.includes(socket.request.user.id) ? 2 : 1 : 0;
+					return true;
+				} else {
+					socket.emit("err", { error: 403, fatal: true });
+					socket.disconnect();
+					return false;
+				}
+			} else {
+				socket.emit("err", { error: 403, fatal: true });
+				socket.disconnect();
+				return false;
+			}
+		} else {
+			socket.emit("err", { error: 401, fatal: true });
+			socket.disconnect();
+			return false;
+		}
+	};
+
 	// Builders
 	middleware.buildAuthenticateMiddleware = router => router.app.passport.authenticate("discord", {
 		failureRedirect: "/error?err=discord",

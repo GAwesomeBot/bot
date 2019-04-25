@@ -490,10 +490,15 @@ Constants.APIs = {
 };
 
 /**
- * Address of GAB's versioning server. Changing this value is not recommended and will almost certainly cause major issues.
+ * Endpoints of GAB's CENTRAL API. Changing this value is not recommended and will almost certainly cause major issues.
  * @type {string}
  */
-Constants.APIs.VERSIONING = "https://status.gawesomebot.com";
+Constants.CENTRAL = {
+	VERSIONING: "http://127.0.0.1:1243/api/versions/",
+	CODEBASE: "https://codeload.github.com/GilbertGobbels/GAwesomeBot/zip/",
+};
+
+Constants.CODEBASE_TOTAL_CHUNK_SIZE = 10300000;
 
 /**
  * Default value of the useragent header on all requests made to third-party endpoints.

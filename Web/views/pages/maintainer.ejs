@@ -60,7 +60,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-file"></i>
 									</span>
-									View<%= pageData.trafficData.hour === 1 ? "" : "s" %> the past hour
+									Views the past hour
 								</div>
 								<div class="title">
                                     <%= pageData.trafficData.hour %>
@@ -95,7 +95,7 @@
 									<span class="icon is-small">
 										<i class="fa fa-code-fork"></i>
 									</span>
-									Bot Version
+									Installed Version
 								</div>
 								<div class="title">
                                     <%= configData.version %>
@@ -107,7 +107,7 @@
 									Latest Version
 								</div>
 								<div class="title">
-                                    <%if (configData.disabled) { %> <%= configData.version %> <% } else { %> <%= configData.latestVersion %> <% } %>
+                                    <% if (configData.disabled) { %> <%= configData.version %> <% } else { %> <%= configData.currentVersion %> <% } %>
 								</div>
 							</a>
 						</div>
@@ -156,7 +156,7 @@
 		labels: ["Total Page Views", "Authenticated Views", "Unique Visitors"],
 		dateFormat: parseDate,
 	  });
-	  <% if (pageData.trafficData.day.length === 0) pageData.trafficData.day[0] = "{_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}" %>
+	  <% if (pageData.trafficData.day.length === 0) pageData.trafficData.day[0] = {_id: Date.now(), pageViews: 0, authViews: 0, uniqueUsers: 0}; %>
 	  new Morris.Line({
 		element: "traffic-chart-day",
 		lineColors: ["#00d1b2", "#ffdd57", "#3273dc"],

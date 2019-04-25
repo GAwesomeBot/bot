@@ -4,10 +4,6 @@
 	<title><%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
 	<% if (!pageData.utd && !pageData.disabled) { %>
-	<link rel="stylesheet" href="/static/css/codemirror.css">
-	<link rel="stylesheet" href="/static/css/codemirror-monokai.css">
-	<script src="/static/js/codemirror.min.js"></script>
-	<script src="/static/js/socket.io-1.4.5.min.js"></script>
 	<script src="/static/js/update.js"></script>
 	<% } %>
 </head>
@@ -38,96 +34,117 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								In this section, you can <strong>update</strong> <%= serverData.name %> to the latest GAwesomeBot files available.
+								In this section, you can <strong>update</strong> <%= serverData.name %> to the latest GAwesomeBot patches available.
 							</div>
 						</div>
 					</article>
-          			<% if (!pageData.disabled && pageData.utd) { %>
-						<section class="hero is-bold is-success" style="border-radius: 3px;">
-							<div class="hero-body has-text-centered">
-								<h1 class="title is-1">
-									Up-to-date
-								</h1>
-								<br>
-								<h5 class="subtitle is-5">
-									You are running <strong><%= JSON.parse(pageData.latestVersion).config.name %></strong> on branch <strong><%= configData.branch %></strong>.
-									<br>
-									There are no updates available.
-								</h5>
-							</div>
-						</section>
-					<% } else if (pageData.disabled) { %>
-            			<section class="hero is-bold is-dark" style="border-radius: 3px;">
-							<div class="hero-body has-text-centered">
-								<h1 class="title is-1">
-									Updates Disabled
-								</h1>
-								<br>
-								<h5 class="subtitle is-5">
-									Version <strong><%= configData.version %></strong> was not found on branch <strong><%= configData.branch %></strong>.<br>
-									Updating has been disabled.
-								</h5>
-							</div>
-						</section>
-					<% } else if (!pageData.utd) { %>
-						<section id="hero-container" class="hero is-bold is-info" style="border-radius: 3px;">
-							<div class="hero-body has-text-centered">
-								<div id="content-container">
-									<h1 class="title is-1">
-										Updates Available!
-									</h1>
-									<br>
-									<h5 class="subtitle is-5">
-										New version <strong><%= JSON.parse(pageData.latestVersion).config.name %></strong> is available! Running on branch <strong><%= configData.branch %></strong>.
-									</h5>
-									<div id="new-version-info" class="has-text-centered" style="display: none;">
-										<div class="columns">
-											<div class="column is-half">
-												<span class="icon is-large">
-													<i class="fa fa-code fa-2x"></i>
-												</span>
-												<h6 class="subtitle is-6">
-													Version Name
-												</h6>
-												<h4 class="title is-4">
-													<strong><%= JSON.parse(pageData.latestVersion).config.name %></strong>
-												</h4>
-											</div>
-											<div class="column is-half">
-												<span class="icon is-large">
-													<i class="fa fa-magic fa-2x"></i>
-												</span>
-												<h6 class="subtitle is-6">
-													Description
-												</h6>
-												<h4 class="title is-4">
-													<strong><%= JSON.parse(pageData.latestVersion).config.description %></strong>
-												</h4>
-											</div>
-										</div>
-										<br>
-										<div class="has-text-centered">
-											<span class="icon is-large">
-												<i class="fa fa-file-code-o fa-2x"></i>
-											</span>
-											<h6 class="subtitle is-6 is-embedded-message">
-												Changelog
-											</h6>
-											<br>
-										</div>
-										<div style="margin-right: 50px; margin-left: 50px;" class="box">
-											<div class="content has-text-left">
-												<%- JSON.parse(pageData.latestVersion).config.changelog %>
-  											</div>
-										</div>
-									</div>
-									<br>
+					<!-- <h4 class="subtitle is-4">
+						Version Configuration
+					</h4>
+					<div class="box is-paddingless generic-feature">
+						<div class="generic-feature-box">
+							<div class="generic-feature-box-slider">
+								<div class="field">
+									<input id="isEnabled" type="checkbox" name="isEnabled" class="switch is-medium is-success is-rounded">
+									<label for="isEnabled" style="padding-left: 3.75rem;"></label>
 								</div>
-								<button id="continue-button" class="button is-large is-light">
-									More Info
-								</button>
 							</div>
-						</section>
+							<div class="generic-feature-box-description">
+								<b>Enable GAwesomeBot Versioning Control</b>
+							</div>
+							<div class="generic-feature-box-addon">
+								<div class="field has-addons">
+									<div class="control">
+										<span class="select is-primary is-small">
+											<select name="branch" id="branch-selector" disabled onchange="$(this).attr('disabled', true); $('#branch-selector-btn').attr('disabled', false);">
+												<option value="stable"<%= configData.branch === "stable" ? " selected" : "" %>>Stable</option>
+												<option value="experimental"<%= configData.branch === "experimental" ? " selected" : "" %>>Experimental</option>
+												<option value="development"<%= configData.branch !== "stable" && configData.branch !== "experimental" ? " selected" : ""%>>Development</option>
+											</select>
+										</span>
+									</div>
+									<div class="control">
+										<button id="branch-selector-btn" class="button is-warning is-small" onclick="GAwesomeUtil.dashboard.switchBranch(this);">
+											Switch Branch
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					-->
+					<h4 class="subtitle is-4">
+						Version Manager
+					</h4>
+					<% if (!pageData.disabled) { %>
+					<div class="box is-paddingless generic-feature">
+						<div class="generic-feature-box-group">
+							<div class="generic-feature-box version-box">
+								<div class="generic-feature-box-description">
+									<h4 class="subtitle is-4">
+										<% if (pageData.utd) { %>
+										<span class="icon" title="Your GAB is up-to-date.">
+											<i class="fa fa-check-circle"></i>
+										</span>
+										<% } %>
+										<%= pageData.installedVersion.metadata.name %>
+									</h4>
+									<span class="help"><%= pageData.installedVersion.metadata.description %></span>
+								</div>
+							</div>
+							<% if (!pageData.utd && pageData.latestVersion) { %>
+							<div class="version-update-indicator">
+								<span class="icon is-medium">
+									<i class="fa fa-arrow-left fa-2x"></i>
+								</span>
+							</div>
+							<div class="generic-feature-box version-box">
+								<div class="generic-feature-box-description">
+									<h4 class="subtitle is-4">
+										<span class="icon">
+											<i class="fa fa-cloud-download"></i>
+										</span>
+										<%= pageData.latestVersion.metadata.name %>
+									</h4>
+									<span class="help"><%= pageData.latestVersion.metadata.description %></span>
+									<progress class="progress is-appended is-primary is-small" max="100"></progress>
+								</div>
+								<div class="generic-feature-box-addon">
+									<div id="update-btn" class="button is-primary is-outlined" data-branch="<%= pageData.latestVersion.branch %>" data-tag="<%= pageData.latestVersion.tag %>">Download</div>
+								</div>
+							</div>
+							<% } %>
+						</div>
+						<div id="version-installer" class="generic-feature-addon" style="display: none;">
+							<h4 class="title is-4">Installation Logs</h4>
+							<article id="update-warning" class="message is-warning">
+								<div class="message-header">
+									Do not close this window!
+								</div>
+								<div class="message-body">
+									<div class="content">
+										While GAB is updating, do not close this window! Doing so may lead to your instance becoming corrupted.
+									</div>
+								</div>
+							</article>
+							<hr>
+							<div id="installer-logs"></div>
+						</div>
+					</div>
+					<% } else { %>
+					<div class="box is-paddingless generic-feature">
+						<div class="generic-feature-box version-box">
+							<div class="generic-feature-box-description">
+								<h4 class="subtitle is-4">
+									<span class="icon" title="This version is unknown.">
+										<i class="fa fa-times-circle"></i>
+									</span>
+									<%= configData.version %>
+								</h4>
+								<span class="help is-danger-colored">Version <%= configData.version %> is not an official version on branch <%= configData.branch %>.</span>
+							</div>
+						</div>
+					</div>
 					<% } %>
 				</div>
 			</div>

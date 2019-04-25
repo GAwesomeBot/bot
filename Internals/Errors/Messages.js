@@ -45,6 +45,13 @@ const Messages = {
 	MISSING_GIPHY_QUERY: `You need to provide a query for Giphy!`,
 	NO_GIPHY_RESULT: `There were to Giphy results for your query!`,
 
+	// Central returned an unsupported apiVersion.
+	OUTDATED_CENTRAL_SPEC_VERSION: `GAwesomeBot is too outdated to perform that action.`,
+
+	CENTRAL_ERROR: (status, error) => `Central returned a ${status} response${error ? `: ${error}` : ""}.`,
+	CENTRAL_DOWNLOAD_ERROR: status => `Version download request failed with code ${status}.`,
+	CENTRAL_VERSION_NOT_DOWNLOADED: `Version requested for install has not been downloaded.`,
+
 	// Database Faults
 	MONGODB_ERROR: err => `An unknown error occurred while interacting with MongoDB: ${err}`,
 	GADRIVER_ERROR: err => `An unknown error occurred within GADriver: ${err}`,

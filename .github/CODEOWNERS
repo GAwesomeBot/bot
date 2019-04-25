@@ -13,7 +13,7 @@
 /Internals/Console.js    @GilbertGobbels
 /Internals/Sharder.js    @GilbertGobbels
 /Internals/IPC.js    @GilbertGobbels
-/Modules/Updater.js    @GilbertGobbels
+/Modules/GAwesomeClient.js    @GilbertGobbels
 /master.js    @GilbertGobbels
 /package.json    @KingDGrizzle
 /.eslintrc.js    @KingDGrizzle

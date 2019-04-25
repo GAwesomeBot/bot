@@ -86,6 +86,7 @@ GAwesomeUtil.showActivitySelections = () => {
 		<br>
 		<div class="columns">
 			<% pageData.serverData.forEach((server, i) => { %>
+			<% if (server) { %>
 				<div class="column is-one-quarter">
 					<center>
 						<div class="card" style="text-align: left;">
@@ -159,7 +160,7 @@ GAwesomeUtil.showActivitySelections = () => {
 						</div>
 					</center>
 				</div>
-
+				<% } %>
 				<% if (i % 4 === 3 && i !== pageData.serverData.length - 1 && i !== 0) { %>
 					</div>
 					<div class="columns">

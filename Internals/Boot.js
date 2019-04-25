@@ -17,7 +17,9 @@ const db = (val, configJS) => {
 		winston.warn(`Argument --db requires a parameter.`);
 		return;
 	}
-	configJS.databaseURL = val;
+	const [url, dbname] = val.split(db.lastIndexOf("/"));
+	configJS.database.URL = url;
+	configJS.database.db = dbname;
 };
 
 const token = (val, configJS, configJSON, auth) => {

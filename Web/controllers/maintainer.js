@@ -7,14 +7,15 @@ const md = new showdown.Converter({
 	tasklists: true,
 	smoothLivePreview: true,
 	smartIndentationFix: true,
+	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
 const moment = require("moment");
 const { Tail } = require("tail");
 
 const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo, renderError } = require("../helpers");
-const Updater = require("../../Modules/Updater");
 const { GetGuild } = require("../../Modules").getGuild;
+const Constants = require("../../Internals/Constants");
 
 const controllers = module.exports;
 
@@ -34,15 +35,18 @@ controllers.maintainer = async (req, { res }) => {
 		messageCount = result[0].total;
 	}
 
-	const trafficData = req.app.client.traffic.data();
-	const version = await Updater.check();
+	const trafficData = await req.app.client.traffic.data();
+	const version = await req.app.client.central.API("versions").branch(configJSON.branch).get(configJSON.version)
+		.catch(() => null);
+	let checkData = version && await version.check();
+	if (!checkData) checkData = { utd: false, current: null };
 
 	res.setPageData({
 		serverCount: await req.app.client.guilds.totalCount,
 		userCount: await req.app.client.users.totalCount,
 		totalMessageCount: messageCount,
 		roundedUptime: getRoundedUptime(process.uptime()),
-		trafficData: await trafficData,
+		trafficData,
 		currentShard: req.app.client.shardID,
 		page: "maintainer.ejs",
 	});
@@ -50,11 +54,10 @@ controllers.maintainer = async (req, { res }) => {
 	res.setConfigData({
 		shardCount: configJS.shardTotal,
 		version: configJSON.version,
-		utd: version["up-to-date"],
-		latestVersion: version.latest ? version.latest.version : null,
-		disabled: version === 404,
+		utd: checkData.utd,
+		currentVersion: checkData.current && checkData.current.tag,
+		disabled: !checkData.current,
 	});
-
 	res.render();
 };
 
@@ -372,13 +375,16 @@ controllers.management.injection.post = async (req, res) => {
 };
 
 controllers.management.version = async (req, { res }) => {
-	const version = await Updater.check();
-	if (version.latest) version.latest.config.changelog = md.makeHtml(version.latest.config.changelog);
+	const version = await req.app.client.central.API("versions").branch(configJSON.branch).get(configJSON.version);
+	if (version && version.metadata) version.metadata.changelog = md.makeHtml(version.metadata.changelog);
+	const checkData = await version.check();
+	if (checkData.current) checkData.current.metadata.changelog = md.makeHtml(checkData.current.metadata.changelog);
 
 	res.setPageData({
-		disabled: version === 404,
-		latestVersion: version.latest ? JSON.stringify(version.latest) : undefined,
-		utd: version["up-to-date"],
+		disabled: !version.valid,
+		latestVersion: checkData.current,
+		installedVersion: version,
+		utd: checkData.utd,
 		page: "maintainer-version.ejs",
 	}).setConfigData({
 		version: configJSON.version,
@@ -386,21 +392,56 @@ controllers.management.version = async (req, { res }) => {
 	}).render();
 };
 controllers.management.version.post = async (req, res) => {
-	req.app.io.of("/dashboard/maintainer/management/version").on("connection", socket => {
-		if (socket.request.user.id !== req.user.id) return socket.disconnect();
-		socket.on("update", data => {
-			if (data === "start") {
-				socket.emit("update", "prepare");
-				Updater.update(req.app.client, configJSON, socket, winston);
-			}
-		});
-		socket.on("disconnect", () => {
-			if (socket.isUpdateFinished) return;
-			winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
-			req.app.client.IPC.send("shutdown", { err: true });
-		});
+	res.sendStatus(204);
+};
+controllers.management.version.socket = async socket => {
+	socket.on("disconnect", () => {
+		if (socket.isUpdateFinished || !socket.isUpdating) return;
+		winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
+		socket.route.router.app.client.IPC.send("shutdown", { err: true });
 	});
-	res.sendStatus(200);
+	socket.on("download", async data => {
+		if (!data || !data.branch || !data.tag) return socket.emit("err", { error: 400, fatal: false });
+		const version = await socket.route.router.app.client.central.API("versions").branch(data.branch).get(data.tag);
+		if (!version.valid) return socket.emit("err", { error: 404, fatal: false });
+
+		let pushQueue = 0;
+		let finished = false;
+		socket.emit("totalChunks", Constants.CODEBASE_TOTAL_CHUNK_SIZE);
+		const sendChunkQueue = () => {
+			if (finished) return;
+			socket.emit("chunk", pushQueue);
+			pushQueue = 0;
+			setTimeout(sendChunkQueue, Math.floor(Math.random() * 1000));
+		};
+		sendChunkQueue();
+		try {
+			await version.download(({ length }) => {
+				pushQueue += length;
+			});
+		} catch (err) {
+			return socket.emit("err", { error: 500, fatal: false });
+		}
+
+		socket.request.versionToPatch = version;
+		finished = true;
+		socket.emit("downloadSuccess");
+	});
+	socket.on("install", async data => {
+		if (!socket.request.versionToPatch || String(socket.request.versionToPatch.tag) !== String(data.tag) || socket.request.versionToPatch.branch !== data.branch) {
+			return socket.emit("err", { error: 404, fatal: true, message: "That version has not been downloaded yet." });
+		}
+		const version = socket.request.versionToPatch;
+
+		version.on("installLog", log => {
+			socket.emit("installLog", log);
+		});
+		version.on("installFinish", () => {
+			socket.emit("installFinish");
+		});
+
+		await version.install();
+	});
 };
 
 controllers.management.eval = async (req, { res }) => {
