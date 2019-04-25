@@ -917,9 +917,9 @@ exif-parser@^0.1.9:
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/exif-parser/-/exif-parser-0.1.12.tgz#58a9d2d72c02c1f6f02a0ef4a9166272b7760922"
 
-express-rate-limit@^2.11.0:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-2.11.0.tgz#092122218c86eddb56fb350f431e522fb8024ea9"
+express-rate-limit@^3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-3.4.1.tgz#be15f84e257893bb9e6de6d098dd2f84b7e0d0cc"
   dependencies:
     defaults "^1.0.3"
 
