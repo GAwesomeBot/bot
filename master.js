@@ -9,7 +9,7 @@ const auth = require("./Configurations/auth.js");
 const configJS = require("./Configurations/config.js");
 const configJSON	= require("./Configurations/config.json");
 const configWarnings = [];
-const figlet = require('figlet');
+const figlet = require("figlet");
 
 const scope = { safeMode: false };
 
@@ -126,14 +126,14 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 					// Print startup ascii message
 					winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 					// Use console.log because winston never lets us have anything fun, MOM
-					// eslint-disable-next-line no-console
-					figlet('GAwesomeBot', (err, res) => {
+					figlet("GAwesomeBot", (err, res) => {
 						if (err) {
 							winston.error(err);
 						} else {
+							// eslint-disable-next-line no-console
 							console.log(res);
 						}
-					})
+					});
 					sharder.finished = -1;
 					sharder.IPC.send("postAllData", {}, 0);
 					if (process.argv.includes("--build")) {
