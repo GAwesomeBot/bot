@@ -1030,6 +1030,10 @@ feed-read@0.0.1:
     sax "0.3.x"
     underscore "1.x.x"
 
+figlet@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/figlet/-/figlet-1.2.1.tgz#48d35df9d9b10b1b3888302e6e57904a0b00509c"
+
 figures@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/figures/-/figures-2.0.0.tgz#3ab1a2d2a62c8bfb431a0c94cb797a2fce27c962"
@@ -1337,9 +1341,9 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-infobox-parser@3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/infobox-parser/-/infobox-parser-3.0.3.tgz#27b848ab9cfca52b98c4d63cf628b2fce043477c"
+infobox-parser@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/infobox-parser/-/infobox-parser-3.2.0.tgz#1771a54d1dea92ea94742215212b5d520c0e48c0"
   dependencies:
     camelcase "^4.1.0"
 
@@ -2936,11 +2940,11 @@ wide-align@^1.1.0:
   dependencies:
     string-width "^1.0.2"
 
-wikijs@^4.10.1:
-  version "4.10.1"
-  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.10.1.tgz#c57c330d916a7b0e6cdecc89b747aa83304c2fd2"
+wikijs@^4.13.0:
+  version "4.13.0"
+  resolved "https://registry.yarnpkg.com/wikijs/-/wikijs-4.13.0.tgz#0c99f13c9148c1f4f117ca3b95e76f116e7b81a9"
   dependencies:
-    infobox-parser "3.0.3"
+    infobox-parser "3.2.0"
     isomorphic-fetch "^2.2.1"
 
 winston-compat@^0.1.4:
