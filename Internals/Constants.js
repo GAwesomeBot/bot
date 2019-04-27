@@ -486,7 +486,8 @@ Constants.APIs = {
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
 	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${query}&output=json`,
-	XKCD: (num) => `https://xkcd.com/${num ? `${num}/` : ""}info.0.json`,
+	XKCD: num => `https://xkcd.com/${num ? `${num}/` : ""}info.0.json`,
+	YOUTUBE: (key, query, num) => `https://www.googleapis.com/youtube/v3/search?part=snippet&key=${key}&q=${query}&maxResults=${num}`,
 };
 
 /**
