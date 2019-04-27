@@ -774,8 +774,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		time: {
-			usage: `[<location> or <user>]`,
-			description: `Gets the time in a city or country`,
+			usage: `<timezone>`,
+			description: `Gets the time in a timezone`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
