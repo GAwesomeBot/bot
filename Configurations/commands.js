@@ -844,7 +844,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		weather: {
-			usage: `<location> [<unit>]`,
+			usage: `<city>`,
 			description: `Gets the current weather and forecast for the given location from MSN Weather`,
 			defaults: {
 				isEnabled: true,

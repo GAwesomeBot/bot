@@ -18,5 +18,6 @@ module.exports = {
 		openExchangeRatesKey: "",
 		omdbAPI: "",
 		gistKey: "",
+		openWeatherMap: "",
 	},
 };

@@ -485,9 +485,10 @@ Constants.APIs = {
 	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
 	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
 	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
+	WEATHER: (key, query) => `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${key}&units=metric`,
 	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${query}&output=json`,
 	XKCD: num => `https://xkcd.com/${num ? `${num}/` : ""}info.0.json`,
-	YOUTUBE: (key, query, num) => `https://www.googleapis.com/youtube/v3/search?part=snippet&key=${key}&q=${query}&maxResults=${num}`,
+	YOUTUBE: (key, query, num) => `https://www.googleapis.com/youtube/v3/search?part=snippet&key=${key}&q=${encodeURIComponent(query)}&maxResults=${num}`,
 };
 
 /**
