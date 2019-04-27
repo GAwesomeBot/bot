@@ -508,16 +508,6 @@ const commands = {
 			},
 			category: `Fun 🎪`,
 		},
-		perms: {
-			usage: `[<user or role>] [|<permission name>]`,
-			description: `Modifies permissions for a role or user in a channel`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 3,
-			},
-			category: `Moderation ⚒`,
-		},
 		ping: {
 			usage: ``,
 			description: `Pings the bot. What more were you expecting?`,
