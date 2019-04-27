@@ -12,6 +12,7 @@ class PaginatedEmbed {
 	 * 						with the fields being arrays with values (or null) for every page
 	 */
 	constructor (originalMsg, embedTemplate, {
+		contents = [],
 		authors = [],
 		titles = [],
 		colors = [],
@@ -29,6 +30,7 @@ class PaginatedEmbed {
 		this.pageEmojis = PageEmojis;
 		this.pageEmojiArray = [...Object.values(this.pageEmojis)];
 
+		this.contents = contents;
 		this.authors = authors;
 		this.titles = titles;
 		this.colors = colors;
@@ -40,7 +42,8 @@ class PaginatedEmbed {
 		this.images = images;
 		this.footers = footers;
 
-		this.embedTemplate = Object.assign({
+		this.messageTemplate = Object.assign({
+			content: "{content}",
 			author: "{author}",
 			authorIcon: null,
 			authorUrl: null,
@@ -127,27 +130,28 @@ class PaginatedEmbed {
 
 	get _currentMessageContent () {
 		return {
+			content: this.messageTemplate.content.format(this._getFormatOptions({ content: this.contents[this.currentPage] || "" })),
 			embed: {
 				author: {
-					name: this.embedTemplate.author.format(this._getFormatOptions({ author: this.authors[this.currentPage] || "" })),
-					icon_url: this.embedTemplate.authorIcon,
-					url: this.embedTemplate.authorUrl,
+					name: this.messageTemplate.author.format(this._getFormatOptions({ author: this.authors[this.currentPage] || "" })),
+					icon_url: this.messageTemplate.authorIcon,
+					url: this.messageTemplate.authorUrl,
 				},
-				title: this.embedTemplate.title.format(this._getFormatOptions({ title: this.titles[this.currentPage] || "" })),
-				color: this.colors[this.currentPage] || this.embedTemplate.color,
-				url: this.urls[this.currentPage] || this.embedTemplate.url,
-				description: this.embedTemplate.description.format(this._getFormatOptions({ description: this.descriptions[this.currentPage] || "" })),
-				fields: this.fields[this.currentPage] || this.embedTemplate.fields,
-				timestamp: this.timestamps[this.currentPage] || this.embedTemplate.timestamp,
+				title: this.messageTemplate.title.format(this._getFormatOptions({ title: this.titles[this.currentPage] || "" })),
+				color: this.colors[this.currentPage] || this.messageTemplate.color,
+				url: this.urls[this.currentPage] || this.messageTemplate.url,
+				description: this.messageTemplate.description.format(this._getFormatOptions({ description: this.descriptions[this.currentPage] || "" })),
+				fields: this.fields[this.currentPage] || this.messageTemplate.fields,
+				timestamp: this.timestamps[this.currentPage] || this.messageTemplate.timestamp,
 				thumbnail: {
-					url: this.thumbnails[this.currentPage] || this.embedTemplate.thumbnail,
+					url: this.thumbnails[this.currentPage] || this.messageTemplate.thumbnail,
 				},
 				image: {
-					url: this.images[this.currentPage] || this.embedTemplate.image,
+					url: this.images[this.currentPage] || this.messageTemplate.image,
 				},
 				footer: {
-					text: this.embedTemplate.footer.format(this._getFormatOptions({ footer: this.footers[this.currentPage] || "" })),
-					icon_url: this.embedTemplate.footerIcon,
+					text: this.messageTemplate.footer.format(this._getFormatOptions({ footer: this.footers[this.currentPage] || "" })),
+					icon_url: this.messageTemplate.footerIcon,
 				},
 			},
 		};
