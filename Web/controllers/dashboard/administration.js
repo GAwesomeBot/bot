@@ -529,19 +529,16 @@ controllers.roles = async (req, { res }) => {
 		channelData: getChannelData(svr),
 		roleData: getRoleData(svr),
 		commandDescriptions: {
-			perms: client.getPublicCommandMetadata("perms").description,
 			role: client.getPublicCommandMetadata("role").description,
 			roleinfo: client.getPublicCommandMetadata("roleinfo").description,
 		},
 		commandCategories: {
-			perms: client.getPublicCommandMetadata("perms").category,
 			role: client.getPublicCommandMetadata("role").category,
 			roleinfo: client.getPublicCommandMetadata("roleinfo").category,
 		},
 	});
 	res.setConfigData({
 		commands: {
-			perms: serverDocument.config.commands.perms,
 			role: serverDocument.config.commands.role,
 			roleinfo: serverDocument.config.commands.roleinfo,
 		},
@@ -563,7 +560,6 @@ controllers.roles.post = async (req, res) => {
 			}
 		}
 	});
-	parsers.commandOptions(req, "perms", req.body);
 
 	save(req, res, true);
 };
