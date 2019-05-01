@@ -2,7 +2,15 @@ const { tokens } = require("../../Configurations/auth");
 const fetch = require("chainfetch");
 
 module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text }, auth }, documents, msg, commandData) => {
-	if (!tokens.bitlyToken || tokens.bitlyToken === "") return;
+	if (!tokens.bitlyToken || tokens.bitlyToken === "") {
+		await msg.send({
+			embed: {
+				color: Colors.SOFT_ERR,
+				description: "The shorten command is not available on this bot. 🌧️",
+			},
+		});
+		return;
+	}
 
 	if (!msg.suffix) {
 		return msg.sendInvalidUsage(commandData);
