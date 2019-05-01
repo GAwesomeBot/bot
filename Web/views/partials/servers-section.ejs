@@ -39,6 +39,7 @@ GAwesomeUtil.showActivitySelections = () => {
 		<div class="level-item">
 			<span class="select is-primary">
 				<select id="sort-select" onchange="Turbolinks.visit('/activity/servers?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>&sort=' + this.value + '&category=<%= pageData.selectedCategory %>&publiconly=<%= pageData.isPublicOnly %>');">
+					<option value="activity-des">GAB Determined Activity (default)</option>
 					<option value="messages-asc">Messages Today (ascending)</option>
 					<option value="messages-des">Messages Today (descending)</option>
 					<option value="members-asc">Members (ascending)</option>

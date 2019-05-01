@@ -62,7 +62,7 @@ module.exports = async (req, { res }) => {
 			page = parseInt(req.query.page);
 		}
 		if (!req.query.sort) {
-			req.query.sort = "messages-des";
+			req.query.sort = "activity-des";
 		}
 		if (!req.query.category) {
 			req.query.category = "All";
@@ -113,10 +113,15 @@ module.exports = async (req, { res }) => {
 				};
 				break;
 			case "messages-des":
-			default:
 				sortParams = {
 					messages_today: -1,
 					added_timestamp: -1,
+				};
+				break;
+			case "activity-des":
+			default:
+				sortParams = {
+					activity_score: -1,
 				};
 				break;
 		}
@@ -131,14 +136,22 @@ module.exports = async (req, { res }) => {
 				$match: matchCriteria,
 			},
 			{
+				$addFields: {
+					member_count: {
+						$size: { $objectToArray: "$members" },
+					},
+				},
+			},
+			{
 				$project: {
 					messages_today: 1,
 					"config.public_data": 1,
 					"config.command_prefix": 1,
-					member_count: {
-						$size: { $objectToArray: "$members" },
-					},
+					member_count: 1,
 					added_timestamp: 1,
+					activity_score: {
+						$add: [{ $multiply: [1.5, "$member_count"] }, { $multiply: [0.5, "$messages_today", { $multiply: [0.005, "$member_count"] }] }],
+					},
 				},
 			},
 			{
