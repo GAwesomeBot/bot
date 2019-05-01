@@ -41,7 +41,9 @@ class SharderIPC {
 
 	shard (guildID) {
 		try {
-			return Math.abs((guildID >> 22) % this.sharder.count);
+			// We have to avoid BigInt syntax because it's too flashy and experimental for eslint.
+			// eslint-disable-next-line no-undef,no-bitwise
+			return Math.abs(Number((BigInt(guildID) >> BigInt(22)) % BigInt(this.sharder.count)));
 		} catch (_) {
 			return undefined;
 		}
