@@ -3,7 +3,7 @@ const { StatusMessages } = require("../../Constants");
 
 class PresenceUpdate extends BaseEvent {
 	requirements (oldPresence, presence) {
-		return presence.activity && (!oldPresence.activity || !oldPresence.activity.equals(presence.activity));
+		return presence && presence.activity && (!oldPresence || !oldPresence.activity || !oldPresence.activity.equals(presence.activity));
 	}
 
 	async handle (oldPresence, presence) {
@@ -15,13 +15,13 @@ class PresenceUpdate extends BaseEvent {
 			streamingStatusMessageDocument.isEnabled && (streamingStatusMessageDocument.enabled_user_ids.includes(presence.id) || streamingStatusMessageDocument.enabled_user_ids.length === 0)) {
 			const channel = presence.guild.channels.get(streamingStatusMessageDocument.channel_id);
 			if (channel) {
-				const channelDocument = serverDocument.channels.id(channel.id);
+				const channelDocument = serverDocument.channels[channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) channel.send(StatusMessages.GAME_STREAMING(this.client.getName(serverDocument, presence.member), presence.activity));
 			}
 		} else if (gameStatusMessageDocument.isEnabled) {
 			const channel = presence.guild.channels.get(gameStatusMessageDocument.channel_id);
 			if (channel) {
-				const channelDocument = serverDocument.channels.id(channel.id);
+				const channelDocument = serverDocument.channels[channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) channel.send(StatusMessages.GAME_UPDATE(this.client.getName(serverDocument, presence.member), presence.activity));
 			}
 		}

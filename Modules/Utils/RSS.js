@@ -1,4 +1,6 @@
-const getRSS = new (require("rss-parser"))();
+const Parser = require("rss-parser");
+const parser = new Parser({ timeout: 2000 });
+
 
 /**
  * Fetch RSS entries
@@ -7,7 +9,7 @@ const getRSS = new (require("rss-parser"))();
  * @returns {?array}
  */
 module.exports = (url, num) => new Promise((resolve, reject) => {
-	getRSS.parseURL(url).then(articles => resolve(articles.items.slice(0, num))).catch(err => {
+	parser.parseURL(url).then(articles => resolve(articles && articles.items ? articles.items.slice(0, num) : [])).catch(err => {
 		winston.debug(`Feed at URL ${url} did not respond with valid RSS.`, { err });
 		reject("invalid");
 	});
