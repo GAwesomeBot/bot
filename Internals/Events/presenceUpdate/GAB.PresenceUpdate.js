@@ -16,13 +16,13 @@ class PresenceUpdate extends BaseEvent {
 			const channel = presence.guild.channels.get(streamingStatusMessageDocument.channel_id);
 			if (channel) {
 				const channelDocument = serverDocument.channels[channel.id];
-				if (!channelDocument || channelDocument.bot_enabled) channel.send(StatusMessages.GAME_STREAMING(this.client.getName(serverDocument, presence.member), presence.activity));
+				if (!channelDocument || channelDocument.bot_enabled) await channel.send({ embed: StatusMessages.GAME_STREAMING(this.client.getName(serverDocument, presence.member), presence.activity) });
 			}
 		} else if (gameStatusMessageDocument.isEnabled) {
 			const channel = presence.guild.channels.get(gameStatusMessageDocument.channel_id);
 			if (channel) {
 				const channelDocument = serverDocument.channels[channel.id];
-				if (!channelDocument || channelDocument.bot_enabled) channel.send(StatusMessages.GAME_UPDATE(this.client.getName(serverDocument, presence.member), presence.activity));
+				if (!channelDocument || channelDocument.bot_enabled) await channel.send({ embed: StatusMessages.GAME_UPDATE(this.client.getName(serverDocument, presence.member), presence.activity) });
 			}
 		}
 	}
