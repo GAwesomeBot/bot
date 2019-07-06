@@ -26,7 +26,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	winston.silly("Creating Discord.js client.");
 	const GABClient = require("./Internals/Client");
 	const client = new GABClient({
-		shards: parseInt(process.env.SHARD_ID),
+		shards: parseInt(process.env.SHARDS),
 		totalShardCount: parseInt(process.env.SHARD_COUNT),
 		disabledEvents: scope.disabledEvents,
 		messageCacheLifetime: 1800,
@@ -364,7 +364,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("channelCreate", channel);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a CHANNEL_CREATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a CHANNEL_CREATE event! x.x\n`, { err, svrid: channel.guild.id, chid: channel.id });
 			}
 		}
 	});
@@ -378,7 +378,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("channelDelete", channel);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a CHANNEL_DELETE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a CHANNEL_DELETE event! x.x\n`, { err, svrid: channel.guild.id, chid: channel.id });
 			}
 		}
 	});
@@ -392,7 +392,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("channelPinsUpdate", channel, time);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a CHANNEL_PINS_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a CHANNEL_PINS_UPDATE event! x.x\n`, { err, svrid: channel.guild.id, chid: channel.id });
 			}
 		}
 	});
@@ -406,7 +406,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("channelUpdate", oldCh, newCh);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a CHANNEL_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a CHANNEL_UPDATE event! x.x\n`, { err, svrid: newCh.guild.id, chid: newCh.id });
 			}
 		}
 	});
@@ -488,7 +488,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildBanAdd", guild, user);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_BAN_ADD event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_BAN_ADD event! x.x\n`, { err, svrid: guild.id, usrid: user.id });
 			}
 		}
 	});
@@ -502,7 +502,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildBanRemove", guild, user);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_BAN_REMOVE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_BAN_REMOVE event! x.x\n`, { err, svrid: guild.id, usrid: user.id });
 			}
 		}
 	});
@@ -516,7 +516,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildCreate", guild);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_CREATE event! x.x\n`, { err, svrid: guild.id });
 			}
 		}
 	});
@@ -530,7 +530,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildDelete", guild);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_DELETE event! x.x\n`, { err, svrid: guild.id });
 			}
 		}
 	});
@@ -544,7 +544,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildMemberAdd", member);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_ADD event! x.x\n`, { err, svrid: member.guild.id, usrid: member.id });
 			}
 		}
 	});
@@ -559,7 +559,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildMemberAvailable", member);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_AVAILABLE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_AVAILABLE event! x.x\n`, { err, svrid: member.guild.id, usrid: member.id });
 			}
 		}
 	});
@@ -573,7 +573,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildMemberRemove", member);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_REMOVE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_REMOVE event! x.x\n`, { err, svrid: member.guild.id, usrid: member.id });
 			}
 		}
 	});
@@ -586,7 +586,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		try {
 			await client.events.onEvent("guildMembersChunk", members, guild);
 		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a GUILD_MEMBERS_CHUNK event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a GUILD_MEMBERS_CHUNK event! x.x\n`, { err, svrid: guild.id });
 		}
 	});
 
@@ -599,7 +599,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildMemberSpeaking", member, speaking);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_SPEAKING event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_SPEAKING event! x.x\n`, { err, svrid: member.guild.id, usrid: member.id });
 			}
 		}
 	});
@@ -613,7 +613,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildMemberUpdate", oldMember, newMember);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_MEMBER_UPDATE event! x.x\n`, { err, svrid: newMember.guild.id, usrid: newMember.id });
 			}
 		}
 	});
@@ -627,7 +627,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildUnavailable", guild);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_UNAVAILABLE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_UNAVAILABLE event! x.x\n`, { err, svrid: guild.id });
 			}
 		}
 	});
@@ -641,7 +641,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("guildUpdate", oldGuild, newGuild);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a GUILD_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a GUILD_UPDATE event! x.x\n`, { err, svrid: newGuild.id });
 			}
 		}
 	});
@@ -669,7 +669,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				await msg.build();
 				await client.events.onEvent("message", msg, proctime);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_CREATE event! x.x\n`,
+					{ err, svrid: msg.guild && msg.guild.id, usrid: msg.author.id, chid: msg.channel && msg.channel.id, msgid: msg.id });
 			}
 		}
 	});
@@ -684,7 +685,8 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				await msg.build;
 				await client.events.onEvent("messageDelete", msg);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE event! x.x\n`,
+					{ err, svrid: msg.guild && msg.guild.id, usrid: msg.author.id, chid: msg.channel && msg.channel.id, msgid: msg.id });
 			}
 		}
 	});
@@ -698,7 +700,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("messageDeleteBulk", msgs);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE_BULK event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_DELETE_BULK event! x.x\n`, { err });
 			}
 		}
 	});
@@ -712,7 +714,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("messageReactionAdd", reaction, user);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_ADD event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_ADD event! x.x\n`, { err });
 			}
 		}
 	});
@@ -726,7 +728,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("messageReactionRemove", reaction, user);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE event! x.x\n`, { err });
 			}
 		}
 	});
@@ -740,7 +742,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("messageReactionRemoveAll", msg);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE_ALL event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_REACTION_REMOVE_ALL event! x.x\n`, { err });
 			}
 		}
 	});
@@ -756,7 +758,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 				await oldMSG.build();
 				await client.events.onEvent("messageUpdate", oldMSG, newMSG);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a MESSAGE_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a MESSAGE_UPDATE event! x.x\n`, { err, svrid: newMSG.guild && newMSG.guild.id, usrid: newMSG.author.id });
 			}
 		}
 	});
@@ -764,13 +766,13 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 	/**
 	 * PRESENCE_UPDATE
 	 */
-	client.on("presenceUpdate", async (oldMember, newMember) => {
+	client.on("presenceUpdate", async (oldPresence, newPresence) => {
 		if (client.isReady) {
-			winston.silly(`Received PRESENCE_UPDATE event from Discord!`, { member: newMember.id, guild: newMember.guild.id });
+			winston.silly(`Received PRESENCE_UPDATE event from Discord!`, { member: newPresence.member.id, guild: newPresence.guild.id });
 			try {
-				await client.events.onEvent("presenceUpdate", oldMember, newMember);
+				await client.events.onEvent("presenceUpdate", oldPresence, newPresence);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a PRESENCE_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a PRESENCE_UPDATE event! x.x\n`, { err, svrid: newPresence.guild.id, usrid: newPresence.member.id });
 			}
 		}
 	});
@@ -783,7 +785,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		try {
 			await client.events.onEvent("rateLimit", rateLimitInfo);
 		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a RATE_LIMIT event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a RATE_LIMIT event! x.x\n`, { err });
 		}
 	});
 
@@ -800,7 +802,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			WebServer.open(client, auth, configJS, winston);
 			client.isReady = true;
 		} catch (err) {
-			winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, err);
+			winston.error(`An unknown and unexpected error occurred with GAB, we tried our best! x.x\n`, { err });
 			process.exit(1);
 		}
 	});
@@ -820,7 +822,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 		try {
 			await client.events.onEvent("resumed", replayed);
 		} catch (err) {
-			winston.error(`An unexpected error occurred while handling a RESUME event! x.x\n`, err);
+			winston.error(`An unexpected error occurred while handling a RESUME event! x.x\n`, { err });
 		}
 	});
 
@@ -833,7 +835,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("roleCreate", role);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a ROLE_CREATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a ROLE_CREATE event! x.x\n`, { err, svrid: role.guild.id, roleid: role.id });
 			}
 		}
 	});
@@ -847,7 +849,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("roleDelete", role);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a ROLE_DELETE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a ROLE_DELETE event! x.x\n`, { err, svrid: role.guild.id, roleid: role.id });
 			}
 		}
 	});
@@ -861,7 +863,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("roleUpdate", oldRole, newRole);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a ROLE_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a ROLE_UPDATE event! x.x\n`, { err, svrid: newRole.guild.id, roleid: newRole.id });
 			}
 		}
 	});
@@ -875,7 +877,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("userUpdate", oldUser, newUser);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a USER_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a USER_UPDATE event! x.x\n`, { err, usrid: newUser.id });
 			}
 		}
 	});
@@ -889,7 +891,7 @@ Boot({ configJS, configJSON, auth }, scope).then(async () => {
 			try {
 				await client.events.onEvent("voiceStateUpdate", oldMember, newMember);
 			} catch (err) {
-				winston.error(`An unexpected error occurred while handling a VOICE_STATE_UPDATE event! x.x\n`, err);
+				winston.error(`An unexpected error occurred while handling a VOICE_STATE_UPDATE event! x.x\n`, { err, svrid: newMember.guild && newMember.guild.id, usrid: newMember.id });
 			}
 		}
 	});

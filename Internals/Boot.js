@@ -107,7 +107,7 @@ const initializeConsole = () => {
 
 const initializeShardConsole = () => {
 	const { Console } = require("../Internals");
-	global.winston = new Console(`Shard ${process.env.SHARD_ID}`);
+	global.winston = new Console(`Shard ${process.env.SHARDS}`);
 };
 
 const { StructureExtender } = require("../Modules/Utils");

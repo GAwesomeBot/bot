@@ -1,7 +1,7 @@
 /* eslint-disable callback-return */
 
 const process = require("process");
-global.winston = new (require("../Internals/Console"))(`Shard ${Number(process.env.SHARD_ID)} Worker`);
+global.winston = new (require("../Internals/Console"))(`Shard ${Number(process.env.SHARDS)} Worker`);
 
 require("../Modules/Utils/ObjectDefines")();
 
@@ -100,5 +100,5 @@ process.on("unhandledRejection", err => {
 (async () => {
 	await extensionManager.initialize();
 	await extensionManager.login(auth.discord.clientToken);
-	await p.send("ready", { shard: process.env.SHARD_ID });
+	await p.send("ready", { shard: process.env.SHARDS });
 })();

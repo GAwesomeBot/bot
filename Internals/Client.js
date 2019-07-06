@@ -40,7 +40,7 @@ module.exports = class GABClient extends DJSClient {
 		// Store MOTD timers, and cancel accordingly
 		this.MOTDTimers = new Collection();
 
-		this.shardID = process.env.SHARD_ID;
+		this.shardID = process.env.SHARDS;
 
 		this.messageListeners = {};
 

@@ -8,7 +8,7 @@ const path = require("path");
 const fetch = require("chainfetch");
 const Unzip = require("adm-zip");
 const { Console, Constants, Errors: { Error: GABError } } = require("../Internals");
-const { FileExists } = require("./Utils");
+const { FileExists, PromiseWait } = require("./Utils");
 
 const validateSpecVersion = body => {
 	const upstreamVersion = body.apiVersion;
@@ -117,14 +117,15 @@ class Version extends EventEmitter {
 			this._log("unpack", `An error occurred while unpacking files. ${err.message}`, "error");
 			throw err;
 		}
+		this._downloadPath = path.join(this._downloadPath, `GAwesomeBot-${this.sha}`);
 
-		return "ow yeah";
 		let fileList, configFileList;
 
 		try {
 			this._log("patching", "Preparing files for patching...");
 			[fileList, configFileList] = await this._generateFileList();
 			await this._checkForConflicts();
+			await PromiseWait(50);
 			const fileTotal = await this._patchFiles(fileList, downloadedVersionPath);
 			this._log("patching", `Successfully patched ${fileTotal} files.`, "success");
 		} catch (err) {
@@ -134,6 +135,7 @@ class Version extends EventEmitter {
 
 		try {
 			this._log("patchingc", "Preparing configuration files for patching...");
+			await PromiseWait(50);
 			const cFileTotal = await this._patchConfigurationFiles(configFileList, downloadedVersionPath);
 			this._log("patchingc", `Successfully patched ${cFileTotal} configuration files.`, "success");
 		} catch (err) {
@@ -142,6 +144,7 @@ class Version extends EventEmitter {
 
 		try {
 			this._log("verify", "Verifying installation...");
+			await PromiseWait(50);
 			await this._verifyInstall();
 			this._log("verify", "Installation verified.", "success");
 		} catch (err) {
@@ -151,10 +154,11 @@ class Version extends EventEmitter {
 
 		try {
 			this._log("cleanup", "Cleaning up update...");
+			await PromiseWait(50);
 			await this._cleanUpInstall();
 			this._log("cleanup", `Finished updating GAB to version ${this.metadata.name}.`, "success");
 		} catch (err) {
-			this._log("cleanup", `Failed to clean up installation. This is not a fatal exception. ${err.message}`, "error");
+			this._log("cleanup", `Failed to clean up installation. This is not a fatal exception. ${err.message}`, "warn");
 		}
 		this.emit("installFinish");
 	}
@@ -181,18 +185,38 @@ class Version extends EventEmitter {
 		return true;
 	}
 
-	async _patchFiles (fileList) {}
+	async _patchFiles (fileList) {
+		for (const filePath of fileList) {
+			await PromiseWait(50);
+			await this._patchFile(filePath);
+		}
+		return fileList.length;
+	}
 
 	async _patchFile (filePath) {
 		const patchLocation = path.join(this._downloadPath, filePath);
 		const patchTarget = path.join(path.join(__dirname, `..`), filePath);
+
+		if (!await FileExists(patchLocation) && await FileExists(patchTarget)) {
+			this._log("patching", `Unlinking removed file ${filePath}...`);
+			await fs.promises.unlink(patchTarget);
+		} else if (await FileExists(patchLocation)) {
+			this._log("patching", `Patching file ${filePath}...`);
+			await fs.promises.copyFile(patchLocation, patchTarget);
+		}
 	}
 
-	async _patchConfigurationFiles (fileList) {}
+	async _patchConfigurationFiles (fileList) {
+		return fileList.length;
+	}
 
-	async _verifyInstall () {}
+	async _verifyInstall () {
+		return true;
+	}
 
-	async _cleanUpInstall () {}
+	async _cleanUpInstall () {
+		return true;
+	}
 
 	get tag () {
 		return this._v.tag;

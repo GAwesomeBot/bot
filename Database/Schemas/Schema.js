@@ -381,7 +381,6 @@ class Schema {
 		this._definitions.forEach(definition => {
 			const error = definition.validate(obj[definition.key], true);
 			if (error && Array.isArray(error)) errors = errors.concat(error);
-
 			else if (error) errors.push(error);
 
 			if (unvalidated.includes(definition.key)) unvalidated.splice(unvalidated.indexOf(definition.key), 1);

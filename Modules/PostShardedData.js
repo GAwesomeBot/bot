@@ -11,7 +11,7 @@ module.exports = async client => {
 				"Content-Type": "application/json",
 				Authorization: tokens.discordBots,
 			}).send({
-				shard_id: Number(process.env.SHARD_ID),
+				shard_id: Number(process.env.SHARDS),
 				shard_total: Number(process.env.SHARD_COUNT),
 				server_count: client.guilds.size,
 			});

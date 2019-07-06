@@ -100,34 +100,13 @@ class MessageCreate extends BaseEvent {
 			} else if (!this.client.getSharedCommand(msg.command)) {
 				// Process chatterbot prompt
 				winston.verbose(`Treating "${msg.cleanContent}" as a PM chatterbot prompt`, { usrid: msg.author.id });
-				const m = await msg.channel.send({
+				await msg.send({
 					embed: {
-						color: Colors.INFO,
-						description: `The chatter bot is thinking...`,
+						title: "Sorry!",
+						description: "The chatterbot is currently unavailable. Please check back later!",
+						color: Colors.SOFT_ERR,
 					},
 				});
-				const response = await this.chatterPrompt(msg.author.id, msg.cleanContent).catch(err => {
-					winston.verbose(`Failed to get chatter prompt.`, err);
-					m.edit({
-						embed: {
-							color: Colors.SOFT_ERR,
-							description: `Sorry, I didn't catch that. Could you repeat yourself?`,
-						},
-					});
-				});
-				if (response) {
-					await m.edit({
-						embed: {
-							title: `The Program-O Chatter Bot replied with:`,
-							url: `https://program-o.com`,
-							description: response,
-							thumbnail: {
-								url: `https://cdn.program-o.com/images/program-o-luv-bunny.png`,
-							},
-							color: Colors.RESPONSE,
-						},
-					});
-				}
 			}
 		} else {
 			// Handle public messages
@@ -435,34 +414,13 @@ class MessageCreate extends BaseEvent {
 								await this.setCooldown(serverDocument, channelDocument, channelQueryDocument);
 								winston.verbose(`Treating "${msg.cleanContent}" as a chatterbot prompt`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 								this.client.logMessage(serverDocument, LoggingLevels.INFO, `Treating "${msg.cleanContent}" as a chatterbot prompt`, msg.channel.id, msg.author.id);
-								msg.send({
+								await msg.send({
 									embed: {
-										color: Colors.INFO,
-										description: `The chatter bot is thinking...`,
+										title: "Sorry!",
+										description: "The chatterbot is currently unavailable. Please check back later!",
+										color: Colors.SOFT_ERR,
 									},
 								});
-								const response = await this.chatterPrompt(msg.author.id, prompt).catch(err => {
-									winston.verbose(`Failed to get chatter prompt.`, err);
-									msg.send({
-										embed: {
-											color: Colors.SOFT_ERR,
-											description: `Sorry, I didn't catch that. Could you repeat yourself?`,
-										},
-									});
-								});
-								if (response) {
-									msg.send({
-										embed: {
-											title: `The Program-O Chatter Bot replied with:`,
-											url: `https://program-o.com`,
-											description: response,
-											thumbnail: {
-												url: `https://cdn.program-o.com/images/program-o-luv-bunny.png`,
-											},
-											color: Colors.RESPONSE,
-										},
-									});
-								}
 							} else if (!extensionApplied && msg.mentions.members.find(mention => mention.id === this.client.user.id) && serverDocument.config.tag_reaction.isEnabled && !this.client.getSharedCommand(msg.command)) {
 								const { random } = serverDocument.config.tag_reaction.messages;
 								if (random) {

@@ -8,7 +8,10 @@ class PresenceUpdate extends BaseEvent {
 
 	async handle (oldPresence, presence) {
 		const serverDocument = await Servers.findOne(presence.guild.id);
-		if (!serverDocument) return;
+		if (!serverDocument) {
+			winston.warn(`Could not satisfy PresenceUpdate because ${presence.guild.id} is missing a Document.`);
+			return;
+		}
 		const streamingStatusMessageDocument = serverDocument.config.moderation.status_messages.member_streaming_message;
 		const gameStatusMessageDocument = serverDocument.config.moderation.status_messages.member_game_updated_message;
 		if (presence.activity.url &&
