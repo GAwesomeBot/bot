@@ -319,9 +319,9 @@ camelcase@^4.1.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
 "canvas-constructor@github:kyranet/canvasConstructor":
-  version "1.1.0"
-  uid c79631f29ede1dc4411409d67ba55dfd5f4b59b3
-  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/c79631f29ede1dc4411409d67ba55dfd5f4b59b3"
+  version "3.1.0"
+  uid "7da58becaf41a8c769fb11527621134f0375473b"
+  resolved "https://codeload.github.com/kyranet/canvasConstructor/tar.gz/7da58becaf41a8c769fb11527621134f0375473b"
 
 canvas-prebuilt@^2.0.0-alpha.14:
   version "2.0.0-alpha.14"
@@ -1029,6 +1029,10 @@ feed-read@0.0.1:
     request "2.x.x"
     sax "0.3.x"
     underscore "1.x.x"
+
+figlet@^1.2.1:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/figlet/-/figlet-1.2.3.tgz#7d25df546f41fc411c2a8b88012d48d55de72129"
 
 figures@^2.0.0:
   version "2.0.0"
