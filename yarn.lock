@@ -1030,6 +1030,10 @@ feed-read@0.0.1:
     sax "0.3.x"
     underscore "1.x.x"
 
+figlet@^1.2.1:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/figlet/-/figlet-1.2.3.tgz#7d25df546f41fc411c2a8b88012d48d55de72129"
+
 figures@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/figures/-/figures-2.0.0.tgz#3ab1a2d2a62c8bfb431a0c94cb797a2fce27c962"
@@ -1674,8 +1678,8 @@ lodash.support@~2.3.0:
     lodash._renative "~2.3.0"
 
 lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.5:
-  version "4.17.11"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
+  version "4.17.14"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
 
 logform@^1.6.0:
   version "1.6.0"
