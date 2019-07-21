@@ -14,7 +14,7 @@ class PresenceUpdate extends BaseEvent {
 		}
 		const streamingStatusMessageDocument = serverDocument.config.moderation.status_messages.member_streaming_message;
 		const gameStatusMessageDocument = serverDocument.config.moderation.status_messages.member_game_updated_message;
-		if (presence.activity.url &&
+		if (presence.activity && presence.activity.url &&
 			streamingStatusMessageDocument.isEnabled && (streamingStatusMessageDocument.enabled_user_ids.includes(presence.id) || streamingStatusMessageDocument.enabled_user_ids.length === 0)) {
 			const channel = presence.guild.channels.get(streamingStatusMessageDocument.channel_id);
 			if (channel) {
