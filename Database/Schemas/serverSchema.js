@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 
 // Server Schema
 module.exports = new Schema({

@@ -6,7 +6,7 @@ const DOG = `https://random.dog/woof`;
 
 module.exports = class RandomAnimals {
 	constructor () {
-		throw new Error("STATIC_CLASS", this.constructor.name);
+		throw new Error("STATIC_CLASS", {}, this.constructor.name);
 	}
 
 	static async cat () {

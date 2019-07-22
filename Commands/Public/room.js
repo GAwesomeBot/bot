@@ -25,7 +25,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			let success = true;
 			await msg.channel.delete(`Room Management | Command issued by ${msg.author.tag}`).catch(err => {
 				success = false;
-				winston.debug(`Failed to delete room '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id, err });
+				logger.debug(`Failed to delete room '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id }, err);
 				question.edit({
 					embed: {
 						color: Colors.LIGHT_ERR,
@@ -84,7 +84,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 					msg.channel.updateOverwrite(member, {
 						VIEW_CHANNEL: true,
 					}, `Room Management | Command issued by ${msg.member.tag}`).catch(err => {
-						winston.debug(`Failed to add member '${member.user.username}' to room '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: member.id, err });
+						logger.debug(`Failed to add member '${member.user.username}' to room '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: member.id }, err);
 					});
 				}));
 				question.edit({
@@ -147,7 +147,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 					allow: "VIEW_CHANNEL",
 				}, ...permissionOverwrites],
 			}).catch(err => {
-				winston.debug(`Failed to create talk room in '${msg.guild.name}'`, { svrid: msg.guild.id, err });
+				logger.debug(`Failed to create talk room in '${msg.guild.name}'`, { svrid: msg.guild.id, err });
 			});
 			if (channel && channel.type === "text") {
 				channel.send({
@@ -169,7 +169,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 
 			if (channel) serverQueryDocument.push("config.room_data", { _id: channel.id });
 		} else {
-			winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+			logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
 			msg.sendInvalidUsage(commandData);
 		}
 	} else {

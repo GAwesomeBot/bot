@@ -10,7 +10,7 @@ const parser = new Parser({ timeout: 2000 });
  */
 module.exports = (url, num) => new Promise((resolve, reject) => {
 	parser.parseURL(url).then(articles => resolve(articles && articles.items ? articles.items.slice(0, num) : [])).catch(err => {
-		winston.debug(`Feed at URL ${url} did not respond with valid RSS.`, { err });
+		logger.debug(`Feed at URL ${url} did not respond with valid RSS.`, { url }, err);
 		reject("invalid");
 	});
 });

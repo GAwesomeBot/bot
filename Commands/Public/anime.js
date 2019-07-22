@@ -72,7 +72,7 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 			}
 			new ReactionMenu(msg, {}, { options: list, results }).init();
 		} else {
-			winston.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+			logger.verbose(`Couldn't find any animes for "${query}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.send({
 				embed: {
 					color: Colors.LIGHT_RED,
@@ -84,7 +84,7 @@ module.exports = async ({ Constants: { Colors, APIs } }, { serverDocument }, msg
 			});
 		}
 	} else {
-		winston.verbose(`Anime name not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		logger.verbose(`Anime name not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,

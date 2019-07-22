@@ -9,9 +9,10 @@ const messages = new Map();
  */
 
 const makeGABError = base => class GABError extends base {
-	constructor (key, ...args) {
+	constructor (key, meta, ...args) {
 		super(message(key, args));
 		this[kCode] = key;
+		this._meta = meta || {};
 		if (Error.captureStackTrace) Error.captureStackTrace(this, GABError);
 	}
 

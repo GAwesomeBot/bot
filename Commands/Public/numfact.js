@@ -20,7 +20,7 @@ module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text } }, docume
 			});
 		}
 	} catch (err) {
-		winston.debug("Failed to fetch number fact for the numfact command.", { svrid: msg.guild.id, err });
+		logger.debug("Failed to fetch number fact for the numfact command.", { svrid: msg.guild.id }, err);
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,

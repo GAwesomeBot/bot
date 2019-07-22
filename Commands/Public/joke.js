@@ -22,7 +22,7 @@ module.exports = async ({ Constants: { Colors, APIs, UserAgent } }, documents, m
 			});
 		}
 	} catch (err) {
-		winston.debug("Failed to fetch joke for the joke command.", { svrid: msg.guild.id, err });
+		logger.debug("Failed to fetch joke for the joke command.", { svrid: msg.guild.id }, err);
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,

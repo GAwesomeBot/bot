@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 
 // Server's game data (time played and game playing)
 module.exports = new Schema({

@@ -22,7 +22,7 @@ module.exports = {
 				const newServerDocument = await Servers.findOne(serverDocument._id);
 				module.exports.end(client, svr, newServerDocument, ch, newServerDocument.channels[channelDocument._id]);
 				newServerDocument.save().catch(err => {
-					winston.debug(`Failed to automatically end ongoing lottery.`, err);
+					logger.debug(`Failed to automatically end ongoing lottery.`, { svrid: svr.id }, err);
 					client.logMessage(newServerDocument, "error", "Something went wrong while trying to end a lottery!", ch.id);
 				});
 			}, 3600000);
@@ -58,12 +58,14 @@ module.exports = {
 								text: "Enjoy the cash! 💰",
 							},
 						},
+					}).catch(err => {
+						logger.debug("Failed to send Lottery message to channel.", { svrid: svr.id, chid: ch.id }, err);
 					});
 				}
 				channelQueryDocument.set("lottery.participant_ids", []);
 				return winner;
 			} catch (err) {
-				winston.debug(`An error occurred while attempting to end a lottery (*0*)\n`, err);
+				logger.debug(`An error occurred while attempting to end a lottery (*0*)`, { svrid: svr.id, chid: ch.id }, err);
 				client.logMessage(serverDocument, LoggingLevels.ERROR, `An error occurred while attempting to end the lottery.`, ch.id);
 			}
 		}

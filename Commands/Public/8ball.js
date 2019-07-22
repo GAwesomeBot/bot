@@ -22,7 +22,7 @@ module.exports = async (main, documents, msg, commandData) => {
 			},
 		});
 	} else {
-		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
+		logger.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
 		msg.send({
 			embed: {
 				color: Colors.RED,

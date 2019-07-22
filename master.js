@@ -15,96 +15,96 @@ const scope = { safeMode: false };
 
 Boot({ configJS, configJSON, auth }, scope).then(() => {
 	if (scope.migrating) return;
-	winston.debug("Connecting to MongoDB... ~(˘▾˘~)", { URL: configJS.database.URL, db: configJS.database.db });
+	logger.info("Connecting to MongoDB...", { URL: configJS.database.URL, db: configJS.database.db });
 
 	// eslint-disable-next-line promise/catch-or-return
 	database.initialize(configJS.database).catch(err => {
-		winston.error(`An error occurred while connecting to MongoDB! x( Is the database online?\n`, err);
+		logger.error(`An error occurred while connecting to MongoDB! x( Is the database online?`, { config: configJS.database }, err);
 		process.exit(1);
 	}).then(async () => {
 		const db = database.getConnection();
 
 		if (db && !scope.safeMode) {
-			await winston.info(`Connected to the database successfully.`);
+			await logger.info(`Connected to MongoDB successfully.`);
 
-			winston.silly("Confirming MongoDB config values.");
-			await db.client.admin().command({ getCmdLineOpts: 1 }).then(res => {
-				if (!res.parsed || !res.parsed.net || !res.parsed.net.bindIp) {
-					winston.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
-					configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");
-				}
-			});
+			logger.silly("Confirming MongoDB config values.");
+			const adminDatabaseResponse = await db.client.admin().command({ getCmdLineOpts: 1 });
+			if (!adminDatabaseResponse.parsed || !adminDatabaseResponse.parsed.net || !adminDatabaseResponse.parsed.net.bindIp) {
+				logger.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
+				configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");
+			}
 
-			winston.silly("Confirming auth.js config values.");
+			logger.silly("Confirming auth.js config values.");
 			if (Object.values(auth.tokens).some(token => token === "")) {
-				winston.warn("You haven't supplied some auth tokens, make sure to fill in auth.js to make sure all GAB features function!");
+				logger.warn("You haven't supplied some auth tokens, make sure to fill in auth.js to make sure all GAB features function!");
 				configWarnings.push("In auth.js, some values have not been filled in correctly. Some commands may not function as expected.");
 			}
 
-			winston.silly("Confirming config.js config values.");
+			logger.silly("Confirming config.js config values.");
 			if (!configJS.hostingURL || !configJS.oauthLink || (typeof configJS.hostingURL || typeof configJS.oauthLink) !== "string") {
-				winston.warn("Some config.js values have not been configured correctly. GAB may be harder to reach by users.");
+				logger.warn("Some config.js values have not been configured correctly. GAB may be harder to reach by users.");
 				configWarnings.push("The config.js values hostingURL and/or oauthLink are malformed or empty.");
 			}
 			if (!configJS.secret || !configJS.serverIP || (typeof configJS.secret || typeof configJS.serverIP) !== "string" || !configJS.httpPort || !configJS.httpsPort) {
-				winston.warn("Some config.js values have not been configured correclty. GAB's Web Interface may not work as intended.");
+				logger.warn("Some config.js values have not been configured correclty. GAB's Web Interface may not work as intended.");
 				configWarnings.push("The config.js values secret, serverIP, httpPort and/or httpsPort are malformed or empty.");
 			}
 			if (configJS.secret === "vFEvmrQl811q2E8CZelg4438l9YFwAYd") {
-				winston.warn("Your session secret value appears to be default. Please note that this value is public!");
+				logger.warn("Your session secret value appears to be default. Please note that this value is public!");
 				configWarnings.push("Your config.js secret value has not been reconfigured. This value is public!");
 			}
 			if ((configJS.httpPort !== "80" || configJS.httpsPort !== "443") && !process.argv.includes("-p") && !process.argv.includes("--proxy")) {
-				winston.warn("You are running GAwesomeBot on a non-standard port, if a reverse-proxy such as Nginx is being used, restart GAwesomeBot with the '--proxy' argument.");
+				logger.warn("You are running GAwesomeBot on a non-standard port, if a reverse-proxy such as Nginx is being used, restart GAwesomeBot with the '--proxy' argument.");
 			}
 
-			winston.silly("Confirming config.json values.");
+			logger.silly("Confirming config.json values.");
 			let localVersion;
 			try {
 				localVersion = await centralClient.API("versions").branch(configJSON.branch).get(configJSON.version);
 			} catch (err) {
+				logger.error(`Error while fetching GAwesomeBot version metadata.`, {}, err);
 				localVersion = {};
 			}
 			if (!localVersion.valid) {
-				winston.warn(`GAB version ${configJSON.version} was not found on branch ${configJSON.branch}, you may need to reinstall GAB in order to enable Versioning.`);
+				logger.warn(`GAB version ${configJSON.version} was not found on branch ${configJSON.branch}, you may need to reinstall GAB in order to enable Versioning.`);
 				configWarnings.push(`GAwesomeBot ${configJSON.version} is not a valid version on branch ${configJSON.branch}. Versioning has been disabled to avoid update conflicts.`);
 			}
 
-			winston.silly("Confirming environment setup.");
+			logger.silly("Confirming environment setup.");
 			if (process.env.NODE_ENV !== "production") {
-				winston.warn("GAB is running in development mode, this might impact web interface performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
+				logger.warn("GAB is running in development mode, this might impact web interface performance. In order to run GAB in production mode, please set the NODE_ENV environment var to production.");
 				configWarnings.push("GAwesomeBot is running in development mode. Set the NODE_ENV environment variable to 'production' to dismiss this warning.");
 			}
 
-			winston.silly("Confirming clientToken config value.");
+			logger.silly("Confirming clientToken config value.");
 			if (!auth.discord.clientToken && !process.argv.includes("--build")) {
-				winston.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! -.-");
+				logger.error("You must provide a clientToken in \"Configurations/auth.js\" to open the gates to Discord! -.-");
 				process.exit(1);
 			}
 
-			winston.silly("Confirming shardTotal config value.");
+			logger.silly("Confirming shardTotal config value.");
 			if (!parseInt(configJS.shardTotal) && configJS.shardTotal !== "auto") {
-				winston.error(`You must enter your shardTotal config value as a valid number, or "auto".`);
+				logger.error(`You must enter your shardTotal config value as a valid number, or "auto".`);
 				process.exit(1);
 			}
 
 			if (configJS.shardTotal !== "auto" && configJS.shardTotal < 1) {
-				winston.error(`In config.js, shardTotal must be greater than or equal to 1`);
+				logger.error(`In config.js, shardTotal must be greater than or equal to 1`);
 				process.exit(1);
 			}
 
 			if (configJS.shardTotal === "auto") {
-				winston.info(`Getting the recommended shards from Discord..`);
+				logger.info(`Getting the recommended shards from Discord...`);
 				const result = await require("discord.js").Util.fetchRecommendedShards(auth.discord.clientToken);
-				winston.info(`GAwesomeBot will spawn ${result} shard(s) as recommended by Discord.`, { shards: result });
+				logger.info(`GAwesomeBot will spawn ${result} shard(s) as recommended by Discord.`, { shards: result });
 				configJS.shardTotal = result;
 			}
 		}
 
-		winston.verbose("Creating sharder instance.");
-		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, winston);
+		logger.silly("Creating sharder instance.");
+		const sharder = await new Sharder(auth.discord.clientToken, configJS.shardTotal, logger);
 		sharder.cluster.on("online", worker => {
-			winston.info(`Worker ${worker.id} launched.`, { worker: worker.id });
+			logger.info(`Worker ${worker.id} launched.`, { worker: worker.id });
 		});
 
 		if (!scope.safeMode) {
@@ -116,7 +116,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 			sharder.IPC.on("ready", async () => {
 				sharder.ready++;
 				if (sharder.ready === sharder.count) {
-					winston.info("All shards connected.");
+					logger.info("All shards connected to Discord.");
 				}
 			});
 
@@ -124,11 +124,11 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 				if (sharder.finished > -1) sharder.finished++;
 				if (sharder.finished === sharder.count) {
 					// Print startup ascii message
-					winston.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
+					logger.info(`The best Discord Bot, version ${configJSON.version}, is now ready!`);
 					// Use console.log because winston never lets us have anything fun, MOM
 					figlet("GAwesomeBot", (err, res) => {
 						if (err) {
-							winston.error(err);
+							logger.error("", {}, err);
 						} else {
 							// eslint-disable-next-line no-console
 							console.log(res);
@@ -137,7 +137,7 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 					sharder.finished = -1;
 					sharder.IPC.send("postAllData", {}, 0);
 					if (process.argv.includes("--build")) {
-						winston.warn("Shutting down travis build with code 0");
+						logger.info("Shutting down travis build with code 0");
 						sharder.cluster.disconnect();
 						process.exit(0);
 					}
@@ -171,14 +171,14 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 						});
 					}
 				} catch (err) {
-					winston.warn("An error occurred while fetching internal guild data l.l\n", err);
+					logger.error("An error occurred while fetching internal guild data.", { target: msg.target }, err);
 					return callback({ target: msg.target, err: err, result: null });
 				}
 			});
 
 			// Shard has modified Console data
 			sharder.IPC.on("dashboardUpdate", async msg => {
-				winston.silly(`Broadcasting update to dashboard at ${msg.location}.`);
+				logger.silly(`Broadcasting update to dashboard at ${msg.location}.`, { location: msg.location, namespace: msg.namespace, author: msg.author });
 				sharder.IPC.send("dashboardUpdate", { namespace: msg.namespace, location: msg.location, author: msg.author }, "*");
 			});
 
@@ -326,12 +326,12 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 			// Shard requests GAB to shutdown
 			sharder.IPC.on("shutdown", async msg => {
 				if (msg.soft) {
-					if (msg.err) winston.error(`A critical error occurred within a worker, all workers must restart.`);
-					else winston.info(`All workers are being restarted. Expect some lag!`);
+					if (msg.err) logger.error(`A critical error occurred within a worker, all workers must restart.`);
+					else logger.info(`All workers are being restarted. Expect some lag!`);
 					sharder.shards.forEach(shard => shard.worker.kill());
 				} else {
-					if (msg.err) winston.error(`A critical error occurred within a worker, the master can no longer operate; GAB is shutting down.`);
-					else winston.info(`GAB is shutting down.`);
+					if (msg.err) logger.error(`A critical error occurred within a worker, the master can no longer operate; GAB is shutting down.`);
+					else logger.info(`GAB is shutting down.`);
 					sharder.shutdown = true;
 					sharder.cluster.disconnect();
 					process.exit(msg.err ? 1 : 0);
@@ -343,12 +343,12 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 	});
 
 	process.on("uncaughtException", err => {
-		winston.error("An unknown and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
+		logger.error("An unknown and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", {}, err);
 		process.exit(1);
 	});
 
 	process.on("unhandledRejection", err => {
-		winston.error("An unknown and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", err);
+		logger.error("An unknown and unexpected error occurred, and we failed to handle it. Sorry! x.x\n", {}, err);
 		process.exit(1);
 	});
 }).catch(err => {

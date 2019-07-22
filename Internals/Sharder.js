@@ -7,12 +7,12 @@ class Shard {
 		this.sharder = sharder;
 		this.worker = worker;
 		this.id = id;
-		this.winston = sharder.winston;
+		this.logger = sharder.logger;
 		this.process.setMaxListeners(0);
 		this.IPC = new ProcessAsPromised(this.process);
 
 		this.process.once("exit", () => {
-			this.winston.debug(`Shard ${this.id} peacefully passed away.${!this.sharder.shutdown ? " Respawning..." : ""}`, { id: this.id });
+			this.logger.info(`Shard ${this.id} peacefully passed away.${!this.sharder.shutdown ? " Respawning..." : ""}`, { id: this.id });
 			if (!this.sharder.shutdown) this.sharder.create(this.id);
 		});
 
@@ -51,33 +51,33 @@ class Shard {
 }
 
 class Sharder {
-	constructor (token, count, winston) {
+	constructor (token, count, logger) {
 		this.cluster = cluster;
 		this.cluster.setupMaster({
 			exec: "GAwesomeBot.js",
 		});
-		this.winston = winston;
+		this.logger = logger;
 		this.token = token ? token : process.env.CLIENT_TOKEN;
 		this.host = process.env.GAB_HOST ? process.env.GAB_HOST : undefined;
 		this.count = count;
 		this.mode = process.env.NODE_ENV === "production" ? "production" : "development";
 		this.SharderIPC = require("./").SharderIPC;
 		this.Collection = require("discord.js").Collection;
-		this.IPC = new this.SharderIPC(this, winston);
+		this.IPC = new this.SharderIPC(this, logger);
 		this.shards = new this.Collection();
 		this.guilds = new this.Collection();
 		this.shutdown = false;
 	}
 
 	spawn () {
-		this.winston.verbose("Spawning shards.");
+		this.logger.verbose("Spawning shards.");
 		for (let i = 0; i < this.count; i++) {
 			this.create(i);
 		}
 	}
 
 	create (id) {
-		this.winston.verbose("Creating new shard instance and process.", { id: id });
+		this.logger.verbose("Creating new shard instance and process.", { id: id });
 		const worker = this.cluster.fork({
 			CLIENT_TOKEN: this.token,
 			SHARDS: id,
@@ -90,7 +90,7 @@ class Sharder {
 	}
 
 	broadcast (subject, message, timeout) {
-		this.winston.silly("Broadcasting message to all shards.", { msg: message });
+		this.logger.silly("Broadcasting message to all shards.", { msg: message });
 		const promises = [];
 		for (const shard of this.shards.values()) promises.push(shard.send(subject, message, timeout));
 		return Promise.all(promises);

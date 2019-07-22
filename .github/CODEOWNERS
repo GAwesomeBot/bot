@@ -10,7 +10,7 @@
 /Modules/    @KingDGrizzle @GilbertGobbels
 /Web/    @GilbertGobbels
 
-/Internals/Console.js    @GilbertGobbels
+/Internals/Logger.js    @GilbertGobbels
 /Internals/Sharder.js    @GilbertGobbels
 /Internals/IPC.js    @GilbertGobbels
 /Modules/GAwesomeClient.js    @GilbertGobbels

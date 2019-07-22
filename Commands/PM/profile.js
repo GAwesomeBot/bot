@@ -154,7 +154,7 @@ module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Color
 			userQueryDocument.set("profile_fields.Bio", changes.Bio);
 		}
 		await msg.author.userDocument.save().catch(err => {
-			winston.warn(`Failed to save user data for profile setup`, err);
+			logger.warn(`Failed to save user data for profile setup.`, { usrid: msg.author.id }, err);
 		});
 		msg.reply({
 			embed: {

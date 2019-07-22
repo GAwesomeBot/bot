@@ -618,7 +618,7 @@ controllers.logs = async (req, { res }) => {
 		});
 		res.render();
 	} catch (err) {
-		winston.warn(`Failed to fetch logs for server ${svr.name} (*-*)\n`, err);
+		logger.warn(`Failed to fetch logs for server ${svr.name} (*-*)`, {}, err);
 		renderError(res, "Failed to fetch all the trees and their logs.");
 	}
 };

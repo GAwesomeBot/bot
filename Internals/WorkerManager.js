@@ -55,10 +55,10 @@ class WorkerManager {
 	async startWorker () {
 		this.worker = new processAsPromised(fork(`${__dirname}/Worker.js`, [], { env: { SHARDS: this.client.shardID, SHARD_COUNT: process.env.SHARD_COUNT }, execArgv: [] }));
 		this.worker.once("ready", async d => {
-			winston.info(`Worker for shard ${Number(d.shard)} is up and running!`);
+			logger.info(`Worker for shard ${Number(d.shard)} is up and running!`);
 		});
 		this.worker.on("exit", () => {
-			winston.warn("Worker exited");
+			logger.warn("Worker exited.");
 		});
 		return this.worker;
 	}

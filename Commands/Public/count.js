@@ -85,7 +85,7 @@ module.exports = async ({ configJS, Constants: { Colors, Text } }, { serverDocum
 					createCount(params[0].toLowerCase());
 				}
 			} else {
-				winston.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+				logger.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				msg.sendInvalidUsage(commandData);
 			}
 		} else {

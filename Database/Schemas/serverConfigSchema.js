@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 const { public: commands } = require("../../Configurations/commands.js");
 
 // Get command(s) structure for server config schema below

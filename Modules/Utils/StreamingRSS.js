@@ -52,9 +52,9 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 		if (info.length > 0) {
 			feedQueryDocument.set("streaming.last_article_title", articles[0].link);
 			await serverDocument.save().catch(err => {
-				winston.warn(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, err);
+				logger.debug(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, err);
 			});
-			winston.debug(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });
+			logger.verbose(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });
 			for (let i = 0; i < feedDocument.streaming.enabled_channel_ids.length; i++) {
 				const channel = server.channels.get(feedDocument.streaming.enabled_channel_ids[i]);
 				if (channel) {
@@ -71,7 +71,7 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 							});
 						}
 					} catch (err) {
-						winston.debug(`Failed to send RSS Streaming updates to server.`, { svrid: server.id, chid: channel.id });
+						logger.debug(`Failed to send RSS Streaming updates to server.`, { svrid: server.id, chid: channel.id }, err);
 					}
 				}
 			}

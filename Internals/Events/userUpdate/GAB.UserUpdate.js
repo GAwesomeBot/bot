@@ -23,7 +23,9 @@ class UserUpdate extends BaseEvent {
 				channel.send({
 					embed: StatusMessages.USER_USERNAME_UPDATED(this.client, serverDocument, oldUser, member),
 					disableEveryone: true,
-				}).catch(() => null);
+				}).catch(err => {
+					logger.debug(`Failed to send StatusMessage for USER_USERNAME_UPDATES.`, { svrid: guild.id, chid: channel.id }, err);
+				});
 			}
 		}
 
@@ -33,7 +35,9 @@ class UserUpdate extends BaseEvent {
 				channel.send({
 					embed: StatusMessages.USER_AVATAR_UPDATED(this.client, serverDocument, oldUser, member),
 					disableEveryone: true,
-				}).catch(() => null);
+				}).catch(err => {
+					logger.debug(`Failed to send StatusMessage for USER_AVATAR_UPDATED.`, { svrid: guild.id, chid: channel.id }, err);
+				});
 			}
 		}
 	}

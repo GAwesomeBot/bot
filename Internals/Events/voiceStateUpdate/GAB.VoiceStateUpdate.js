@@ -6,7 +6,9 @@ const VoiceStatsCollector = require("../../../Modules/VoiceStatsCollector");
 class VoiceStateUpdate extends BaseEvent {
 	async handle (oldState, state) {
 		const serverDocument = await Servers.findOne(state.guild.id);
-		if (!serverDocument) return;
+		if (!serverDocument) {
+			logger.debug("Failed to find server data for VoiceStateUpdate.", { svrid: state.guild.id });
+		}
 		if (!oldState.channel && state.channel) await this.joinedChannel(serverDocument, state.channel, state);
 		else if (oldState.channel && !state.channel) await this.leftChannel(serverDocument, oldState.channel, state);
 		if (oldState.channel && state.channel && oldState.channel !== state.channel) {
@@ -25,7 +27,7 @@ class VoiceStateUpdate extends BaseEvent {
 				await Voicetext.addMember(state.guild, channel, state.member);
 				this.client.logMessage(serverDocument, LoggingLevels.INFO, "A member has been added to a voicetext channel.", channel.id, state.member.id);
 			} catch (err) {
-				winston.debug("Failed to add member to voicetext channel", { svrid: state.guild.id, chid: channel.id, usrid: state.member.id, err });
+				logger.debug("Failed to add member to voicetext channel.", { svrid: state.guild.id, chid: channel.id, usrid: state.member.id }, err);
 				this.client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to add a member to a voicetext channel! I might be lacking sufficient permissions.", channel.id, state.member.id);
 			}
 		}
@@ -50,7 +52,7 @@ class VoiceStateUpdate extends BaseEvent {
 				await Voicetext.removeMember(state.guild, channel, state.member);
 				this.client.logMessage(serverDocument, LoggingLevels.INFO, "A member has been removed from a voicetext channel.", channel.id, state.member.id);
 			} catch (err) {
-				winston.debug("Failed to remove member from a voicetext channel", { svrid: state.guild.id, chid: channel.id, usrid: state.member.id, err });
+				logger.debug("Failed to remove member from a voicetext channel.", { svrid: state.guild.id, chid: channel.id, usrid: state.member.id }, err);
 				this.client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to remove a member from a voicetext channel! I might be lacking sufficient permissions.", channel.id, state.member.id);
 			}
 		}

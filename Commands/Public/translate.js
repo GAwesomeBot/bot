@@ -35,7 +35,7 @@ module.exports = ({ Constants: { Colors, Text }, client }, { serverDocument }, m
 				description: `Something went wrong while trying to ${src === null ? "detect your text's language" : `translate your ${src} text`}! 😵`,
 			},
 		});
-		if (err) winston.debug(`Failed to ${src === null ? "auto-detect language" : "translate text"} for ${commandData.name} command.`, { svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id, err });
+		if (err) logger.debug(`Failed to ${src === null ? "auto-detect language" : "translate text"} for ${commandData.name} command.`, { svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id }, err);
 	};
 
 	const translateText = (from, to, input) => {

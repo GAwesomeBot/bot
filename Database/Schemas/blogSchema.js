@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 
 /*
  * Schema for Blog Entries

@@ -1,7 +1,7 @@
 /* eslint-disable callback-return */
 
 const process = require("process");
-global.winston = new (require("../Internals/Console"))(`Shard ${Number(process.env.SHARDS)} Worker`);
+global.logger = new (require("./Logger"))(`Shard ${Number(process.env.SHARDS)} Worker`);
 
 require("../Modules/Utils/ObjectDefines")();
 
@@ -32,7 +32,7 @@ const extensionManager = new ExtensionManager({
 
 // #region Math
 p.on("runMathCommand", (data, callback) => {
-	winston.silly(`Received data from master shard for calculating...`, data);
+	logger.silly(`Received data from master shard for calculating...`, data);
 	const retData = { error: null, result: null };
 	switch (data.command) {
 		case MathJSCommands.EVAL: {
@@ -56,7 +56,7 @@ p.on("runMathCommand", (data, callback) => {
 			break;
 		}
 	}
-	winston.silly(`Processed math equation and returned the results!`);
+	logger.silly(`Processed math equation and returned the results!`);
 });
 // #endregion Math
 
@@ -94,7 +94,7 @@ p.on("runExtension", async (data, callback) => {
 });
 
 process.on("unhandledRejection", err => {
-	winston.debug(`An extension failed to handle a Promise rejection`, err);
+	logger.debug(`An extension failed to handle a Promise rejection`, {}, err);
 });
 
 (async () => {

@@ -36,7 +36,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 				case "events": {
 					try {
 						client.events.reloadEvent(cmd);
-						winston.verbose(`Reloaded ${cmd === "*" ? "all " : ""}event${cmd === "*" ? "s" : ` "${cmd}"`}`, { usrid: msg.author.id, cmd });
+						logger.verbose(`Reloaded ${cmd === "*" ? "all " : ""}event${cmd === "*" ? "s" : ` "${cmd}"`}`, { usrid: msg.author.id, cmd });
 						msg.send({
 							embed: {
 								color: Colors.SUCCESS,
@@ -44,7 +44,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 							},
 						});
 					} catch (err) {
-						winston.warn(`Failed to reload event ${cmd}!`, { usrid: msg.author.id, event: cmd, err });
+						logger.warn(`Failed to reload event ${cmd}!`, { usrid: msg.author.id, event: cmd }, err);
 						if (err.code === "UNKNOWN_EVENT") {
 							return msg.send({
 								embed: {
@@ -81,7 +81,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 					case "public": client.reloadAllPublicCommands(); break;
 					case "shared": client.reloadAllSharedCommands(); break;
 				}
-				winston.verbose(`Reloaded all ${type} commands!`, { usrid: msg.author.id });
+				logger.verbose(`Reloaded all ${type} commands!`, { usrid: msg.author.id });
 				return msg.send({
 					embed: {
 						color: Colors.SUCCESS,
@@ -95,7 +95,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 				case "public": {
 					cmd = client.getPublicCommandName(cmd);
 					if (!commands.public.hasOwnProperty(cmd)) {
-						winston.debug(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
+						logger.debug(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
 						return msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
@@ -110,7 +110,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 				case "shared": {
 					cmd = client.getSharedCommandName(cmd);
 					if (!commands.shared.hasOwnProperty(cmd)) {
-						winston.debug(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
+						logger.debug(`Unable to reload ${type} command "${cmd}" because no command data was found in commands.js!`, { usrid: msg.author.id, cmd });
 						return msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
@@ -133,7 +133,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 				});
 			}
 			if (!fail) {
-				winston.verbose(`Reloaded ${type} command "${cmd}"`, { usrid: msg.author.id, cmd });
+				logger.verbose(`Reloaded ${type} command "${cmd}"`, { usrid: msg.author.id, cmd });
 				msg.send({
 					embed: {
 						color: Colors.SUCCESS,
@@ -141,7 +141,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 					},
 				});
 			} else if (fail) {
-				winston.verbose(`Failed to reload ${type} command "${cmd}"`, { usrid: msg.author.id, cmd }, fail);
+				logger.verbose(`Failed to reload ${type} command "${cmd}"`, { usrid: msg.author.id, cmd }, fail);
 				msg.send({
 					embed: {
 						color: Colors.ERR,
@@ -151,7 +151,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 				});
 			}
 		} else {
-			winston.verbose(`Invalid command type or command not in commands.js provided!`, { usrid: msg.author.id, cmd });
+			logger.verbose(`Invalid command type or command not in commands.js provided!`, { usrid: msg.author.id, cmd });
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,

@@ -45,7 +45,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, documents, msg,
 				},
 			});
 		}).catch(err => {
-			winston.debug(`Failed to ${commandData.name} in channel '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, err });
+			logger.debug(`Failed to ${commandData.name} in channel '${msg.channel.name}' on server '${msg.guild.name}'`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,

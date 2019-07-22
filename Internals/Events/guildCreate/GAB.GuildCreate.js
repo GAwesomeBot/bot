@@ -5,7 +5,7 @@ const {	LoggingLevels } = require("../../Constants");
 class GuildCreate extends BaseEvent {
 	async handle (guild) {
 		if (this.configJSON.guildBlocklist.includes(guild.id)) {
-			winston.info(`Left "${guild}" due to it being blocklisted!`, { guild: guild.id });
+			logger.info(`Left "${guild}" due to it being blocklisted!`, { guild: guild.id });
 			guild.leave();
 		} else {
 			this.client.IPC.send("sendAllGuilds", {});
@@ -17,15 +17,15 @@ class GuildCreate extends BaseEvent {
 				shouldMakeDocument = true;
 			}
 			if (serverDocument) {
-				winston.info(`Rejoined server ${guild}`, { svrid: guild.id });
+				logger.info(`Rejoined server ${guild}`, { svrid: guild.id });
 				this.client.logMessage(serverDocument, LoggingLevels.INFO, "I've been re-added to your server! (^-^)");
 			} else if (shouldMakeDocument || !serverDocument) {
-				winston.info(`Joined server ${guild}`, { svrid: guild.id });
+				logger.info(`Joined server ${guild}`, { svrid: guild.id });
 				try {
 					const newServerDocument = await getNewServerData(this.client, guild, Servers.new({ _id: guild.id }));
 					await newServerDocument.save();
 				} catch (err) {
-					winston.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
+					logger.warn(`Failed to create a new server document for new server >.>`, { svrid: guild.id }, err);
 				}
 				this.client.logMessage(await Servers.findOne(guild.id), LoggingLevels.INFO, "I've been added to your server! (^-^)");
 			}

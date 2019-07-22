@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 const { AllowedEvents } = require("../../Internals/Constants");
 
 /*

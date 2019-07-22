@@ -9,7 +9,7 @@ class MessageDelete extends BaseEvent {
 	async handle (msg) {
 		const serverDocument = await Servers.findOne(msg.guild.id);
 		if (!serverDocument) {
-			return winston.debug("Failed to find server data for message deletion", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+			return logger.debug("Failed to find server data for message deletion.", { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		}
 		const serverQueryDocument = serverDocument.query;
 
@@ -30,7 +30,7 @@ class MessageDelete extends BaseEvent {
 				serverQueryDocument.id("members", memberDocument._id).inc("messages", -1);
 
 				serverDocument.save().catch(err => {
-					winston.warn("Failed to save server data for message deletion", { svrid: msg.guild.id, err });
+					logger.warn("Failed to save server data for message deletion.", { svrid: msg.guild.id }, err);
 				});
 			}
 		}
@@ -51,7 +51,7 @@ class MessageDelete extends BaseEvent {
 					userDocument.query.inc("points", -1);
 
 					userDocument.save().catch(err => {
-						winston.warn("Failed to save user data for points decrementing", { usrid: message.author.id, err });
+						logger.warn("Failed to save user data for points decrementing", { usrid: message.author.id }, err);
 					});
 				}
 			}
@@ -60,7 +60,7 @@ class MessageDelete extends BaseEvent {
 		// Send message_deleted_message if necessary
 		const statusMessageDocument = serverDocument.config.moderation.status_messages.message_deleted_message;
 		if (serverDocument.config.moderation.isEnabled && statusMessageDocument.isEnabled && statusMessageDocument.enabled_channel_ids.includes(msg.channel.id)) {
-			winston.verbose(`Message by member '${msg.author.tag}' on server '${msg.guild.name}' deleted`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, msgid: msg.id });
+			logger.verbose(`Message by member '${msg.author.tag}' on server '${msg.guild.name}' deleted`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, msgid: msg.id });
 
 			// Send message in different channel
 			if (statusMessageDocument.type === "single" && statusMessageDocument.channel_id) {
@@ -71,6 +71,8 @@ class MessageDelete extends BaseEvent {
 						channel.send({
 							embed: StatusMessages.MESSAGE_DELETED(statusMessageDocument.type, msg, serverDocument, this.client),
 							disableEveryone: true,
+						}).catch(err => {
+							logger.debug(`Failed to send StatusMessage for MESSAGE_DELETED.`, { svrid: msg.guild.id, chid: channel.id }, err);
 						});
 					}
 				}
@@ -80,6 +82,8 @@ class MessageDelete extends BaseEvent {
 					msg.channel.send({
 						embed: StatusMessages.MESSAGE_DELETED(statusMessageDocument.type, msg, serverDocument, this.client),
 						disableEveryone: true,
+					}).catch(err => {
+						logger.debug(`Failed to send StatusMessage for MESSAGE_DELETED.`, { svrid: msg.guild.id, chid: msg.channel.id }, err);
 					});
 				}
 			}

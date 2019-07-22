@@ -17,7 +17,7 @@ class BaseEvent {
 	 * @param {?Object} [values] The values that the event emitted
 	 */
 	async handle () {
-		throw new Error("NO_HANDLE", this.constructor.name);
+		throw new Error("NO_HANDLE", {}, this.constructor.name);
 	}
 
 	/**

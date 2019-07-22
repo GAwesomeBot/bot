@@ -23,7 +23,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 		});
 		await menu.init();
 	} else {
-		winston.verbose(`Failed to fetch cat facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
+		logger.verbose(`Failed to fetch cat facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,

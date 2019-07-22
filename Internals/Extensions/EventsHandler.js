@@ -26,7 +26,7 @@ class EventsHandler {
 			try {
 				await func(...args);
 			} catch (err) {
-				winston.error("An exception occurred while trying to run an extension.", err);
+				logger.error("An exception occurred while trying to run an extension.", {}, err);
 			}
 		};
 	}

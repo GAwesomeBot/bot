@@ -92,6 +92,8 @@ module.exports = {
 						` : `The results ended in a tie! Nobody won today :(`}`,
 					},
 				},
+			}).catch(err => {
+				logger.debug(`Failed to send Polls message to channel.`, { svrid: serverDocument._id, chid: ch.id }, err);
 			});
 		}
 	},

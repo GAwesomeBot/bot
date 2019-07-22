@@ -9,7 +9,7 @@ const { GuildMember } = require("discord.js");
 
 module.exports = class ModLog {
 	constructor () {
-		throw new Error("STATIC_CLASS", this.constructor.name);
+		throw new Error("STATIC_CLASS", {}, this.constructor.name);
 	}
 
 	/**
@@ -80,7 +80,7 @@ module.exports = class ModLog {
 					return serverDocument.save().then(() => serverDocument.modlog.current_id);
 				}
 			} else {
-				return new Error("INVALID_MODLOG_CHANNEL", ch);
+				return new Error("INVALID_MODLOG_CHANNEL", {}, ch);
 			}
 		} else {
 			return new Error("MISSING_MODLOG_CHANNEL");
@@ -121,10 +121,10 @@ module.exports = class ModLog {
 						return modlogEntryDocument._id;
 					}
 				} else {
-					return new Error("INVALID_MODLOG_CHANNEL", channel);
+					return new Error("INVALID_MODLOG_CHANNEL", {}, channel);
 				}
 			} else {
-				return new Error("MODLOG_ENTRY_NOT_FOUND", id);
+				return new Error("MODLOG_ENTRY_NOT_FOUND", {}, id);
 			}
 		} else {
 			return new Error("MISSING_MODLOG_CHANNEL");
@@ -145,10 +145,10 @@ module.exports = class ModLog {
 					await serverDocument.save();
 					return id;
 				} else {
-					return new Error("INVALID_MODLOG_CHANNEL", channel);
+					return new Error("INVALID_MODLOG_CHANNEL", {}, channel);
 				}
 			} else {
-				return new Error("MODLOG_ENTRY_NOT_FOUND", id);
+				return new Error("MODLOG_ENTRY_NOT_FOUND", {}, id);
 			}
 		} else {
 			return new Error("MISSING_MODLOG_CHANNEL");
@@ -171,7 +171,7 @@ module.exports = class ModLog {
 			await serverDocument.save();
 			return channel.id;
 		} else {
-			return new Error("INVALID_MODLOG_CHANNEL", channel);
+			return new Error("INVALID_MODLOG_CHANNEL", {}, channel);
 		}
 	}
 

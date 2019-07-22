@@ -21,13 +21,14 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 			if (channel) {
 				serverConfigQueryDocument.set("message_of_the_day.last_run", Date.now());
 				await serverDocument.save().catch(err => {
-					winston.warn(`Failed to save message of the day data... 😞\n`, err);
+					logger.debug(`Failed to save message of the day data...`, { svrid: server.id, chid: channel.id }, err);
 					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to save data for MOTD... Please reconfigure your MOTD! (*-*)", channel.id);
 				});
 				try {
 					await channel.send(serverConfigDocument.message_of_the_day.message_content);
 					client.logMessage(serverDocument, LoggingLevels.INFO, "Sent Message Of The Day successfully.", channel.id);
 				} catch (err) {
+					logger.debug(`Failed to send MOTD...`, { svrid: server.id, chid: channel.id }, err);
 					client.logMessage(serverDocument, LoggingLevels.ERROR, "Failed to send Message Of The Day!", channel.id);
 				}
 			} else {
@@ -35,7 +36,7 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 			}
 			client.setTimeout(async () => {
 				const newServerDocument = await Servers.findOne(server.id).catch(err => {
-					winston.warn(`Failed to set timeout for MOTD... (*-*)\n`, err);
+					logger.debug(`Failed to set timeout for MOTD... (*-*)`, { svrid: server.id }, err);
 				});
 				await sendMOTD(newServerDocument);
 			}, serverConfigDocument.message_of_the_day.interval);
@@ -48,7 +49,7 @@ module.exports = async (client, server, motdDocument, serverQueryDocument) => {
 		if (timeout <= 0) timeout = 1;
 		client.MOTDTimers.set(server.id, client.setTimeout(async () => {
 			const serverDocument = await Servers.findOne(server.id).catch(err => {
-				winston.warn(`Failed to find server document for MOTD... (*-*)\n`, err);
+				logger.debug(`Failed to find server document for MOTD... (*-*)`, { svrid: server.id }, err);
 			});
 			await sendMOTD(serverDocument);
 		}, timeout));

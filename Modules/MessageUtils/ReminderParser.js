@@ -21,7 +21,7 @@ module.exports = async (client, userDocument, userQueryDocument, str) => {
 			name: remind,
 			expiry_timestamp: Date.now() + time,
 		});
-		SetReminder(client, userDocument, userDocument.reminders[userDocument.reminders.length - 1]);
+		await SetReminder(client, userDocument, userDocument.reminders[userDocument.reminders.length - 1]);
 		return time;
 	} else {
 		return "ERR";

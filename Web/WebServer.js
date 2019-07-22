@@ -37,24 +37,24 @@ const listen = async configJS => {
 				cert: cert,
 			};
 		} catch (err) {
-			winston.error("Something went wrong while reading the given HTTPS Private Key and Certificate *0*\n", err);
+			logger.error("Something went wrong while reading the given HTTPS Private Key and Certificate *0*", {}, err);
 		}
 
 		const httpsServer = servers.httpsServer = https.createServer(credentials, app);
 		httpsServer.on("error", err => {
-			winston.error("Something went wrong while starting the HTTPS Web Interface x/\n", err);
+			logger.error("Something went wrong while starting the HTTPS Web Interface x/", {}, err);
 		});
 		httpsServer.listen(configJS.httpsPort, configJS.serverIP, () => {
-			winston.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
+			logger.info(`Opened https web interface on ${configJS.serverIP}:${configJS.httpsPort}`);
 		});
 	}
 
 	const server = servers.server = http.createServer(app);
 	server.on("error", err => {
-		winston.error("Something went wrong while starting the HTTP Web Interface x/\n", err);
+		logger.error("Something went wrong while starting the HTTP Web Interface x/", {}, err);
 	});
 	server.listen(configJS.httpPort, configJS.serverIP, () => {
-		winston.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
+		logger.info(`Opened http web interface on ${configJS.serverIP}:${configJS.httpPort}`);
 		process.setMaxListeners(0);
 	});
 
@@ -62,7 +62,7 @@ const listen = async configJS => {
 };
 
 // Setup the web server
-exports.open = async (client, auth, configJS, winston) => {
+exports.open = async (client, auth, configJS, logger) => {
 	// Setup Express App object
 	app.bot = app.client = client;
 	app.auth = auth;
@@ -167,7 +167,7 @@ exports.open = async (client, auth, configJS, winston) => {
 			io.of(namespace).emit("update", { location: param, author: msg.author });
 			if (param === "maintainer") global.configJSON = reload("../Configurations/config.json");
 		} catch (err) {
-			winston.warn("An error occurred while handling a dashboard WebSocket!", err);
+			logger.warn("An error occurred while handling a dashboard WebSocket!", {}, err);
 		}
 	});
 
@@ -177,7 +177,7 @@ exports.open = async (client, auth, configJS, winston) => {
 
 exports.close = servers => {
 	if (typeof servers.forEach !== "function") servers = Object.values(servers);
-	winston.info("Closing Web Interface...");
+	logger.info("Closing Web Interface...");
 	servers.forEach(server => server.close());
-	winston.warn("This shard is no longer hosting a Web Interface.");
+	logger.warn("This shard is no longer hosting a Web Interface.");
 };

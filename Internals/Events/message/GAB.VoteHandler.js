@@ -9,7 +9,7 @@ class VoteHandler extends BaseEvent {
 			if (msg.author.id === this.client.user.id) {
 				return false;
 			} else {
-				winston.silly(`Ignored ${msg.author.tag} for vote handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
+				logger.silly(`Ignored ${msg.author.tag} for vote handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
 				return false;
 			}
 		}
@@ -61,12 +61,12 @@ class VoteHandler extends BaseEvent {
 							try {
 								await targetUserDocument.save();
 								await authorDocument.save().catch(err => {
-									winston.debug("Failed to save user data for points", { usrid: msg.author.id }, err);
+									logger.debug("Failed to save user data for points.", { usrid: msg.author.id }, err);
 								});
 							} catch (err) {
-								winston.debug(`Failed to save user data for points`, { usrid: member.id }, err);
+								logger.debug("Failed to save user data for points.", { usrid: member.id }, err);
 							}
-							winston.verbose(`User "${member.user.tag}" ${voteAction} by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+							logger.verbose(`User "${member.user.tag}" ${voteAction} by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 						};
 
 						if (voteAction === "gilded") {
@@ -76,12 +76,14 @@ class VoteHandler extends BaseEvent {
 									targetUserDocument.query.inc("points", 10);
 									await saveTargetUserDocument();
 								} else {
-									winston.verbose(`User "${msg.author.tag}" does not have enough points to gild "${member.user.tag}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+									logger.verbose(`User "${msg.author.tag}" does not have enough points to gild "${member.user.tag}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 									msg.channel.send({
 										embed: {
 											color: Colors.SOFT_ERR,
 											description: `Hey ${msg.author}, you don't have enough GAwesomePoints to gild ${member}!`,
 										},
+									}).catch(err => {
+										logger.debug(`Failed to send insufficient GAwesomePoints message.`, { svrid: msg.guild.id, chid: msg.channel.id }, err);
 									});
 								}
 							}
@@ -98,7 +100,7 @@ class VoteHandler extends BaseEvent {
 			if (msg.content.trim().startsWith(voteTrigger)) {
 				// Get previous message
 				let fetchedMessages = await msg.channel.messages.fetch({ limit: 1, before: msg.id }).catch(err => {
-					winston.debug(`Failed to fetch message for voting...`, err);
+					logger.debug(`Failed to fetch message for voting...`, { svrid: msg.guild.id, chid: msg.channel.id }, err);
 					fetchedMessages = null;
 				});
 				const message = fetchedMessages && fetchedMessages.first();
@@ -106,14 +108,14 @@ class VoteHandler extends BaseEvent {
 					// Get target user data
 					const targetUserDocument = await Users.findOne(message.author.id);
 					if (targetUserDocument) {
-						winston.verbose(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+						logger.verbose(`User "${message.author.tag}" upvoted by user "${msg.author.tag}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 
 						// Increment points
 						targetUserDocument.query.inc("points");
 
 						// Save changes to targetUserDocument2
 						await targetUserDocument.save().catch(err => {
-							winston.debug(`Failed to save user data for points`, { usrid: msg.author.id }, err);
+							logger.debug(`Failed to save user data for points`, { usrid: msg.author.id }, err);
 						});
 					}
 				}

@@ -17,7 +17,7 @@ class Route {
 			try {
 				await this.controller(req, res, next);
 			} catch (err) {
-				winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, { params: req.params, query: req.query }, err);
+				logger.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0`, { params: req.params, query: req.query }, err);
 				require("../helpers").renderError(res, "Something went wrong!");
 			}
 		};

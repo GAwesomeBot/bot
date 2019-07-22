@@ -3,12 +3,12 @@
  */
 const Driver = require("../Database/Driver");
 const { database } = require("../Configurations/config");
-const winston = new (require("../Internals").Console)("MIGRATION");
+const logger = new (require("../Internals").Logger)("MIGRATION");
 const { public: publicCommands } = require("../Configurations/commands");
 
 module.exports = async () => {
-	winston.info(`Preparing to migrate database "${database.db}" on "${database.url}" to GADRiver standards...`);
-	winston.warn("THIS OPERATION MIGHT RESET VARIOUS PIECES OF DATA. DO NOT CLOSE THIS SCRIPT UNTIL AFTER IT IS FINISHED.");
+	logger.info(`Preparing to migrate database "${database.db}" on "${database.url}" to GADRiver standards...`);
+	logger.warn("THIS OPERATION MIGHT RESET VARIOUS PIECES OF DATA. DO NOT CLOSE THIS SCRIPT UNTIL AFTER IT IS FINISHED.");
 
 	const MigrateChatterBot = async () => {
 		const serverDocuments = await Servers.find({ "config.chatterbot": { $in: [true, false] } }).exec();
@@ -19,9 +19,9 @@ module.exports = async () => {
 				disabled_channel_ids: [],
 			});
 			await serverDocument.save().catch(err => {
-				winston.warn(`Failed to save migration for server "${serverDocument._id}"'s chatterbot configuration: `, err);
+				logger.warn(`Failed to save migration for server "${serverDocument._id}"'s chatterbot configuration: `, {}, err);
 			}).then(() => {
-				winston.debug(`Successfully migrated "${serverDocument._id}" chatterbot configuration.`);
+				logger.debug(`Successfully migrated "${serverDocument._id}" chatterbot configuration.`);
 			});
 		}
 	};
@@ -31,9 +31,9 @@ module.exports = async () => {
 		for (const serverDocument of serverDocuments) {
 			serverDocument.query.set("config.ban_gif", "https://i.imgur.com/3QPLumg.gif");
 			await serverDocument.save().catch(err => {
-				winston.warn(`Failed to save migration for server "${serverDocument._id}"'s ban gif configuration: `, err);
+				logger.warn(`Failed to save migration for server "${serverDocument._id}"'s ban gif configuration: `, {}, err);
 			}).then(() => {
-				winston.debug(`Successfully migrated "${serverDocument._id}" ban gif configuration.`);
+				logger.debug(`Successfully migrated "${serverDocument._id}" ban gif configuration.`);
 			});
 		}
 	};
@@ -62,9 +62,9 @@ module.exports = async () => {
 			await Servers.delete({ _id: serverDocument._id });
 			const newDocument = Servers.new(serverDocument.toObject());
 			await newDocument.save().catch(err => {
-				winston.warn(`Failed to save migration for server "${newDocument._id}"'s configuration: `, err);
+				logger.warn(`Failed to save migration for server "${newDocument._id}"'s configuration: `, {}, err);
 			}).then(() => {
-				winston.debug(`Successfully migrated "${newDocument._id}" configuration(s).`);
+				logger.debug(`Successfully migrated "${newDocument._id}" configuration(s).`);
 			});
 		}
 	};
@@ -73,24 +73,24 @@ module.exports = async () => {
 		await Servers.update({}, { $set: { members: {}, channels: {} } });
 	};
 
-	winston.info("Connecting to database...");
+	logger.info("Connecting to database...");
 	await Driver.initialize(database)
 		.then(async () => {
 			try {
-				winston.info("Updating data... [1/3]");
+				logger.info("Updating data... [1/3]");
 				await MigrateChatterBot();
 				await AddBanGif();
-				winston.info("Updating data... [2/3]");
+				logger.info("Updating data... [2/3]");
 				await MigrateDocumentsAndCommands();
-				winston.info("Updating data... [3/3]");
+				logger.info("Updating data... [3/3]");
 				await migrateChannelsAndMembers();
-				winston.info(`Successfully migrated "${database.db}"! You may now launch GAwesomeBot without the "--migrate" flag.`);
+				logger.info(`Successfully migrated "${database.db}"! You may now launch GAwesomeBot without the "--migrate" flag.`);
 				process.exit(0);
 				// eslint-disable-next-line
 			} catch (_) {}
 		})
 		.catch(err => {
-			winston.error(`Failed to connect to the database!\n`, err);
+			logger.error(`Failed to connect to the database!`, {}, err);
 			process.exit(-1);
 		});
 };

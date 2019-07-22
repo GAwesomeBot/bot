@@ -54,7 +54,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 		});
 		await menu.init();
 	} else {
-		winston.debug(`Failed to fetch Urban Dictionary results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
+		logger.debug(`Failed to fetch Urban Dictionary results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,

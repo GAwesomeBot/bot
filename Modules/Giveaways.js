@@ -3,7 +3,7 @@ const { Error } = require("../Internals/Errors/");
 
 module.exports = class Giveaways {
 	constructor () {
-		throw new Error("STATIC_CLASS", this.constructor.name);
+		throw new Error("STATIC_CLASS", {}, this.constructor.name);
 	}
 
 	static async start (client, server, serverDocument, user, channel, channelDocument, title, secret, duration) {
@@ -25,6 +25,8 @@ module.exports = class Giveaways {
 						text: `Use "${client.getCommandPrefix(server, serverDocument)}giveaway enroll" or "${client.getCommandPrefix(server, serverDocument)}giveaway join" for a chance to win.`,
 					},
 				},
+			}).catch(err => {
+				logger.debug(`Failed to send Giveaway message to channel.`, { svrid: server.id, chid: channel.id }, err);
 			});
 			client.setTimeout(async () => {
 				this.end(client, server, channel, await Servers.findOne(serverDocument._id));
@@ -59,6 +61,8 @@ module.exports = class Giveaways {
 								text: `You won the giveaway "${channelDocument.giveaway.title}" out of ${channelDocument.giveaway.participant_ids.length} ${channelDocument.giveaway.participant_ids.length === 1 ? "user!" : "users!"}`,
 							},
 						},
+					}).catch(err => {
+						logger.debug(`Failed to send Giveaway message to channel.`, { svrid: server.id, chid: channel.id }, err);
 					});
 					winner.send({
 						embed: {
@@ -66,6 +70,8 @@ module.exports = class Giveaways {
 							title: "Congratulations! 🎁😁",
 							description: `You won the giveaway in #${channel.name} on **${server}**!\n\nHere is your prize: \`\`\`${channelDocument.giveaway.secret}\`\`\``,
 						},
+					}).catch(err => {
+						logger.debug(`Failed to send Giveaway message to DM.`, { svrid: server.id, usrid: winner.id }, err);
 					});
 				}
 				const creator = server.members.get(channelDocument.giveaway.creator_id);
@@ -75,6 +81,8 @@ module.exports = class Giveaways {
 							color: 0x3669FA,
 							description: `Your giveaway "${channelDocument.giveaway.title}" running in #${channel.name} on \`${server}\` has ended.\n${winner ? `The winner was **@${client.getName(serverDocument, winner)}**.` : "Nobody won this time 😕"}`,
 						},
+					}).catch(err => {
+						logger.debug(`Failed to send Giveaway message to DM.`, { svrid: server.id, usrid: creator.id }, err);
 					});
 				}
 				return winner;

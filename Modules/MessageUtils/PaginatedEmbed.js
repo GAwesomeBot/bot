@@ -92,7 +92,7 @@ class PaginatedEmbed {
 		try {
 			await this.msg.reactions.removeAll();
 		} catch (err) {
-			winston.verbose(`Failed to clear all reactions for paginated menu, will remove only the bots reaction!`, { err: err.name });
+			logger.verbose(`Failed to clear all reactions for paginated menu, will remove only the bots reaction!`, { chid: this.msg.channel.id, msgid: this.msg.id }, err);
 			this.msg.reactions.forEach(r => r.users.remove());
 		}
 		this.collector = null;
@@ -121,7 +121,7 @@ class PaginatedEmbed {
 		try {
 			await reaction.users.remove(user);
 		} catch (err) {
-			winston.verbose(`Failed to remove the reaction for user!`, { user, message: reaction.message.id, err: err.name });
+			logger.verbose(`Failed to remove the reaction for user!`, { usrid: user, msgid: reaction.message.id }, err);
 		}
 	}
 

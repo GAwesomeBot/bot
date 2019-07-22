@@ -89,7 +89,7 @@ module.exports = async ({ Constants: { Colors, Text } }, documents, msg, command
 			});
 		}
 	} else {
-		winston.verbose(`Archive number not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		logger.debug(`Archive number not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,

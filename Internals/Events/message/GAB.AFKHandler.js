@@ -9,12 +9,11 @@ class AFKHandler extends BaseEvent {
 			if (msg.author.id === this.client.user.id) {
 				return false;
 			} else {
-				winston.silly(`Ignored ${msg.author.tag} for AFK handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
+				logger.silly(`Ignored ${msg.author.tag} for AFK handler.`, { usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
 				return false;
 			}
 		}
-		if (!msg.channel.postable) return false;
-		return true;
+		return !!msg.channel.postable;
 	}
 
 	async handle (msg) {
@@ -35,11 +34,13 @@ class AFKHandler extends BaseEvent {
 								title: `@__${this.client.getName(serverDocument, member)}__ is currently AFK.`,
 								description: `${targetMemberDocument.afk_message}`,
 							},
+						}).catch(err => {
+							logger.debug(`Failed to send AFK message to channel.`, { usrid: member.id, svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id }, err);
 						});
 					} else {
 						// User doesn't have server AFK message, go for global one
 						const targetUserDocument = await Users.findOne(member.id).catch(err => {
-							winston.verbose(`Failed to find user document for global AFK message >.>`, err);
+							logger.verbose(`Failed to find user document for global AFK message >.>`, { svrid: msg.guild.id, usrid: member.id, chid: msg.channel.id, msgid: msg.id }, err);
 						});
 						if (targetUserDocument && targetUserDocument.afk_message) {
 							msg.channel.send({
@@ -51,6 +52,8 @@ class AFKHandler extends BaseEvent {
 									title: `@__${this.client.getName(serverDocument, member)}__ is currently AFK.`,
 									description: `${targetUserDocument.afk_message}`,
 								},
+							}).catch(err => {
+								logger.debug(`Failed to send AFK message to channel.`, { usrid: member.id, svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id }, err);
 							});
 						}
 					}
@@ -60,7 +63,7 @@ class AFKHandler extends BaseEvent {
 		// Remove AFK Messages on User activity
 		let changed = false;
 		const userDocument = await Users.findOne(msg.author.id).catch(err => {
-			winston.verbose(`Failed to find user document for resetting global AFK message >.>`, err);
+			logger.verbose(`Failed to find user document for resetting global AFK message >.>`, { svrid: msg.guild.id, usrid: msg.author.id, chid: msg.channel.id, msgid: msg.id }, err);
 		});
 		if (userDocument && userDocument.afk_message) {
 			changed = true;
@@ -80,6 +83,8 @@ class AFKHandler extends BaseEvent {
 					title: `Welcome back! 🎊`,
 					description: `I've removed your AFK message.`,
 				},
+			}).catch(err => {
+				logger.debug(`Failed to send AFK removal message to channel.`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id }, err);
 			});
 		}
 	}

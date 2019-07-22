@@ -8,7 +8,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 		if (result === "ERR") {
 			msg.sendInvalidUsage(commandData);
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
 					description: `Alright, I'll remind you ${moment.duration(result).humanize(true)} ⏰`,
@@ -25,7 +25,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 			});
 		});
 		if (userDocument.reminders.length === 0) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: "No reminders set 😴",
@@ -33,7 +33,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 				},
 			});
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `Your reminders:`,

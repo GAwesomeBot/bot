@@ -4,7 +4,7 @@ class RoleDelete extends BaseEvent {
 	async handle (role) {
 		const serverDocument = await Servers.findOne(role.guild.id);
 		if (!serverDocument) {
-			return winston.debug("Failed to find server data for role deletion", { svrid: role.guild.id, roleid: role.id });
+			return logger.debug("Failed to find server data for role deletion", { svrid: role.guild.id, roleid: role.id });
 		}
 		const serverQueryDocument = serverDocument.query;
 
@@ -42,7 +42,7 @@ class RoleDelete extends BaseEvent {
 
 		if (updated) {
 			serverDocument.save().catch(err => {
-				winston.warn("Failed to save server data for role deletion", { svrid: role.guild.id, roleid: role.id, err });
+				logger.warn("Failed to save server data for role deletion", { svrid: role.guild.id, roleid: role.id }, err);
 			});
 		}
 	}

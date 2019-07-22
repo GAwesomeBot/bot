@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 
 // User data (past names, profile fields, etc)
 module.exports = new Schema({

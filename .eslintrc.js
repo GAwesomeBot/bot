@@ -9,7 +9,7 @@ module.exports = {
 		sourceType: "module",
 	},
 	globals: {
-		winston: true,
+		logger: true,
 		Servers: true,
 		Users: true,
 		Gallery: true,

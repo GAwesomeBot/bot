@@ -1,5 +1,5 @@
 const { ObjectID } = require("mongodb");
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 
 module.exports = Schema.Map({
 	_id: {

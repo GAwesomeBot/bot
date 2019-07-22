@@ -13,7 +13,7 @@ class GuildMemberAdd extends BaseEvent {
 			if (serverDocument.config.moderation.isEnabled) {
 				// Send new_member_message if necessary
 				if (serverDocument.config.moderation.status_messages.new_member_message.isEnabled) {
-					winston.verbose(`Member "${member.user.tag}" joined server "${member.guild}"`, { svrid: member.guild.id, usrid: member.id });
+					logger.verbose(`Member "${member.user.tag}" joined server "${member.guild}"`, { svrid: member.guild.id, usrid: member.id });
 					const ch = member.guild.channels.get(serverDocument.config.moderation.status_messages.new_member_message.channel_id);
 					if (ch) {
 						const channelDocument = serverDocument.channels[ch.id];
@@ -22,6 +22,8 @@ class GuildMemberAdd extends BaseEvent {
 							if (message) {
 								ch.send({
 									embed: StatusMessages.GUILD_MEMBER_ADD(message, member, serverDocument, this.client),
+								}).catch(err => {
+									logger.debug(`Failed to send StatusMessage for GUILD_MEMBER_ADD.`, { svrid: member.guild.id, chid: ch.id }, err);
 								});
 							}
 						}
@@ -45,12 +47,13 @@ class GuildMemberAdd extends BaseEvent {
 							},
 						});
 					} catch (err) {
-						winston.verbose(`Failed to send message to member for GUILD_MEMBER_ADD. Either the user has DM's blocked or they blocked me ;-;\n`, err);
+						logger.verbose(`Failed to send message to member for GUILD_MEMBER_ADD. Either the user has DM's blocked or they blocked me.`, {}, err);
 					}
 				}
 
 				// Add member to new_member_roles
 				let exceptionOccurred = false;
+				let rolesAdded = false;
 
 				await Promise.all(serverDocument.config.moderation.new_member_roles.map(async roleID => {
 					const role = member.guild.roles.get(roleID);
@@ -58,13 +61,14 @@ class GuildMemberAdd extends BaseEvent {
 
 					try {
 						await member.roles.add(role, "Added New Member Role(s) to this new member.");
+						rolesAdded = true;
 					} catch (err) {
-						winston.debug(`Failed to add new role to member`, { svrid: member.guild.id, userid: member.id, role: role.id }, err);
+						logger.debug(`Failed to add new role to member.`, { svrid: member.guild.id, userid: member.id, role: role.id }, err);
 						exceptionOccurred = true;
 					}
 				}));
 
-				(!exceptionOccurred && this.client.logMessage(serverDocument, LoggingLevels.INFO, `Added New Member Role(s) to a new member.`, null, member.id)) || this.client.logMessage(serverDocument, LoggingLevels.WARN, `I was unable to add New Member Role(s) to a new member!`, null, member.id);
+				(!exceptionOccurred && rolesAdded && this.client.logMessage(serverDocument, LoggingLevels.INFO, `Added New Member Role(s) to a new member.`, null, member.id)) || this.client.logMessage(serverDocument, LoggingLevels.WARN, `I was unable to add New Member Role(s) to a new member!`, null, member.id);
 			}
 		}
 	}

@@ -8,7 +8,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			inline: true,
 		}));
 		if (fields.length) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
 					title: "Here is the current to-do list for this guild:",
@@ -16,7 +16,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 				},
 			});
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					description: `❎ The to-do list is empty! Use \`${msg.guild.commandPrefix}${commandData.name} <content>\` to add an item.`,

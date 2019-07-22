@@ -48,7 +48,7 @@ module.exports = middleware => {
 							res.res.populateDashboard(req);
 							return next();
 						} catch (err) {
-							winston.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0\n`, {
+							logger.warn(`An error occurred during a ${req.protocol} ${req.method} request on ${req.path} 0.0`, {
 								params: req.params,
 								query: req.query,
 							}, err);

@@ -8,7 +8,7 @@ class ChannelDelete extends BaseEvent {
 	async handle (channel) {
 		const serverDocument = await Servers.findOne(channel.guild.id);
 		if (!serverDocument) {
-			return winston.debug("Failed to find server data for channel deletion", { svrid: channel.guild.id, chid: channel.id });
+			return logger.debug("Failed to find server data for channel deletion.", { svrid: channel.guild.id, chid: channel.id });
 		}
 		const serverQueryDocument = serverDocument.query;
 
@@ -88,7 +88,7 @@ class ChannelDelete extends BaseEvent {
 			try {
 				await	serverDocument.save();
 			} catch (err) {
-				winston.warn("Failed to save server data for channel deletion *.*", { svrid: channel.guild.id, chid: channel.id, err });
+				logger.warn("Failed to save server data for channel deletion.", { svrid: channel.guild.id, chid: channel.id }, err);
 			}
 		}
 	}

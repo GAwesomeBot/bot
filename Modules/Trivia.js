@@ -29,6 +29,8 @@ module.exports = class Trivia {
 						text: `Run "${svr.commandPrefix}trivia end" to end the current game`,
 					},
 				},
+			}).catch(err => {
+				logger.debug("Failed to send Trivia message to channel.", { svrid: svr.id, chid: ch.id }, err);
 			});
 		} else {
 			if (set !== "default") {
@@ -44,6 +46,8 @@ module.exports = class Trivia {
 								text: `An Admin can create one in the Admin Console!`,
 							},
 						},
+					}).catch(err => {
+						logger.debug("Failed to send Trivia message to channel.", { svrid: svr.id, chid: ch.id }, err);
 					});
 					return;
 				}
@@ -70,6 +74,8 @@ module.exports = class Trivia {
 						text: `No cheating! Nobody likes cheaters! 👀`,
 					},
 				},
+			}).catch(err => {
+				logger.debug("Failed to send Trivia message to channel.", { svrid: svr.id, chid: ch.id }, err);
 			});
 			await this.next(client, svr, serverDocument, ch, channelDocument);
 		}
@@ -103,6 +109,8 @@ module.exports = class Trivia {
 									text: `${svr.commandPrefix}trivia <answer>`,
 								},
 							},
+						}).catch(err => {
+							logger.debug("Failed to send Trivia message to channel.", { svrid: svr.id, chid: ch.id }, err);
 						});
 					} else {
 						await this.end(client, svr, serverDocument, ch, channelDocument);
@@ -121,6 +129,8 @@ module.exports = class Trivia {
 							text: "Here comes the next one...",
 						},
 					},
+				}).catch(err => {
+					logger.debug("Failed to send Trivia message to channel.", { svrid: svr.id, chid: ch.id }, err);
 				});
 				await doNext();
 			} else {
@@ -245,6 +255,8 @@ module.exports = class Trivia {
 						text: `Can't get enough? Run "${svr.commandPrefix}trivia start" to start again!`,
 					},
 				},
+			}).catch(err => {
+				logger.debug("Failed to send Trivia message to channel.", { svrid: svr.id, chid: ch.id }, err);
 			});
 		}
 	}

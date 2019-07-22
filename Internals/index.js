@@ -1,6 +1,6 @@
 module.exports = {
 	Boot: require("./Boot"),
-	Console: require("./Console"),
+	Logger: require("./Logger"),
 	Constants: require("./Constants"),
 	Errors: require("./Errors/"),
 	EventHandler: require("./Events/EventHandler"),

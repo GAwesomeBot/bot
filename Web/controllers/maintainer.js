@@ -397,7 +397,7 @@ controllers.management.version.post = async (req, res) => {
 controllers.management.version.socket = async socket => {
 	socket.on("disconnect", () => {
 		if (socket.isUpdateFinished || !socket.isUpdating) return;
-		winston.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
+		logger.error("Lost connection to Updater client. Shutting down GAB in an attempt to resync states (⇀‸↼‶)");
 		socket.route.router.app.client.IPC.send("shutdown", { err: true });
 	});
 	socket.on("download", async data => {
@@ -453,14 +453,14 @@ controllers.management.eval.post = async (req, res) => {
 	if (req.body.code && req.body.target) {
 		const result = await req.app.client.IPC.send("evaluate", { code: req.body.code, target: req.body.target });
 		res.send(JSON.stringify(result));
-		winston.info(`Maintainer ${req.user.username} executed JavaScript from the Maintainer Console!`, { maintainer: req.user.id, code: req.body.code, target: req.body.target });
+		logger.info(`Maintainer ${req.user.username} executed JavaScript from the Maintainer Console!`, { maintainer: req.user.id, code: req.body.code, target: req.body.target });
 	} else {
 		res.sendStatus(400);
 	}
 };
 
 controllers.management.logs = async (req, { res }) => {
-	winston.transports.file.query({ limit: 10 }, (err, results) => {
+	logger.winstonLogger.query({ limit: 10 }, (err, results) => {
 		if (err) return renderError(res, "An error occurred while fetching old logs");
 
 		results.reverse();

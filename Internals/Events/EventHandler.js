@@ -30,7 +30,7 @@ module.exports = class EventHandler {
 			}
 			return;
 		}
-		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", eventName);
+		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", {}, eventName);
 		if (this._cache[eventName]) {
 			for (const eventFileName in this._cache[eventName]) {
 				const event = reload(`./${eventName}/${eventFileName}.js`);
@@ -45,7 +45,7 @@ module.exports = class EventHandler {
 	 * @param {*[]} args The arguments of the event, in the order that they were received
 	 */
 	async onEvent (eventName, ...args) {
-		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", eventName);
+		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", {}, eventName);
 		if (this._cache[eventName]) {
 			const promiseArray = [];
 			for (const eventFile in this._cache[eventName]) {

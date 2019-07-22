@@ -2,7 +2,7 @@ const { Error } = require("../../Internals/Errors/");
 
 module.exports = class Parser {
 	constructor () {
-		throw new Error("STATIC_CLASS", this.constructor.name);
+		throw new Error("STATIC_CLASS", {}, this.constructor.name);
 	}
 
 	/**

@@ -64,7 +64,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg,
 			}
 		}
 	} else {
-		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
+		logger.debug(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
 		msg.sendInvalidUsage(commandData, "I need something to convert! 🤓");
 	}
 };

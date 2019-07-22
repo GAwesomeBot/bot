@@ -77,11 +77,11 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 				});
 			}
 		} else {
-			winston.verbose(`Invalid parameter received for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+			logger.verbose(`Invalid parameter received for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.sendInvalidUsage(commandData, "That doesn't seem right to me. 🤔");
 		}
 	} else {
-		winston.verbose(`URL not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		logger.verbose(`URL not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.sendInvalidUsage(commandData, "What URL would you want to expand today?");
 	}
 };

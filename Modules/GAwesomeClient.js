@@ -51,7 +51,7 @@ class VersionAPI {
 		} else if (res.status === 404 && res.body) {
 			return new Version({ tag: version, branch: res.body.err === "Branch not found" ? null : this._branch }, false, this);
 		} else {
-			throw new GABError("CENTRAL_ERROR", res.status, res.body && res.body.err);
+			throw new GABError("CENTRAL_ERROR", { status: res.status }, res.status, res.body && res.body.err);
 		}
 	}
 
@@ -78,7 +78,7 @@ class Version extends EventEmitter {
 	async check () {
 		if (!this.valid) return { utd: false, current: null };
 		const res = await this.versionAPI._get(`${this.branch}/check?v=${this.tag}`);
-		if (!res.ok && res.status !== 404) throw new GABError("CENTRAL_ERROR", res.status, res.body && res.body.err);
+		if (!res.ok && res.status !== 404) throw new GABError("CENTRAL_ERROR", { status: res.status }, res.status, res.body && res.body.err);
 		else if (!res.ok && res.status === 404) return { utd: false, current: null };
 		return res.body.data;
 	}
@@ -89,7 +89,7 @@ class Version extends EventEmitter {
 			const fileStream = fs.createWriteStream(path.join(tempFolder, `${this.tag}.zip`));
 			https.get(`${Constants.CENTRAL.CODEBASE}${this.sha}`, res => {
 				const { statusCode } = res;
-				if (statusCode !== 200) reject(new GABError("CENTRAL_DOWNLOAD_ERROR", statusCode));
+				if (statusCode !== 200) reject(new GABError("CENTRAL_DOWNLOAD_ERROR", {}, statusCode));
 
 				res.on("data", chunk => {
 					if (onChunk) onChunk(chunk);

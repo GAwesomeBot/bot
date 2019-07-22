@@ -4,7 +4,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 		const svrname = params[0].trim();
 		const chname = params[1].trim();
 		if (svrname && chname) {
-			const initMsg = await msg.channel.send({
+			const initMsg = await msg.send({
 				embed: {
 					color: 0x3669FA,
 					author: {
@@ -44,6 +44,6 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 			return;
 		}
 	}
-	winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+	logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
 	msg.sendInvalidUsage(commandData);
 };

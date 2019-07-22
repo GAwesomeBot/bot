@@ -273,7 +273,7 @@ module.exports = {
 				});
 			}
 		} catch (err) {
-			winston.warn(`Something went wrong while creating a poll! ()=()\n`, err, { usrid: params.usrid, initMsgID: params.initMsg });
+			logger.warn(`Something went wrong while creating a poll! ()=()`, { usrid: params.usrid, msgid: params.initMsg }, err);
 			if (usr && usr.send) {
 				usr.send({
 					embed: {

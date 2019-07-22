@@ -1,4 +1,4 @@
-const Schema = require("./Schema");
+const Schema = require("../Schema");
 
 /*
  * Server's channel data (giveaway, trivia, etc.)

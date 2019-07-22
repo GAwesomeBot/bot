@@ -66,7 +66,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent 
 				await m.delete();
 				await menu.init();
 			} else {
-				winston.verbose(`No "${commandData.name}" results found for "${query}"`);
+				logger.verbose(`No "${commandData.name}" results found for "${query}"`);
 				m.edit({
 					embed: {
 						color: Colors.SOFT_ERR,
@@ -76,7 +76,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent 
 				});
 			}
 		} else {
-			winston.verbose(`Parameters not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+			logger.verbose(`Parameters not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 			msg.sendInvalidUsage(commandData, Text.NSFW_INVALID());
 		}
 	} else {

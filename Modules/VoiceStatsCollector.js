@@ -14,7 +14,7 @@ module.exports = {
 		// Remove AFK Messages on User activity
 		let changed = false;
 		const userDocument = await Users.findOne(member.user.id).catch(err => {
-			winston.verbose(`Failed to find user document for resetting global AFK message >.>`, err);
+			logger.verbose(`Failed to find user document for resetting global AFK message >.>`, { usrid: member.id }, err);
 		});
 		if (userDocument && userDocument.afk_message) {
 			changed = true;
@@ -33,11 +33,13 @@ module.exports = {
 					title: `Welcome back! 🎊`,
 					description: `I've removed your AFK message.`,
 				},
-			}).catch(() => null);
+			}).catch(err => {
+				logger.debug(`Failed to send AFK return message to DM.`, { usrid: member.id }, err);
+			});
 		}
 
 		await serverDocument.save().catch(err => {
-			winston.debug(`Failed to save serverDocument for voice stats`, err);
+			logger.debug(`Failed to save serverDocument for voice stats.`, { svrid: serverDocument._id }, err);
 		});
 	},
 	stopTiming: async (client, guild, serverDocument, member) => {
@@ -53,7 +55,7 @@ module.exports = {
 			serverDocument.query.pull("voice_data", member.id);
 			await client.checkRank(guild, serverDocument, serverDocument.query, member, memberDocument);
 			await serverDocument.save().catch(err => {
-				winston.debug(`Failed to save serverDocument for voice stats`, err);
+				logger.debug(`Failed to save serverDocument for voice stats.`, { svrid: serverDocument._id }, err);
 			});
 		}
 	},

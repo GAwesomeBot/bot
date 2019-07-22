@@ -26,7 +26,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, docum
 					} else if (statusCode === 302) {
 						description = "This subreddit does not seem to exist.";
 					} else {
-						winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
+						logger.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 						description = "There was an unknown error while fetching your results.";
 					}
 					break;
@@ -93,7 +93,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, docum
 			thumbnails,
 		}).init();
 	} else {
-		winston.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
+		logger.debug(`Failed to fetch Reddit results`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
 		msg.send({
 			embed: {
 				color: Colors.ERROR,

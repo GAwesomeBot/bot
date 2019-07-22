@@ -26,7 +26,7 @@ module.exports = async ({ Constants: { Colors }, client }, { serverDocument, ser
 		client.setTimeout(() => {
 			channelQueryDocument.set("bot_enabled", true);
 			serverDocument.save().catch(err => {
-				winston.warn("Failed to save server data for automatically starting the bot in a channel", { svrid: msg.guild.id, err });
+				logger.warn("Failed to save server data for automatically starting the bot in a channel.", { svrid: msg.guild.id }, err);
 			});
 		}, time);
 	} else {

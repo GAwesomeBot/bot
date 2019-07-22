@@ -8,7 +8,7 @@ module.exports = async (bot, server, serverDocument, channel, extensionDocument,
 	try {
 		extensionCode = await fs.readFile(`${__dirname}/../Extensions/${extensionDocument.code_id}.gabext`, "utf8");
 	} catch (err) {
-		winston.warn(`Failed to load the extension code for ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: server.id, extid: extensionDocument._id }, err);
+		logger.warn(`Failed to load the extension code for ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: server.id, extid: extensionDocument._id }, err);
 	}
 	if (extensionCode) {
 		try {
@@ -18,7 +18,7 @@ module.exports = async (bot, server, serverDocument, channel, extensionDocument,
 			});
 			vm.run(extensionCode);
 		} catch (err) {
-			winston.warn(`Failed to run ${extensionDocument.type} extension "${extensionDocument.name}": ${err.stack}`, { svrid: server.id, chid: channel.id, extid: extensionDocument._id });
+			logger.warn(`Failed to run ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: server.id, chid: channel.id, extid: extensionDocument._id }, err);
 		}
 	}
 };

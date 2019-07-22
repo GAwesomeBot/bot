@@ -157,5 +157,5 @@ module.exports = client => {
 		});
 	}
 
-	winston.silly(`Loaded ${properties} Object.assigns`);
+	logger.silly(`Loaded ${properties} Object.assigns.`);
 };

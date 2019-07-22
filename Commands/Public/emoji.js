@@ -30,7 +30,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 			},
 		});
 	} else {
-		winston.verbose(`Emoji(s) not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		logger.verbose(`Emoji(s) not provided for "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.sendInvalidUsage(commandData, "What would you like to jumbo today? 🤔");
 	}
 };

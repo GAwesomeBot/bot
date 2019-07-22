@@ -29,7 +29,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { channelDocume
 					},
 				});
 			} else {
-				winston.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+				logger.verbose(`Invalid parameters "${msg.suffix}" provided for ${commandData.name} command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				msg.send({
 					embed: {
 						color: Colors.INVALID,

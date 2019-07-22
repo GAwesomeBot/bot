@@ -9,12 +9,12 @@ class MessageUpdate extends BaseEvent {
 	async handle (oldMsg, msg) {
 		const serverDocument = await Servers.findOne(msg.guild.id);
 		if (!serverDocument) {
-			return winston.debug("Failed to find server data for message update status message", { svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id });
+			return logger.debug("Failed to find server data for message update status message.", { svrid: msg.guild.id, chid: msg.channel.id, msgid: msg.id });
 		}
 
 		const statusMessageDocument = serverDocument.config.moderation.status_messages.message_edited_message;
 		if (serverDocument.config.moderation.isEnabled && statusMessageDocument.isEnabled && statusMessageDocument.enabled_channel_ids.includes(msg.channel.id)) {
-			winston.verbose(`Message by member '${msg.author.tag}' on server '${msg.guild.name}' edited`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, msgid: msg.id });
+			logger.verbose(`Message by member '${msg.author.tag}' on server '${msg.guild.name}' edited.`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, msgid: msg.id });
 
 			// Send message in different channel
 			if (statusMessageDocument.type === "single" && statusMessageDocument.channel_id) {
@@ -25,6 +25,8 @@ class MessageUpdate extends BaseEvent {
 						channel.send({
 							embed: StatusMessages.MESSAGE_EDITED(statusMessageDocument.type, msg, oldMsg, serverDocument, this.client),
 							disableEveryone: true,
+						}).catch(err => {
+							logger.debug(`Failed to send StatusMessage for MESSAGE_EDITED.`, { svrid: msg.guild.id, chid: channel.id }, err);
 						});
 					}
 				}
@@ -34,6 +36,8 @@ class MessageUpdate extends BaseEvent {
 					msg.channel.send({
 						embed: StatusMessages.MESSAGE_EDITED(statusMessageDocument.type, msg, oldMsg, serverDocument, this.client),
 						disableEveryone: true,
+					}).catch(err => {
+						logger.debug(`Failed to send StatusMessage for MESSAGE_EDITED.`, { svrid: msg.guild.id, chid: msg.channel.id }, err);
 					});
 				}
 			}

@@ -31,7 +31,7 @@ module.exports = async ({ client, Constants: { Colors } }, { serverDocument, cha
 					});
 				}
 			} else {
-				winston.verbose(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+				logger.verbose(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
 				msg.send({
 					embed: {
 						color: Colors.INVALID,

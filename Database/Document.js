@@ -59,7 +59,7 @@ module.exports = class Document {
 		try {
 			(this._new ? this._setCache : this._handleAtomics).call(this);
 		} catch (err) {
-			throw new GABError("GADRIVER_ERROR", err);
+			throw new GABError("GADRIVER_ERROR", {}, err);
 		}
 		Object.keys(ops).forEach(key => {
 			if (Object.keys(ops[key]).length === 0) delete ops[key];
@@ -67,7 +67,7 @@ module.exports = class Document {
 		try {
 			return await (this._new ? this._client.insertOne(this._doc, {}) : this._client.updateOne({ _id: this._id }, ops, { multi: true }));
 		} catch (err) {
-			throw new GABError("MONGODB_ERROR", err);
+			throw new GABError("MONGODB_ERROR", {}, err);
 		}
 	}
 

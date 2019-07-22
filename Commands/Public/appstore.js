@@ -10,7 +10,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			try {
 				[res] = await iTunes({ entity: "software", country: "US", term: app, limit: 1 });
 			} catch (err) {
-				winston.verbose(`Couldn't find any Apple app called "${app}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+				logger.verbose(`Couldn't find any Apple app called "${app}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 				results.push({
 					embed: {
 						color: 0xFF0000,
@@ -43,7 +43,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			}
 		}
 		for (const msgObj of results) {
-			msg.channel.send(msgObj);
+			msg.channel.send(msgObj).catch(err => logger.debug(`Failed to send appstore result.`, {}, err));
 		}
 	} else {
 		msg.send({

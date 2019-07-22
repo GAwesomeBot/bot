@@ -1,5 +1,5 @@
 /* eslint-disable max-len*/
-const { Error: GABError } = require("../../Internals/Errors");
+const { Error: GABError } = require("../Internals/Errors");
 
 const MapSymbol = Symbol("map");
 
@@ -64,7 +64,7 @@ class ValidationError extends Error {
 		/* { SINGLE_ERROR } */
 		if (errors.constructor === Object || errors.constructor === this.constructor) errors = [errors];
 		/* ![{ ERROR }, { ERROR }, ...] */
-		else if (!Array.isArray(errors)) throw new GABError("GADRIVER_INVALID_PARAMS");
+		else if (!Array.isArray(errors)) throw new GABError("GADRIVER_INVALID_PARAMS", { errors });
 
 		this.message = `${document && document._id ? `Document with ID ${document._id}` : `A Document${document ? " without ID" : ""}`} contains illegal values:`;
 		this.name = "ValidationError";
@@ -231,10 +231,10 @@ class Definition {
 			this.type.schema._parent = this;
 		} else if (TypeDefs.includes(raw)) {
 			this.type = Types[raw.name.toLowerCase()];
-			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
+			if (!this.type) throw new GABError("GADRIVER_ERROR", {}, "Your schema is not configured correctly.");
 		} else if (raw.constructor === Object) {
 			this.type = Types[raw.type.name.toLowerCase()];
-			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
+			if (!this.type) throw new GABError("GADRIVER_ERROR", {}, "Your schema is not configured correctly.");
 
 			this._default = raw.default === undefined ? null : raw.default;
 			this._required = Boolean(raw.required);
@@ -251,7 +251,7 @@ class Definition {
 			this.type.schema._parent = this;
 		} else if (Array.isArray(raw)) {
 			this.type = Types[raw[0].name.toLowerCase()];
-			if (!this.type) throw new GABError("GADRIVER_ERROR", "Your schema is not configured correctly.");
+			if (!this.type) throw new GABError("GADRIVER_ERROR", {}, "Your schema is not configured correctly.");
 
 			this._default = () => [];
 			this.isArray = true;
@@ -349,7 +349,7 @@ class Schema {
 			this._definitions.set(key, new Definition(val, key, this));
 		});
 
-		if (this._options.map && !this._definitions.has("_id")) throw new GABError("GADRIVER_ERROR", "A Map type Schema must have an _id value");
+		if (this._options.map && !this._definitions.has("_id")) throw new GABError("GADRIVER_ERROR", {}, "A Map type Schema must have an _id value.");
 	}
 
 	build (raw = {}) {

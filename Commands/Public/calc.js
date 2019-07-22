@@ -64,7 +64,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 			}
 		}
 	} else {
-		winston.verbose(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		logger.debug(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.sendInvalidUsage(commandData, "What would you like to calculate today? 🤓", "I may be smart but I can't guess what you'd want to calculate!");
 	}
 };

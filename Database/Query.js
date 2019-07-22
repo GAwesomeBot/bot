@@ -1,5 +1,5 @@
 const { Error: GABError } = require("../Internals/Errors");
-const Schema = require("./Schemas/Schema");
+const Schema = require("./Schema");
 
 const mpath = require("mpath");
 
@@ -52,7 +52,7 @@ module.exports = class Query {
 			this._shiftSchema(path);
 			return this;
 		} catch (err) {
-			throw new GABError("GADRIVER_ERROR", `Could not parse Query: ${err.message}`);
+			throw new GABError("GADRIVER_ERROR", { err }, `Could not parse Query: ${err.message}`);
 		}
 	}
 
@@ -80,7 +80,7 @@ module.exports = class Query {
 			});
 			return found ? mpath.get(this.parsed + this._parseForString(parsed), this._doc._doc) : undefined;
 		} catch (err) {
-			throw new GABError("GADRIVER_ERROR", `Could not parse Query: ${err.message}`);
+			throw new GABError("GADRIVER_ERROR", { err }, `Could not parse Query: ${err.message}`);
 		}
 	}
 
@@ -101,7 +101,7 @@ module.exports = class Query {
 			this._current = index === null ? undefined : mpath.get(this.parsed, this._doc._doc);
 			return this;
 		} catch (err) {
-			throw new GABError("GADRIVER_ERROR", `Could not parse Query: ${err.message}`);
+			throw new GABError("GADRIVER_ERROR", { err }, `Could not parse Query: ${err.message}`);
 		}
 	}
 
@@ -128,7 +128,7 @@ module.exports = class Query {
 			return this;
 		} catch (err) {
 			if (err.constructor === Schema.ValidationError) throw err;
-			throw new GABError("GADRIVER_ERROR", `Could not set atomics or parse Query: ${err.message}`);
+			throw new GABError("GADRIVER_ERROR", { err }, `Could not set atomics or parse Query: ${err.message}`);
 		}
 	}
 

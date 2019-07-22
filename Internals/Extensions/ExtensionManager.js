@@ -135,7 +135,7 @@ class ExtensionManager extends DJSClient {
 			await vm.run(`(async () => {\n${code}\n})()`);
 			return { success: true, err: null };
 		} catch (err) {
-			winston.debug(`Failed to run ${context.versionDocument.type} extension "${context.extensionDocument.name}"`,
+			logger.debug(`Failed to run ${context.versionDocument.type} extension "${context.extensionDocument.name}"`,
 				{ svrid: context.guild.id, extid: context.extensionDocument._id, v: context.versionDocument._id }, err);
 			return { success: false, err };
 		}

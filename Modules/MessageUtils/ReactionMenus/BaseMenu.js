@@ -58,7 +58,7 @@ class BaseReactionMenu extends EventEmitter {
 	}
 
 	async prepareReactions () {
-		throw new Error("NON_OVERWRITTEN", "prepareReactions");
+		throw new Error("NON_OVERWRITTEN", {}, "prepareReactions");
 	}
 
 	async handle () {
@@ -69,7 +69,7 @@ class BaseReactionMenu extends EventEmitter {
 		try {
 			await this.msg.reactions.removeAll();
 		} catch (err) {
-			winston.verbose(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { err: err.name });
+			logger.debug(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { chid: this.msg.channel.id, msgid: this.msg.id }, err);
 			this.msg.reactions.forEach(r => r.users.remove());
 		}
 		if (reason !== "updateChoice") {
@@ -78,6 +78,8 @@ class BaseReactionMenu extends EventEmitter {
 					color: Colors.LIGHT_ORANGE,
 					description: `You've exited the menu or the menu expired.`,
 				},
+			}).catch(err => {
+				logger.debug(`Failed to edit menu message.`, { msgid: this.msg.id }, err);
 			});
 		}
 
@@ -102,7 +104,7 @@ class BaseReactionMenu extends EventEmitter {
 		try {
 			await reaction.users.remove(user);
 		} catch (err) {
-			winston.verbose(`Failed to remove the reaction for user!`, { user, message: reaction.message.id });
+			logger.verbose(`Failed to remove the reaction for user!`, { user, msgid: reaction.message.id }, err);
 		}
 	}
 

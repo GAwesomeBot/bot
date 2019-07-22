@@ -118,7 +118,7 @@ module.exports = {
 				});
 			}
 		} catch (err) {
-			winston.warn(`Something went wrong while saying something! ()=()\n`, err, { usrid, initMsgID });
+			logger.warn(`Something went wrong while saying something! ()=()`, { usrid, msgid: initMsgID }, err);
 			if (usr && usr.send) {
 				usr.send({
 					embed: {

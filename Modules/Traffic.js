@@ -4,7 +4,7 @@ class Traffic {
 	constructor (IPC, isWorker) {
 		this.db = Database;
 		this.IPC = IPC;
-		this.winston = winston;
+		this.logger = logger;
 
 		this.pageViews = 0;
 		this.authViews = 0;
@@ -28,7 +28,7 @@ class Traffic {
 	}
 
 	async flush () {
-		this.winston.verbose(`Flushing traffic data to DB`);
+		this.logger.verbose(`Flushing traffic data to DB.`);
 		await this.db.traffic.create({
 			_id: Date.now(),
 			pageViews: this.pageViews,
@@ -39,14 +39,14 @@ class Traffic {
 	}
 
 	async fetch () {
-		this.winston.debug(`Fetching traffic data`);
+		this.logger.debug(`Fetching traffic data.`);
 		const msg = await this.IPC.send("traffic", {}, "*");
 		const payload = msg.reduce((val, oldVal) => ({
 			pageViews: val.pageViews + oldVal.pageViews,
 			authViews: val.authViews + oldVal.authViews,
 			uniqueUsers: val.uniqueUsers + oldVal.uniqueUsers,
 		}));
-		this.winston.silly(`Fetched traffic data: `, payload);
+		this.logger.silly(`Fetched traffic data: `, payload);
 		this.pageViews = payload.pageViews;
 		this.authViews = payload.authViews;
 		this.uniqueUsers = payload.uniqueUsers;

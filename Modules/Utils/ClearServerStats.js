@@ -43,7 +43,7 @@ module.exports = async (client, serverDocument) => {
 			try {
 				await userDocument.save();
 			} catch (err) {
-				winston.warn(`Failed to save user document for activity points`, { usrid: member.id }, err);
+				logger.debug(`Failed to save user document for activity points.`, { usrid: member.id }, err);
 			}
 		}
 	};
@@ -66,8 +66,8 @@ module.exports = async (client, serverDocument) => {
 	// Save changes to serverDocument
 	try {
 		await serverDocument.save();
-		winston.debug(`Cleared stats for server "${server}"`, { svrid: server.id });
+		logger.verbose(`Cleared stats for server "${server}"`, { svrid: server.id });
 	} catch (err) {
-		winston.warn(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
+		logger.debug(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
 	}
 };

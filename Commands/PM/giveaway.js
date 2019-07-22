@@ -18,6 +18,7 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 					},
 				},
 			});
+			if (!initMsg) return logger.debug(`Failed to send message for giveaway command to ${msg.author.tag}.`, { usrid: msg.author.id, msgid: msg.id });
 			const relay = () => client.relayCommand("giveaway", { str: svrname, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname });
 			setTimeout(async () => {
 				const relayRes = await relay();
@@ -44,8 +45,8 @@ module.exports = async ({ client, Constants: { Colors } }, msg, commandData) => 
 			return;
 		}
 	}
-	winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-	msg.channel.send({
+	logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+	await msg.send({
 		embed: {
 			color: Colors.INVALID,
 			description: `🗯 Correct usage is: \`${commandData.name} ${commandData.usage}\``,

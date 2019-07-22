@@ -16,12 +16,12 @@ module.exports = async client => {
 				server_count: client.guilds.size,
 			});
 		} catch (err) {
-			winston.warn(`Failed to post to DiscordBots..\n`, err);
+			logger.warn(`Failed to post to DiscordBots...`, {}, err);
 		}
 		if (res && res.statusCode === 200) {
-			winston.info(`Succesfully POSTed to bots.discord.pw`);
+			logger.info(`Succesfully POSTed to bots.discord.pw`);
 		} else {
-			winston.warn(`Failed to POST to bots.discord.pw`, { statusCode: res.statusCode });
+			logger.warn(`Failed to POST to bots.discord.pw`, { statusCode: res.statusCode });
 		}
 	}
 };

@@ -18,9 +18,9 @@ module.exports = async (client, serverDocument, countdownDocument) => {
 							description: `3...2...1... **${countdownDocument._id}**`,
 						},
 					});
-					winston.info(`Countdown "${countdownDocument._id}" expired`, { svrid: svr.id, chid: ch.id });
+					logger.verbose(`Countdown "${countdownDocument._id}" expired.`, { svrid: svr.id, chid: ch.id });
 				} catch (err) {
-					winston.debug(`Failed to send countdown in server.`, { svrid: svr.id, chid: ch.id });
+					logger.debug(`Failed to send countdown in server.`, { svrid: svr.id, chid: ch.id }, err);
 				}
 				try {
 					const newServerDocument = await Servers.findOne(serverDocument._id);
@@ -28,7 +28,7 @@ module.exports = async (client, serverDocument, countdownDocument) => {
 					if (newCountdownQueryDocument.val && newCountdownQueryDocument.val._id) newCountdownQueryDocument.remove();
 					await newServerDocument.save();
 				} catch (err) {
-					winston.info("Failed to save server data for countdown expiry", { svrid: svr.id }, err);
+					logger.debug("Failed to save server data for countdown expiry", { svrid: svr.id }, err);
 				}
 			}, countdownDocument.expiry_timestamp - Date.now());
 		}

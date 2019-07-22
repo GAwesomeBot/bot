@@ -289,14 +289,14 @@ controllers.builder.post = async (req, res) => {
 			};
 			const saveExtensionCode = async (err, codeID) => {
 				if (err) {
-					winston.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
+					logger.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
 					sendResponse(true);
 				} else {
 					try {
 						await fs.outputFileAtomic(`${__dirname}/../../../Extensions/${codeID}.gabext`, req.body.code);
 						sendResponse();
 					} catch (error) {
-						winston.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
+						logger.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
 						sendResponse(true);
 					}
 				}
@@ -317,11 +317,11 @@ controllers.builder.post = async (req, res) => {
 
 				const validation = galleryDocument.validate();
 				if (validation) {
-					winston.warn("Failed to validate extension data", { err: validation });
+					logger.warn("Failed to validate extension data", {}, validation);
 					return sendResponse(true);
 				}
 				await galleryDocument.save().catch(err => {
-					winston.warn(`Failed to save extension metadata: ${err}`);
+					logger.warn(`Failed to save extension metadata.`, {}, err);
 					sendResponse(true);
 				});
 				saveExtensionCode(false, generateCodeID(req.body.code));

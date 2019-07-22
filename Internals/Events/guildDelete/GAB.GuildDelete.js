@@ -5,7 +5,7 @@ class GuildDelete extends BaseEvent {
 	async handle (guild) {
 		this.client.IPC.send("sendAllGuilds");
 		await PostShardedData(this.client);
-		winston.info(`Left server ${guild} :(`, { svrid: guild.id });
+		logger.info(`Left server ${guild} :(`, { svrid: guild.id });
 	}
 }
 

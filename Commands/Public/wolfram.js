@@ -34,7 +34,7 @@ module.exports = async ({ Constants: { Colors, APIs, UserAgent, Text } }, docume
 			},
 		});
 	} else {
-		winston.debug("Error occurred at Wolfram|Alpha!", { svrid: msg.guild.id, query: query, err: body.error });
+		logger.debug("Error occurred at Wolfram|Alpha!", { svrid: msg.guild.id, query: query, err: body.error });
 		response.edit({
 			embed: {
 				color: Colors.SOFT_ERR,

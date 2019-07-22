@@ -41,8 +41,8 @@ module.exports = async (main, msg, commandData) => {
 			return;
 		}
 	}
-	winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-	msg.channel.send({
+	logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+	msg.send({
 		embed: {
 			author: {
 				name: main.client.user.username,

@@ -267,7 +267,7 @@ module.exports = {
 				});
 			}
 		} catch (err) {
-			winston.warn(`Something went wrong while creating a giveaway! ()=()\n`, err, { usrid, initMsgID });
+			logger.warn(`Something went wrong while creating a giveaway! ()=()`, { usrid, msgid: initMsgID }, err);
 			if (usr && usr.send) {
 				usr.send({
 					embed: {

@@ -199,7 +199,7 @@ module.exports = class GABClient extends DJSClient {
 		try {
 			privateCommandModules[command] = reload(`../Commands/PM/${command}.js`);
 		} catch (err) {
-			winston.debug(`Failed to reload private command "${command}"`, err);
+			logger.debug(`Failed to reload private command "${command}"`, { command }, err);
 			if (returnError) return err;
 		}
 	}
@@ -209,7 +209,7 @@ module.exports = class GABClient extends DJSClient {
 			command = this.getPublicCommandName(command);
 			commandModules[command] = reload(`../Commands/Public/${command}.js`);
 		} catch (err) {
-			winston.debug(`Failed to reload public command "${command}"`, err);
+			logger.debug(`Failed to reload public command "${command}"`, { command }, err);
 			if (returnError) return err;
 		}
 	}
@@ -219,7 +219,7 @@ module.exports = class GABClient extends DJSClient {
 			command = this.getSharedCommandName(command);
 			sharedModules[command] = reload(`../Commands/Shared/${command}.js`);
 		} catch (err) {
-			winston.debug(`Failed to reload shared command "${command}"`, err);
+			logger.debug(`Failed to reload shared command "${command}"`, { command }, err);
 			if (returnError) return err;
 		}
 	}
@@ -333,7 +333,7 @@ module.exports = class GABClient extends DJSClient {
 
 	async canRunSharedCommand (command, user) {
 		command = this.getSharedCommandName(command);
-		if (!(configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id))) throw new GABError("UNAUTHORIZED_USER", user);
+		if (!(configJSON.sudoMaintainers.includes(user.id) || configJSON.maintainers.includes(user.id))) throw new GABError("UNAUTHORIZED_USER", {}, { usrid: user.id }, user);
 		const commandData = this.getSharedCommandMetadata(command);
 		switch (commandData.perm) {
 			case "eval": {
@@ -393,7 +393,7 @@ module.exports = class GABClient extends DJSClient {
 				return true;
 			}
 			default: {
-				throw new GABError("SHARED_INVALID_MODE", commandData.configJSON, command);
+				throw new GABError("SHARED_INVALID_MODE", {}, commandData.configJSON, command);
 			}
 		}
 	}
@@ -431,7 +431,7 @@ module.exports = class GABClient extends DJSClient {
 			if (foundMember) {
 				resolve(foundMember);
 			} else {
-				reject(new GABError("FAILED_TO_FIND", "member", server, string));
+				reject(new GABError("FAILED_TO_FIND", {}, "member", server, string));
 			}
 		});
 	}
@@ -473,7 +473,7 @@ module.exports = class GABClient extends DJSClient {
 				}
 			}
 
-			reject(new GABError("FAILED_TO_FIND", "channel", server, string));
+			reject(new GABError("FAILED_TO_FIND", {}, "channel", server, string));
 		});
 	}
 
@@ -502,7 +502,7 @@ module.exports = class GABClient extends DJSClient {
 				}
 			}
 
-			reject(new GABError("FAILED_TO_FIND", "role", server, string));
+			reject(new GABError("FAILED_TO_FIND", {}, "role", server, string));
 		});
 	}
 
@@ -664,7 +664,7 @@ module.exports = class GABClient extends DJSClient {
 										}
 									})
 									.catch(err => {
-										winston.warn(`Failed to find or save user data (for ${member.user.tag}) for points`, { usrid: member.id }, err);
+										logger.warn(`Failed to find or save user data (for ${member.user.tag}) for points.`, { usrid: member.id }, err);
 									});
 							}
 							// Assign new rank role if necessary
@@ -677,7 +677,7 @@ module.exports = class GABClient extends DJSClient {
 												throw err;
 											});
 									} catch (err) {
-										winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up`, {
+										logger.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up.`, {
 											svrid: server.id,
 											usrid: member.id,
 											roleid: role.id,
@@ -722,7 +722,7 @@ module.exports = class GABClient extends DJSClient {
 		if (serverDocument.config.commands.points.isEnabled) {
 			userQueryDocument.inc("points", -50);
 			await userDocument.save().catch(userErr => {
-				winston.warn(`Failed to save user data (for ${member.user.tag}) for points`, { usrid: member.id }, userErr);
+				logger.warn(`Failed to save user data (for ${member.user.tag}) for points.`, { usrid: member.id }, userErr);
 			});
 		}
 
@@ -739,7 +739,7 @@ module.exports = class GABClient extends DJSClient {
 				try {
 					await member.roles.add(role, `Added the role to the member due to a violation.`);
 				} catch (err) {
-					winston.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
+					logger.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server.name}"`, { svrid: server.id, usrid: member.id, roleid: role.id }, err);
 				}
 			}
 		}
@@ -790,7 +790,7 @@ module.exports = class GABClient extends DJSClient {
 							},
 						},
 					}).catch(err => {
-						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
+						logger.debug("Failed to send DM to user.", { usrid: member.id }, err);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -813,7 +813,7 @@ module.exports = class GABClient extends DJSClient {
 							description: `${userMessage}, so I kicked you from the server. Goodbye.`,
 						},
 					}).catch(err => {
-						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
+						logger.debug("Failed to send DM to user.", { usrid: member.id }, err);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -839,7 +839,7 @@ module.exports = class GABClient extends DJSClient {
 							description: `${userMessage}, so I banned you from the server. Goodbye.`,
 						},
 					}).catch(err => {
-						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
+						logger.debug("Failed to send DM to user.", { usrid: member.id }, err);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -862,7 +862,7 @@ module.exports = class GABClient extends DJSClient {
 							description: `${userMessage}, and the chat moderators have again been notified about this.`,
 						},
 					}).catch(err => {
-						winston.silly(`Failed to send DM to a user`, { usrid: member.id }, err.message);
+						logger.debug("Failed to send DM to user.", { usrid: member.id }, err);
 					});
 					await this.messageBotAdmins(server, serverDocument, {
 						embed: {
@@ -918,7 +918,7 @@ module.exports = class GABClient extends DJSClient {
 				try {
 					await member.send(messageObject);
 				} catch (err) {
-					winston.verbose(`Failed to send DM to admin, probably has me blocked or doesn't accept DMs from non-friends ._.`, err);
+					logger.verbose(`Failed to send DM to admin, probably has me blocked or doesn't accept DMs from non-friends ._.`, { usrid: member.id }, err);
 				}
 			}
 		});
@@ -975,7 +975,7 @@ module.exports = class GABClient extends DJSClient {
 					SEND_MESSAGES: false,
 				}, reason);
 			} catch (err) {
-				winston.verbose(`Probably missing permissions to mute member in "${channel.guild}".`, err);
+				logger.verbose(`Probably missing permissions to mute member in "${channel.guild}".`, { svrid: channel.guild.id, chid: channel.id }, err);
 				// TODO: this.log to the server
 			}
 		}
@@ -999,14 +999,14 @@ module.exports = class GABClient extends DJSClient {
 							SEND_MESSAGES: null,
 						}, reason);
 					} catch (err) {
-						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+						logger.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, { chid: channel.id, svrid: channel.guild.id }, err);
 						// TODO: this.log to the server
 					}
 				} else {
 					try {
 						await overwrite.delete(reason);
 					} catch (err) {
-						winston.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, err);
+						logger.verbose(`Probably missing permissions to unmute member in "${channel.guild}".`, { chid: channel.id, svrid: channel.guild.id }, err);
 						// TODO: this.log to the server
 					}
 				}
@@ -1070,7 +1070,7 @@ module.exports = class GABClient extends DJSClient {
 				}
 			}
 		} catch (err) {
-			winston.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)\n`, err);
+			logger.warn(`Failed to save the trees (and logs) for server ${serverDocument._id} (*-*)`, { svrid: serverDocument._id }, err);
 		}
 		return serverDocument;
 	}
@@ -1086,7 +1086,7 @@ module.exports = class GABClient extends DJSClient {
 			msg: msg.id, suffix: msg.suffix, guild: msg.guild.id, ch: msg.channel.id,
 			ext: extensionConfigDocument._id, extv: extensionConfigDocument.version,
 		});
-		if (result === false) winston.debug(`Failed to run message extension in guild.`, { msgid: msg.id, svrid: msg.guild.id, extid: extensionConfigDocument._id, extv: extensionConfigDocument.version });
+		if (result === false) logger.debug(`Failed to run message extension in guild.`, { msgid: msg.id, svrid: msg.guild.id, extid: extensionConfigDocument._id, extv: extensionConfigDocument.version });
 		return result;
 	}
 

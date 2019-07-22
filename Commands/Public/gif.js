@@ -26,7 +26,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument: { con
 		} catch (err) {
 			switch (err.code) {
 				case "NO_GIPHY_RESULT": {
-					winston.verbose(`No GIFs found for "${msg.suffix}" search`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+					logger.verbose(`No GIFs found for "${msg.suffix}" search`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 					return msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,

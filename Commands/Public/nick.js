@@ -14,7 +14,7 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 			}
 
 			if (!target.trim() || !nickname.trim()) {
-				winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+				logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
 				return msg.sendInvalidUsage(commandData);
 			}
 

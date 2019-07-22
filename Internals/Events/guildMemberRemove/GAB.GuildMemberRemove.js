@@ -6,7 +6,7 @@ class GuildMemberRemove extends BaseEvent {
 		const { guild } = member;
 		const serverDocument = await Servers.findOne(guild.id);
 		if (!serverDocument) {
-			return winston.warn("Failed to find server data for GuildMemberRemove", { svrid: guild.id, usrid: member.user.id });
+			return logger.debug("Failed to find server data for GuildMemberRemove.", { svrid: guild.id, usrid: member.user.id });
 		}
 		const serverQueryDocument = serverDocument.query;
 
@@ -25,13 +25,13 @@ class GuildMemberRemove extends BaseEvent {
 		try {
 			await serverDocument.save();
 		} catch (err) {
-			winston.warn("Failed to save server data for GuildMemberRemove `O`", { svrid: guild.id, usrid: member.user.id, err });
+			logger.warn("Failed to save server data for GuildMemberRemove.", { svrid: guild.id, usrid: member.user.id }, err);
 		}
 
 		if (serverDocument.config.moderation.isEnabled) {
 			// Send member_removed_message if necessary
 			if (serverDocument.config.moderation.status_messages.member_removed_message.isEnabled) {
-				winston.verbose(`Member '${member.user.tag}' removed from server '${guild.name}'`, { svrid: guild.id, usrid: member.user.id });
+				logger.verbose(`Member '${member.user.tag}' removed from server '${guild.name}'`, { svrid: guild.id, usrid: member.user.id });
 				const channel = guild.channels.get(serverDocument.config.moderation.status_messages.member_removed_message.channel_id);
 				if (channel) {
 					const channelDocument = serverDocument.channels[channel.id];
@@ -39,6 +39,8 @@ class GuildMemberRemove extends BaseEvent {
 						const message = serverDocument.config.moderation.status_messages.member_removed_message.messages.random;
 						channel.send({
 							embed: StatusMessages.GUILD_MEMBER_REMOVE(message, member, serverDocument, this.client),
+						}).catch(err => {
+							logger.debug(`Failed to send StatusMessage for GUILD_MEMBER_REMOVE.`, { svrid: guild.id, chid: channel.id }, err);
 						});
 					}
 				}
@@ -59,7 +61,7 @@ class GuildMemberRemove extends BaseEvent {
 						},
 					});
 				} catch (err) {
-					winston.debug(`Failed to send leave message to ${member.user.tag}! They probably don't share a server with me anymore.`, { svrid: member.guild.id, usrid: member.user.id, err });
+					logger.debug(`Failed to send leave message to ${member.user.tag}! They probably don't share a server with me anymore.`, { svrid: member.guild.id, usrid: member.user.id }, err);
 				}
 			}
 		}

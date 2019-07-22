@@ -1,14 +1,14 @@
 class SharderIPC {
-	constructor (sharder, winston) {
+	constructor (sharder, logger) {
 		this.sharder = sharder;
-		this.winston = winston;
+		this.logger = logger;
 		this.onEvents = new Map();
 		this.onceEvents = new Map();
 	}
 
 	send (subject, payload, shard, timeout) {
 		try {
-			this.winston.silly("Sending message to shard", { subject: subject, payload: payload, shard: shard });
+			this.logger.silly("Sending message to shard", { subject: subject, payload: payload, shard: shard });
 
 			if (shard === "*") {
 				return this.sharder.broadcast(subject, payload, timeout);
@@ -18,7 +18,7 @@ class SharderIPC {
 				return shard.send(subject, payload, timeout);
 			}
 		} catch (err) {
-			this.winston.warn("Failed to send message to shard :C\n", { subject: subject, payload: payload, shard: shard, err: err });
+			this.logger.warn("Failed to send message to shard :C\n", { subject: subject, payload: payload, shard: shard }, err);
 		}
 	}
 

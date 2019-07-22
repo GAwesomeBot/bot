@@ -11,12 +11,12 @@ module.exports = async client => {
 				servers: totalAmount,
 			});
 		} catch (err) {
-			winston.warn(`Failed to POST to Discordlist.net >~<`, err);
+			logger.warn(`Failed to POST to Discordlist.net >~<`, {}, err);
 		}
 		if (res && res.statusCode === 200) {
-			winston.info(`Succesfully POSTed to Discordlist.net`);
+			logger.info(`Succesfully POSTed to Discordlist.net`);
 		} else {
-			winston.warn(`Failed to POST to Discordlist.net`, { statusCode: res.statusCode });
+			logger.warn(`Failed to POST to Discordlist.net`, { statusCode: res.statusCode });
 		}
 	}
 };

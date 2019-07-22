@@ -20,7 +20,7 @@ controllers.headerImage = (req, res) => {
 	let { headerImage } = configJSON;
 	if (req.get("Accept") && req.get("Accept").indexOf("image/webp") > -1) headerImage = `${headerImage.substring(0, headerImage.lastIndexOf("."))}.webp`;
 	res.sendFile(require("path").resolve(`${__dirname}/../public/img/${headerImage}`), err => {
-		if (err) winston.debug("It seems your headerImage value is invalid!", err);
+		if (err) logger.debug("It looks like your headerImage value is invalid!", {}, err);
 	});
 };
 

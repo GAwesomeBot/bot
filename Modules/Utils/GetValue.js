@@ -28,9 +28,9 @@ module.exports = (client, val, merge, func) => {
 					return res;
 			}
 		}).catch(err => {
-			winston.warn("An error occurred while fetching shard data! u.u\n", err);
+			logger.warn("An error occurred while fetching shard data!", {}, err);
 		});
 	} catch (err) {
-		winston.warn("An error occurred while fetching shard data! u.u\n", err);
+		logger.warn("An error occurred while fetching shard data!", {}, err);
 	}
 };

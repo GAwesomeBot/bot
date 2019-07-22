@@ -9,7 +9,7 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 		const data = await isStreaming(streamerDocument.type, streamerDocument._id);
 
 		if (data && !streamerDocument.live_state) {
-			winston.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
+			logger.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
 			streamerQueryDocument.set("live_state", true);
 
 			const channel = streamerDocument.channel_id ? server.channels.get(streamerDocument.channel_id) : null;
@@ -25,10 +25,10 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 
 		// Save serverDocument if necessary
 		await serverDocument.save().catch(err => {
-			winston.warn(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
+			logger.warn(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
 		});
 	} catch (err) {
-		winston.debug(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err.message);
+		logger.debug(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err);
 		client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to fetch streamer ${streamerDocument._id}, they might not be configured correctly!`, streamerDocument.channel_id);
 	}
 };

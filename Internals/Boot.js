@@ -4,7 +4,7 @@ const bootFunctions = new Map();
 const shardBootFunctions = new Map();
 
 const build = () => {
-	winston.warn("Travis build launched. Process will exit after successfully starting.");
+	logger.warn("Travis build launched. Process will exit after successfully starting.");
 };
 
 const migrate = async (val, configJS, configJSON, auth, scope) => {
@@ -14,7 +14,7 @@ const migrate = async (val, configJS, configJSON, auth, scope) => {
 
 const db = (val, configJS) => {
 	if (typeof val !== "string") {
-		winston.warn(`Argument --db requires a parameter.`);
+		logger.error(`Argument --db requires a parameter.`);
 		return;
 	}
 	const [url, dbname] = val.split(db.lastIndexOf("/"));
@@ -24,7 +24,7 @@ const db = (val, configJS) => {
 
 const token = (val, configJS, configJSON, auth) => {
 	if (typeof val !== "string" && typeof val !== "number") {
-		winston.warn(`Argument --token requires a parameter.`);
+		logger.error(`Argument --token requires a parameter.`);
 		return;
 	}
 	auth.discord.clientToken = val;
@@ -33,7 +33,7 @@ const token = (val, configJS, configJSON, auth) => {
 const sudo = (val, configJS, configJSON) => {
 	const { writeJSONAtomic } = require("fs-nextra");
 	if (typeof val !== "string" && typeof val !== "number") {
-		winston.warn(`Argument --sudo requires a parameter.`);
+		logger.error(`Argument --sudo requires a parameter.`);
 		return;
 	}
 	if (typeof val !== "string") val = val.toString();
@@ -41,36 +41,37 @@ const sudo = (val, configJS, configJSON) => {
 	configJSON.sudoMaintainers.push(val);
 	configJSON.maintainers.push(val);
 	writeJSONAtomic(`${__dirname}/../Configurations/config.json`, configJSON, { spaces: 2 })
-		.then(() => winston.info(`Promoted user with ID ${val} to Sudo Maintainer`))
-		.catch(err => winston.warn(`Failed to promote user with ID ${val} to Sudo Maintainer *_* `, { err }));
+		.then(() => logger.info(`Promoted user with ID ${val} to Sudo Maintainer.`, { usrid: val }))
+		.catch(err => logger.error(`Failed to promote user with ID ${val} to Sudo Maintainer.`, { usrid: val }, err));
 };
 
 const host = (val, configJS, configJSON) => {
 	if (typeof val !== "string" && typeof val !== "number") {
-		winston.warn(`Argument --host requires a parameter.`);
+		logger.error(`Argument --host requires a parameter.`);
 		return;
 	}
 	if (typeof val !== "string") val = val.toString();
 
 	process.env.GAB_HOST = val;
 	sudo(val, configJS, configJSON);
-	winston.info(`User with Discord ID ${val} is The Host for the current GAB session.`);
+	logger.info(`User with Discord ID ${val} is The Host for the current GAB session.`, { usrid: val });
 };
 
 const safeModeAnnouncement = (val, configJS, configJSON, auth, scope) => {
-	winston.warn("--- SAFE --- GAwesomeBot is now in SAFE MODE. --- SAFE ---");
+	logger.warn("--- SAFE --- GAwesomeBot is now in SAFE MODE. --- SAFE ---");
 	scope.safeMode = true;
 };
 
 const safeMode = async (val, configJS, configJSON, auth, scope) => {
 	// In Safe Mode, only GawesomeBot Internals are loaded to avoid errors and exceptions.
 	// Because WebServer is not loaded, the primary way to interact with GAwesomeBot is through hooking into the Node.JS runtime with for example the Chrome Debugger.
-	winston.warn("--- SAFE --- Connecting to Database --- SAFE ---");
+	logger.warn("--- SAFE --- Connecting to Database --- SAFE ---");
 	const database = require("../Database/Driver.js");
 	await database.initialize(configJS.database).catch(err => {
-		winston.warn("--- SAFE --- Connection to Database failed --- SAFE ---", err);
+		logger.error("--- SAFE --- Connection to Database failed --- SAFE ---", err);
+	}).then(() => {
+		logger.info("--- SAFE --- Successfully connected to Database --- SAFE ---");
 	});
-	winston.warn("--- SAFE --- Successfully connected to Database --- SAFE ---");
 
 	scope.safeMode = true;
 };
@@ -100,14 +101,14 @@ shardBootFunctions.set("safe", safeMode);
 // Mandatory Boot Functions
 
 const initializeConsole = () => {
-	const { Console } = require("../Internals");
-	global.winston = new Console("master");
-	winston.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawesomebot.log`)}.`);
+	const { Logger } = require("../Internals");
+	global.logger = new Logger("master");
+	logger.info(`Logging to ${require("path").join(process.cwd(), `logs/master-gawesomebot.log`)}.`);
 };
 
 const initializeShardConsole = () => {
-	const { Console } = require("../Internals");
-	global.winston = new Console(`Shard ${process.env.SHARDS}`);
+	const { Logger } = require("../Internals");
+	global.logger = new Logger(`Shard ${process.env.SHARDS}`);
 };
 
 const { StructureExtender } = require("../Modules/Utils");

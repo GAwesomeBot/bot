@@ -1,4 +1,4 @@
-const { Error } = require("../../Internals/Errors/index");
+const { Error } = require("../../Internals/Errors");
 const {
 	EmojiRegex: {
 		MobileSkinTone,
@@ -12,7 +12,7 @@ const { get } = require("snekfetch");
 
 module.exports = class EmojiUtil {
 	constructor () {
-		throw new Error("STATIC_CLASS", this.constructor.name);
+		throw new Error("STATIC_CLASS", {}, this.constructor.name);
 	}
 
 	static async getEmojiMetadata (emoji) {

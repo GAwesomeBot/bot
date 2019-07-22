@@ -12,7 +12,7 @@ class SpamHandler extends BaseEvent {
 	async handle (msg) {
 		const serverDocument = await Servers.findOne(msg.guild.id);
 		if (!serverDocument) {
-			winston.warn(`Could not satisfy SpamHandler because ${msg.guild.id} is missing a Document.`);
+			logger.warn(`Could not satisfy SpamHandler because ${msg.guild.id} is missing a Document.`, { svrid: msg.guild.id });
 			return;
 		}
 		let channelDocument = serverDocument.channels[msg.channel.id];
@@ -43,7 +43,7 @@ class SpamHandler extends BaseEvent {
 					.set("last_message_content", msg.cleanContent);
 				this.client.setTimeout(async () => {
 					const timedServerDocument = await Servers.findOne(msg.guild.id).catch(err => {
-						winston.debug(`Failed to get server document for spam filter..`, err);
+						logger.debug(`Failed to get server document for spam filter...`, { svrid: msg.guild.id }, err);
 					});
 					if (serverDocument) {
 						const timedChannelDocument = timedServerDocument.query.id("channels", msg.channel.id);
@@ -51,7 +51,7 @@ class SpamHandler extends BaseEvent {
 						if (spamDocument.val) {
 							spamDocument.remove();
 							timedServerDocument.save().catch(err => {
-								winston.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
+								logger.debug("Failed to save server data for spam filter", { svrid: msg.guild.id }, err);
 							});
 						}
 					}
@@ -63,7 +63,7 @@ class SpamHandler extends BaseEvent {
 				// First-time spam filter violation
 				if (spamDocument.val.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity) {
 					// eslint-disable-next-line max-len
-					winston.verbose(`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+					logger.verbose(`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 					this.client.logMessage(serverDocument, LoggingLevels.INFO,
 						`Handling first-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
 					// Message user and tell them to stop
@@ -90,7 +90,7 @@ class SpamHandler extends BaseEvent {
 						if (userDocument) {
 							userDocument.query.inc("points", -25);
 							await userDocument.save().catch(err => {
-								winston.debug(`Failed to save user document...`, err);
+								logger.debug(`Failed to save user document...`, { usrid: msg.author.id }, err);
 							});
 						}
 					}
@@ -104,7 +104,7 @@ class SpamHandler extends BaseEvent {
 				} else if (spamDocument.val.message_count === serverDocument.config.moderation.filters.spam_filter.message_sensitivity * 2) {
 					// Second-time spam filter violation
 					// eslint-disable-next-line max-len
-					winston.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+					logger.verbose(`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}" `, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 					this.client.logMessage(serverDocument, LoggingLevels.INFO,
 						`Handling second-time spam from member "${msg.author.tag}" in channel "${msg.channel.name}".`, msg.channel.id, msg.author.id);
 
@@ -112,7 +112,7 @@ class SpamHandler extends BaseEvent {
 					if (serverDocument.config.moderation.filters.spam_filter.delete_messages) {
 						const filteredMessages = [];
 						const foundMessages = await msg.channel.messages.fetch({ limit: 50 }).catch(err => {
-							winston.debug(`Failed to fetch messages for spam filter..`, err);
+							logger.debug(`Failed to fetch messages for spam filter...`, { svrid: msg.guild.id, chid: msg.channel.id }, err);
 						});
 						foundMessages.size > 0 && foundMessages.forEach(foundMessage => {
 							if (foundMessage.author.id === msg.author.id && levenshtein.get(spamDocument.val.last_message_content, foundMessage.cleanContent) < 3) {
@@ -124,7 +124,7 @@ class SpamHandler extends BaseEvent {
 								msg.channel.bulkDelete(filteredMessages, true);
 							} catch (err) {
 								// eslint-disable-next-line max-len
-								winston.verbose(`Failed to delete spam messages from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+								logger.verbose(`Failed to delete spam messages from member "${msg.author.tag}" in channel "${msg.channel.name}" on server "${msg.guild}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 							}
 						}
 					}
@@ -142,14 +142,14 @@ class SpamHandler extends BaseEvent {
 						this.client.handleViolation(msg.guild, serverDocument, msg.channel, msg.member, userDocument, memberDocument, `You continued to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `**@${this.client.getName(serverDocument, msg.member, true)}** (${msg.member}) continues to spam in #${msg.channel.name} (${msg.channel}) on ${msg.guild}`, `Second-time spam violation in #${msg.channel.name} (${msg.channel})`, serverDocument.config.moderation.filters.spam_filter.action, violatorRoleID);
 					}
 					await userDocument.save().catch(err => {
-						winston.debug(`Failed to save user document...`, err);
+						logger.debug(`Failed to save user document...`, { usrid: msg.author.id }, err);
 					});
 					// Clear spamDocument, restarting the spam filter process
 					spamDocument.remove();
 				}
 			}
 		}
-		serverDocument.save();
+		await serverDocument.save();
 	}
 }
 

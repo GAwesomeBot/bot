@@ -9,6 +9,10 @@ const Messages = {
 	UNKNOWN_EVENT: event => `Unknown event received: ${event}`,
 	NO_HANDLE: event => `${event} doesn't have the handle method overwritten!`,
 
+	// Discord.js
+	UNKNOWN_DISCORD_ERROR: error => `An unknown Discord error occurred: ${error.stack}`,
+	UNKNOWN_DISCORD_API_ERROR: error => `An unknown Discord API error occurred: ${error.stack}`,
+
 	// Search-related
 	FAILED_TO_FIND: (type, server, string) => `Couldn't find a ${type} in "${server}" using string "${string}"`,
 

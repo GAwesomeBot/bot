@@ -1,4 +1,5 @@
 const { Text, Colors } = require("../../Internals/Constants");
+const { Error: GABError } = require("../../Internals/Errors");
 const Gag = require("./Gag");
 const { Structures, splitMessage, MessageAttachment, MessageEmbed } = require("discord.js");
 
@@ -114,9 +115,13 @@ module.exports = () => {
 				let { content: _content, ..._options } = this.constructor.handleOptions(content, options);
 
 				if (!this.responses || typeof _options.files !== "undefined") {
-					const mes = await this.channel.send(_content, _options);
-					if (typeof _options.files === "undefined") this.responses = Array.isArray(mes) ? mes : [mes];
-					return mes;
+					try {
+						const mes = await this.channel.send(_content, _options);
+						if (typeof _options.files === "undefined") this.responses = Array.isArray(mes) ? mes : [mes];
+						return mes;
+					} catch (err) {
+						return this._handleSendError(err);
+					}
 				}
 
 				if (Array.isArray(_content)) _content = _content.join("\n");
@@ -132,8 +137,12 @@ module.exports = () => {
 					else promises.push(this.channel.send(_content[i], _options));
 				}
 
-				this.responses = await Promise.all(promises);
-				return this.responses.length === 1 ? this.responses[0] : this.responses;
+				try {
+					this.responses = await Promise.all(promises);
+					return this.responses.length < 2 ? this.responses[0] : this.responses;
+				} catch (err) {
+					return this._handleSendError(err);
+				}
 			}
 
 			sendError (cmd, stack) {
@@ -161,6 +170,17 @@ module.exports = () => {
 						},
 					},
 				});
+			}
+
+			_handleSendError (err) {
+				if (err.name === "DiscordAPIError") {
+					if (err.httpStatus === 403) {
+						logger.debug(`Failed to send a message to channel due to insufficient permissions.`, { chid: this.channel.id }, err);
+						return null;
+					}
+					throw new GABError("UNKNOWN_DISCORD_API_ERROR", { msgid: this.id }, err);
+				}
+				throw new GABError("UNKNOWN_DISCORD_ERROR", { msgid: this.id }, err);
 			}
 
 			static combineContentOptions (content, options) {

@@ -27,9 +27,9 @@ module.exports = async (client, userDocument, reminderDocument) => {
 				});
 				newReminderQueryDocument.remove();
 				await newUserDocument.save();
-				winston.verbose(`Reminded user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id });
+				logger.verbose(`Reminded user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id });
 			} catch (err) {
-				winston.debug(`Failed to remind user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id }, err);
+				logger.debug(`Failed to remind user of "${newReminderDocument.name}"`, { usrid: newUserDocument._id }, err);
 			}
 		}, reminderDocument.expiry_timestamp - Date.now());
 	}

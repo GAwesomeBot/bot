@@ -48,7 +48,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 			}
 		}
 	} catch (err) {
-		winston.debug(`Failed to upload image to Imgur`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
+		logger.debug(`Failed to upload image to Imgur`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id }, err);
 		switch (err.statusCode) {
 			case 400:
 				if (err.body.data.error === "File is over the size limit") {

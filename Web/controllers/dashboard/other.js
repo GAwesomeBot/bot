@@ -254,7 +254,7 @@ controllers.extensions.post = async (req, { res }) => {
 			if (serverDocument.extensions.id(id.toString())) serverQueryDocument.clone.id("extensions", id.toString()).set(serverExtensionDocument);
 			else serverQueryDocument.push("extensions", serverExtensionDocument);
 		} catch (err) {
-			winston.debug(`A (malformed) ${req.method} request at ${req.originalURL} resulted in an invalid document:\n`, err);
+			logger.debug(`A (malformed) ${req.method} request at ${req.originalURL} resulted in an invalid document.`, {}, err);
 			return res.sendStatus(400);
 		}
 		save(req, res, true);
@@ -316,13 +316,13 @@ controllers.extensionBuilder.post = async (req, res) => {
 
 		const saveExtensionCode = async (err, codeID) => {
 			if (err) {
-				winston.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
+				logger.warn(`Failed to update settings at ${req.path}`, { usrid: req.user.id }, err);
 				sendErrorResponse(err);
 			} else {
 				try {
 					return fs.outputFileAtomic(`${__dirname}/../../../Extensions/${codeID}.gabext`, req.body.code);
 				} catch (error) {
-					winston.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
+					logger.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
 					sendErrorResponse(true);
 				}
 			}
@@ -373,11 +373,11 @@ controllers.extensionBuilder.post = async (req, res) => {
 
 			const validation = galleryDocument.validate();
 			if (validation) {
-				winston.warn("Failed to validate extension data", { err: validation });
+				logger.warn("Failed to validate extension data", {}, validation);
 				return sendErrorResponse(validation);
 			}
 			await galleryDocument.save().catch(err => {
-				winston.warn(`Failed to save extension metadata: ${err}`);
+				logger.warn(`Failed to save extension metadata.`, {}, err);
 				sendErrorResponse(err);
 			}).then(async () => {
 				await saveExtensionCode(false, generateCodeID(req.body.code));

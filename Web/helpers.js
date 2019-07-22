@@ -64,7 +64,7 @@ module.exports = {
 	saveAdminConsoleOptions: async (req, res, isAPI) => {
 		const validationError = req.svr.document.validate();
 		if (validationError) {
-			winston.debug(`A (malformed) ${req.method} request at ${req.originalURL} resulted in an invalid document:\n`, validationError);
+			logger.debug(`A (malformed) ${req.method} request at ${req.originalURL} resulted in an invalid document:`, {}, validationError);
 			return isAPI ? res.sendStatus(400) : module.exports.renderError(res, "Your request is malformed.", null, 400);
 		}
 		try {
@@ -77,7 +77,7 @@ module.exports = {
 				res.redirect(`${req.originalUrl}`);
 			}
 		} catch (err) {
-			winston.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: req.svr.id, usrid: req.consolemember.user.id }, err);
+			logger.warn(`Failed to update admin console settings at ${req.path} '-'`, { svrid: req.svr.id, usrid: req.consolemember.user.id }, err);
 			module.exports.renderError(res, "An internal error occurred!");
 		}
 	},
@@ -93,7 +93,7 @@ module.exports = {
 				}
 			})
 			.catch(err => {
-				winston.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember.user.id }, err);
+				logger.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember.user.id }, err);
 				module.exports.renderError(res, "An internal error occurred!");
 			});
 	},

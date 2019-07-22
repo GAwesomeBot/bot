@@ -11,7 +11,7 @@ const moment = require("moment");
 
 module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, channelQueryDocument, userDocument, userQueryDocument }, msg, commandData) => {
 	const notOngoing = () => {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
 				description: "There isn't a **GAwesomePoint** lottery going on right now.",
@@ -130,7 +130,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 						});
 					}
 					Lotteries.start(client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, multiplier);
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SUCCESS,
 							title: "GAwesomePoint lottery started! 🌟",
@@ -151,7 +151,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 					if (userDocument.points >= ticketPrice) {
 						const userTicketCount = channelDocument.lottery.participant_ids.reduce((total, ticket) => total + (ticket === msg.author.id), 0);
 						if (userTicketCount === 5) {
-							msg.channel.send({
+							msg.send({
 								embed: {
 									color: Colors.SOFT_ERR,
 									description: "You can't buy more than 5 lottery tickets in the same lottery. 🎩",
@@ -160,7 +160,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 						} else {
 							userQueryDocument.inc("points", -ticketPrice);
 							channelQueryDocument.push("lottery.participant_ids", msg.author.id);
-							msg.channel.send({
+							msg.send({
 								embed: {
 									color: Colors.SUCCESS,
 									title: "Thank you for purchasing a GAwesomePoint lottery ticket 🎟",
@@ -172,7 +172,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 							});
 						}
 					} else {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
 								title: "You're not rich enough to buy a ticket! 😔",
@@ -194,7 +194,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 					if (channelDocument.lottery.creator_id === msg.author.id || client.getUserBotAdmin(msg.guild, serverDocument, msg.member) >= 1 || configJSON.maintainers.includes(msg.author.id)) {
 						const winner = await Lotteries.end(client, msg.guild, serverDocument, msg.channel, channelDocument);
 						if (!winner) {
-							msg.channel.send({
+							msg.send({
 								embed: {
 									color: Colors.SOFT_ERR,
 									description: "The lottery ended with no winner 😥",
@@ -202,7 +202,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 							});
 						}
 					} else {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								color: Colors.MISSING_PERMS,
 								description: Text.MISSING_PERMS(),
@@ -215,7 +215,7 @@ module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { s
 				break;
 			}
 			default: {
-				winston.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
+				logger.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
 				msg.sendInvalidUsage(commandData);
 				break;
 			}
