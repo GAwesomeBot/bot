@@ -17,18 +17,18 @@ const snekfetch = require("snekfetch");
 class MessageCreate extends BaseEvent {
 	requirements (msg) {
 		if (!msg.channel.postable) {
-			logger.debug(`Ignoring message in unpostable channel.`, { msgid: msg.id, usrid: msg.author.id, chid: msg.channel.id });
+			logger.verbose(`Ignoring message in unpostable channel.`, { msgid: msg.id, usrid: msg.author.id, chid: msg.channel.id });
 			return false;
 		}
 		if (msg.type !== "DEFAULT") {
-			logger.debug(`Ignoring non-standard message.`, { msgid: msg.id, usrid: msg.author.id, chid: msg.channel.id });
+			logger.verbose(`Ignoring non-standard message.`, { msgid: msg.id, usrid: msg.author.id, chid: msg.channel.id });
 		}
 		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
 				logger.silly(`Ignoring self-message.`, { msgid: msg.id });
 				return false;
 			} else {
-				logger.debug(`Ignored ${msg.author.tag}.`, { msgid: msg.id, usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
+				logger.verbose(`Ignored ${msg.author.tag}.`, { msgid: msg.id, usrid: msg.author.id, globallyBlocked: this.configJSON.userBlocklist.includes(msg.author.id) });
 				return false;
 			}
 		}
