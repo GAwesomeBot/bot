@@ -25,7 +25,7 @@ controllers.gallery = async (req, { res }) => {
 
 	const renderPage = async (upvotedData, serverData) => {
 		const extensionState = req.path.substring(req.path.lastIndexOf("/") + 1);
-		const extensionLevel = extensionState === "gallery" ? ["gallery"] : configJSON.maintainers.includes(req.user.id) ? ["gallery", "third"] : ["gallery"];
+		const extensionLevel = extensionState === "gallery" ? ["gallery"] : req.isAuthenticated() && configJSON.maintainers.includes(req.user.id) ? ["gallery", "third"] : ["gallery"];
 		try {
 			let rawCount = await Gallery.count({
 				state: { $in: ["version_queue", extensionState] },
