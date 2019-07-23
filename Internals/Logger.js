@@ -66,6 +66,7 @@ module.exports = class Logger {
 			this.info("Connecting this Logger instance with Sentry.", { config: sentryConfig });
 			sentry.init(sentryConfig);
 			this.sentry = sentry;
+			this.sentry.setTag("process", type === "master" ? "master" : type.includes("Worker") ? "worker" : "shard");
 		}
 	}
 
