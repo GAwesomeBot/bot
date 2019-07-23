@@ -5,6 +5,7 @@ const VoiceStatsCollector = require("../../../Modules/VoiceStatsCollector");
 
 class VoiceStateUpdate extends BaseEvent {
 	async handle (oldState, state) {
+		if (!state.member) return;
 		const serverDocument = await Servers.findOne(state.guild.id);
 		if (!serverDocument) {
 			logger.debug("Failed to find server data for VoiceStateUpdate.", { svrid: state.guild.id });
