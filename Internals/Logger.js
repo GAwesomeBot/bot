@@ -85,7 +85,7 @@ module.exports = class Logger {
 	formatErrorMessage (log, metadata, error) {
 		if (this.sentry) {
 			this.sentry.withScope(scope => {
-				scope.setLevel(metadata._level || "error");
+				scope.setLevel((metadata._level === "warn" ? "warning" : metadata._level) || "error");
 				this.sentry.captureException(error);
 			});
 		}
