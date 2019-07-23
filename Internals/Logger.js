@@ -1,11 +1,15 @@
 const { inspect } = require("util");
 const { createLogger, transports, format } = require("winston");
 const chalk = require("chalk");
+const sentry = require("@sentry/node");
 require("winston-daily-rotate-file");
 
 const { Error: GABError, TypeError: GABTypeError, RangeError: GABRangeError } = require("./Errors");
+const { OfficialMode } = require("./Constants");
 
+const auth = require("./../Configurations/auth.js");
 const config = require("./../Configurations/config.js");
+const configJSON = require("./../Configurations/config.json");
 
 const LOGGING_LEVELS = {
 	error: 0,
@@ -52,6 +56,17 @@ module.exports = class Logger {
 		Object.keys(this.levels).forEach(level => {
 			if (!this[level]) this[level] = this.buildLevelFunction(level);
 		});
+
+		this.sentry = null;
+		if (config.sentry && config.sentry.dsn) {
+			const sentryConfig = Object.assign({
+				release: `GAB.${configJSON.branch}.${configJSON.version}`,
+				environment: OfficialMode.includes(auth.discord.clientID) ? "prod" : "development",
+			}, config.sentry);
+			this.info("Connecting this Logger instance with Sentry.", { config: sentryConfig });
+			sentry.init(sentryConfig);
+			this.sentry = sentry;
+		}
 	}
 
 	formatMessage ({ level, message, label, timestamp, ...meta }) {
@@ -62,10 +77,18 @@ module.exports = class Logger {
 		});
 		const log = `[${chalk.grey(timestamp)}] [${label}] ${level}: ${message}`;
 		if (meta[ERROR_SYMBOL]) return this.formatErrorMessage(log, metadata, meta[ERROR_SYMBOL]);
+		delete metadata._level;
 		return `${log}${this.formatMetadata(metadata)}`;
 	}
 
 	formatErrorMessage (log, metadata, error) {
+		if (this.sentry) {
+			this.sentry.withScope(scope => {
+				scope.setLevel(metadata._level || "error");
+				this.sentry.captureException(error);
+			});
+		}
+		delete metadata._level;
 		if ([GABError, GABTypeError, GABRangeError].includes(error.constructor)) {
 			if (error._meta) Object.assign(metadata, error._meta);
 			delete error._meta;
@@ -90,8 +113,9 @@ module.exports = class Logger {
 	}
 
 	buildLevelFunction (level) {
-		return (message, meta, error) => {
+		return (message, meta = {}, error) => {
 			if (error) meta[ERROR_SYMBOL] = error;
+			meta._level = level;
 			return this.winstonLogger[level](message, meta);
 		};
 	}

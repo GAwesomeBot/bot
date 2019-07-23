@@ -46,6 +46,12 @@ module.exports = {
 		db: "gabbe",
 	},
 	/*
+	 * Connection options for Sentry error reporting.
+	 */
+	sentry: {
+		dsn: "",
+	},
+	/*
 	 * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
 	 * Otherwise: !! DO NOT TOUCH !!
 	 */
