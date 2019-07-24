@@ -10,7 +10,6 @@ const md = new showdown.Converter({
 	extensions: [require("showdown-xss-filter")],
 });
 md.setFlavor("github");
-const moment = require("moment");
 const { Tail } = require("tail");
 
 const { getRoundedUptime, saveMaintainerConsoleOptions: save, getChannelData, canDo, renderError } = require("../helpers");
@@ -461,14 +460,11 @@ controllers.management.eval.post = async (req, res) => {
 };
 
 controllers.management.logs = async (req, { res }) => {
-	logger.winstonLogger.query({ limit: 10 }, (err, results) => {
+	logger.winstonLogger.transports[2].query({ limit: 10, order: "desc" }, (err, results) => {
 		if (err) return renderError(res, "An error occurred while fetching old logs");
 
 		results.reverse();
-		const logs = JSON.stringify(results.map(log => {
-			log.timestamp = moment(log.timestamp).format("DD-MM-YYYY HH:mm:ss");
-			return log;
-		}));
+		const logs = JSON.stringify(results);
 
 		res.setPageData({
 			logs,
@@ -479,11 +475,10 @@ controllers.management.logs = async (req, { res }) => {
 controllers.management.logs.socket = async socket => {
 	const send = data => {
 		data = JSON.parse(data);
-		data.timestamp = moment(data.timestamp).format("DD-MM-YYYY HH:mm:ss");
 		socket.emit("logs", data);
 	};
 
-	const tail = new Tail(path.join(__dirname, "../../logs/verbose.gawesomebot.log"), { useWatchFile: process.platform === "win32" });
+	const tail = new Tail(path.join(__dirname, "../../logs/console.gawesomebot.log"), { useWatchFile: process.platform === "win32" });
 
 	tail.on("line", send);
 	tail.watch();

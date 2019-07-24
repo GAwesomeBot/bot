@@ -50,6 +50,17 @@ module.exports = class Logger {
 					datePattern: `DD-MM-YYYY`,
 					filename: require("path").join(process.cwd(), `logs/%DATE%.${type === "master" ? "master" : type.replace(/ /g, "-").toLowerCase()}.gawesomebot.log`),
 				}),
+				new transports.File({
+					level: config.consoleLevel,
+					json: true,
+					format: format.combine(
+						format.timestamp({ format: "DD-MM-YYYY HH:mm:ss" }),
+						format.label({ label: `${type === "master" ? "Master" : type}` }),
+						format(this.formatJSON)(),
+						format.json(),
+					),
+					filename: require("path").join(process.cwd(), `logs/console.gawesomebot.log`),
+				}),
 			],
 		});
 
@@ -98,6 +109,7 @@ module.exports = class Logger {
 	}
 
 	formatJSON ({ [ERROR_SYMBOL]: error, ...meta }) {
+		delete meta._level;
 		if (error) {
 			if ([GABError, GABTypeError, GABRangeError].includes(error.constructor)) {
 				if (error._meta) Object.assign(meta, error._meta);
