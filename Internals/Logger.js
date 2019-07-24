@@ -83,12 +83,7 @@ module.exports = class Logger {
 	}
 
 	formatErrorMessage (log, metadata, error) {
-		if (this.sentry) {
-			this.sentry.withScope(scope => {
-				scope.setLevel((metadata._level === "warn" ? "warning" : metadata._level) || "error");
-				this.sentry.captureException(error);
-			});
-		}
+		this.sendSentryError(error, metadata);
 		delete metadata._level;
 		if ([GABError, GABTypeError, GABRangeError].includes(error.constructor)) {
 			if (error._meta) Object.assign(metadata, error._meta);
@@ -119,5 +114,14 @@ module.exports = class Logger {
 			meta._level = level;
 			return this.winstonLogger[level](message, meta);
 		};
+	}
+
+	sendSentryError (error, metadata) {
+		if (this.sentry) {
+			this.sentry.withScope(scope => {
+				scope.setLevel((metadata._level === "warn" ? "warning" : metadata._level) || "error");
+				this.sentry.captureException(error);
+			});
+		}
 	}
 };

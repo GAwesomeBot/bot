@@ -38,7 +38,7 @@
 							</div>
 						</div>
 					</article>
-					<!-- <h4 class="subtitle is-4">
+					<%# <h4 class="subtitle is-4">
 						Version Configuration
 					</h4>
 					<div class="box is-paddingless generic-feature">
@@ -57,9 +57,9 @@
 									<div class="control">
 										<span class="select is-primary is-small">
 											<select name="branch" id="branch-selector" disabled onchange="$(this).attr('disabled', true); $('#branch-selector-btn').attr('disabled', false);">
-												<option value="stable"<%= configData.branch === "stable" ? " selected" : "" %>>Stable</option>
-												<option value="experimental"<%= configData.branch === "experimental" ? " selected" : "" %>>Experimental</option>
-												<option value="development"<%= configData.branch !== "stable" && configData.branch !== "experimental" ? " selected" : ""%>>Development</option>
+												<option value="stable">Stable</option>
+												<option value="experimental">Experimental</option>
+												<option value="development">Development</option>
 											</select>
 										</span>
 									</div>
@@ -72,7 +72,7 @@
 							</div>
 						</div>
 					</div>
-					-->
+					%>
 					<h4 class="subtitle is-4">
 						Version Manager
 					</h4>
@@ -80,7 +80,7 @@
 					<div class="box is-paddingless generic-feature">
 						<div class="generic-feature-box-group">
 							<div class="generic-feature-box version-box">
-								<div class="generic-feature-box-description">
+								<div class="generic-feature-box-description modal-button" data-target="#installed-version-modal">
 									<h4 class="subtitle is-4">
 										<% if (pageData.utd) { %>
 										<span class="icon" title="Your GAB is up-to-date.">
@@ -99,9 +99,9 @@
 								</span>
 							</div>
 							<div class="generic-feature-box version-box">
-								<div class="generic-feature-box-description">
+								<div class="generic-feature-box-description modal-button" data-target="#latest-version-modal">
 									<h4 class="subtitle is-4">
-										<span class="icon">
+										<span class="icon" id="version-cloud-icon">
 											<i class="fa fa-cloud-download"></i>
 										</span>
 										<%= pageData.latestVersion.metadata.name %>

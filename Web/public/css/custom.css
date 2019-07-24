@@ -284,6 +284,40 @@ html, body {
         color: inherit;
     }
 }
+@keyframes version-update-indicator-success {
+    0% {
+        color: hsl(151, 100%, 41%);
+    }
+    25% {
+        color: hsl(171, 100%, 41%);
+    }
+    50% {
+        color: hsl(151, 100%, 41%);
+    }
+    75% {
+        color: hsl(171, 100%, 41%);
+    }
+    100% {
+        color: hsl(151, 100%, 41%);
+    }
+}
+@keyframes version-update-indicator-error {
+    0% {
+        color: #ff3860;
+    }
+    25% {
+        color: #ff0060;
+    }
+    50% {
+        color: #ff3860;
+    }
+    75% {
+        color: #ff0060;
+    }
+    100% {
+        color: #ff3860;
+    }
+}
 .generic-feature-box-description .progress.is-appended {
     border-radius: 0;
     margin-top: auto;

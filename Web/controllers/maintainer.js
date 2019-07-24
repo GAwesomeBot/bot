@@ -420,6 +420,7 @@ controllers.management.version.socket = async socket => {
 				pushQueue += length;
 			});
 		} catch (err) {
+			finished = true;
 			return socket.emit("err", { error: 500, fatal: false });
 		}
 

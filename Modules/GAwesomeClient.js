@@ -145,10 +145,10 @@ class Version extends EventEmitter {
 		try {
 			this._log("verify", "Verifying installation...");
 			await PromiseWait(50);
-			await this._verifyInstall();
+			await this._verifyInstall([...fileList, ...configFileList]);
 			this._log("verify", "Installation verified.", "success");
 		} catch (err) {
-			this._log("verify", `Failed to verify installation. Please fix the following error and try again. ${err.message}`, "error");
+			this._log("verify", `Failed to verify installation. Please fix the following error and try again: ${err.message}`, "error");
 			throw err;
 		}
 
@@ -193,25 +193,50 @@ class Version extends EventEmitter {
 		return fileList.length;
 	}
 
-	async _patchFile (filePath) {
+	async _patchFile (filePath, configFile = false) {
 		const patchLocation = path.join(this._downloadPath, filePath);
 		const patchTarget = path.join(path.join(__dirname, `..`), filePath);
 
 		if (!await FileExists(patchLocation) && await FileExists(patchTarget)) {
-			this._log("patching", `Unlinking removed file ${filePath}...`);
+			this._log(configFile ? "patchingc" : "patching", `Unlinking removed file ${filePath}...`);
 			await fs.promises.unlink(patchTarget);
 		} else if (await FileExists(patchLocation)) {
-			this._log("patching", `Patching file ${filePath}...`);
+			this._log(configFile ? "patchingc" : "patching", `Patching file ${filePath}...`);
 			await fs.promises.copyFile(patchLocation, patchTarget);
 		}
 	}
 
 	async _patchConfigurationFiles (fileList) {
+		for (const filePath of fileList) {
+			await PromiseWait(50);
+			await this._patchFile(filePath, true);
+		}
 		return fileList.length;
 	}
 
-	async _verifyInstall () {
+	async _verifyInstall (fileList) {
+		let verifiedPatches = [];
+		for (const filePath of fileList) {
+			await PromiseWait(50);
+			const fileValid = await this._verifyFile(filePath);
+			if (fileValid) {
+				verifiedPatches++;
+				this._log("verify", `Verified ${verifiedPatches} patches out of ${fileList.length}...`);
+			} else {
+				throw new GABError("PATCH_CORRUPTED", {}, filePath);
+			}
+		}
 		return true;
+	}
+
+	async _verifyFile (filePath) {
+		const patchLocation = path.join(this._downloadPath, filePath);
+		const patchTarget = path.join(path.join(__dirname, `..`), filePath);
+
+		const patchBuffer = await FileExists(patchLocation) ? await fs.promises.readFile(patchLocation) : Buffer.alloc(0);
+		const patchedBuffer = await FileExists(patchTarget) ? await fs.promises.readFile(patchTarget) : Buffer.alloc(0);
+
+		return patchBuffer.equals(patchedBuffer);
 	}
 
 	async _cleanUpInstall () {

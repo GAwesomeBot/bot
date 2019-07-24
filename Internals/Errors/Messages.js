@@ -55,6 +55,7 @@ const Messages = {
 	CENTRAL_ERROR: (status, error) => `Central returned a ${status} response${error ? `: ${error}` : ""}.`,
 	CENTRAL_DOWNLOAD_ERROR: status => `Version download request failed with code ${status}.`,
 	CENTRAL_VERSION_NOT_DOWNLOADED: `Version requested for install has not been downloaded.`,
+	PATCH_CORRUPTED: patch => `Patch ${patch} failed verification and is corrupted.`,
 
 	// Database Faults
 	MONGODB_ERROR: err => `An unknown error occurred while interacting with MongoDB: ${err}`,
