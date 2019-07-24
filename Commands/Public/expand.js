@@ -71,7 +71,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 				return msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
-						title: Text.COMMAND_ERR(),
+						title: Text.ERROR_TITLE(),
 						description: `Here is the error I got: \`\`\`js\n${err.body.error}\`\`\``,
 					},
 				});

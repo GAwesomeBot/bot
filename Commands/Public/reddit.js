@@ -97,7 +97,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, EmptySpace } }, docum
 		msg.send({
 			embed: {
 				color: Colors.ERROR,
-				title: Text.COMMAND_ERR(),
+				title: Text.ERROR_TITLE(),
 				description: `I was unable to fetch results from Reddit!`,
 			},
 		});

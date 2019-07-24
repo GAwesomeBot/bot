@@ -28,6 +28,8 @@ const p = new Process();
 
 const extensionManager = new ExtensionManager({
 	database: configJS.database,
+	shards: parseInt(process.env.SHARDS),
+	totalShardCount: parseInt(process.env.SHARD_COUNT),
 });
 
 // #region Math

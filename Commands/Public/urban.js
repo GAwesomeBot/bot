@@ -58,7 +58,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, documents, msg, c
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
-				title: Text.COMMAND_ERR(),
+				title: Text.ERROR_TITLE(),
 				description: `I was unable to fetch results from Urban Dictionary!`,
 			},
 		});

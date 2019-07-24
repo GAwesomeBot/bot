@@ -207,47 +207,47 @@
 <% } %>
 <% if (pageData.numPages > 1) { %>
 	<br>
-	<nav class="pagination">
-		<ul>
+	<nav class="pagination is-centered">
+		<ul class="pagination-list">
 			<% if (pageData.currentPage > 2) { %>
 				<li>
-					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=1">
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=1">
 						1
 					</a>
 				</li>
 			<% } %>
 			<% if (pageData.currentPage > 3) { %>
 				<li>
-					<span>...</span>
+					<span class="pagination-ellipsis">...</span>
 				</li>
 			<% } %>
 			<% if (pageData.currentPage > 1) { %>
 				<li>
-					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage - 1 %>">
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage - 1 %>">
 						<%= pageData.currentPage - 1 %>
 					</a>
 				</li>
 			<% } %>
 			<li>
-				<a class="button is-primary" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>">
+				<a class="button is-primary pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>">
 					<%= pageData.currentPage %>
 				</a>
 			</li>
 			<% if (pageData.currentPage < pageData.numPages) { %>
 				<li>
-					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage + 1 %>">
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage + 1 %>">
 						<%= pageData.currentPage + 1 %>
 					</a>
 				</li>
 			<% } %>
 			<% if(pageData.currentPage < pageData.numPages - 2) { %>
 				<li>
-					<span>...</span>
+					<span class="pagination-ellipsis">...</span>
 				</li>
 			<% } %>
-			<% if(pageData.currentPage < pageData.numPages - 1) { %>
+			<% if (pageData.currentPage < pageData.numPages - 1) { %>
 				<li>
-					<a class="button" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.numPages %>">
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.numPages %>">
 						<%= pageData.numPages %>
 					</a>
 				</li>

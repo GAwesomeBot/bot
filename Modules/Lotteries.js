@@ -20,6 +20,10 @@ module.exports = {
 				.set("multiplier", multiplier ? multiplier : 2);
 			setTimeout(async () => {
 				const newServerDocument = await Servers.findOne(serverDocument._id);
+				if (!newServerDocument || !newServerDocument.channels[channelDocument._id]) {
+					logger.debug(`Failed to end lottery of channel that no longer exists.`, { svrid: svr.id, chid: channelDocument._id });
+					client.logMessage(newServerDocument, "warn", "Could not end lottery in unknown channel.", ch.id);
+				}
 				module.exports.end(client, svr, newServerDocument, ch, newServerDocument.channels[channelDocument._id]);
 				newServerDocument.save().catch(err => {
 					logger.debug(`Failed to automatically end ongoing lottery.`, { svrid: svr.id }, err);

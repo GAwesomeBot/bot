@@ -278,7 +278,7 @@ module.exports = {
 				usr.send({
 					embed: {
 						color: Colors.ERR,
-						title: Text.COMMAND_ERR(),
+						title: Text.ERROR_TITLE(),
 						description: `**Error Message**: \`\`\`js\n${err.stack}\`\`\``,
 						footer: {
 							text: `Contact your Server Admin for support!`,

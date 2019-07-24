@@ -93,7 +93,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 		return msg.send({
 			embed: {
 				color: Colors.ERROR,
-				title: Text.COMMAND_ERR(),
+				title: Text.ERROR_TITLE(),
 				description: "An unknown error occurred and we were unable to handle it.",
 			},
 		});

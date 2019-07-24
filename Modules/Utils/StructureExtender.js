@@ -132,7 +132,7 @@ module.exports = () => {
 				const max = Math.max(_content.length, this.responses.length);
 
 				for (let i = 0; i < max; i++) {
-					if (i >= _content.length) this.responses[i].delete();
+					if (i >= _content.length) this.responses[i].delete().catch(() => null);
 					else if (this.responses.length > i) promises.push(this.responses[i].edit(_content[i], _options));
 					else promises.push(this.channel.send(_content[i], _options));
 				}
@@ -174,11 +174,16 @@ module.exports = () => {
 
 			_handleSendError (err) {
 				if (err.name === "DiscordAPIError") {
-					if (err.httpStatus === 403) {
-						logger.debug(`Failed to send a message to channel due to insufficient permissions.`, { chid: this.channel.id }, err);
-						return null;
+					switch (err.httpStatus) {
+						case 403:
+							logger.debug(`Failed to send a message to channel due to insufficient permissions.`, { chid: this.channel.id }, err);
+							return null;
+						case 404:
+							logger.debug(`Failed to edit an unknown message.`, { chid: this.channel.id }, err);
+							return null;
+						default:
+							throw new GABError("UNKNOWN_DISCORD_API_ERROR", { msgid: this.id }, err);
 					}
-					throw new GABError("UNKNOWN_DISCORD_API_ERROR", { msgid: this.id }, err);
 				}
 				throw new GABError("UNKNOWN_DISCORD_ERROR", { msgid: this.id }, err);
 			}

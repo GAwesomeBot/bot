@@ -27,7 +27,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
-				title: Text.COMMAND_ERR(),
+				title: Text.ERROR_TITLE(),
 				description: `I was unable to fetch your perfect dog facts...`,
 			},
 		});

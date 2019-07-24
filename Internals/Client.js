@@ -114,9 +114,8 @@ module.exports = class GABClient extends DJSClient {
 				});
 			});
 
+			if (this.messageListeners[channel.id][user.id] && this.messageListeners[channel.id][user.id].timeout) this.clearTimeout(this.messageListeners[channel.id][user.id].timeout);
 			this.messageListeners[channel.id][user.id] = entry;
-
-			if (this.messageListeners[channel.id][user.id].timeout) this.clearTimeout(this.messageListeners[channel.id][user.id].timeout);
 			this.messageListeners[channel.id][user.id].timeout = this.setTimeout(() => {
 				if (this.messageListeners[channel.id] && this.messageListeners[channel.id][user.id]) {
 					this.deleteAwaitPMMessage(channel, user);

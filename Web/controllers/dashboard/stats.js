@@ -72,10 +72,12 @@ controllers.ranks.post = async (req, res) => {
 	} else {
 		serverDocument.config.ranks_list.forEach(rankDocument => {
 			const rankQueryDocument = serverQueryDocument.clone.id("config.ranks_list", rankDocument._id);
-			rankQueryDocument.set("max_score", parseInt(req.body[`rank-${rankDocument._id}-max_score`]));
-			if (rankDocument.role_id || req.body[`rank-${rankDocument._id}-role_id`]) {
-				rankQueryDocument.set("role_id", req.body[`rank-${rankDocument._id}-role_id`]);
-			}
+
+			const newMaxScore = parseInt(req.body[`rank-${rankDocument._id}-max_score`]);
+			if (newMaxScore || newMaxScore === 0) rankQueryDocument.set("max_score", newMaxScore);
+
+			const newRoleId = req.body[`rank-${rankDocument._id}-role_id`];
+			if (newRoleId || newRoleId === "") rankQueryDocument.set("role_id", newRoleId);
 		});
 	}
 	serverQueryDocument.set("config.ranks_list", serverDocument.config.ranks_list.sort((a, b) => a.max_score - b.max_score));

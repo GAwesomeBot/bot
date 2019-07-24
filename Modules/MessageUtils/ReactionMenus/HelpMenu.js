@@ -56,13 +56,14 @@ module.exports = class extends BaseMenu {
 			logger.debug(`Failed to clear all reactions for interactive menu, will remove only the bots reaction!`, { chid: this.msg.channel.id, msgid: this.msg.id }, err);
 			this.msg.reactions.forEach(r => r.users.remove());
 		}
+		const msgid = this.msg.id;
 		this.msg.edit({
 			embed: {
 				color: Colors.LIGHT_ORANGE,
 				description: `You've exited the help menu or it expired.`,
 			},
 		}).catch(err => {
-			logger.debug(`Failed to edit menu message.`, { msgid: this.msg.id }, err);
+			logger.debug(`Failed to edit menu message.`, { msgid }, err);
 		});
 		// Bye message!! 👋
 		this.msg = null;
