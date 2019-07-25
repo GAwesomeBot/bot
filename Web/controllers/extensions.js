@@ -498,7 +498,7 @@ controllers.gallery.modify = async (req, res) => {
 						.then(() => res.sendStatus(200))
 						.catch(() => res.sendStatus(500));
 
-					const actionString = `${req.params.action}${req.params.action === "reject" ? "e" : ""}d`
+					const actionString = `${req.params.action}${req.params.action === "reject" ? "e" : ""}d`;
 					messageOwner(galleryDocument.owner_id, {
 						embed: {
 							color: Colors.LIGHT_RED,
