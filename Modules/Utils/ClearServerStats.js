@@ -15,7 +15,7 @@ module.exports = async (client, serverDocument) => {
 	await Promise.all(Object.values(serverDocument.members).map(async memberDocument => {
 		if (!memberDocument) return;
 		const member = server.members.get(memberDocument._id);
-		const memberQueryDocument = serverQueryDocument.clone.id("members", member.id);
+		const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
 		if (member && member.id !== client.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
 			topMembers.push([member, activityScore]);
