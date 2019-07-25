@@ -460,7 +460,7 @@ controllers.gallery.modify = async (req, res) => {
 					messageOwner(galleryDocument.owner_id, {
 						embed: {
 							color: Colors.GREEN,
-							title: `Your extension ${galleryDocument.name} has been accepted to the GAwesomeBot extension gallery! 🎉`,
+							title: `Your extension ${galleryDocument.name} has been accepted ${galleryDocument.level === "third" ? "by maintainers." : "to the GAwesomeBot extension gallery!"} 🎉`,
 							description: `View your creation [here](${configJS.hostingURL}extensions/gallery?id=${galleryDocument._id.toString()})!`,
 						},
 					});
@@ -498,10 +498,11 @@ controllers.gallery.modify = async (req, res) => {
 						.then(() => res.sendStatus(200))
 						.catch(() => res.sendStatus(500));
 
+					const actionString = `${req.params.action}${req.params.action === "reject" ? "e" : ""}d`
 					messageOwner(galleryDocument.owner_id, {
 						embed: {
 							color: Colors.LIGHT_RED,
-							title: `Your extension ${galleryDocument.name} has been ${req.params.action}${req.params.action === "reject" ? "e" : ""}d from the GAwesomeBot extension gallery`,
+							title: `Your extension ${galleryDocument.name} has been ${actionString} ${galleryDocument.level === "third" ? "by maintainers" : "from the GAwesomeBot extension gallery"}.`,
 							description: `${req.body.reason.replace(/\\n/g, "\n")}`,
 						},
 					});

@@ -176,7 +176,7 @@ module.exports = {
 
 		if (!Object.keys(newVersion).some(key => JSON.stringify(newVersion[key]) !== JSON.stringify(currentVersion[key]))) return false;
 		newVersion._id++;
-		newVersion.accepted = false;
+		newVersion.accepted = null;
 		extensionQueryDocument.push("versions", newVersion);
 		return newVersion._id;
 	},

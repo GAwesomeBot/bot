@@ -344,6 +344,41 @@ GAwesomeUtil.downloadCode = fileName => {
 	saveAs(blob, `${fileName || document.getElementById("builder-title").value || "Untitled"}.gabext`);
 };
 
+GAwesomeUtil.loadSource = (extid, extname) => {
+	if (!GAwesomeData.extensions.source) GAwesomeData.extensions.source = {};
+	if (!GAwesomeData.extensions.source[extid]) {
+		return $.get(`/extensions/${extid}`, code => {
+			GAwesomeData.extensions.source[extid] = code;
+			return GAwesomeUtil.showSource(extid, extname, code);
+		}, "text");
+	} else {
+		return GAwesomeUtil.showSource(extid, extname, GAwesomeData.extensions.source[extid]);
+	}
+};
+
+GAwesomeUtil.showSource = (extid, extname, code) => {
+	$("#extension-source-download").attr({
+		href: `/extensions/${extid}`,
+		download: `${extname}.gabext`,
+	});
+	$("#extension-source-name").html(extname);
+	if (!GAwesomeData.extensions.sourceViewer || !document.body.contains(GAwesomeData.extensions.sourceViewer.getTextArea())) {
+		GAwesomeData.extensions.sourceViewer = CodeMirror.fromTextArea(document.getElementById("extension-source-viewer"), {
+			mode: "javascript",
+			lineWrapping: true,
+			lineNumbers: true,
+			fixedGutter: true,
+			styleActiveLine: true,
+			readOnly: true,
+			theme: "monokai",
+		});
+	}
+	GAwesomeData.extensions.sourceViewer.setValue(code);
+	$("html").addClass("is-clipped");
+	$("#extension-source-modal").addClass("is-active");
+	setImmediate(() => GAwesomeData.extensions.sourceViewer.refresh());
+};
+
 GAwesomeUtil.searchWiki = query => {
 	Turbolinks.visit(`/wiki?q=${encodeURIComponent(query)}`);
 };
@@ -616,9 +651,7 @@ GAwesomeUtil.uninstallExtension = extid => {
 
 GAwesomePaths.extensions = () => {
 	if (window.location.pathname === "/extensions/builder") {
-		setTimeout(() => {
-			GAwesomeUtil.SFS();
-		}, 0);
+		setTimeout(() => GAwesomeUtil.SFS(), 0);
 		GAwesomeData.builder = CodeMirror.fromTextArea(document.getElementById("builder-code-box"), {
 			mode: "javascript",
 			lineWrapping: true,

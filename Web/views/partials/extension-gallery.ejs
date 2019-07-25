@@ -117,6 +117,10 @@
 							<span class="tag is-info">V<%= extension.version %></span>
 							&nbsp;
 						<% } %>
+						<% if (extension.level === "third") { %>
+							<span class="tag is-danger">Local Extension</span>
+							&nbsp;
+						<% } %>
 						<span id="featured-<%= extension._id %>">
 							<% if (extension.featured) { %>
 								<span class="tag is-primary">Featured</span>
@@ -157,8 +161,8 @@
 							Install
 						</a>
 					<% } %>
-					<a class="card-footer-item" href="/extensions/<%= extension._id %>" download="<%= extension.name %>.gabext">
-						Download
+					<a class="card-footer-item" onclick="GAwesomeUtil.loadSource('<%= extension._id %>', '<%= extension.name %>')">
+						Source
 					</a>
 					<% if (authUser) { %>
 						<a id="vote-<%= extension._id %>" class="card-footer-item" onclick="GAwesomeUtil.voteExtension('<%= extension._id %>');">
@@ -200,6 +204,24 @@
 			<div class="columns">
 		<% } %>
 	<% }); %>
+	</div>
+	<div id="extension-source-modal" class="modal">
+		<div class="modal-background"></div>
+		<div class="modal-content">
+			<div class="box">
+				<h4 class="is-4 title">Source Code for <b id="extension-source-name"></b></h4>
+				<hr>
+				<textarea id="extension-source-viewer"></textarea>
+				<br>
+                <a id="extension-source-download" class="button is-small">
+			        <span class="icon is-small">
+				        <i class="fa fa-download"></i>
+			        </span>
+                    <span>Download</span>
+                </a>
+			</div>
+		</div>
+		<button class="modal-close"></button>
 	</div>
 <% } else { %>
 	<% const resetUrl = "/extensions/" + pageData.mode; %>

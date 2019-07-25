@@ -69,9 +69,12 @@
 									<% if (extensionData.level === "gallery" && extensionData.published_version && extensionData.published_version !== extensionConfigDocument.version) { %>
 									&nbsp;
 									<span class="tag is-danger">Updates Available</span>
-									<% } else if (extensionData.level === "third" && (!extensionData.published_version || extensionData.latest_version !== extensionConfigDocument.version || !extensionData.accepted)) { %>
+									<% } else if (extensionData.level === "third" && (!extensionData.published_version || extensionData.latest_version !== extensionConfigDocument.version || !extensionData.accepted) && extensionData.accepted !== false) { %>
 									&nbsp;
 									<span class="tag is-danger">Update Under Review</span>
+									<% } else if (extensionData.level === "third" && extensionData.accepted === false) { %>
+									&nbsp;
+									<span class="tag is-danger">Version Rejected</span>
 									<% } %>
 									<% if (extensionData.level === "third") { %>
 									&nbsp;
