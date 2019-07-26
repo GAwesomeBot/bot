@@ -356,7 +356,7 @@ controllers.download = async (req, res) => {
 		return res.sendStatus(500);
 	}
 	if (extensionDocument && extensionDocument.state !== "saved") {
-		const versionTag = req.query.v || extensionDocument.published_version;
+		const versionTag = parseInt(req.query.v) || extensionDocument.published_version;
 		const versionDocument = extensionDocument.versions.id(versionTag);
 		if (!versionDocument) return res.sendStatus(404);
 		try {

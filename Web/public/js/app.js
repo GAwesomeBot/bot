@@ -344,21 +344,21 @@ GAwesomeUtil.downloadCode = fileName => {
 	saveAs(blob, `${fileName || document.getElementById("builder-title").value || "Untitled"}.gabext`);
 };
 
-GAwesomeUtil.loadSource = (extid, extname) => {
+GAwesomeUtil.loadSource = (extid, extv, extname) => {
 	if (!GAwesomeData.extensions.source) GAwesomeData.extensions.source = {};
 	if (!GAwesomeData.extensions.source[extid]) {
-		return $.get(`/extensions/${extid}`, code => {
+		return $.get(`/extensions/${extid}?v=${extv}`, code => {
 			GAwesomeData.extensions.source[extid] = code;
-			return GAwesomeUtil.showSource(extid, extname, code);
+			return GAwesomeUtil.showSource(extid, extv, extname, code);
 		}, "text");
 	} else {
-		return GAwesomeUtil.showSource(extid, extname, GAwesomeData.extensions.source[extid]);
+		return GAwesomeUtil.showSource(extid, extv, extname, GAwesomeData.extensions.source[extid]);
 	}
 };
 
-GAwesomeUtil.showSource = (extid, extname, code) => {
+GAwesomeUtil.showSource = (extid, extv, extname, code) => {
 	$("#extension-source-download").attr({
-		href: `/extensions/${extid}`,
+		href: `/extensions/${extid}?v=${extv}`,
 		download: `${extname}.gabext`,
 	});
 	$("#extension-source-name").html(extname);
