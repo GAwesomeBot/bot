@@ -21,7 +21,9 @@ controllers.servers = async (req, res) => {
 		params._id = req.query.id;
 	}
 	const webp = req.accepts("image/webp") !== false;
-	Servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(req.query.count ? parseInt(req.query.count) : 0)
+	let limit = parseInt(req.query.count) || 50;
+	if (limit > 50 || limit < 1) limit = 50;
+	Servers.find(params).skip(req.query.start ? parseInt(req.query.start) : 0).limit(limit)
 		.exec()
 		.then(async serverDocuments => {
 			if (serverDocuments && serverDocuments.length) {
