@@ -364,7 +364,7 @@ controllers.download = async (req, res) => {
 				"Content-Disposition": `${"attachment; filename="}${extensionDocument.name}.gabext`,
 				"Content-Type": "text/javascript",
 			});
-			res.sendFile(path.resolve(`${__dirname}/../../../Extensions/${versionDocument.code_id}.gabext`));
+			res.sendFile(path.join(__dirname, `../../extensions/${versionDocument.code_id}.gabext`));
 		} catch (err) {
 			res.sendStatus(500);
 		}
