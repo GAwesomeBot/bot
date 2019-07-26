@@ -109,7 +109,7 @@ class ExtensionManager extends DJSClient {
 	 * @returns {Promise<string>}
 	 */
 	fetchExtensionCode (versionDocument) {
-		return fs.readFile(`${__dirname}/../../Extensions/${versionDocument.code_id}.gabext`, "utf8");
+		return fs.readFile(`${__dirname}/../../extensions/${versionDocument.code_id}.gabext`, "utf8");
 	}
 
 	/**

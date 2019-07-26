@@ -6,7 +6,7 @@ const fs = require("fs-nextra");
 module.exports = async (bot, server, serverDocument, channel, extensionDocument, msg, suffix, keywordMatch) => {
 	let extensionCode;
 	try {
-		extensionCode = await fs.readFile(`${__dirname}/../Extensions/${extensionDocument.code_id}.gabext`, "utf8");
+		extensionCode = await fs.readFile(`${__dirname}/../extensions/${extensionDocument.code_id}.gabext`, "utf8");
 	} catch (err) {
 		logger.warn(`Failed to load the extension code for ${extensionDocument.type} extension "${extensionDocument.name}"`, { svrid: server.id, extid: extensionDocument._id }, err);
 	}

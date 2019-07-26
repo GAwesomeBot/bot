@@ -292,7 +292,7 @@ controllers.extensionBuilder = async (req, { res }) => {
 				}
 				if (galleryDocument) {
 					try {
-						galleryDocument.code = await fs.readFile(`${__dirname}/../../../Extensions/${galleryDocument.versions.id(galleryDocument.version).code_id}.gabext`);
+						galleryDocument.code = await fs.readFile(`${__dirname}/../../../extensions/${galleryDocument.versions.id(galleryDocument.version).code_id}.gabext`);
 					} catch (err) {
 						galleryDocument.code = "";
 					}
@@ -320,7 +320,7 @@ controllers.extensionBuilder.post = async (req, res) => {
 				sendErrorResponse(err);
 			} else {
 				try {
-					return fs.outputFileAtomic(`${__dirname}/../../../Extensions/${codeID}.gabext`, req.body.code);
+					return fs.outputFileAtomic(`${__dirname}/../../../extensions/${codeID}.gabext`, req.body.code);
 				} catch (error) {
 					logger.warn(`Failed to save extension at ${req.path}`, { usrid: req.user.id }, err);
 					sendErrorResponse(true);
