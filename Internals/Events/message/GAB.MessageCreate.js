@@ -378,6 +378,7 @@ class MessageCreate extends BaseEvent {
 								if (memberBotAdminLevel >= serverDocument.extensions[i].admin_level && !serverDocument.extensions[i].disabled_channel_ids.includes(msg.channel.id)) {
 									const extensionDocument = await Gallery.findOneByObjectID(serverDocument.extensions[i]._id);
 									const versionDocument = extensionDocument ? extensionDocument.versions.id(serverDocument.extensions[i].version) : null;
+									if (!versionDocument || !versionDocument.accepted) continue;
 									// Command extensions
 									if (versionDocument && versionDocument.type === "command" && msg.command && msg.command === serverDocument.extensions[i].key) {
 										logger.verbose(`Treating "${msg.cleanContent}" as a trigger for command extension "${serverDocument.extensions[i].name}"`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, extid: serverDocument.extensions[i]._id });

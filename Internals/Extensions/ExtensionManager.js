@@ -74,6 +74,7 @@ class ExtensionManager extends DJSClient {
 				context.event = eventData.event;
 				break;
 		}
+		if (!versionDocument.accepted) return { success: false, err: null };
 		const result = await this.runWithContext(await this.fetchExtensionCode(versionDocument), context);
 		await this.handleRunResult(result, serverDocument, extensionConfigDocument);
 		return result;

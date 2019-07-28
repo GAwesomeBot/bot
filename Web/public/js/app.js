@@ -146,12 +146,12 @@ GAwesomeUtil.warn = msg => GAwesomeUtil.log(msg, "warn", true);
 
 GAwesomeUtil.debugDump = () => {
 	GAwesomeUtil.log("[DUMP:INFO] Pass this information to a GAB Support Member and they will assist you further!", "log", true);
-	const { socket } = GAwesomeData.dashboard;
-	if (GAwesomeData.dashboard.socket) {
-		GAwesomeData.dashboard.socket = {};
-	}
+	const { dashboard: { socket }, builder } = GAwesomeData;
+	if (GAwesomeData.dashboard.socket) GAwesomeData.dashboard.socket = {};
+	if (GAwesomeData.builder) GAwesomeData.builder = {};
 	GAwesomeUtil.log(`[DUMP:APPDATA] ${JSON.stringify(GAwesomeData)}`, "log", true);
 	GAwesomeData.dashboard.socket = socket;
+	GAwesomeData.builder = builder;
 	GAwesomeUtil.log(`[DUMP:SESSIONDATA] ${JSON.stringify(localStorage)}`, "log", true);
 	GAwesomeUtil.log(`[DUMP:LIBDATA] ${JSON.stringify({
 		tl: typeof Turbolinks !== "undefined", io: typeof io !== "undefined", np: typeof NProgress !== "undefined", fs: typeof saveAs !== "undefined",
@@ -362,8 +362,8 @@ GAwesomeUtil.showSource = (extid, extv, extname, code) => {
 		download: `${extname}.gabext`,
 	});
 	$("#extension-source-name").html(extname);
-	if (!GAwesomeData.extensions.sourceViewer || !document.body.contains(GAwesomeData.extensions.sourceViewer.getTextArea())) {
-		GAwesomeData.extensions.sourceViewer = CodeMirror.fromTextArea(document.getElementById("extension-source-viewer"), {
+	if (!GAwesomeData.builder || !document.body.contains(GAwesomeData.builder.getTextArea())) {
+		GAwesomeData.builder = CodeMirror.fromTextArea(document.getElementById("extension-source-viewer"), {
 			mode: "javascript",
 			lineWrapping: true,
 			lineNumbers: true,
@@ -373,10 +373,10 @@ GAwesomeUtil.showSource = (extid, extv, extname, code) => {
 			theme: "monokai",
 		});
 	}
-	GAwesomeData.extensions.sourceViewer.setValue(code);
+	GAwesomeData.builder.setValue(code);
 	$("html").addClass("is-clipped");
 	$("#extension-source-modal").addClass("is-active");
-	setImmediate(() => GAwesomeData.extensions.sourceViewer.refresh());
+	setImmediate(() => GAwesomeData.builder.refresh());
 };
 
 GAwesomeUtil.searchWiki = query => {

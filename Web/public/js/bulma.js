@@ -1,4 +1,5 @@
 window.bulma = () => {
+	$("html").removeClass("is-clipped");
 	const $toggle = $("#nav-toggle");
 	const $menu = $("#nav-menu");
 

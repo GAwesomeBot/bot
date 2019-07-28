@@ -45,9 +45,9 @@ class Message {
 		this.editedTimestamp = msg.editedTimestamp;
 		/**
 		 * An array of embeds this message has.
-		 * @type {?Array<API.Embed>}
+		 * @type {Array<API.Embed>}
 		 */
-		this.embeds = Array.isArray(this.embeds) ? wrapArray(this.embeds, API.Embed, { API, client, scopes }) : undefined;
+		this.embeds = Array.isArray(msg.embeds) ? wrapArray(msg.embeds, API.Embed, { API, client, scopes }) : [];
 		/**
 		 * The guild in which this message was sent.
 		 * @type {API.Guild}
@@ -60,7 +60,7 @@ class Message {
 		this.id = msg.id;
 		/**
 		 * The author of this message their member object for this Guild.
-		 * @type {API.Member}
+		 * @type {?API.Member}
 		 */
 		this.member = new API.Member(msg.member);
 		/**
@@ -96,6 +96,15 @@ class Message {
 	}
 
 	/**
+	 * The Date this message was created.
+	 * @type {?Date}
+	 * @readonly
+	 */
+	get createdAt () {
+		return this.createdTimestamp ? new Date(this.createdTimestamp) : null;
+	}
+
+	/**
 	 * Deletes this message.
 	 * @param {String} reason - Reason for deleting this message, to be shown in Audit Logs.
 	 * @returns {Promise<API.Message>}
@@ -119,6 +128,15 @@ class Message {
 		const editOptions = parseSendMessageOptions(content, embed);
 		await privProps.get(this).msg.edit(editOptions).catch(serializeError);
 		return this;
+	}
+
+	/**
+	 * Whether the extension can pin this message.
+	 * @type {Boolean}
+	 * @readonly
+	 */
+	get pinnable () {
+		return !!(privProps.get(this).msg.pinnable && ScopeManager.check(privProps.get(this).scopes, Scopes.channels_manage.scope));
 	}
 
 	/**
