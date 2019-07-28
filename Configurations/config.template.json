@@ -14,7 +14,7 @@
   "headerImage": "header-bg.jpg",
   "homepageMessageHTML": "",
   "pmForward": false,
-  "version": "4.1.0",
+  "version": "5.0.0",
   "branch": "development",
   "perms": {
     "eval": 0,
