@@ -62,10 +62,14 @@ class Ready extends BaseEvent {
 				logger.debug(`Failed to find server data for server ${guild.id}!`, { svrid: guild.id }, err);
 			});
 			if (serverDocument) {
-				const channelIDs = [...guild.channels.keys()];
-				Object.values(serverDocument.channels).forEach(ch => {
-					if (!channelIDs.includes(ch._id)) serverDocument.query.id("channels", ch._id).remove();
-				});
+				try {
+					const channelIDs = [...guild.channels.keys()];
+					Object.values(serverDocument.channels).forEach(ch => {
+						if (!channelIDs.includes(ch._id)) serverDocument.query.id("channels", ch._id).remove();
+					});
+				} catch (err) {
+					logger.debug(`Failed to ensure channelDocuments for ${guild.id}.`, { svrid: guild.id }, err);
+				}
 			} else {
 				newServerDocuments.push(await getNewServerData(this.client, guild, Servers.new({ _id: guild.id })));
 			}
