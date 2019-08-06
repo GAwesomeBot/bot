@@ -52,9 +52,8 @@ module.exports = async ({ Constants: { Text, Colors, APIs } }, { serverDocument 
 				timestamps,
 			}).init();
 		} else {
-			await m.delete().catch(() => null);
-			winston.debug(`Couldn't find twitter user '${query}' for ${commandData.name} command`, { msg: msg.id, svrid: msg.guild.id });
-			msg.send({
+			logger.debug(`Couldn't find twitter user '${query}' for ${commandData.name} command`, { msg: msg.id, svrid: msg.guild.id });
+			m.edit({
 				embed: {
 					color: Colors.SOFT_ERR,
 					description: `I couldn't find that user's tweets. They either don't exist, or don't have any public tweets! 🐦`,
@@ -62,7 +61,7 @@ module.exports = async ({ Constants: { Text, Colors, APIs } }, { serverDocument 
 						text: "Do you think this is an error? Let us know in our support Discord!",
 					},
 				},
-			});
+			}).catch(() => null);
 		}
 	} else {
 		msg.sendInvalidUsage(commandData, "Twitter what?", "Here's a birb anyways 🐦");
