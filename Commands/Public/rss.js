@@ -31,7 +31,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 					color: Colors.SOFT_ERR,
 					description: "I couldn't read that RSS Feed 🏳️",
 				},
-			});
+			}).catch(() => null);
 		}
 
 		if (articles && articles.length) {
@@ -60,7 +60,7 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 					color: Colors.SOFT_ERR,
 					description: "I looked everywhere but I couldn't find anything 🏳️",
 				},
-			});
+			}).catch(() => null);
 		}
 	} else {
 		const info = serverDocument.config.rss_feeds.map(feedDocument => feedDocument._id);
@@ -71,14 +71,14 @@ module.exports = async ({ Constants: { Colors, Text } }, { serverDocument }, msg
 					title: `The following feeds are available: 📑`,
 					description: `${info.join("\n\t")}`,
 				},
-			});
+			}).catch(() => null);
 		} else {
 			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					description: "There aren't any RSS feeds available on this server. Go to the `RSS Feeds` section of the Admin Console to add one.",
 				},
-			});
+			}).catch(() => null);
 		}
 	}
 };
