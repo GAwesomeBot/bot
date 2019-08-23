@@ -150,5 +150,6 @@ module.exports = {
 		"no-var": "error",
 		"require-atomic-updates": "off",
 		"no-useless-catch": "off",
+		"no-prototype-builtins": "off",
 	},
 };
