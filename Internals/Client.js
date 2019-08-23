@@ -671,18 +671,13 @@ module.exports = class GABClient extends DJSClient {
 							if (rank.role_id) {
 								const role = server.roles.get(rank.role_id);
 								if (role) {
-									try {
-										member.roles.add(role, `Added member to role for leveling up in ranks.`)
-											.catch(err => {
-												throw err;
-											});
-									} catch (err) {
+									member.roles.add(role, `Added member to role for leveling up in ranks.`).catch(err => {
 										logger.warn(`Failed to add member "${member.user.tag}" to role "${role.name}" on server "${server}" for rank level up.`, {
 											svrid: server.id,
 											usrid: member.id,
 											roleid: role.id,
 										}, err);
-									}
+									});
 								}
 							}
 						}
