@@ -93,7 +93,7 @@ module.exports = {
 				}
 			})
 			.catch(err => {
-				logger.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember.user.id }, err);
+				logger.error(`Failed to update maintainer settings at ${req.path} '-'`, { usrid: req.consolemember && req.consolemember.user.id }, err);
 				module.exports.renderError(res, "An internal error occurred!");
 			});
 	},

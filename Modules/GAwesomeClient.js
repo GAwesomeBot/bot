@@ -84,7 +84,7 @@ class Version extends EventEmitter {
 	}
 
 	async download (onChunk) {
-		const tempFolder = await this.versionAPI.client.bot.tempStorage.create({ type: "version", persistent: true });
+		const { path: tempFolder } = await this.versionAPI.client.bot.tempStorage.create({ type: "version", persistent: true, id: this.tag });
 		return new Promise((resolve, reject) => {
 			const fileStream = fs.createWriteStream(path.join(tempFolder, `${this.tag}.zip`));
 			https.get(`${Constants.CENTRAL.CODEBASE}${this.sha}`, res => {
@@ -105,7 +105,14 @@ class Version extends EventEmitter {
 		});
 	}
 
+	async checkDownload (id = this.tag) {
+		const entry = await this.versionAPI.client.bot.tempStorage.get("version", id);
+		if (entry) this._downloadPath = entry.path;
+		return !!entry;
+	}
+
 	async install () {
+		await this.checkDownload();
 		const downloadedVersionPath = path.join(this._downloadPath, `${this.tag}.zip`);
 		if (!await FileExists(downloadedVersionPath)) throw new GABError("CENTRAL_VERSION_NOT_DOWNLOADED");
 
@@ -240,7 +247,7 @@ class Version extends EventEmitter {
 	}
 
 	async _cleanUpInstall () {
-		return true;
+		await this.versionAPI.client.bot.tempStorage.delete("version", this.tag);
 	}
 
 	get tag () {

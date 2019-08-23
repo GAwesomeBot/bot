@@ -14,7 +14,9 @@ const ExtensionManager = require("./Extensions");
 const mathjs = require("mathjs");
 const safeEval = mathjs.eval;
 
-mathjs.import({
+const math = mathjs.create(mathjs.all);
+
+math.import({
 	import: () => { throw new Error(`Function "import" is disabled inside calculations!`); },
 	createUnit: () => { throw new Error(`Function "createUnit" is disabled inside calculations!`); },
 	eval: () => { throw new Error(`Function "eval" is disabled inside calculations!`); },
@@ -49,7 +51,7 @@ p.on("runMathCommand", (data, callback) => {
 		}
 		case MathJSCommands.HELP: {
 			try {
-				const result = mathjs.help(data.info);
+				const result = math.help(data.info);
 				retData.result = `${result}`;
 			} catch (err) {
 				retData.error = err;

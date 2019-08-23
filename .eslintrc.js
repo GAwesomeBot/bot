@@ -148,5 +148,6 @@ module.exports = {
 		"node/no-deprecated-api": "error",
 		"node/exports-style": ["error", "module.exports"],
 		"no-var": "error",
+		"require-atomic-updates": "off",
 	},
 };

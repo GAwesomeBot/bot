@@ -42,6 +42,7 @@ exports.initialize = async config => {
 		Wiki, wiki: Wiki,
 		Traffic, traffic: Traffic,
 		client: db,
+		mongoClient,
 	});
 	return global.Database.client;
 };

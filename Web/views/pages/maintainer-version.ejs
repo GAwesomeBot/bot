@@ -9,17 +9,6 @@
 </head>
 <body>
 	<% include ../partials/dashboard-header %>
-	<div id="config-modal" class="modal">
-		<div class="modal-background"></div>
-		<div class="modal-content">
-			<div class="modal-container">
-				<div class="modal-content">
-					<textarea id="modal-code-area"></textarea>
-				</div>
-			</div>
-		</div>
-		<button onClick="closeCodeModal" class="modal-close"></button>
-	</div>
 
 	<section class="section is-white">
 		<div class="container">
@@ -101,16 +90,18 @@
 							<div class="generic-feature-box version-box">
 								<div class="generic-feature-box-description modal-button" data-target="#latest-version-modal">
 									<h4 class="subtitle is-4">
-										<span class="icon" id="version-cloud-icon">
+										<% if (!pageData.isDownloaded) { %>
+										<span class="icon" id="version-cloud-icon" title="This version has not been downloaded.">
 											<i class="fa fa-cloud-download"></i>
 										</span>
+										<% } %>
 										<%= pageData.latestVersion.metadata.name %>
 									</h4>
 									<span class="help"><%= pageData.latestVersion.metadata.description %></span>
 									<progress class="progress is-appended is-primary is-small" max="100"></progress>
 								</div>
 								<div class="generic-feature-box-addon">
-									<div id="update-btn" class="button is-primary is-outlined" data-branch="<%= pageData.latestVersion.branch %>" data-tag="<%= pageData.latestVersion.tag %>">Download</div>
+									<div id="update-btn" class="button is-primary is-outlined" data-branch="<%= pageData.latestVersion.branch %>" data-tag="<%= pageData.latestVersion.tag %>" data-op="<%= pageData.isDownloaded ? "install" : "download"%>"><%= pageData.isDownloaded ? "Install" : "Download"%></div>
 								</div>
 							</div>
 							<% } %>
@@ -150,6 +141,40 @@
 			</div>
 		</div>
 	</section>
+	<% if (!pageData.disabled) { %>
+		<div id="installed-version-modal" class="modal">
+			<div class="modal-background"></div>
+			<div class="modal-container">
+				<div class="modal-content">
+					<div class="box">
+						<div class="content">
+							<h3 class="title">Changelog for installed version <b><%= pageData.installedVersion.metadata.name %></b></h3>
+							<hr>
+							<%- pageData.installedVersion.metadata.changelog %>
+						</div>
+					</div>
+				</div>
+			</div>
+			<button class="modal-close is-large"></button>
+		</div>
+		<% if (!pageData.utd && pageData.latestVersion) { %>
+			<div id="latest-version-modal" class="modal">
+				<div class="modal-background"></div>
+				<div class="modal-container">
+					<div class="modal-content">
+						<div class="box">
+							<div class="content">
+								<h3 class="title">Changelog for latest version <b><%= pageData.latestVersion.metadata.name %></b></h3>
+								<hr>
+								<%- pageData.latestVersion.metadata.changelog %>
+							</div>
+						</div>
+					</div>
+				</div>
+				<button class="modal-close is-large"></button>
+			</div>
+		<% } %>
+	<% } %>
 	<% include ../partials/footer %>
 	<% include ../partials/scroll-top-button %>
 </body>

@@ -378,12 +378,14 @@ controllers.management.version = async (req, { res }) => {
 	if (version && version.metadata) version.metadata.changelog = md.makeHtml(version.metadata.changelog);
 	const checkData = await version.check();
 	if (checkData.current) checkData.current.metadata.changelog = md.makeHtml(checkData.current.metadata.changelog);
+	const isDownloaded = checkData && checkData.current && await version.checkDownload(checkData.current.tag);
 
 	res.setPageData({
 		disabled: !version.valid,
 		latestVersion: checkData.current,
 		installedVersion: version,
 		utd: checkData.utd,
+		isDownloaded,
 		page: "maintainer-version.ejs",
 	}).setConfigData({
 		version: configJSON.version,
@@ -423,20 +425,23 @@ controllers.management.version.socket = async socket => {
 			return socket.emit("err", { error: 500, fatal: false });
 		}
 
-		socket.request.versionToPatch = version;
 		finished = true;
 		socket.emit("downloadSuccess");
 	});
 	socket.on("install", async data => {
-		if (!socket.request.versionToPatch || String(socket.request.versionToPatch.tag) !== String(data.tag) || socket.request.versionToPatch.branch !== data.branch) {
+		const version = await socket.route.router.app.client.central.API("versions").branch(data.branch).get(data.tag);
+		if (!await version.checkDownload()) {
 			return socket.emit("err", { error: 404, fatal: true, message: "That version has not been downloaded yet." });
 		}
-		const version = socket.request.versionToPatch;
 
 		version.on("installLog", log => {
 			socket.emit("installLog", log);
 		});
-		version.on("installFinish", () => {
+		version.on("installFinish", async () => {
+			configJSON.version = version.tag;
+			configJSON.branch = version.branch;
+			socket.request.app = socket.route.router.app;
+			await save(socket.request, null, true, true);
 			socket.emit("installFinish");
 		});
 

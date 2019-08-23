@@ -21,9 +21,7 @@ $(document).ready(() => {
 
 		const progress = $("progress.is-appended");
 		progress.attr("value", 0);
-		if (button.html() !== "Install") {
-			progress.css("height", ".5rem");
-		}
+		progress.css("height", ".5rem");
 		button.addClass("is-loading");
 		const setProgress = percentage => {
 			progress.attr("value", Math.round(percentage));
@@ -83,6 +81,7 @@ $(document).ready(() => {
 				logMessage({ id: "update-warning", type: "error", msg: "Restart GAwesomeBot and attempt to re-install the update to prevent corruption issues.", header: "Uh-oh. Lost connection to GAwesomeBot!" });
 			} else {
 				logMessage({ id: currentLog, type: "error", msg: "An unexpected exception occurred. Please try installing again." });
+				GAwesomeUtil.error(JSON.stringify(err));
 			}
 			button.removeClass("is-loading").attr("disabled", true);
 			$(".version-update-indicator").css("animation-name", "version-update-indicator-error");
@@ -103,12 +102,12 @@ $(document).ready(() => {
 	};
 
 
-	let downloaded = false;
 	const button = $("#update-btn");
 	button.click(() => {
-		if (!downloaded) {
+		const op = button.data("op");
+		if (op === "download") {
 			GAwesomeUtil.dashboard.versioning.downloadVersion(button, button.data("branch"), button.data("tag"));
-			downloaded = true;
+			button.data("op", "install");
 		} else {
 			GAwesomeUtil.dashboard.versioning.installVersion(button, button.data("branch"), button.data("tag"));
 		}

@@ -120,7 +120,7 @@ exports.open = async (client, auth, configJS, logger) => {
 	});
 
 	const sessionStore = new mongoSessionStore({
-		db: Database.client,
+		client: Database.mongoClient,
 	});
 
 	app.use(session({
