@@ -1965,9 +1965,9 @@ mongodb@^3.1.10:
     mongodb-core "3.1.9"
     safe-buffer "^5.1.2"
 
-mpath@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/mpath/-/mpath-0.5.1.tgz#17131501f1ff9e6e4fbc8ffa875aa7065b5775ab"
+mpath@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/mpath/-/mpath-0.6.0.tgz#aa922029fca4f0f641f360e74c5c1b6a4c47078e"
 
 ms@2.0.0:
   version "2.0.0"
