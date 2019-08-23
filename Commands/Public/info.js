@@ -74,7 +74,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 	if (guild.features.includes("VANITY_URL")) {
 		let customInvite;
 		if (guild.me.permissions.has("MANAGE_GUILD")) {
-			customInvite = (await client.api.guilds(guild.id)["vanity-url"].get()).code;
+			customInvite = guild.vanityURLCode;
 		}
 		specialText.push(`**»** This server can use a **custom vanity URL**!${customInvite ? ` It is currently set to https://discord.gg/${customInvite}` : ""}`);
 	}

@@ -186,7 +186,7 @@ module.exports.history = async (req, { res }) => {
 					responsibleUser: {
 						name: author.username,
 						id: author.id,
-						avatar: author.avatarURL() || "/static/img/discord-icon.png",
+						avatar: author.displayAvatarURL() || "/static/img/discord-icon.png",
 					},
 					relativeTimestamp: moment(updateDocument.timestamp).fromNow(),
 					rawTimestamp: moment(updateDocument.timestamp).format(global.configJS.moment_date_format),

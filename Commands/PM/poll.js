@@ -9,7 +9,7 @@ module.exports = async (main, msg, commandData) => {
 					color: 0x3669FA,
 					author: {
 						name: main.client.user.username,
-						icon_url: main.client.user.avatarURL(),
+						icon_url: main.client.user.displayAvatarURL(),
 						url: "https://github.com/GilbertGobbels/GAwesomeBot",
 					},
 					description: "⌛ Preparing Poll...",
@@ -27,7 +27,7 @@ module.exports = async (main, msg, commandData) => {
 					embed: {
 						author: {
 							name: main.client.user.username,
-							icon_url: main.client.user.avatarURL(),
+							icon_url: main.client.user.displayAvatarURL(),
 							url: "https://github.com/GilbertGobbels/GAwesomeBot",
 						},
 						description: "Something went wrong while fetching server data!",
@@ -46,7 +46,7 @@ module.exports = async (main, msg, commandData) => {
 		embed: {
 			author: {
 				name: main.client.user.username,
-				icon_url: main.client.user.avatarURL(),
+				icon_url: main.client.user.displayAvatarURL(),
 				url: "https://github.com/GilbertGobbels/GAwesomeBot",
 			},
 			color: 0xFFFF00,

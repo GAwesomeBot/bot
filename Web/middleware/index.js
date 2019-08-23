@@ -16,7 +16,7 @@ class GABResponse {
 		this.serverData = {
 			name: req.app.client.user.username,
 			id: req.app.client.user.id,
-			icon: req.app.client.user.avatarURL() || "/static/img/discord-icon.png",
+			icon: req.app.client.user.displayAvatarURL() || "/static/img/discord-icon.png",
 		};
 		this.configData = {};
 		this.pageData = {};

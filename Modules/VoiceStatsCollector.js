@@ -5,6 +5,7 @@ module.exports = {
 		// Begin timing voice activity
 		const voiceDocument = serverDocument.voice_data.id(member.id);
 		if (!voiceDocument) {
+			logger.verbose(`Start timing voice data for ${member.id}.`, { svrid: serverDocument._id, usrid: member.id });
 			serverDocument.query.push("voice_data", {
 				_id: member.id,
 				started_timestamp: Date.now(),
@@ -52,6 +53,7 @@ module.exports = {
 			}
 
 			serverDocument.query.id("members", member.id).inc("voice", Math.floor((Date.now() - voiceDocument.started_timestamp) / 60000));
+			logger.verbose(`Stop timing voice data for ${member.id} after ${Math.floor((Date.now() - voiceDocument.started_timestamp) / 60000)} points.`, { svrid: serverDocument._id, usrid: member.id });
 			serverDocument.query.pull("voice_data", member.id);
 			await client.checkRank(guild, serverDocument, serverDocument.query, member, memberDocument);
 			await serverDocument.save().catch(err => {

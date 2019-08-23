@@ -10,10 +10,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 
 	const { body, statusCode, statusText } = await get(APIs.DOGFACT(number));
 	if (statusCode === 200 && body && body.facts.length) {
-		const descriptions = [];
-		body.facts.forEach(d => {
-			descriptions.push(d);
-		});
+		const descriptions = body.facts;
 		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
 			title: `Dog fact {currentPage} out of {totalPages}`,

@@ -160,7 +160,7 @@ GAwesomeUtil.debugDump = () => {
 };
 
 GAwesomeUtil.toggleAds = value => {
-	document.cookie = `adsPreference=${value !== "true"}`;
+	document.cookie = `adsPreference=${value !== "true"}; path=/`;
 	GAwesomeUtil.refresh();
 };
 

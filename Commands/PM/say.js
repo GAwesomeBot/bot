@@ -9,7 +9,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 					color: 0x3669FA,
 					author: {
 						name: client.user.username,
-						icon_url: client.user.avatarURL(),
+						icon_url: client.user.displayAvatarURL(),
 						url: "https://github.com/GilbertGobbels/GAwesomeBot",
 					},
 					description: "⌛ Fetching Data...",
@@ -29,7 +29,7 @@ module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandDat
 						embed: {
 							author: {
 								name: client.user.username,
-								icon_url: client.user.avatarURL(),
+								icon_url: client.user.displayAvatarURL(),
 								url: "https://github.com/GilbertGobbels/GAwesomeBot",
 							},
 							description: "Something went wrong while fetching server data!",

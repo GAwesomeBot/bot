@@ -218,7 +218,7 @@ controllers.options.contributors = async (req, { res }) => {
 			return {
 				name: usr.username,
 				id: usr.id,
-				avatar: usr.avatarURL ? usr.avatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
+				avatar: usr.avatarURL ? usr.displayAvatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
 				isMaintainer: true,
 				isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
 			};
@@ -230,7 +230,7 @@ controllers.options.contributors = async (req, { res }) => {
 			return {
 				name: usr.username,
 				id: usr.id,
-				avatar: usr.avatarURL ? usr.avatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
+				avatar: usr.avatarURL ? usr.displayAvatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
 			};
 		}))),
 	}).setPageData({
@@ -266,7 +266,7 @@ controllers.management.maintainers = async (req, { res }) => {
 			return {
 				name: usr.username,
 				id: usr.id,
-				avatar: usr.avatarURL ? usr.avatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
+				avatar: usr.avatarURL ? usr.displayAvatarURL() || "/static/img/discord-icon.png" : "/static/img/discord-icon.png",
 				isSudoMaintainer: configJSON.sudoMaintainers.includes(usr.id),
 			};
 		})),

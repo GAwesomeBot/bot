@@ -5,7 +5,7 @@ const moment = require("moment");
 
 module.exports = async ({ client, Constants: { Colors, Text } }, { serverDocument, serverQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
-		if (msg.suffix.includes("|") || msg.suffix.indexOf(" in ") > -1) {
+		if (msg.suffix.includes("|") || msg.suffix.includes(" in ")) {
 			const res = await duration(msg.suffix);
 			const { error, event, time } = res;
 			let countdownDocument = serverDocument.config.countdown_data.id(event.toLowerCase().trim());

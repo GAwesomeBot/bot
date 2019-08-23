@@ -1,7 +1,11 @@
 const os = require("os");
 
 module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandData) => {
-	const version = await client.central.API("versions").branch(configJSON.branch).get(configJSON.version);
+	let versionError = null;
+	const version = await client.central.API("versions").branch(configJSON.branch).get(configJSON.version)
+		.catch(err => {
+			versionError = err;
+		}) || { valid: false };
 	if (msg.suffix) {
 		const args = msg.suffix.split(" ");
 		if (args.includes("-h") || args.includes("--help")) {
@@ -31,7 +35,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				name: "-h, --help",
 				value: "Display this help message, overrides any other arguments passed",
 			});
-			msg.send({
+			await msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `The debug command arguments`,
@@ -136,7 +140,14 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 				}
 			}
 
-			msg.send({
+			if (versionError) {
+				fields.push({
+					name: "An error was encountered while fetching Version Metadata:",
+					value: `\`\`\`js\n${versionError.stack}\n\`\`\``,
+				});
+			}
+
+			await msg.send({
 				embed: {
 					color: Colors.RESPONSE,
 					title: showDefault ? `GAwesomeBot Debug Information` : ``,
@@ -151,7 +162,7 @@ module.exports = async ({ client, Constants: { Colors, Perms } }, msg, commandDa
 			});
 		}
 	} else {
-		msg.send({
+		await msg.send({
 			embed: {
 				color: Colors.INFO,
 				title: `${client.user.tag} running ${version.valid ? `GAwesomeBot version ${version.metadata.name}` : "an unknown GAwesomeBot version"}`,

@@ -5,8 +5,7 @@ module.exports = async ({ Constants: { Text, Colors }, client }, { serverDocumen
 	if (msg.suffix) {
 		let [member, ...reason] = ArgParser.parseQuoteArgs(msg.suffix, msg.suffix.includes("|") ? "|" : " ");
 		member = await client.memberSearch(member.trim(), msg.guild).catch(() => null);
-		if (reason) reason = reason.join(" ").trim();
-
+		reason = reason.join(" ").trim();
 
 		if (!member) {
 			return msg.send({

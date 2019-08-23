@@ -123,21 +123,34 @@ class Ready extends BaseEvent {
 	 */
 	async startMessageCount () {
 		logger.debug("Creating messages_today timers.");
-		await Servers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
-			logger.warn(`Failed to start message counter...`, {}, err);
-		});
-		const clearMessageCount = () => {
-			logger.debug("Good new 24 hours! Clearing message counters.");
-			Servers.update({}, { $set: { messages_today: 0 } }, { multi: true });
-		};
-		this.client.setInterval(clearMessageCount, 86400000);
+		if (this.client.shardID === "0") {
+			await Servers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
+				logger.warn(`Failed to start message counter...`, {}, err);
+			});
+			const clearMessageCount = () => {
+				logger.debug("Good new 24 hours! Clearing message counters.");
+				Servers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
+					logger.warn(`Failed to reset message counter...`, {}, err);
+				});
+			};
+			this.client.setInterval(clearMessageCount, 86400000);
+		}
 		// TODO: Add to array this.startTimerExtensions()
-		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay()]);
+		await Promise.all([this.resetVoiceStatsCollector(), this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay()]);
 		await logger.debug("Posting stats data to Discord Bot listings.");
 		await PostShardedData(this.client);
 		await logger.debug(`Reloading all commands.`);
 		this.client.reloadAllCommands();
 		this.showStartupMessage();
+	}
+
+	async resetVoiceStatsCollector () {
+		if (this.client.shardID === "0") {
+			logger.debug("Resetting voice_data for all guilds.");
+			await Servers.update({ "voice_data.started_timestamp": { $lt: new Date() } }, { $set: { voice_data: [] } }, { multi: true }).catch(err => {
+				logger.warn(`Failed to reset voice_data for all guilds...`, {}, err);
+			});
+		}
 	}
 
 	// Report to master that we're ok to go
@@ -359,7 +372,7 @@ class Ready extends BaseEvent {
 	 */
 	async statsCollector () {
 		logger.debug("Collecting stats for servers.");
-		const clearStatsServerDocuments = await Servers.find({ stats_timestamp: { $lt: Date.now() - 604800000 } }).exec();
+		const clearStatsServerDocuments = await Servers.find({ stats_timestamp: { $lt: new Date(Date.now() - 604800000) } }).exec();
 		await Promise.all(clearStatsServerDocuments.map(serverDocument => clearStats(this.client, serverDocument)));
 
 		const autokickServerDocuments = await Servers.find({

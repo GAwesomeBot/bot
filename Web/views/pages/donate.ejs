@@ -64,31 +64,6 @@
 							</h5>
 							<a class="button is-medium is-fullwidth is-outlined <%= adsense.isEnabled ? "is-danger" : "is-success"%>" onclick="GAwesomeUtil.toggleAds('<%= adsense.isEnabled %>');"><%= adsense.isEnabled ? "Disable" : "Enable" %> advertisements and sponsored content</a>
 						<% } %>
-						<div style="display: none;" id="auttaja">
-							<h5 class="subtitle is-5">
-								Not every bot has a life as great as GAB's. Please help out these sad bots get a life of their own by adding them to your server today.
-							</h5>
-							<a class="level arrow-link" href="https://auttaja.io">
-								<div class="level-left">
-									<div class="level-item">
-										<img class="image is-32x32" src="https://auttaja.io/static/logo.png">
-									</div>
-									<div class="level-item">
-										<p class="title is-3">
-											A sad bot, with abusive owners.
-											<span class="tag is-rounded is-light">US</span>
-										</p>
-									</div>
-								</div>
-								<div class="level-right">
-									<div class="level-item">
-										<span class="icon is-medium">
-											<i class="fa fa-chevron-right fa-2x"></i>
-										</span>
-									</div>
-								</div>
-							</a>
-						</div>
                     </div>
                 </div>
 			</div>
@@ -101,12 +76,10 @@
                         <i class="fa fa-frown-o"></i>
                     </span>
                 </a>
-				<div style="width: 100px; height: 24px;" id="auttaja-a">
-					<a style="visibility: hidden;" class="is-pulled-left button is-white is-small">Super sad bot list</a>
-				</div>
                 <br>
 			</div>
 		</div>
+		<br>
 	</section>
 
 	<% include ../partials/footer %>

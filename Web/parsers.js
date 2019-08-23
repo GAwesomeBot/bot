@@ -54,7 +54,7 @@ parsers.userData = async (req, usr, userDocument) => {
 	const userProfile = {
 		username: usr.username,
 		discriminator: usr.discriminator,
-		avatar: usr.avatarURL() || "/static/img/discord-icon.png",
+		avatar: usr.displayAvatarURL() || "/static/img/discord-icon.png",
 		id: usr.id,
 		status: usr.presence.status,
 		game: await req.app.client.getGame(usr),
@@ -163,7 +163,7 @@ parsers.extensionData = async (req, galleryDocument, versionTag) => {
 			name: owner.username || "invalid-user",
 			id: owner.id || "invalid-user",
 			discriminator: owner.discriminator || "0000",
-			avatar: owner.avatarURL() || "/static/img/discord-icon.png",
+			avatar: owner.displayAvatarURL() || "/static/img/discord-icon.png",
 		},
 		status: galleryDocument.state,
 		level: galleryDocument.level,
@@ -200,7 +200,7 @@ parsers.blogData = async (req, blogDocument) => {
 			categoryColor = "is-primary";
 			break;
 	}
-	const avatarURL = (await req.app.client.users.fetch(blogDocument.author_id, true)).avatarURL();
+	const avatarURL = (await req.app.client.users.fetch(blogDocument.author_id, true)).displayAvatarURL();
 	return {
 		id: blogDocument._id.toString(),
 		title: blogDocument.title,

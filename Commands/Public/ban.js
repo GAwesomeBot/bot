@@ -116,12 +116,12 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 						// Meh
 					}
 					if (configJS.yesStrings.includes(message.content.toLowerCase().trim())) {
+						await dmBanned(member.id);
 						if (isGuildMember) {
-							member.ban({ days, reason: `${reason} | Command issued by @${msg.author.tag}` });
+							await member.ban({ days, reason: `${reason} | Command issued by @${msg.author.tag}` });
 						} else {
-							msg.guild.members.ban(member.id, { days, reason: `${reason} | Command issued by @${msg.author.tag}` });
+							await msg.guild.members.ban(member.id, { days, reason: `${reason} | Command issued by @${msg.author.tag}` });
 						}
-						dmBanned(member.id);
 						await CreateModLog(msg.guild, "Ban", member, msg.author, reason);
 						return banned();
 					} else {
