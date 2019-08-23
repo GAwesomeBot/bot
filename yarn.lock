@@ -963,9 +963,9 @@ decamelize@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
 
-decimal.js@10.0.1:
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.0.1.tgz#d04b16b277f0f9af09671cee225c4882e8857c58"
+decimal.js@10.2.0:
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.2.0.tgz#39466113a9e036111d02f82489b5fd6b0b5ed231"
 
 deep-extend@^0.6.0:
   version "0.6.0"
@@ -1500,9 +1500,9 @@ forwarded@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.2.tgz#98c23dab1175657b8c0573e8ceccd91b0ff18c84"
 
-fraction.js@4.0.11:
-  version "4.0.11"
-  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.0.11.tgz#f82474349f7a198b6ad8d713d65621302a0e6f58"
+fraction.js@4.0.12:
+  version "4.0.12"
+  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.0.12.tgz#0526d47c65a5fb4854df78bc77f7bec708d7b8c3"
 
 fresh@0.5.2:
   version "0.5.2"
@@ -2099,17 +2099,17 @@ lru_map@0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/lru_map/-/lru_map-0.3.3.tgz#b5c8351b9464cbd750335a79650a0ec0e56118dd"
 
-mathjs@^5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-5.4.0.tgz#e456ae00e22e352d078cd5f6d87000d5467be1ee"
+mathjs@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-6.1.0.tgz#1b544743ce36c5e868f28007e69954f1751b7b3e"
   dependencies:
     complex.js "2.0.11"
-    decimal.js "10.0.1"
+    decimal.js "10.2.0"
     escape-latex "1.2.0"
-    fraction.js "4.0.11"
+    fraction.js "4.0.12"
     javascript-natural-sort "0.7.1"
     seed-random "2.2.0"
-    tiny-emitter "2.0.2"
+    tiny-emitter "2.1.0"
     typed-function "1.1.0"
 
 media-typer@0.3.0:
@@ -3162,9 +3162,9 @@ timm@^1.6.1:
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/timm/-/timm-1.6.2.tgz#dfd8c6719f7ba1fcfc6295a32670a1c6d166c0bd"
 
-tiny-emitter@2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/tiny-emitter/-/tiny-emitter-2.0.2.tgz#82d27468aca5ade8e5fd1e6d22b57dd43ebdfb7c"
+tiny-emitter@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/tiny-emitter/-/tiny-emitter-2.1.0.tgz#1d1a56edfc51c43e863cbb5382a72330e3555423"
 
 tinycolor2@^1.4.1:
   version "1.4.1"
