@@ -149,5 +149,6 @@ module.exports = {
 		"node/exports-style": ["error", "module.exports"],
 		"no-var": "error",
 		"require-atomic-updates": "off",
+		"no-useless-catch": "off",
 	},
 };
