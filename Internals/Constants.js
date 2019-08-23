@@ -500,7 +500,7 @@ Constants.APIs = {
  * @type {string}
  */
 Constants.CENTRAL = {
-	VERSIONING: "http://127.0.0.1:1243/api/versions/",
+	VERSIONING: "https://status.gawesomebot.com/api/versions/",
 	CODEBASE: "https://codeload.github.com/GilbertGobbels/GAwesomeBot/zip/",
 };
 
