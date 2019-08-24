@@ -43,17 +43,17 @@ module.exports = async ({ Constants: { Text, Colors }, client }, { serverDocumen
 			modlog_entry: ModLogID,
 		});
 
-		const strikeLength = targetMemberQueryDocument.val.strikes.length;
+		const strikeLength = String(targetMemberQueryDocument.val.strikes.length);
 		let strikeAmount;
-		switch (strikeLength) {
-			case 1:
-				strikeAmount = "first";
+		switch (strikeLength.charAt(strikeLength.length - 1)) {
+			case "1":
+				strikeAmount = `${strikeLength}st`;
 				break;
-			case 2:
-				strikeAmount = "second";
+			case "2":
+				strikeAmount = `${strikeLength}nd`;
 				break;
-			case 3:
-				strikeAmount = "third";
+			case "3":
+				strikeAmount = `${strikeLength}rd`;
 				break;
 			default:
 				strikeAmount = `${strikeLength}th`;
