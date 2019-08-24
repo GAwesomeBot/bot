@@ -28,12 +28,12 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent 
 				for (let i = 0; i < unparsed.length; i++) {
 					const tempDesc = [
 						`Made by **${unparsed[i].author}**`,
-						`Click [here](https://e621.net/post/show/${unparsed[i].id}) to see the full post.`,
 					];
 					if (unparsed[i].description) {
-						const d = `\`\`\`css\n${unparsed[i].description.split("").slice(0, 1500).join("")
-							.replace(/\[\/?(?:b|u|i)\]/g, "")}${unparsed[i].description.length > 1500 ? `...\`\`\` Read more [here](https://e621.net/post/show/${unparsed[i].id})` : "```"}`;
+						const d = `\`\`\`css\n${unparsed[i].description.substring(0, 1500)
+							.replace(/\[\/?(?:b|u|i)\]/g, "")}${unparsed[i].description.length > 1500 ? `...\`\`\`` : "```"}`;
 						tempDesc.push(d);
+						tempDesc.push(`Click [here](https://e621.net/post/show/${unparsed[i].id}) to see the full post.`);
 					}
 					fields.push([
 						{
