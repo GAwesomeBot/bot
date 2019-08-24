@@ -1,0 +1,121 @@
+<h1 class="title">
+    Moderation
+</h1>
+<article class="message is-primary">
+    <div class="message-body">
+        <div class="content">
+            Some of GAwesomeBot's <strong>moderation features</strong> can be toggled below.
+        </div>
+    </div>
+</article>
+<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+    <div class="box is-paddingless generic-feature">
+        <div class="generic-feature-box">
+            <div class="generic-feature-box-slider">
+                <div class="field">
+                    <input id="isEnabled" type="checkbox" name="isEnabled" class="switch is-medium is-success is-rounded menu-modifier"<%= configData.moderation.isEnabled ? " checked " : "" %> data-modifies=".moderation-only-menu-item">
+                    <label for="isEnabled" style="padding-left: 3.75rem;" data-toggle-gfa="moderation-options"></label>
+                </div>
+            </div>
+            <div class="generic-feature-box-description">
+                <p>Act as a <strong>super-smart</strong> server moderator</p>
+            </div>
+        </div>
+        <div id="moderation-options" class="generic-feature-addon"<%- configData.moderation.isEnabled ? '' : ' style="display: none;"' %>>
+            <div class="moderation-feature">
+                <h4 class="subtitle is-4">
+                    Autokick Members
+                </h4>
+                <div class="box is-paddingless generic-feature">
+                    <div class="generic-feature-box">
+                        <div class="generic-feature-box-slider">
+                            <div class="field">
+                                <input id="autokick_members-isEnabled" type="checkbox" name="autokick_members-isEnabled" class="switch is-medium is-success is-rounded"<%= configData.moderation.autokick_members.isEnabled ? " checked " : "" %>>
+                                <label for="autokick_members-isEnabled" style="padding-left: 3.75rem;" data-toggle-gfba="moderation-autokick-options"></label>
+                            </div>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            <p>
+                                Automatically kick members after a set period of inactivity
+                                <span class="help">Members that have not sent a message or joined a voice channel for this length of time will be automatically kicked from the server.</span>
+                            </p>
+                        </div>
+                        <div class="generic-feature-box-addon">
+                            <div class="field">
+                                <div class="control">
+                                    <span class="select is-primary is-small">
+                                        <select name="autokick_members-max_inactivity" id="moderation-autokick-options"<%- configData.moderation.autokick_members.isEnabled ? '' : ' disabled' %>>
+                                            <option value="43200000"<%= configData.moderation.autokick_members.max_inactivity === 43200000 ? " selected" : "" %>>12 hours</option>
+                                            <option value="86400000"<%= configData.moderation.autokick_members.max_inactivity === 86400000 ? " selected" : "" %>>24 hours</option>
+                                            <option value="172800000"<%= configData.moderation.autokick_members.max_inactivity === 172800000 ? " selected" : "" %>>2 days</option>
+                                            <option value="604800000"<%= configData.moderation.autokick_members.max_inactivity === 604800000 ? " selected" : "" %>>1 week</option>
+                                            <option value="1209600000"<%= configData.moderation.autokick_members.max_inactivity === 1209600000 ? " selected" : "" %>>2 weeks</option>
+                                            <option value="2592000000"<%= configData.moderation.autokick_members.max_inactivity === 2592000000 ? " selected" : "" %>>30 days</option>
+                                        </select>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="moderation-feature">
+                <br>
+                <h4 class="subtitle is-4">
+                    New Member Roles
+                </h4>
+                <div class="field">
+                    <div class="control">
+                        <% pageData.roleData.forEach(role => { %>
+                            <label class="checkbox">
+                                <input name="new_member_roles-<%= role.id %>" type="checkbox"<%= configData.moderation.new_member_roles.includes(role.id) ? " checked" : "" %>>
+                                <span style="color: #<%= role.color %>;" title="<%= role.name %>"><%= role.name %></span>
+                            </label>
+                            <br>
+                        <% }) %>
+                        <span class="help">New members will be automatically assigned the selected roles.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="moderation-feature">
+                <br>
+                <h4 class="subtitle is-4">
+                    Moderation Logging
+                </h4>
+                <article class="message is-primary">
+                    <div class="message-body">
+                        <div class="content">
+                            GAwesomeBot's ModLog feature makes it easy for moderators to keep track of why members have been muted, kicked, and banned. It is integrated with other GAwesomeBot moderation commands: <code>ban</code>, <code>kick</code>, <code>mute</code>, <code>reason</code>, <code>softban</code>, <code>unban</code>, <code>unmute</code>, <code>warn</code>. Moderation logging works as a full replacement for kick/ban status messages, and stores incidents as cases with reasons for each action.
+                        </div>
+                    </div>
+                </article>
+                <div class="box is-paddingless generic-feature">
+                    <div class="generic-feature-box">
+                        <div class="generic-feature-box-slider">
+                            <div class="field">
+                                <input id="modlog-isEnabled" type="checkbox" name="modlog-isEnabled" class="switch is-medium is-success is-rounded"<%= configData.modlog.isEnabled ? " checked " : "" %>>
+                                <label for="modlog-isEnabled" style="padding-left: 3.75rem;" data-toggle-gfba="moderation-modlog-options"></label>
+                            </div>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            <p>Enable GAwesomeBot <strong>ModLog</strong></p>
+                        </div>
+                        <div class="generic-feature-box-addon is-pulled-right">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-primary is-small">
+                                        <select id="moderation-modlog-options" name="modlog-channel_id"<%= !configData.modlog.isEnabled ? " disabled " : "" %>>
+                                            <% pageData.channelData.forEach(channel => { %>
+                                                <option value="<%= channel.id %>"<%= configData.modlog.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

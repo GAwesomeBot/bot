@@ -244,6 +244,10 @@ GAwesomeUtil.toggleChannels = (classname, value) => {
 	}
 };
 
+GAwesomeUtil.scrollToTop = () => {
+	$("html, body").animate({ scrollTop: 0 }, 172);
+};
+
 GAwesomeUtil.switchActivityLayout = type => {
 	if (!type) {
 		type = localStorage.getItem("servers-layout");
@@ -781,6 +785,95 @@ GAwesomeUtil.dashboard.post = payload => new Promise((resolve, reject) => {
 		.fail(reject);
 });
 
+GAwesomeUtil.dashboard.setup = {};
+GAwesomeData.dashboard.setup = { step: 0, maxStep: 4 };
+GAwesomeUtil.dashboard.setup.start = () => {
+	GAwesomeData.dashboard.setup.step = 0;
+	const buttons = $(".setup-nav-button");
+	buttons.click(function clickHandler () {
+		return GAwesomeUtil.dashboard.setup.nav(this);
+	});
+	GAwesomeUtil.dashboard.setup.nextStep(buttons);
+};
+GAwesomeUtil.dashboard.setup.nav = btn => {
+	const direction = $(btn).data("nav");
+	if (direction === "next") GAwesomeUtil.dashboard.setup.nextStep(btn);
+	else if (direction === "prev") GAwesomeUtil.dashboard.setup.prevStep(btn);
+};
+
+GAwesomeUtil.dashboard.setup.nextStep = btn => {
+	const { step } = GAwesomeData.dashboard.setup;
+
+	$(".setup-nav-button[data-nav='prev']").removeAttr("disabled");
+	const button = $(btn);
+	button.addClass("is-loading");
+
+	const currentStep = $(`.setup-step[data-step=${step}]`);
+	const nextStep = $(`.setup-step[data-step=${step + 1}]`);
+
+	currentStep.addClass("is-completed is-success").removeClass("is-active");
+	nextStep.addClass("is-active");
+
+	const contentBox = $(`.setup-content`);
+	const currentStepContent = $(`.setup-content-item[data-step=${step}]`);
+	const nextStepContent = $(`.setup-content-item[data-step=${step + 1}]`);
+
+	GAwesomeUtil.scrollToTop();
+	contentBox.slideUp(1000, () => {
+		currentStepContent.removeClass("is-active");
+		nextStepContent.addClass("is-active");
+		if (step + 1 === GAwesomeData.dashboard.setup.maxStep) button.html("Finish");
+		if (step === GAwesomeData.dashboard.setup.maxStep) return GAwesomeUtil.dashboard.setup.save();
+		setTimeout(() => {
+			contentBox.slideDown(1000);
+			button.removeClass("is-loading");
+		}, 1000);
+		GAwesomeData.dashboard.setup.step++;
+	});
+};
+
+GAwesomeUtil.dashboard.setup.prevStep = btn => {
+	const { step } = GAwesomeData.dashboard.setup;
+	if (step < 2) return;
+
+	const button = $(btn);
+	button.addClass("is-loading");
+
+	const currentStep = $(`.setup-step[data-step=${step}]`);
+	const prevStep = $(`.setup-step[data-step=${step - 1}]`);
+
+	currentStep.removeClass("is-active");
+	prevStep.removeClass("is-completed is-success").addClass("is-active");
+
+	const contentBox = $(`.setup-content`);
+	const currentStepContent = $(`.setup-content-item[data-step=${step}]`);
+	const prevStepContent = $(`.setup-content-item[data-step=${step - 1}]`);
+
+	GAwesomeUtil.scrollToTop();
+	contentBox.slideUp(1000, () => {
+		currentStepContent.removeClass("is-active");
+		prevStepContent.addClass("is-active");
+		if (step === 2) button.attr("disabled", true);
+		setTimeout(() => {
+			contentBox.slideDown(1000);
+			button.removeClass("is-loading");
+		}, 1000);
+		GAwesomeData.dashboard.setup.step--;
+	});
+};
+
+GAwesomeUtil.dashboard.setup.save = () => {
+	GAwesomeData.HUM = true;
+	const serialized = $("form").serialize();
+	$.ajax({
+		method: "POST",
+		url: location.pathname + location.search,
+		data: serialized,
+	}).always(() => {
+		Turbolinks.visit("./overview");
+	});
+};
+
 GAwesomePaths.landing = () => {
 	$(".section-shortcut-link").click(function handler () {
 		$("html, body").animate({
@@ -898,6 +991,7 @@ GAwesomePaths.dashboard = () => GAwesomeUtil.dashboardWrapper(() => {
 		$("#update-modal").removeClass("is-active");
 	});
 	GAwesomeUtil.dashboard.connect();
+	if (window.location.pathname.endsWith("/setup")) GAwesomeUtil.dashboard.setup.start();
 	const sectionPage = window.location.pathname.split("/")[4];
 	switch (sectionPage) {
 		case "command-options": {

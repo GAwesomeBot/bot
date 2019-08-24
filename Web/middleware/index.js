@@ -133,12 +133,14 @@ middleware.registerTraffic = (req, res, next) => {
 };
 
 middleware.checkUnavailable = (req, res, next) => {
-	if (global.isUnavailable || req.isBusy) return res.status(503).render("pages/503.ejs", {});
+	if (global.isUnavailable) return res.status(503).render("pages/503.ejs", {});
+	if (req.isBusy) logger.warn(`Shard is overloaded!`, { isBusy: req.isBusy });
 	next();
 };
 
 middleware.checkUnavailableAPI = (req, res, next) => {
-	if (global.isUnavailable || req.isBusy) return res.sendStatus(503);
+	if (global.isUnavailable) return res.sendStatus(503);
+	if (req.isBusy) logger.warn(`Shard is overloaded!`, { isBusy: req.isBusy });
 	next();
 };
 

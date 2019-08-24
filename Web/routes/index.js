@@ -23,6 +23,7 @@ const generalRouting = router => {
 	router.routes.push(new Route(router, "/logout", [middleware.checkUnavailableAPI], controllers.auth.logout, "get", "auth"));
 	router.routes.push(new Route(router, "/login", [middleware.checkUnavailableAPI], controllers.auth.buildLoginController(router), "get", "auth"));
 	router.routes.push(new Route(router, "/login/callback", [middleware.checkUnavailableAPI, middleware.buildAuthenticateMiddleware(router)], controllers.auth.authenticate, "get", "auth"));
+	router.routes.push(new Route(router, "/setup", [middleware.checkUnavailableAPI], controllers.setup, "get", "special"));
 };
 
 const activityRouting = router => {
