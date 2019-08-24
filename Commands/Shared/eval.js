@@ -5,7 +5,7 @@ module.exports = async (main, msg, commandData) => {
 		const hrstart = process.hrtime();
 		const forceUnsafe = msg.suffix.split(" ")[0].toLowerCase() === "--unsafe";
 		let { suffix } = msg;
-		if (forceUnsafe) suffix = suffix.split(" ").splice(1).join(" ");
+		if (forceUnsafe) suffix = suffix.split(" ").slice(1).join(" ");
 		try {
 			if (suffix.startsWith("```js") && suffix.endsWith("```")) suffix = suffix.substring(5, suffix.length - 3);
 			const asyncEval = (code, returns) => `(async () => {\n${!returns ? `return ${code.trim()}` : `${code.trim()}`}\n})()`;
