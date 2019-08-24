@@ -22,6 +22,7 @@ class MessageCreate extends BaseEvent {
 		}
 		if (msg.type !== "DEFAULT") {
 			logger.verbose(`Ignoring non-standard message.`, { msgid: msg.id, usrid: msg.author.id, chid: msg.channel.id });
+			return false;
 		}
 		if (msg.author.id === this.client.user.id || msg.author.bot || this.configJSON.userBlocklist.includes(msg.author.id)) {
 			if (msg.author.id === this.client.user.id) {
