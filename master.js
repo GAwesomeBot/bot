@@ -27,13 +27,6 @@ Boot({ configJS, configJSON, auth }, scope).then(() => {
 		if (db && !scope.safeMode) {
 			await logger.info(`Connected to MongoDB successfully.`);
 
-			logger.silly("Confirming MongoDB config values.");
-			const adminDatabaseResponse = await db.client.admin().command({ getCmdLineOpts: 1 });
-			if (!adminDatabaseResponse.parsed || !adminDatabaseResponse.parsed.net || !adminDatabaseResponse.parsed.net.bindIp) {
-				logger.warn("Your MongoDB instance appears to be opened to the wild, wild web. Please make sure authorization is enforced!");
-				configWarnings.push("Your MongoDB instance can be accessed from everywhere, make sure authorization is configured.");
-			}
-
 			logger.silly("Confirming auth.js config values.");
 			if (Object.values(auth.tokens).some(token => token === "")) {
 				logger.warn("You haven't supplied some auth tokens, make sure to fill in auth.js to make sure all GAB features function!");
