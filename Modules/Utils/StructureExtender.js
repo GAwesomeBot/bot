@@ -145,6 +145,18 @@ module.exports = () => {
 				}
 			}
 
+			async delete (opts) {
+				if (!this.deletable) {
+					logger.debug(`Failed to delete a message to channel due to insufficient permissions.`, { chid: this.channel.id });
+					return null;
+				}
+				try {
+					return await super.delete(opts);
+				} catch (err) {
+					return this._handleDeleteError(err);
+				}
+			}
+
 			sendError (cmd, stack) {
 				if (!this.client.debugMode) stack = "";
 				return this.send({
@@ -180,6 +192,22 @@ module.exports = () => {
 							return null;
 						case 404:
 							logger.debug(`Failed to edit an unknown message.`, { chid: this.channel.id }, err);
+							return null;
+						default:
+							throw new GABError("UNKNOWN_DISCORD_API_ERROR", { msgid: this.id }, err);
+					}
+				}
+				throw new GABError("UNKNOWN_DISCORD_ERROR", { msgid: this.id }, err);
+			}
+
+			_handleDeleteError (err) {
+				if (err.name === "DiscordAPIError") {
+					switch (err.httpStatus) {
+						case 403:
+							logger.debug(`Failed to delete a message to channel due to insufficient permissions.`, { chid: this.channel.id }, err);
+							return null;
+						case 404:
+							logger.debug(`Failed to delete an unknown message.`, { chid: this.channel.id }, err);
 							return null;
 						default:
 							throw new GABError("UNKNOWN_DISCORD_API_ERROR", { msgid: this.id }, err);
