@@ -32,7 +32,7 @@ module.exports = async ({ Constants: { Colors, NSFWEmbed, Text, APIs, UserAgent 
 					];
 					if (unparsed[i].description) {
 						const d = `\`\`\`css\n${unparsed[i].description.split("").slice(0, 1500).join("")
-							.replace(/(\[\/?b\]|\[\/?u\]|\[\/?i\])/g, "")}${unparsed[i].description.length > 1500 ? `...\`\`\` Read more [here](https://e621.net/post/show/${unparsed[i].id})` : "```"}`;
+							.replace(/\[(?:\/?b|u|i)\]/g, "")}${unparsed[i].description.length > 1500 ? `...\`\`\` Read more [here](https://e621.net/post/show/${unparsed[i].id})` : "```"}`;
 						tempDesc.push(d);
 					}
 					fields.push([

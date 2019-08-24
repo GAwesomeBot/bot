@@ -32,7 +32,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs, UserAgent, NSFWEmbed 
 		body.forEach(post => {
 			descriptions.push(`Uploaded by ${post.uploader_name}\nClick [here](https://safebooru.donmai.us/posts/${post.id}) to see the full post.${!post.description || post.description === "" ? "" :
 				`\`\`\`css\n${post.description.split("").slice(0, 1500).join("")
-					.replace(/(\[\/?b\]|\[\/?u\]|\[\/?i\])/g, "")}${post.description.length > 1500 ? `...\`\`\` Read more [here](https://safebooru.donmai.us/posts/${post.id})` : "```"}`}`);
+					.replace(/\[(?:\/?b|u|i)\]/g, "")}${post.description.length > 1500 ? `...\`\`\` Read more [here](https://safebooru.donmai.us/posts/${post.id})` : "```"}`}`);
 			images.push(post.file_url);
 			post.tag_string = post.tag_string.replace(/\*/g, "\\*");
 			fields.push([
