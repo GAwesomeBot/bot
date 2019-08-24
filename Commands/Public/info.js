@@ -72,10 +72,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, Utils: { GetFlagF
 		specialText.push(`**»** This server can use a **custom invite splash background**!${guild.splash ? ` It is currently set to [this](${guild.splashURL({ format: "png", size: 2048 })})` : ""}`);
 	}
 	if (guild.features.includes("VANITY_URL")) {
-		let customInvite;
-		if (guild.me.permissions.has("MANAGE_GUILD")) {
-			customInvite = guild.vanityURLCode;
-		}
+		const customInvite = guild.vanityURLCode;
 		specialText.push(`**»** This server can use a **custom vanity URL**!${customInvite ? ` It is currently set to https://discord.gg/${customInvite}` : ""}`);
 	}
 	if (specialText.length) {
