@@ -23,7 +23,7 @@ const db = (val, configJS) => {
 };
 
 const token = (val, configJS, configJSON, auth) => {
-	if (typeof val !== "string" && typeof val !== "number") {
+	if (typeof val !== "string") {
 		logger.error(`Argument --token requires a parameter.`);
 		return;
 	}
