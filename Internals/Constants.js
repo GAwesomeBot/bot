@@ -297,7 +297,7 @@ Constants.StatusMessages = {
 			text: `Member ID: ${msg.author.id} • Channel ID: ${msg.channel.id}`,
 		},
 		thumbnail: {
-			url: msg.member.user.displayAvatarURL(),
+			url: msg.author.displayAvatarURL(),
 		},
 		title: "Status Messages - Message Deleted",
 		description: `A message by **@${client.getName(serverDocument, msg.member)}** ${type === "single" ? `in <#${msg.channel.id}> ` : ""}was deleted:\n\`\`\`\n${msg.cleanContent.replace(/`/g, "\\`")}\n\`\`\``,
@@ -309,7 +309,7 @@ Constants.StatusMessages = {
 			text: `Member ID: ${msg.author.id} • Channel ID: ${msg.channel.id}`,
 		},
 		thumbnail: {
-			url: msg.member.user.displayAvatarURL(),
+			url: msg.author.displayAvatarURL(),
 		},
 		title: "Status Messages - Message Edited",
 		description: `A message by **@${client.getName(serverDocument, msg.member)}** ${type === "single" ? `in <#${msg.channel.id}> ` : ""}was edited:\n\nOriginal:\`\`\`\n${oldMsg.cleanContent.replace(/`/g, "\\`")}\`\`\`\nCurrent:\`\`\`\n${msg.cleanContent.replace(/`/g, "\\`")}\n\`\`\``,
