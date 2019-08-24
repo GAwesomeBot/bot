@@ -45,18 +45,34 @@ module.exports = async ({ Constants: { Text, Colors }, client }, { serverDocumen
 
 		const strikeLength = String(targetMemberQueryDocument.val.strikes.length);
 		let strikeAmount;
-		switch (strikeLength.charAt(strikeLength.length - 1)) {
-			case "1":
-				strikeAmount = `${strikeLength}st`;
-				break;
-			case "2":
-				strikeAmount = `${strikeLength}nd`;
-				break;
-			case "3":
-				strikeAmount = `${strikeLength}rd`;
-				break;
-			default:
-				strikeAmount = `${strikeLength}th`;
+		if (targetMemberQueryDocument.val.strikes.length < 20) {
+			switch (strikeLength) {
+				case "1":
+					strikeAmount = "first";
+					break;
+				case "2":
+					strikeAmount = "second";
+					break;
+				case "3":
+					strikeAmount = "third";
+					break;
+				default:
+					strikeAmount = `${strikeLength}th`;
+			}
+		} else {
+			switch (strikeLength.charAt(strikeLength.length - 1)) {
+				case "1":
+					strikeAmount = `${strikeLength}st`;
+					break;
+				case "2":
+					strikeAmount = `${strikeLength}nd`;
+					break;
+				case "3":
+					strikeAmount = `${strikeLength}rd`;
+					break;
+				default:
+					strikeAmount = `${strikeLength}th`;
+			}
 		}
 
 		let success = true;
