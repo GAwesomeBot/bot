@@ -43,37 +43,14 @@ module.exports = async ({ Constants: { Text, Colors }, client }, { serverDocumen
 			modlog_entry: ModLogID,
 		});
 
-		const strikeLength = String(targetMemberQueryDocument.val.strikes.length);
-		let strikeAmount;
-		if (targetMemberQueryDocument.val.strikes.length < 20) {
-			switch (strikeLength) {
-				case "1":
-					strikeAmount = "first";
-					break;
-				case "2":
-					strikeAmount = "second";
-					break;
-				case "3":
-					strikeAmount = "third";
-					break;
-				default:
-					strikeAmount = `${strikeLength}th`;
-			}
-		} else {
-			switch (strikeLength.charAt(strikeLength.length - 1)) {
-				case "1":
-					strikeAmount = `${strikeLength}st`;
-					break;
-				case "2":
-					strikeAmount = `${strikeLength}nd`;
-					break;
-				case "3":
-					strikeAmount = `${strikeLength}rd`;
-					break;
-				default:
-					strikeAmount = `${strikeLength}th`;
-			}
-		}
+		const strikeLength = targetMemberQueryDocument.val.strikes.length;
+		const lastDigit = strikeLength % 10;
+		const lastTwoDigits = strikeLength % 100;
+		const suffix = lastTwoDigits > 10 && lastTwoDigits < 20 ? "th" :
+			lastDigit === 1 ? "st" :
+				lastDigit === 2 ? "nd" :
+					lastDigit === 3 ? "rd" : "th";
+		const strikeAmount = `${strikeLength}${suffix}`;
 
 		let success = true;
 		try {
