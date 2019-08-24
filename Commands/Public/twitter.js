@@ -24,7 +24,7 @@ module.exports = async ({ Constants: { Text, Colors, APIs } }, { serverDocument 
 			num = parseInt(num);
 		}
 
-		const m = await msg.channel.send(Text.THIRD_PARTY_FETCH("The birbs are hard at work 🐦"));
+		const m = await msg.channel.send(Text.THIRD_PARTY_FETCH("We're looking for the birbs 🐦"));
 
 		const articles = await getRSS(APIs.TWITRSS(query), num).catch(err => {
 			if (err === "invalid") return [];

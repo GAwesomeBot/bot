@@ -70,7 +70,6 @@ module.exports = async ({ Constants: { APIs, Colors, Text, UserAgent }, client }
 				color: Colors.SOFT_ERR,
 				description: `No results were found for **${query}**. 😞`,
 			},
-			disableEveryone: true,
 		});
 	}
 };

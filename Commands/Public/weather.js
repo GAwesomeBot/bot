@@ -3,7 +3,7 @@ const auth = require("../../Configurations/auth");
 
 module.exports = async ({ Constants: { APIs, Colors, Text }, client }, documents, msg, commandData) => {
 	if (!msg.suffix) {
-		await msg.sendInvalidUsage(commandData, "It's always sunny in robot land 🌞", "You must supply a city to lookup!");
+		await msg.sendInvalidUsage(commandData, "It's always raining bytes in robot land 🌞", "You must supply a city to lookup!");
 		return;
 	}
 	if (!auth.tokens.openWeatherMap) {

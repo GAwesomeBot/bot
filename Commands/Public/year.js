@@ -14,6 +14,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 	return msg.send({
 		embed: {
 			color: Colors.INFO,
+			title: "Woo! Prepare the party poppers!",
 			description: `There are **${days} days**, **${hours} hours**, **${minutes} minutes** and **${seconds} seconds** until **${next.getFullYear()}**! 🎆`,
 			footer: {
 				text: `Or, in short, ${moment.duration(next - now).humanize()}.`,

@@ -6,7 +6,7 @@ const userFilter = query => ({ user }) => {
 		query = query.slice(2, -1);
 	}
 
-	return user.id === query.toLowerCase().trim() || user.tag === query.toLowerCase().trim() || user.username === query.toLowerCase().trim();
+	return user.id === query.toLowerCase() || user.tag === query.toLowerCase() || user.username === query.toLowerCase();
 };
 
 module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { serverDocument }, msg, commandData) => {
@@ -20,7 +20,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: `I'm sorry, but I can't do that... 😔`,
-					description: `I'm missing permissions to ban that user!`,
+					description: `I'm missing permissions to unban that user!`,
 				},
 			});
 		}
@@ -47,6 +47,9 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					embed: {
 						color: Colors.SUCCESS,
 						description: `You've successfully given **@${ban.user.tag}** a second chance 😇`,
+						footer: {
+							text: "They better not blow it again...",
+						},
 					},
 				});
 			} else {
@@ -63,7 +66,7 @@ module.exports = async ({ client, Constants: { Colors, Text }, configJS }, { ser
 					color: Colors.SOFT_ERR,
 					description: "I couldn't find a matching user that's banned on this guild!",
 					footer: {
-						text: isNaN(query) || query.length !== 18 ? "Try unbanning by ID instead." : "",
+						text: isNaN(query) || query.length < 17 || query.length > 19 ? "Try unbanning by ID instead." : "",
 					},
 				},
 			});
