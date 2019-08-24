@@ -9,6 +9,7 @@ class VoiceStateUpdate extends BaseEvent {
 		const serverDocument = await Servers.findOne(state.guild.id);
 		if (!serverDocument) {
 			logger.debug("Failed to find server data for VoiceStateUpdate.", { svrid: state.guild.id });
+			return;
 		}
 		if (!oldState.channel && state.channel) {
 			await this.joinedChannel(serverDocument, state.channel, state);
