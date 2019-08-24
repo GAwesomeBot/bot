@@ -22,8 +22,9 @@ class Ready extends BaseEvent {
 		let leftGuilds = 0;
 		if (this.configJSON.guildBlocklist.length) {
 			this.configJSON.guildBlocklist.forEach(guildID => {
-				if (this.client.guilds.get(guildID)) {
-					this.client.guilds.get(guildID).leave();
+				const guild = this.client.guilds.get(guildID);
+				if (guild) {
+					guild.leave();
 					leftGuilds++;
 				}
 			});
