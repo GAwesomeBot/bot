@@ -20,8 +20,7 @@ class ChannelDelete extends BaseEvent {
 		}
 
 		// Command channel configurations
-		for (const command in serverDocument.config.commands) {
-			const commandDocument = serverDocument.config.commands[command];
+		for (const [command, commandDocument] of Object.entries(serverDocument.config.commands)) {
 			if (commandDocument.disabled_channel_ids && commandDocument.disabled_channel_ids.includes(channel.id)) {
 				updated = true;
 				serverQueryDocument.pull(`config.commands.${command}.disabled_channel_ids`, channel.id);
@@ -44,8 +43,7 @@ class ChannelDelete extends BaseEvent {
 		}
 
 		// Status Messages
-		for (const status_message in serverDocument.config.moderation.status_messages) {
-			const statusMessageDocument = serverDocument.config.moderation.status_messages[status_message];
+		for (const [status_message, statusMessageDocument] of Object.entries(serverDocument.config.moderation.status_messages)) {
 			if (statusMessageDocument.enabled_channel_ids && statusMessageDocument.enabled_channel_ids.includes(channel.id)) {
 				updated = true;
 				serverQueryDocument.pull(`config.moderation.status_messages.${status_message}.enabled_channel_ids`, channel.id);
