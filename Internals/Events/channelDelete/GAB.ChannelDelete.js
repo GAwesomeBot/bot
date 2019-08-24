@@ -86,7 +86,7 @@ class ChannelDelete extends BaseEvent {
 		// Save possible changes
 		if (updated) {
 			try {
-				await	serverDocument.save();
+				await serverDocument.save();
 			} catch (err) {
 				logger.warn("Failed to save server data for channel deletion.", { svrid: channel.guild.id, chid: channel.id }, err);
 			}
