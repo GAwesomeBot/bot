@@ -7,7 +7,7 @@ const logger = new (require("../Internals").Logger)("MIGRATION");
 const { public: publicCommands } = require("../Configurations/commands");
 
 module.exports = async () => {
-	logger.info(`Preparing to migrate database "${database.db}" on "${database.url}" to GADRiver standards...`);
+	logger.info(`Preparing to migrate database "${database.db}" on "${database.url}" to GADriver standards...`);
 	logger.warn("THIS OPERATION MIGHT RESET VARIOUS PIECES OF DATA. DO NOT CLOSE THIS SCRIPT UNTIL AFTER IT IS FINISHED.");
 
 	const MigrateChatterBot = async () => {
