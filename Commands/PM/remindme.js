@@ -1,19 +1,14 @@
 const remind = require("../../Modules/MessageUtils/ReminderParser");
 const moment = require("moment");
 
-module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) => {
-	const userDocument = msg.author.userDocument;
+module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandData) => {
+	const { userDocument } = msg.author;
 	if (msg.suffix) {
-		const result = await remind(bot, userDocument, msg.suffix);
+		const result = await remind(client, userDocument, userDocument.query, msg.suffix);
 		if (result === "ERR") {
-			msg.channel.send({
-				embed: {
-					color: Colors.INVALID,
-					description: Text.INVALID_USAGE(commandData),
-				},
-			});
+			msg.sendInvalidUsage(commandData);
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SUCCESS,
 					description: `Alright, I'll remind you ${moment.duration(result).humanize(true)} ⏰`,
@@ -25,12 +20,12 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) 
 		userDocument.reminders.forEach(reminderDocument => {
 			fields.push({
 				name: `__${reminderDocument.name}__`,
-				value: `${moment(reminderDocument.expiry_timestamp).toNow()}`,
+				value: `${moment(reminderDocument.expiry_timestamp).fromNow()}`,
 				inline: true,
 			});
 		});
 		if (userDocument.reminders.length === 0) {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.SOFT_ERR,
 					title: "No reminders set 😴",
@@ -38,7 +33,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) 
 				},
 			});
 		} else {
-			msg.channel.send({
+			msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `Your reminders:`,

@@ -19,16 +19,16 @@ const commands = {
 			usage: `<server> | <channel>`,
 		},
 		profile: {
-			usage: `["setup" or <field>] [|] ["." or <value>],`,
+			usage: `["setup" or <field>] [|] ["." or <value>]`,
 		},
 		remindme: {
-			usage: `<time from now> | <reminder>`,
+			usage: `[to] <reminder> <| or "in"> <time from now>`,
 		},
 		say: {
 			usage: `<server> | <channel>`,
 		},
 		servernick: {
-			usage: `[<nick>] [ | <server>]`,
+			usage: `[<nick>] [ | <server ID>]`,
 		},
 	},
 	public: {
@@ -114,7 +114,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		ban: {
-			usage: `<user> [|] [<reason>]`,
+			usage: `<user> [|] [<days>] [|] [<reason>]`,
 			description: `Bans the user from this server and deletes 1 day's worth of messages.`,
 			defaults: {
 				isEnabled: true,
@@ -174,7 +174,7 @@ const commands = {
 			category: "Utility 🔦",
 		},
 		cool: {
-			usage: `[<"." or cooldown length][|<cooldown duration>]`,
+			usage: `[<"clear"> or cooldown length]`,
 			description: `Sets a command cooldown for the channel`,
 			defaults: {
 				isEnabled: true,
@@ -184,7 +184,7 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		count: {
-			usage: `<name> [|] ["." or "+1" or +-1]`,
+			usage: `<name> [| "." or "+1" or "-1"]`,
 			description: `Keep tallies of various things`,
 			defaults: {
 				isEnabled: true,
@@ -194,7 +194,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		countdown: {
-			usage: `[<event>] [|] [<time from now>]`,
+			usage: `[<event>] [| <time from now>]`,
 			description: `Set a countdown for an event`,
 			defaults: {
 				isEnabled: true,
@@ -204,8 +204,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		disable: {
-			usage: `[<command> <command>...]`,
-			description: `Turns off a command or commands in the channel`,
+			usage: `[...<command> ]`,
+			description: `Turns off a command or multiple commands in the channel`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -216,16 +216,6 @@ const commands = {
 		dog: {
 			usage: ``,
 			description: `Random picture of a dog!`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Fun 🎪`,
-		},
-		doge: {
-			usage: ``,
-			description: `Random picture of a doge, kindly provided by tinytaco#7999`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -254,17 +244,18 @@ const commands = {
 			category: `NSFW 👹`,
 		},
 		emoji: {
-			usage: `<custom emoji> or <Twetmoji>`,
-			description: `Provides a jumbo variant of the chosen emoji`,
+			usage: `...<emoji>`,
+			description: `Provides a larger variant of the chosen emoji(s) (maximum of 6 emojis)`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
+			aliases: ["jumbo"],
 		},
 		emotes: {
-			usage: ``,
+			usage: `[<custom emoji name> or <custom emoji ID>]`,
 			description: `Shows the current emojis on the server`,
 			defaults: {
 				isEnabled: true,
@@ -376,8 +367,8 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		imgur: {
-			usage: `<image attachment> or <image URL>`,
-			description: `Uploads an image or images to Imgur`,
+			usage: `<image attachment> and/or <image URLs>`,
+			description: `Uploads one or multiple images to Imgur`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -387,6 +378,7 @@ const commands = {
 		},
 		info: {
 			usage: ``,
+			aliases: ["serverinfo"],
 			description: `Lists basic stats about this server`,
 			defaults: {
 				isEnabled: true,
@@ -395,8 +387,9 @@ const commands = {
 			},
 			category: `Utility 🔦`,
 		},
-		join: {
+		invite: {
 			usage: ``,
+			aliases: ["join"],
 			description: `Provides the invite link to add the bot to another server`,
 			defaults: {
 				isEnabled: true,
@@ -408,16 +401,6 @@ const commands = {
 		joke: {
 			usage: ``,
 			description: `Tells a random joke!`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 0,
-			},
-			category: `Fun 🎪`,
-		},
-		jumbo: {
-			usage: `<emoji> [<emoji>...]`,
-			description: `Makes emojis larger! (Maximum of 5 emojis)`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -496,7 +479,7 @@ const commands = {
 			category: `Moderation ⚒`,
 		},
 		nick: {
-			usage: `[<user>|<nickname> or <name>]`,
+			usage: `[<user>|][<nickname> or <name>]`,
 			description: `Changes a members nickname on the server`,
 			defaults: {
 				isEnabled: true,
@@ -524,16 +507,6 @@ const commands = {
 				adminLevel: 0,
 			},
 			category: `Fun 🎪`,
-		},
-		perms: {
-			usage: `[<user or role>] [|<permission name>]`,
-			description: `Modifies permissions for a role or user in a channel`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 3,
-			},
-			category: `Moderation ⚒`,
 		},
 		ping: {
 			usage: ``,
@@ -599,7 +572,7 @@ const commands = {
 		},
 		profile: {
 			usage: `[<user> or "me"]`,
-			description: `An all-in-one command to view informations about users`,
+			description: `An all-in-one command to view information about users`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -648,7 +621,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		remindme: {
-			usage: `<time from now> | <reminder>`,
+			usage: `"to" <reminder> "in" <time from now>`,
 			description: `Reminds you in DMs about things`,
 			defaults: {
 				isEnabled: true,
@@ -658,7 +631,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		role: {
-			usage: `[<name>] [|"." or <hex color> or "hoist" or <user> or <new role name>]`,
+			aliases: ["roles"],
+			usage: `[<name> or "me"] [|] ["." or <hex color> or "reset color" or "hoist" or "joinable" or "mentionable" or <user> or <new role name>]`,
 			description: `Adds members to roles, modifies roles or sets colors`,
 			defaults: {
 				isEnabled: true,
@@ -688,7 +662,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		room: {
-			usage: `"text" or "voice" or "both" [<user 1>] [|] [<user 2>] [|] [...]`,
+			usage: `"text" or "voice" [<user 1>] [<user 2>] [...]`,
 			description: `Creates a temporary text or voice channel with a few members`,
 			defaults: {
 				isEnabled: true,
@@ -728,7 +702,7 @@ const commands = {
 			category: `NSFW 👹`,
 		},
 		say: {
-			usage: `["embed" or "text"] <something>`,
+			usage: `<text>`,
 			description: `Says something in the chat`,
 			defaults: {
 				isEnabled: true,
@@ -738,25 +712,14 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		shorten: {
-			aliases: ["unshorten"],
 			usage: `<URL>`,
-			description: `Uses goo.gl to shorten or unshorten an URL`,
+			description: `Uses bit.ly to shorten an URL`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
 				adminLevel: 0,
 			},
 			category: `Utility 🔦`,
-		},
-		softban: {
-			usage: `<user> [|] [<reason>]`,
-			description: `Bans the user from this server without deleting their messages`,
-			defaults: {
-				isEnabled: true,
-				isNSFWFiltered: false,
-				adminLevel: 3,
-			},
-			category: `Moderation ⚒`,
 		},
 		stats: {
 			usage: `["clear"]`,
@@ -811,8 +774,8 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		time: {
-			usage: `[<location> or <user>]`,
-			description: `Gets the time in a city or country`,
+			usage: `<timezone>`,
+			description: `Gets the time in a timezone`,
 			defaults: {
 				isEnabled: true,
 				isNSFWFiltered: false,
@@ -821,7 +784,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		translate: {
-			usage: `<text> <"?" or source language> [to] <target language>`,
+			usage: `<"?" or source language> [to] <target language> <text>`,
 			description: `Uses Microsoft Translate to translate a word / phrase into another language`,
 			defaults: {
 				isEnabled: true,
@@ -831,7 +794,7 @@ const commands = {
 			category: `Utility 🔦`,
 		},
 		trivia: {
-			usage: `[todo do usage]`,
+			usage: `["start"|<answer>|"skip"/"next"|"end"/"."]`,
 			description: `A fun question-and-answer group quiz game`,
 			defaults: {
 				isEnabled: true,
@@ -881,7 +844,7 @@ const commands = {
 			category: `Search & Media 🎬`,
 		},
 		weather: {
-			usage: `<location> [<unit>]`,
+			usage: `<city>`,
 			description: `Gets the current weather and forecast for the given location from MSN Weather`,
 			defaults: {
 				isEnabled: true,
@@ -956,14 +919,14 @@ const commands = {
 			perm: "eval",
 		},
 		reload: {
-			usage: `...<pm or public>.<command> or "*"`,
+			usage: `[<type>"."]<command> or [<type>"."]"*"`,
 			description: `Reloads command functions on the current shard!`,
 			aliases: ["r"],
 			perm: "administration",
 		},
 		debug: {
 			usage: `["-h"]`,
-			description: `Provides information about the bot, optionally, some system architecture information`,
+			description: `Provides information about the bot and, optionally, some system architecture information`,
 			perm: "none",
 		},
 	},

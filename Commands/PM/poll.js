@@ -9,7 +9,7 @@ module.exports = async (main, msg, commandData) => {
 					color: 0x3669FA,
 					author: {
 						name: main.client.user.username,
-						icon_url: main.client.user.avatarURL(),
+						icon_url: main.client.user.displayAvatarURL(),
 						url: "https://github.com/GilbertGobbels/GAwesomeBot",
 					},
 					description: "⌛ Preparing Poll...",
@@ -18,7 +18,7 @@ module.exports = async (main, msg, commandData) => {
 					},
 				},
 			});
-			const relayRes = await main.bot.relayCommand("poll", { str: svrid, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrid, chname });
+			const relayRes = await main.client.relayCommand("poll", { str: svrid, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrid, chname });
 			let errMsg = "An unknown Error occurred";
 			if (relayRes === "none") errMsg = "The requested server was not found. Double check for typo's!";
 			if (relayRes === "multi") errMsg = "Multiple servers were found. Set a unique server nick or use server ID instead of name.";
@@ -27,7 +27,7 @@ module.exports = async (main, msg, commandData) => {
 					embed: {
 						author: {
 							name: main.client.user.username,
-							icon_url: main.client.user.avatarURL(),
+							icon_url: main.client.user.displayAvatarURL(),
 							url: "https://github.com/GilbertGobbels/GAwesomeBot",
 						},
 						description: "Something went wrong while fetching server data!",
@@ -41,12 +41,12 @@ module.exports = async (main, msg, commandData) => {
 			return;
 		}
 	}
-	winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-	msg.channel.send({
+	logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+	msg.send({
 		embed: {
 			author: {
 				name: main.client.user.username,
-				icon_url: main.client.user.avatarURL(),
+				icon_url: main.client.user.displayAvatarURL(),
 				url: "https://github.com/GilbertGobbels/GAwesomeBot",
 			},
 			color: 0xFFFF00,

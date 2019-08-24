@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Injection - <%= serverData.name %> Maintainer Console</title>
+    <% include ../partials/head %>
+
+    <script>
+			function updatePreview(html) {
+				document.getElementById('message-preview').innerHTML = html;
+			}
+    </script>
+</head>
+<body onload="GAwesomeUtil.SFS();">
+<% include ../partials/dashboard-header %>
+<% include ../partials/dashboard-socket-updates %>
+
+<section class="section is-white">
+    <div class="container">
+        <div class="columns">
+            <div id="menu" class="column is-one-quarter">
+                <% include ../partials/maintainer-menu %>
+            </div>
+            <div class="column">
+                <h1 class="title">
+                    Script Injection
+                </h1>
+                <article class="message is-primary">
+                    <div class="message-body">
+                        <div class="content">
+                            <p>
+                                On this page, you can submit custom <strong>pieces of code</strong> that are <strong>injected</strong> into various places of <strong>GAwesomeBot's Web Interface</strong>. This allows maintainers to customize GAwesomeBot's Web Interface without causing <strong>conflict issues for updates</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </article>
+                <form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+                    <div class="field">
+                        <h4 class="title is-5">Head Script</h4>
+                        <h6 class="subtitle is-6">The Head Script is injected into every page's head tags. Code in the Head Script is only executed on every start of a user session, but not on page changes.</h6>
+                        <p class="control">
+                            <textarea id="headScript-code-box" class="code-box" name="headScript" style="resize:none;"><%- configData.injection.headScript %></textarea>
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <h4 class="title is-5">Page Script</h4>
+                        <h6 class="subtitle is-6">The Page Script is executed every time the user visits a new page. All elements in a page have already been loaded and rendered when the Page Script is executed.</h6>
+                        <p class="control">
+                            <textarea id="pageScript-code-box" class="code-box" name="pageScript" style="resize:none;"><%- configData.injection.pageScript %></textarea>
+                        </p>
+                    </div>
+                    <% var formButtonsUnsaved = false; %>
+                    <% include ../partials/form-buttons %>
+                    <% include ../partials/form-buttons-bar %>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<% include ../partials/footer %>
+<% include ../partials/scroll-top-button %>
+</body>
+</html>

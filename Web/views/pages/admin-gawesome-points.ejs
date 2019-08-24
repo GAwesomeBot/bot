@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> GAwesomePoints - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -25,11 +23,13 @@
 							Points work much like <strong>karma</strong> on Reddit, but can be disabled per-server and there's no downvoting. You can get GAwesomePoints by being upvoted or gilded, winning the lottery, or being one of the top 5 most active members on the server each week. Learn more on <a href="/wiki?page=Commands#points">the wiki</a>.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
-						<% var commandData = configData.commands.points;commandData.name = "points";commandData.description = commandDescriptions.points;commandData.category = commandCategories.points; %>
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+						<div class="command-items">
+						<% var commandData = configData.commands.points; commandData.name = "points"; commandData.description = pageData.commandDescriptions.points; commandData.category = pageData.commandCategories.points; %>
 						<% include ../partials/admin-command-item %>
-						<% var commandData = configData.commands.lottery;commandData.name = "lottery";commandData.description = commandDescriptions.lottery;commandData.category = commandCategories.lottery; %>
+						<% commandData = configData.commands.lottery; commandData.name = "lottery"; commandData.description = pageData.commandDescriptions.lottery; commandData.category = pageData.commandCategories.lottery; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 						<br>
 						<% var formButtonsUnsaved = false; %>
 						<% include ../partials/form-buttons %>

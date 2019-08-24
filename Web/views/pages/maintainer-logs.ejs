@@ -1,32 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Logs - <%= serverData.name %> Maintainer Console</title>
     <% include ../partials/head %>
-    <script src="/static/js/terminal.js"></script>
 </head>
 <body>
 <% include ../partials/dashboard-header %>
 <% include ../partials/dashboard-socket-updates %>
-<script>
-    $(document).on("ready", () => {
-    	let logs = [<%- logs %>][0];
-	    const consoleLogs = new Terminal();
-	    consoleLogs.setHeight("300px");
-	    consoleLogs.blinkingCursor(false);
-	    $("#console").append(consoleLogs.html);
-	    $(".Terminal").css("overflow-y", "scroll");
-	    logs.forEach(log => {
-          let line = `[${log.timestamp}] [${log.level}] ${log.message}`;
-          consoleLogs.print(line);
-        });
-        socket.on("logs", data => {
-          let line = `[${data.timestamp}] [${data.level}] ${data.message}`;
-          consoleLogs.print(line);
-          $(".Terminal").animate({ scrollTop: $('.Terminal').prop("scrollHeight")}, 500);
-        });
-    });
-</script>
 
 <section class="section is-white">
     <div class="container">
@@ -41,7 +21,7 @@
                 <article class="message is-primary">
                     <div class="message-body">
                         <div class="content">
-                            These logs are streamed directly from GAB's console, detailing all events that your bot encounters. Verbosity is based on the <code>consoleLevel</code> value in config.js.
+                            These logs are streamed directly from GAB's log files, detailing all events that your bot encounters. Verbosity is based on the <code>consoleLevel</code> value in config.js.
                         </div>
                     </div>
                 </article>
@@ -52,7 +32,18 @@
         </div>
     </div>
 </section>
-
+<script>
+    GAwesomeData.dashboard.logs = [<%- pageData.logs %>][0];
+	GAwesomeData.dashboard.terminal = new TerminalMin();
+    GAwesomeData.dashboard.terminal.setHeight("300px");
+    GAwesomeData.dashboard.terminal.blinkingCursor(false);
+	$("#console").append(GAwesomeData.dashboard.terminal.html);
+	$(".Terminal").css("overflow-y", "scroll");
+	GAwesomeData.dashboard.logs.forEach(log => {
+		let line = `[${log.timestamp}] [${log.level}] ${log.message}`;
+        GAwesomeData.dashboard.terminal.print(line);
+	});
+</script>
 <% include ../partials/footer %>
 <% include ../partials/scroll-top-button %>
 </body>

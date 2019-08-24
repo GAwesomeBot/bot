@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" class="has-no-scrollbar">
+<head>
+    <title>Installing <%= pageData.extensionData.name %> - GAwesomeBot Extensions</title>
+    <% include ../partials/head %>
+</head>
+<body class="has-no-scrollbar">
+<div class="scroller-wrapper">
+    <section id="header" class="main-header-section hero is-primary is-small is-bold">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="subtitle is-1">
+					<span class="icon is-large">
+                        <i class="fa fa-bolt"></i>
+                    </span>
+                    <%= pageData.mode === "update" ? "Updating" : "Installing" %> extension <strong><%= pageData.extensionData.name %></strong>.
+                </h1>
+                <% if (pageData.mode === "install") { %>
+                <a class="button is-outlined is-info is-small"
+                   href="/extensions/<%= pageData.extensionData._id %>/install?v=<%= pageData.extensionData.version %>" title="Select a different guild">
+                    <img class="image is-16x16" src="<%= serverData.icon %>" style="border-radius: 100%;"
+                         alt="<%= serverData.id %>">
+                    &nbsp;
+                    <span><%= serverData.name %></span>
+                </a>
+                <% } else if (pageData.mode === "update") { %>
+                <button class="button is-outlined is-info is-small" disabled>
+                    <img class="image is-16x16" src="<%= serverData.icon %>" style="border-radius: 100%;"
+                         alt="<%= serverData.id %>">
+                    &nbsp;
+                    <span><%= serverData.name %></span>
+                </button>
+                <% } %>
+            </div>
+        </div>
+    </section>
+
+    <section id="frame" class="section is-dark is-bold has-overflow">
+        <div class="container has-text-centered">
+            <% if (pageData.mode === "select") { %>
+            <h2 class="title is-2">Select a server to continue</h2>
+            <% serverData.forEach(server => { %>
+            <a class="media arrow-link"
+               href="/extensions/<%= pageData.extensionData._id %>/install?svrid=<%= server.id %>&v=<%= pageData.extensionData.version %>">
+                <figure class="media-left">
+                    <p class="image server-icon is-48x48">
+                        <img src="<%= server.icon %>" style="border-radius: 100%;" alt="<%= server.id %>">
+                    </p>
+                </figure>
+                <div class="media-content">
+                    <h2 class="subtitle is-2 server-name"><%= server.name %></h2>
+                </div>
+                <div class="media-right">
+                    <span class="icon server-arrow is-primary is-large">
+                        <i class="fa fa-chevron-right fa-2x"></i>
+                    </span>
+                </div>
+            </a>
+            <% }); %>
+            <% } else { %>
+            <div class="installer">
+                <div class="box is-paddingless generic-feature">
+                    <div id="installer-step-authorization" class="generic-feature-box installer-step is-active"
+                         data-select-isa="installer-step-authorization-addon">
+                        <div class="generic-feature-box-slider installer-step-status">
+                        <span class="icon">
+                            <i class="fa fa-circle-o-notch"></i>
+                        </span>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            <p>Authorization</p>
+                        </div>
+                    </div>
+                    <div id="installer-step-authorization-addon" class="generic-feature-addon installer-step-addon">
+                        <h6 class="title is-6">By continuing, you authorize <b><%= pageData.extensionData.name %></b> to...</h6>
+                        <div class="scope-list">
+                            <div class="scope">
+                                <span class="icon">
+                                    <i class="fa fa-<%= pageData.extensionData.typeIcon %>"></i>
+                                </span>
+                                <% switch (pageData.extensionData.type) { case "command": %>
+                                    <span class="scope-description">Respond to <strong><%= pageData.extensionData.typeDescription %></strong> command messages</span>
+                                <% break; case "keyword": %>
+                                    <span class="scope-description">Listen for and respond to keywords</span>
+                                <% break; case "timer": %>
+                                    <span class="scope-description">Run every <strong><%= pageData.extensionData.typeDescription %></strong></span>
+                                <% break; case "event": %>
+                                    <span class="scope-description">Run on and access information about <strong><%= pageData.extensionData.typeDescription %></strong> events</span>
+                                <% break; %>
+                                <% } %>
+                            </div>
+                            <% pageData.extensionData.scopes.forEach(scope => { %>
+                                <div class="scope">
+                                    <span class="icon">
+                                        <i class="fa <%= scope.icon %>"></i>
+                                    </span>
+                                    <span class="scope-description"><%- scope.authDescription.replace(/{SERVER}/g, `<strong>${serverData.name}</strong>`) %></span>
+                                </div>
+                            <% }); %>
+                        </div>
+                        <div class="has-text-centered">
+                            <a class="button is-outlined is-warning installer-step-button"
+                               data-next-is="installer-step-<%= ["command", "keyword"].includes(pageData.extensionData.type) ? "options" : pageData.extensionData.type === "event" ? "confirmation" : "settings" %>">Authorize</a>
+                        </div>
+                    </div>
+                </div>
+                <% if (["command", "keyword"].includes(pageData.extensionData.type)) { %>
+                    <div class="box is-paddingless generic-feature">
+                        <div id="installer-step-options" class="generic-feature-box installer-step" data-select-isa="installer-step-options-addon" disabled>
+                            <div class="generic-feature-box-slider installer-step-status">
+                                <span class="icon">
+                                    <i class="fa fa-circle-o-notch"></i>
+                                </span>
+                            </div>
+                            <div class="generic-feature-box-description">
+                                <p>Command Options</p>
+                            </div>
+                        </div>
+                        <div id="installer-step-options-addon" class="generic-feature-addon installer-step-addon" style="display: none;">
+                            <form class="installer-step-form" id="installer-step-options-form" onsubmit="return false;">
+                                <div class="field">
+                                    <label class="label">Permissions</label>
+                                    <div class="control">
+                                        <span class="select is-primary">
+                                            <select name="adminLevel">
+                                                <option value="0" selected>@everyone</option>
+                                                <option value="1">Admin level &ge;1</option>
+                                                <option value="2">Admin level &ge;2</option>
+                                                <option value="3">Admin level &ge;3</option>
+                                            </select>
+                                        </span>
+                                    </div>
+                                    <span class="help">The command will only respond to members that have the selected bot admin level (or higher).</span>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Channel(s)</label>
+                                    <% pageData.channelData.forEach(channel => { %>
+                                        <label class="checkbox">
+                                            <input name="enabled_channel_ids-<%= channel.id %>" class="disabled_channel_ids" type="checkbox" checked>
+                                            #<%= channel.name %>
+                                        </label>
+                                        <br>
+                                    <% }); %>
+                                </div>
+                                <div class="field">
+                                    <div class="control has-addons">
+                                        <a class="button is-small" onclick="GAwesomeUtil.toggleChannels('disabled_channel_ids', true);">
+                                            <span>Select All</span>
+                                        </a>
+                                        <a class="button is-small" onclick="GAwesomeUtil.toggleChannels('disabled_channel_ids', false);">
+                                            <span>Deselect All</span>
+                                        </a>
+                                    </div>
+                                    <span class="help">The command will run only in these channels.</span>
+                                </div>
+                                <div class="has-text-centered">
+                                    <a class="button is-outlined is-info installer-step-button" data-next-is="installer-step-settings">Next</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                <% } %>
+                <% if (["command", "keyword", "timer"].includes(pageData.extensionData.type)) { %>
+                    <div class="box is-paddingless generic-feature">
+                        <div id="installer-step-settings" class="generic-feature-box installer-step" data-select-isa="installer-step-settings-addon" data-validate-form="installer-step-settings-form" disabled>
+                            <div class="generic-feature-box-slider installer-step-status">
+                            <span class="icon">
+                                <i class="fa fa-circle-o-notch"></i>
+                            </span>
+                            </div>
+                            <div class="generic-feature-box-description">
+                                <p>Extension Settings</p>
+                            </div>
+                        </div>
+                        <div id="installer-step-settings-addon" class="generic-feature-addon installer-step-addon" style="display: none;">
+                            <form class="installer-step-form" id="installer-step-settings-form" onsubmit="return false;">
+                                <% switch (pageData.extensionData.type) { case "command": %>
+                                    <div class="field">
+                                        <label class="label">Command key</label>
+                                        <div class="control">
+                                            <input name="key" class="input is-primary" type="text" value="<%- pageData.extensionData.typeInfo.key %>" minlength="3" maxlength="25" pattern="[^ ]+" required>
+                                            <span class="help">This string will be used to call the command. No spaces allowed.</span>
+                                        </div>
+                                    </div>
+                                <% break; case "keyword": %>
+                                    <div class="field">
+                                        <label class="label">Keywords</label>
+                                        <div class="control">
+                                            <input name="keywords" class="input is-primary" type="text" value="<%- pageData.extensionData.typeInfo.keywords ? pageData.extensionData.typeInfo.keywords.join(',') : '' %>" required>
+                                            <span class="help">Comma-separated list of words or phrases that a message must contain to activate the extension.</span>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <label class="label">Case-sensitivity</label>
+                                        <div class="control">
+                                            <label class="checkbox">
+                                                <input name="caseSensitive" type="checkbox" <%= pageData.extensionData.typeInfo.case_sensitive ? "checked" : "" %>>
+                                                Extension keyword matching is case-sensitive
+                                            </label>
+                                        </div>
+                                    </div>
+                                <% break; case "timer": %>
+                                    <div class="field">
+                                        <label class="label">Interval</label>
+                                        <div class="control">
+                                            <input name="interval" class="input is-primary" type="number" value="<%- pageData.extensionData.typeInfo.interval %>" min="300000" max="86400000" required>
+                                            <span class="help">Number of milliseconds between each run of the extension.</span>
+                                        </div>
+                                    </div>
+                                <% break; %>
+                                <% } %>
+                            </form>
+                            <div class="has-text-centered">
+                                <a class="button is-outlined is-info installer-step-button" data-next-is="installer-step-confirmation" data-validate-form="installer-step-settings-form">Next</a>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="box is-paddingless generic-feature">
+                    <div id="installer-step-confirmation" class="generic-feature-box installer-step" data-select-isa="installer-step-confirmation-addon" disabled>
+                        <div class="generic-feature-box-slider installer-step-status">
+                        <span class="icon">
+                            <i class="fa fa-circle-o-notch"></i>
+                        </span>
+                        </div>
+                        <div class="generic-feature-box-description">
+                            <p>Confirmation</p>
+                        </div>
+                    </div>
+                    <div id="installer-step-confirmation-addon" class="generic-feature-addon installer-step-addon" style="display: none;">
+                        <form class="installer-step-form is-hidden">
+                            <input name="id" value="<%= pageData.extensionData._id %>">
+                        </form>
+                        <div class="has-text-centered">
+                            <div class="content has-text-left">
+                                <h5 class="title is-5">Are you sure you want to install <b><%= pageData.extensionData.name %></b>?</h5>
+                                <% if (["queue"].includes(pageData.extensionData.status)) { %>
+                                <article class="message is-danger" title="Even Speedwagon is afraid!">
+                                    <div class="message-body">
+                                        <div class="content">
+                                            You are about to install an extension from the <strong>Gallery Queue</strong>. Extensions from the queue may cause harm to your server or contain offensive or otherwise dangerous content. GAwesomeBot Maintainers are not responsible for any actions taken by unapproved extensions. <strong>You're on your own, kid.</strong>
+                                        </div>
+                                    </div>
+                                </article>
+                                <% } %>
+                                <ul>
+                                    <li>GAwesomeBot is not responsible for any damage caused by community extensions.</li>
+                                    <li>GAwesomeBot is not able to assist you with utilising extensions.</li>
+                                    <li>You can review the pending install by clicking on previous sections.</li>
+                                    <li><strong>Select <b>Finish</b> to finish installing <b><%= pageData.extensionData.name%></b>.</strong></li>
+                                </ul>
+                            </div>
+                            <a id="installer-submit" class="button is-outlined is-info installer-step-button">Finish</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </section>
+</div>
+</body>

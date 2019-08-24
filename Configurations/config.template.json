@@ -1,0 +1,30 @@
+{
+  "sudoMaintainers": [],
+  "maintainers": [],
+  "wikiContributors": [],
+  "userBlocklist": [],
+  "guildBlocklist": [],
+  "activityBlocklist": [],
+  "activity": {
+    "name": "default",
+    "type": "PLAYING",
+    "twitchURL": ""
+  },
+  "status": "online",
+  "headerImage": "header-bg.jpg",
+  "homepageMessageHTML": "",
+  "pmForward": false,
+  "version": "5.0.0",
+  "branch": "development",
+  "perms": {
+    "eval": 0,
+    "sudo": 2,
+    "management": 2,
+    "administration": 1,
+    "shutdown": 2
+  },
+  "injection": {
+    "headScript": "",
+    "pageScript": ""
+  }
+}

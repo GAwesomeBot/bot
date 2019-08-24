@@ -1,198 +1,280 @@
-<script>
-function addToServer(extid, svrid) {
-	$.ajax({
-		type: "POST",
-		url: "/dashboard/other/extensions?svrid=" + svrid,
-		data: {
-			"new-<%= mode %>": extid
-		},
-		success: function(data) {
-			window.location.href = "/dashboard/other/extensions?svrid=" + svrid;
-		}
-	});
-}
+<div id="typeDescription-event" class="modal">
+	<div class="modal-background"></div>
+	<div class="modal-content">
+		<div class="box">
+			<br>
+			<h1 class="title is-3 has-text-centered">
+				<span class="icon is-large">
+					<i class="fa fa-code fa-3x"></i>
+				</span>
+			</h1>
+			<h3 class="subtitle is-3 has-text-centered">Event</h3>
+			<br>
+			Event extensions are executed when a specific event is emitted from Discord. This allows extensions to react to things happening in your server in real-time.
+			<br>
+			<br>
+			For example, imagine an important channel is deleted; an extension configured to run on the channelDelete event could grab the channel data, check if the name matches a prior configured channel name, and then restore the channel.
+		</div>
+	</div>
+	<button class="modal-close is-large"></button>
+</div>
+<div id="typeDescription-command" class="modal">
+	<div class="modal-background"></div>
+	<div class="modal-content">
+		<div class="box">
+			<br>
+			<h1 class="title is-3 has-text-centered">
+				<span class="icon is-large">
+					<i class="fa fa-magic fa-3x"></i>
+				</span>
+			</h1>
+			<h3 class="subtitle is-3 has-text-centered">Command</h3>
+			<br>
+			Command extensions function just like normal commands, and you have to use them with your configured GAB Prefix.
+			<br>
+			<br>
+			Command extensions are useful to add additional functionality to GAB, for example in the form of fetching data from API's, or performing moderation actions within the Discord guild.
+		</div>
+	</div>
+	<button class="modal-close is-large"></button>
+</div>
+<div id="typeDescription-keyword" class="modal">
+	<div class="modal-background"></div>
+	<div class="modal-content">
+		<div class="box">
+			<br>
+			<h1 class="title is-3 has-text-centered">
+				<span class="icon is-large">
+					<i class="fa fa-key fa-3x"></i>
+				</span>
+			</h1>
+			<h3 class="subtitle is-3 has-text-centered">Keyword</h3>
+			<br>
+			If you ever need GAwesomeBot to respond to certain messages, or make custom advanced filters, keyword extensions are your friend.
+			<br>
+			<br>
+			Keyword extensions are executed when a message sent by a user contains one of a pre-configured set of keywords.
+		</div>
+	</div>
+	<button class="modal-close is-large"></button>
+</div>
+<div id="typeDescription-timer" class="modal">
+	<div class="modal-background"></div>
+	<div class="modal-content">
+		<div class="box">
+			<br>
+			<h1 class="title is-3 has-text-centered">
+				<span class="icon is-large">
+					<i class="fa fa-clock-o fa-3x"></i>
+				</span>
+			</h1>
+			<h3 class="subtitle is-3 has-text-centered">Timer</h3>
+			<br>
+			Timer extensions are run on a configured interval, which makes them extremely useful for various purposes.
+			<br>
+			<br>
+			These extensions can, for example, poll an API on the configured interval and send the result to Discord, this allows you to connect any web application that responds to REST requests to GAB
+			<br>
+			<br>
+			If you plan to use this type of extension to respond to things happening in Discord, we recommend using <code>event</code> extensions instead.
+		</div>
+	</div>
+	<button class="modal-close is-large"></button>
+</div>
 
-function doAction(extid, action) {
-	var data = {
-		"action": action
-	};
-	if(["reject", "remove"].indexOf(action)>-1) {
-		var reason = prompt("Reason to " + action + ":");
-		if(reason) {
-			data.reason = reason;
-		} else {
-			return;
-		}
-	}
-	$.ajax({
-		type: "POST",
-		url: "/extensions?extid=" + extid,
-		data: data,
-		success: function(data) {
-			window.location.reload();
-		}
-	});
-};
-</script>
-
-<% if(extensions.length>0) { %>
+<div id="extensions-gallery">
+	<% if (pageData.mode === "queue") { %>
+	<article class="message is-danger" title="Even Speedwagon is afraid!">
+		<div class="message-body">
+			<div class="has-text-centered">
+				<h5 class="title is-5 is-danger-colored">
+					<span class="icon">
+						<i class="fa fa-exclamation-triangle"></i>
+					</span>
+					Stay safe!
+					<span class="icon">
+						<i class="fa fa-exclamation-triangle"></i>
+					</span>
+				</h5>
+			</div>
+			<br>
+			<div class="content">
+				Extensions in the <strong>Gallery Queue</strong> have not been tested or approved by <strong>GAwesomeBot Maintainers</strong>. Extensions from the queue may cause harm to your server or contain offensive or otherwise dangerous content. GAwesomeBot Maintainers are not responsible for any actions taken by unapproved extensions. <strong>You're on your own, kid.</strong>
+			</div>
+		</div>
+	</article>
+	<% } %>
+	<% if (pageData.extensions.length > 0) { %>
 	<div class="columns">
-	<% for(var i=0; i<extensions.length; i++) { %>
-		<div class="column is-one-third">
+	<% pageData.extensions.forEach((extension, i) => { %>
+		<div id="card-<%= extension._id %>" class="column is-one-third">
 			<div class="card is-fullwidth">
 				<header class="card-header">
 					<p class="card-header-title">
-						<%= extensions[i].name %>
+						<%= extension.name %>
 						&nbsp;
-						<% if(extensions[i].featured) { %>
-							<span class="tag is-primary">Featured</span>
+						<% if (extension.version !== 1) { %>
+							<span class="tag is-info">V<%= extension.version %></span>
 							&nbsp;
 						<% } %>
+						<% if (extension.level === "third") { %>
+							<span class="tag is-danger">Local Extension</span>
+							&nbsp;
+						<% } %>
+						<span id="featured-<%= extension._id %>">
+							<% if (extension.featured) { %>
+								<span class="tag is-primary">Featured</span>
+								&nbsp;
+							<% } %>
+						</span>
 						<span class="tag is-warning">
-							<span><%= extensions[i].points %></span>
+							<span id="points-<%= extension._id %>"><%= extension.points %></span>
 							&nbsp;
 							<span class="icon is-small">
 		                        <i class="fa fa-star"></i>
 		                    </span>
 						</span>
 					</p>
-					<span class="card-header-icon" title="<%= extensions[i].typeDescription %>">
-						<i class="fa fa-<%= extensions[i].typeIcon %>"></i>
+					<span class="card-header-icon modal-button" title="<%= extension.typeDescription %>" data-target="#typeDescription-<%= extension.type %>">
+						<i class="fa fa-<%= extension.typeIcon %>"></i>
 					</span>
 				</header>
 				<div class="card-content" style="max-height: 155px;overflow-y: scroll;">
 					<div class="content">
-						<%- extensions[i].description %>
+						<%- extension.description %>
 					</div>
 					<div class="media">
 						<div class="media-left">
 							<figure class="image is-32x32">
-								<img src="<%= extensions[i].owner.avatar %>" alt="<%= extensions[i].owner.id %>">
+								<img src="<%= extension.owner.avatar %>" alt="<%= extension.owner.id %>">
 							</figure>
 						</div>
 						<div class="media-content">
-							<p class="title is-5"><%= extensions[i].owner.name + "#" + extensions[i].owner.discriminator %></p>
-							<p class="subtitle is-6" title="<%= extensions[i].rawLastUpdated %>">Last updated <strong><%= extensions[i].relativeLastUpdated %></strong></p>
+							<p class="title is-5"><%= extension.owner.name + "#" + extension.owner.discriminator %></p>
+							<p class="subtitle is-6" title="<%= extension.rawLastUpdated %>">Last updated <strong><%= extension.relativeLastUpdated %></strong></p>
 						</div>
 					</div>
 				</div>
 				<footer class="card-footer">
-					<% if(authUser && serverData.length>0) { %>
-						<a class="card-footer-item modal-button" data-target="#add-<%= extensions[i]._id %>-modal">
-							Get
+					<% if (authUser && pageData.serverData.length > 0) { %>
+						<a class="card-footer-item" onclick="GAwesomeUtil.openExtensionInstaller('<%= extension._id %>', <%= extension.version %>);">
+							Install
 						</a>
-						<div id="add-<%= extensions[i]._id %>-modal" class="modal">
-							<div class="modal-background"></div>
-							<div class="modal-container">
-								<div class="modal-content">
-									<div class="box">
-										<% for(var j=0; j<serverData.length; j++) { %>
-											<a class="media" onclick="addToServer('<%= extensions[i]._id %>', '<%= serverData[j].id %>');">
-												<div class="media-left">
-													<img class="image is-32x32" src="<%= serverData[j].icon %>" alt="<%= serverData[j].id %>">
-												</div>
-												<div class="media-content">
-													<p class="title is-3"><%= serverData[j].name %></p>
-												</div>
-												<div class="media-right">
-													<span class="icon is-medium">
-								                        <i class="fa fa-plus"></i>
-								                    </span>
-												</div>
-											</a>
-										<% } %>
-									</div>
-								</div>
-							</div>
-							<button class="modal-close"></button>
-						</div>
 					<% } %>
-						<a class="card-footer-item" href="/extension.abext?extid=<%= extensions[i]._id %>">
-							Download
+					<a class="card-footer-item" onclick="GAwesomeUtil.loadSource('<%= extension._id %>', '<%= extension.version %>', '<%= extension.name %>')">
+						Source
+					</a>
+					<% if (authUser) { %>
+						<a id="vote-<%= extension._id %>" class="card-footer-item" onclick="GAwesomeUtil.voteExtension('<%= extension._id %>');">
+							<%= !pageData.upvotedData.includes(String(extension._id)) ? "+1" : "-1" %>
 						</a>
-					<% if(authUser) { %>
-						<a class="card-footer-item" onclick="doAction('<%= extensions[i]._id %>', 'upvote');">
-							<%= upvotedData.indexOf(extensions[i]._id)==-1 ? "+1" : "-1" %>
-						</a>
-						<% if(isMaintainer) { %>
-							<% if(mode=="gallery") { %>
-								<a class="card-footer-item" onclick="doAction('<%= extensions[i]._id %>', 'feature');">
-									<%= extensions[i].featured ? "Unfeature" : "Feature" %>
+						<% if (isMaintainer) { %>
+							<% if (pageData.mode === "gallery") { %>
+								<a id="feature-<%= extension._id %>" class="card-footer-item" onclick="GAwesomeUtil.featureExtension('<%= extension._id %>');">
+									<%= extension.featured ? "Unfeature" : "Feature" %>
 								</a>
-								<a class="card-footer-item" onclick="doAction('<%= extensions[i]._id %>', 'remove');">
-									Remove
-								</a>
-							<% } else if(mode=="queue") { %>
-								<a class="card-footer-item" onclick="doAction('<%= extensions[i]._id %>', 'accept');">
+                    			<% if (authUser.id !== extension.owner.id) { %>
+									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.removeExtension('<%= extension._id %>');">
+										Remove
+									</a>
+								<% } %>
+							<% } else if (pageData.mode === "queue") { %>
+								<a class="card-footer-item" onclick="GAwesomeUtil.acceptExtension('<%= extension._id %>');">
 									Accept
 								</a>
-								<a class="card-footer-item" onclick="doAction('<%= extensions[i]._id %>', 'reject');">
-									Reject
-								</a>
+								<% if (authUser.id !== extension.owner.id || extension.level === "third") { %>
+									<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.rejectExtension('<%= extension._id %>');">
+										Reject
+									</a>
+								<% } %>
 							<% } %>
+						<% } %>
+						<% if (authUser.id === extension.owner.id && extension.level === "gallery") { %>
+							<a class="card-footer-item card-footer-item-danger" onclick="GAwesomeUtil.unpublishExtension('<%= extension._id %>');">
+								Unpublish
+							</a>
 						<% } %>
 					<% } %>
 				</footer>
 			</div>
 		</div>
 
-		<% if(i % 3==2 && i!=extensions.length-1 && i!=0) { %>
+		<% if (i % 3 === 2 && i !== pageData.extensions.length - 1 && i !== 0) { %>
 			</div>
 			<div class="columns">
 		<% } %>
-	<% } %>
+	<% }); %>
+	</div>
+	<div id="extension-source-modal" class="modal">
+		<div class="modal-background"></div>
+		<div class="modal-content">
+			<div class="box">
+				<h4 class="is-4 title">Source Code for <b id="extension-source-name"></b></h4>
+				<hr>
+				<textarea id="extension-source-viewer"></textarea>
+				<br>
+                <a id="extension-source-download" class="button is-small">
+			        <span class="icon is-small">
+				        <i class="fa fa-download"></i>
+			        </span>
+                    <span>Download</span>
+                </a>
+			</div>
+		</div>
+		<button class="modal-close"></button>
 	</div>
 <% } else { %>
-	<% var resetUrl = "/extensions/" + mode; %>
-	<% include ../partials/no-results %>
+	<% const resetUrl = "/extensions/" + pageData.mode; %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery: pageData.activeSearchQuery, resetUrl, mode: pageData.mode }) %>
 <% } %>
-<% if(numPages>1) { %>
+<% if (pageData.numPages > 1) { %>
 	<br>
-	<nav class="pagination">
-		<ul>
-			<% if(currentPage>2) { %>
+	<nav class="pagination is-centered">
+		<ul class="pagination-list">
+			<% if (pageData.currentPage > 2) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=1">
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=1">
 						1
 					</a>
 				</li>
 			<% } %>
-			<% if(currentPage>3) { %>
+			<% if (pageData.currentPage > 3) { %>
 				<li>
-					<span>...</span>
+					<span class="pagination-ellipsis">...</span>
 				</li>
 			<% } %>
-			<% if(currentPage>1) { %>
+			<% if (pageData.currentPage > 1) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= currentPage-1 %>">
-						<%= currentPage-1 %>
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage - 1 %>">
+						<%= pageData.currentPage - 1 %>
 					</a>
 				</li>
 			<% } %>
 			<li>
-				<a class="button is-primary" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= currentPage %>">
-					<%= currentPage %>
+				<a class="button is-primary pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage %>">
+					<%= pageData.currentPage %>
 				</a>
 			</li>
-			<% if(currentPage<numPages) { %>
+			<% if (pageData.currentPage < pageData.numPages) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= currentPage+1 %>">
-						<%= currentPage+1 %>
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.currentPage + 1 %>">
+						<%= pageData.currentPage + 1 %>
 					</a>
 				</li>
 			<% } %>
-			<% if(currentPage<numPages-2) { %>
+			<% if(pageData.currentPage < pageData.numPages - 2) { %>
 				<li>
-					<span>...</span>
+					<span class="pagination-ellipsis">...</span>
 				</li>
 			<% } %>
-			<% if(currentPage<numPages-1) { %>
+			<% if (pageData.currentPage < pageData.numPages - 1) { %>
 				<li>
-					<a class="button" href="/extensions/<%= mode %>?q=<%= activeSearchQuery %>&count=<%= itemsPerPage %>&page=<%= numPages %>">
-						<%= numPages %>
+					<a class="button pagination-link" href="/extensions/<%= pageData.mode %>?q=<%= pageData.activeSearchQuery %>&count=<%= pageData.itemsPerPage %>&page=<%= pageData.numPages %>">
+						<%= pageData.numPages %>
 					</a>
 				</li>
 			<% } %>
 		</ul>
 	</nav>
 <% } %>
+</div>

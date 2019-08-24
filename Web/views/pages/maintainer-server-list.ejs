@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Server List - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function sendMessage() {
 		var serverMessage = $("#server-message");
@@ -44,11 +41,11 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" action="/dashboard/servers/server-list" method="get">
+					<form id="form" action="/dashboard/maintainer/servers/server-list" method="get" onsubmit="GAwesomeUtil.SFS();">
 						<input type="hidden" name="svrid" value="maintainer" />
 						<div class="field has-addons">
 							<div class="control is-expanded">
-								<input id="server-search" name="q" class="input is-expanded" type="text" placeholder="Server name" value="<%= activeSearchQuery %>">
+								<input id="server-search" name="q" class="input is-primary is-expanded" type="text" placeholder="Server name" value="<%= pageData.activeSearchQuery %>">
 							</div>
 							<div class="control">
 								<button class="button is-primary">
@@ -60,8 +57,8 @@
 							</div>
 						</div>
 						<script>
-						  $.getJSON("/serverlist", function(data) {
-							new autoComplete({
+						  $.getJSON("/api/list/servers", function(data) {
+							new AutoComplete({
 							  selector: "#server-search",
 							  minChars: 2,
 							  source: function(query, res) {
@@ -73,23 +70,23 @@
 							});
 						  });
 						</script>
-						<% if(data && data.length > 0) { %>
+						<% if (configData && configData.length > 0) { %>
 							<div class="field is-grouped">
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="i" onchange="$('#form').submit()">
-											<% for(var i=0; i<data.length; i++) { %>
-											<option value="<%= i %>"<%= selectedServer==i ? " selected": "" %>><%= data[i].name %></option>
+											<% for (var i = 0; i < configData.length; i++) { %>
+											<option value="<%= i %>"<%= pageData.selectedServer==i ? " selected": "" %>><%= configData[i].name %></option>
 											<% } %>
 										</select>
 									</span>
 								</p>
-								<% if(selectedServer) { %>
+								<% if (pageData.selectedServer) { %>
 								<p class="control">
-									<span class="select">
+									<span class="select is-primary">
 										<select name="chid">
-											<% for(var i=0; i<data[selectedServer].channelData.length; i++) { %>
-											<option value="<%= data[selectedServer].channelData[i].id %>"><%= data[selectedServer].channelData[i].name %></option>
+											<% for(var i = 0; i < configData[pageData.selectedServer].channelData.length; i++) { %>
+											<option value="<%= configData[pageData.selectedServer].channelData[i].id %>"><%= configData[pageData.selectedServer].channelData[i].name %></option>
 											<% } %>
 										</select>
 									</span>
@@ -103,7 +100,7 @@
 									</a>
 								</p>
 								<p class="control">
-									<a class="button is-info" href="/activity/servers?q=<%= data[selectedServer].name %>">
+									<a class="button is-info" href="/activity/servers?q=<%= configData[pageData.selectedServer].name %>" target="_blank">
 										<span class="icon is-small">
 											<i class="fa fa-info"></i>
 										</span>
@@ -128,9 +125,9 @@
 								</p>
 								<% } %>
 							</div>
-						<% if(selectedServer) { %>
+						<% if (pageData.selectedServer) { %>
 						<p class="control">
-							<textarea id="server-message" name="message" class="textarea" placeholder="Message to send, in markdown" minlength="1" maxlength="2000"></textarea>
+							<textarea id="server-message" name="message" class="textarea is-primary" placeholder="Message to send, in markdown" minlength="1" maxlength="2000"></textarea>
 						</p>
 						<% } %>
 						<% } %>

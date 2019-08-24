@@ -2,24 +2,32 @@
 
 /**
  * Clear activity stats for a server
- * @param bot The bot instance
- * @param {Guild} server The server which has its stats cleared
- * @param serverDocument The Server Document
+ * @param client The client instance
+ * @param {Document} serverDocument The Server Document
  */
-module.exports = async (bot, server, serverDocument) => {
+module.exports = async (client, serverDocument) => {
+	const serverQueryDocument = serverDocument.query;
+
 	// Rank members by activity score for the week
 	const topMembers = [];
-	await Promise.all(serverDocument.members.map(async memberDocument => {
+	const server = client.guilds.get(serverDocument._id);
+	if (!server) return;
+	await Promise.all(Object.values(serverDocument.members).map(async memberDocument => {
+		if (!memberDocument) return;
 		const member = server.members.get(memberDocument._id);
-		if (member && member.id !== bot.user.id && !member.user.bot) {
+		const memberQueryDocument = serverQueryDocument.clone.id("members", memberDocument._id);
+		if (member && member.id !== client.user.id && !member.user.bot) {
 			const activityScore = memberDocument.messages + memberDocument.voice;
 			topMembers.push([member, activityScore]);
-			memberDocument.rank_score += activityScore / 10;
-			memberDocument.rank = await bot.checkRank(server, serverDocument, member, memberDocument, true);
-			memberDocument.messages = 0;
-			memberDocument.voice = 0;
+			memberQueryDocument.inc("rank_score", activityScore / 10);
+			const rank = await client.checkRank(server, serverDocument, serverDocument.query, member, memberDocument, true);
+			memberQueryDocument.set("rank", rank || "");
+			memberQueryDocument.set("messages", 0);
+			memberQueryDocument.set("voice", 0);
 		} else {
-			memberDocument.remove();
+			if (!memberDocument._id && member) memberQueryDocument.set("_id", member.id);
+			else if (!memberDocument._id) memberQueryDocument.set("_id", "UNKNOWN USER");
+			memberQueryDocument.remove();
 		}
 	}));
 	topMembers.sort((a, b) => a[1] - b[1]);
@@ -30,19 +38,13 @@ module.exports = async (bot, server, serverDocument) => {
 	 * @param {Number} amount The amount of points to give the member
 	 */
 	const awardPoints = async (member, amount) => {
-		/**
-		 * Check https://www.npmjs.com/package/mongoose-findorcreate#promise-support
-		 */
-		const findOrCreate = await Users.findOrCreate({ _id: member.id }).catch(err => {
-			winston.warn(`Failed to find or create user data for "${member.user.tag}" to award activity points on server "${server}"`, { usrid: member.id }, err);
-		});
-		const userDocument = findOrCreate.doc;
+		const userDocument = await Users.findOne({ _id: member.id });
 		if (userDocument) {
-			userDocument.points += amount;
+			userDocument.query.inc("points", amount);
 			try {
 				await userDocument.save();
 			} catch (err) {
-				winston.warn(`Failed to save user document for activity points`, { usrid: member.id }, err);
+				logger.debug(`Failed to save user document for activity points.`, { usrid: member.id }, err);
 			}
 		}
 	};
@@ -56,19 +58,17 @@ module.exports = async (bot, server, serverDocument) => {
 		await Promise.all(promiseArray);
 	}
 
-	// Reset game and command data
-	serverDocument.games = [];
-	serverDocument.command_usage = {};
-	serverDocument.markModified("command_usage");
+	// Reset command data
+	serverQueryDocument.set("command_usage", {});
 
 	// Reset stats timestamp
-	serverDocument.stats_timestamp = Date.now();
+	serverQueryDocument.set("stats_timestamp", Date.now());
 
 	// Save changes to serverDocument
 	try {
 		await serverDocument.save();
-		winston.debug(`Cleared stats for server "${server}"`, { svrid: server.id });
+		logger.verbose(`Cleared stats for server "${server}"`, { svrid: server.id });
 	} catch (err) {
-		winston.warn(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
+		logger.debug(`Failed to clear stats for server "${server}"`, { svrid: server.id }, err);
 	}
 };

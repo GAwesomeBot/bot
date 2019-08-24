@@ -1,8 +1,8 @@
 module.exports = async ({ Constants: { Colors } }, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix === ".") {
-			msg.author.userDocument.afk_message = null;
-			msg.channel.send({
+			msg.author.userDocument.query.set("afk_message", null);
+			msg.send({
 				embed: {
 					color: Colors.GREEN,
 					title: `Welcome back! 🎊`,
@@ -13,8 +13,8 @@ module.exports = async ({ Constants: { Colors } }, msg, commandData) => {
 				},
 			});
 		} else {
-			msg.author.userDocument.afk_message = msg.suffix;
-			msg.channel.send({
+			msg.author.userDocument.query.set("afk_message", msg.suffix);
+			msg.send({
 				embed: {
 					color: Colors.GREEN,
 					description: `Alright, I'll show that when someone mentions you on a server. 👌`,
@@ -25,10 +25,10 @@ module.exports = async ({ Constants: { Colors } }, msg, commandData) => {
 			});
 		}
 		await msg.author.userDocument.save().catch(err => {
-			winston.verbose(`Failed to save user document for AFK message >.>\n`, err);
+			logger.verbose(`Failed to save user document for AFK message >.>\n`, err);
 		});
 	} else if (msg.author.userDocument.afk_message) {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.BLUE,
 				title: `Your current global AFK message is:`,
@@ -39,7 +39,7 @@ module.exports = async ({ Constants: { Colors } }, msg, commandData) => {
 			},
 		});
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,
 				description: `You don't have a global AFK message set right now! ⌨️`,

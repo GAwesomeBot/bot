@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Streamers - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
+
 	<script>
 	function newStreamer() {
 		var newStreamerName = $("#new-streamer-name");
@@ -16,24 +16,26 @@
 		var newStreamerType = $("#new-streamer-type");
 
 		if(newStreamerName.val()) {
-			$.ajax({
+		  GAwesomeData.HUM = true;
+		  $.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-name": newStreamerName.val(),
 					"new-type": newStreamerType.val()
 				},
 				success: function() {
-					saveFormState();
-					$("#form").submit();
-					location.reload();
+				  GAwesomeUtil.SFS();
+				  $("#form").submit();
+				  GAwesomeData.HUM = true;
+				  Turbolinks.visit('');
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -52,86 +54,71 @@
 							Discord is a gamer-focused platform, so a lot of Discord servers have corresponding stream accounts on <strong>Twitch</strong> and <strong>YouTube Gaming</strong>. GAwesomeBot supports checking for when streams go live (add them below) and has a corresponding <code>streamers</code> command to display information about the status of a stream.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
-						<% var commandData = configData.commands.streamers;commandData.name = "streamers";commandData.description = commandDescriptions.streamers;commandData.category = commandCategories.streamers; %>
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+						<div class="command-items">
+						<% const commandData = configData.commands.streamers; commandData.name = "streamers"; commandData.description = pageData.commandDescriptions.streamers; commandData.category = pageData.commandCategories.streamers; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.streamers_data.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>Post updates in...</th>
-												<th>Status</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.streamers_data.length; i++) { %>
-												<tr>
-													<td class="is-icon">
-														<% if(configData.streamers_data[i].type=="twitch") { %>
-															<i class="fa fa-twitch"></i>
-														<% } else if(configData.streamers_data[i].type=="ytg") { %>
-															<i class="fa fa-youtube"></i>
-														<% } %>
-													</td>
-													<td>
-														<%= configData.streamers_data[i]._id %>
-													</td>
-													<td>
-														<span class="select is-small">
-															<select name="streamer-<%= i %>-channel_id">
-																<option value="">None</option>
-																<% for(var j=0; j<channelData.length; j++) { %>
-																	<option value="<%= channelData[j].id %>" <%= configData.streamers_data[i].channel_id==channelData[j].id ? "selected" : "" %>>#<%= channelData[j].name %></option>
-																<% } %>
-															</select>
-														</span>
-													</td>
-													<td>
-														<%= configData.streamers_data[i].live_state ? "Live!" : "Offline" %>
-													</td>
-													<td>
-														<input type="checkbox" id="streamer-<%= i %>-removed" name="streamer-<%= i %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="streamer-<%= i %>-removed" onclick="$('#streamer-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o fa-lg"></i>
+								<%- include("../partials/no-results", { isHidden: configData.streamers_data.length, isSearchQuery: false, description: "You haven't added any streamers yet. Enter a username and platform below to add one." }) %>
+								<table class="table is-fullwidth<%= configData.streamers_data.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th></th>
+											<th>Username</th>
+											<th>Post updates in...</th>
+											<th>Status</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+									<% configData.streamers_data.forEach(streamer => { %>
+										<tr>
+											<td class="is-icon">
+												<% if (streamer.type === "twitch") { %>
+													<i class="fa fa-twitch"></i>
+												<% } else if (streamer.type === "ytg") { %>
+													<i class="fa fa-youtube"></i>
+												<% } %>
+											</td>
+											<td>
+												<%= streamer._id %>
+											</td>
+											<td>
+												<span class="select is-primary is-small">
+													<select name="streamer-<%= streamer._id %>-channel_id">
+														<option value="">None</option>
+														<% pageData.channelData.forEach(channel => { %>
+															<option value="<%= channel.id %>"<%= streamer.channel_id === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+														<% }); %>
+													</select>
 												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't added any streamers yet. Enter a username and platform below to add one.
-										</div>
-									</article>
-									<br>
-								<% } %>
+											</td>
+											<td>
+												<%= streamer.live_state ? "Live!" : "Offline" %>
+											</td>
+											<td>
+												<button class="button is-small is-danger" name="<%= streamer._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
+													<span>Remove</span>
+													<span class="icon is-small">
+														<i class="fa fa-times"></i>
+													</span>
+												</button>
+											</td>
+										</tr>
+									<% }); %>
+									</tbody>
+								</table>
 							</div>
 							<div class="field is-horizontal">
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-streamer-name" class="input" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+											<input id="new-streamer-name" class="input is-primary" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
 											<span class="help">For YouTube Gaming streams, use <a href="http://johnnythetank.github.io/youtube-channel-name-converter">this website</a> to get the corresponding channel ID for a channel name or username.</span>
 										</div>
 										<div class="control">
-											<span class="select">
+											<span class="select is-primary">
 												<select id="new-streamer-type">
 													<option value="twitch">Twitch</option>
 													<option value="ytg">YouTube Gaming</option>

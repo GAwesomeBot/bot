@@ -1,6 +1,10 @@
 [
 	{
 		"_id": "gnews",
-		"url": "https://news.google.com/news?ned=us&topic=h&output=rss"
+		"url": "https://news.google.com/news?ned=us&topic=h&output=rss",
+		"streaming": {
+			"isEnabled": false,
+			"enabled_channel_ids": []
+		}
 	}
 ]

@@ -1,66 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Shards - <%= serverData.name %> Maintainer Console</title>
     <% include ../partials/head %>
     <script>
         let isPerformingAction = false;
         function shutdown() {
-        	if (!isPerformingAction && confirm("Are you sure you want to shut GAwesomeBot down? GAwesomeBot will not be able to respond to Discord events while off.")) {
-        		isPerformingAction = true;
-        		$("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { shutdown: "master" }).done(() => {
-                  $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down... Goodbye!");
-                  const redirect = () => window.location.replace("https://gawesomebot.com");
-                  setTimeout(redirect, 2000);
-                });
-            }
+          swal("Are you sure?", "GAwesomeBot will not be able to respond to Discord events while off.", {
+            dangerMode: true,
+            buttons: [true, {
+              text: "Shutdown",
+              closeModal: false,
+            }],
+          }).then(res => {
+            if (isPerformingAction || !res) return;
+            isPerformingAction = true;
+            $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down...");
+            $.post("/dashboard/maintainer/management/shards", { shutdown: "master" }).done(() => {
+              $("#shutdown").html("<span class=\"icon\"><i class=\"fa fa-power-off\"></i></span>Shutting down... Goodbye!");
+              swal.stopLoading();
+              swal("Success!", "You will be redirected shortly.", "success");
+              const redirect = () => window.location.replace("https://gawesomebot.com");
+              setTimeout(redirect, 2000);
+            });
+          });
         }
         function restart() {
-        	if (!isPerformingAction && confirm("Are you sure you want to restart GAwesomeBot? This will restart all shards, but keep the master alive.")) {
+        	swal("Are you sure?", "This will restart all shards, but keep the master alive.", {
+        		dangerMode: true,
+                buttons: [true, {
+        			text: "Restart",
+                    closeModal: false,
+                }],
+            }).then(res => {
+        	    if (isPerformingAction || !res) return;
         	    isPerformingAction = true;
                 $("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting...");
-        		$.post("/dashboard/management/shards?svrid=maintainer", { restart: "master" }).done(() => {
+        		$.post("/dashboard/maintainer/management/shards", { restart: "master" }).done(() => {
         			$("#restart").html("<span class=\"icon\"><i class=\"fa fa-refresh\"></i></span>Restarting... Be right back!");
-        			const redirect = () => window.location.reload(true);
+        			swal.stopLoading();
+        			swal("Success!", "You will be redirected shortly.", "success");
+        			const redirect = () => Turbolinks.visit("");
         			setTimeout(redirect, 5000);
         		});
-        	}
+            });
         }
         function freezeShard(id) {
-        	if (!isPerformingAction && confirm("Are you sure you want to freeze this shard? You will not be able to unfreeze this shard until it is restarted.")) {
+            swal("Are you sure?", "You will not be able to unfreeze this shard until it is restarted.", {
+                dangerMode: true,
+                buttons: [true, {
+                    text: "Freeze",
+                    closeModal: false,
+                }],
+            }).then(res => {
+        	    if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#freeze-${id}`).html("Freezing...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { "freeze-shard": id }).done(() => {
+                $.post("/dashboard/maintainer/management/shards", { "freeze-shard": id }).done(() => {
                 	$(`#freeze-${id}`).parent().html(`<a id="restart-${id}" class="card-footer-item card-footer-item-danger" href="javascript:restartShard(${id})">Restart</a>`);
                 	$(`#shard-header-${id}`).append(" (Frozen)");
+                	swal.stopLoading();
+                	swal("Success!", "This shard has been frozen successfully.", "success");
                 	isPerformingAction = false;
                 });
-            }
+            });
         }
         function resetShard(id) {
-        	if (!isPerformingAction && confirm("Are you sure you want to reset this shard? This shard will reinitialize without restarting, which can cause conflicts and unexpected behavior.")) {
+            swal("Are you sure?", "This shard will reinitialize without restarting, which can cause conflicts and unexpected behavior.", {
+                dangerMode: true,
+                buttons: [true, {
+                    text: "Reset",
+                    closeModal: false,
+                }],
+            }).then(res => {
+                if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#reset-${id}`).html("Resetting...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { "reset-shard": id }).done(() => {
+                $.post("/dashboard/maintainer/management/shards", { "reset-shard": id }).done(() => {
                 	$(`#reset-${id}`).html("Reset");
+                	swal("Success!", "This shard is now being reinitialized.", "success");
                 	isPerformingAction = false;
                 });
-            }
+            });
         }
         function restartShard(id) {
-        	if (!isPerformingAction && confirm("Are you sure you want to restart this shard? This shard will not be able to respond to Discord events while restarting. Restarting a single shard can have unintended effects.")) {
+            swal("Are you sure?", "This shard will not be able to respond to Discord events while restarting. Restarting a single shard can have unintended effects.", {
+                dangerMode: true,
+                buttons: [true, {
+                    text: "Restart",
+                    closeModal: false,
+                }],
+            }).then(res => {
+                if (isPerformingAction || !res) return;
                 isPerformingAction = true;
                 $(`#restart-${id}`).html("Restarting...");
-                $.post("/dashboard/management/shards?svrid=maintainer", { "restart-shard": id }).done(() => {
+                $.post("/dashboard/maintainer/management/shards", { "restart-shard": id }).done(() => {
                 	$(`#restart-${id}`).parent().html(`<div class="card-footer-item" style="cursor: default; user-select: none;">See you soon!</div>`);
+                	swal.stopLoading();
+                	swal("Success!", "This shard is now restarting.", "success");
                 	isPerformingAction = false;
                 });
-            }
+            });
         }
 
         function dismissWarning(warn, id) {
-        	$.post("/dashboard/management/shards?svrid=maintainer", { dismiss: warn }).done(() => {
+        	$.post("/dashboard/maintainer/management/shards", { dismiss: warn }).done(() => {
         		$(`#warning-${id}`).remove();
         		let warnCounter = $("#warning-count");
         		warnCounter.text(Number(warnCounter.text()) - 1);
@@ -68,16 +112,6 @@
             });
         }
     </script>
-    <style>
-        .card-footer-item-danger:hover {
-            color: #ff3860;
-        }
-        .card-footer-item.is-loading {
-            position: relative;
-            pointer-events: none;
-            opacity: 0.5;
-        }
-    </style>
 </head>
 <body>
 <% include ../partials/dashboard-header %>
@@ -114,19 +148,19 @@
                             <div class="level-item has-text-centered">
                                 <div>
                                     <p class="heading">Registered Users</p>
-                                    <p class="title"><%= config.data.master.users %></p>
+                                    <p class="title"><%= configData.data.master.users %></p>
                                 </div>
                             </div>
                             <div class="level-item has-text-centered">
                                 <div>
                                     <p class="heading">Guild Configurations</p>
-                                    <p class="title"><%= config.data.master.guilds %></p>
+                                    <p class="title"><%= configData.data.master.guilds %></p>
                                 </div>
                             </div>
                             <div class="level-item has-text-centered">
                                 <div>
                                     <p class="heading">DB Query Latency</p>
-                                    <p class="title"><%= config.data.master.ping %>ms</p>
+                                    <p class="title"><%= configData.data.master.ping %></p>
                                 </div>
                             </div>
                         </div>
@@ -134,28 +168,28 @@
                             <span class="icon">
                                 <i class="fa fa-server"></i>
                             </span>
-                            Using <strong><%= config.data.master.rss %>MB</strong> of RAM
+                            Using <strong><%= configData.data.master.rss %>MB</strong> of RAM
                             <br>
                             <span class="icon">
                                 <i class="fa fa-clock-o"></i>
                             </span>
-                            Process has been alive for <strong><%= config.data.master.uptime %> hours</strong>
+                            Process has been alive for <strong><%= configData.data.master.uptime %> hours</strong>
                             <br>
                             <span class="icon">
-                                <i class="fa fa-<%= config.data.master.platformIcon %>"></i>
+                                <i class="fa fa-<%= configData.data.master.platformIcon %>"></i>
                             </span>
-                            Running on <strong><%= config.data.master.platform %></strong> with PID <strong><%= config.data.master.PID %></strong>
-                            <% if (config.data.master.warns.length > 0) { %>
+                            Running on <strong><%= configData.data.master.platform %></strong> with PID <strong><%= configData.data.master.PID %></strong>
+                            <% if (configData.data.master.warns.length > 0) { %>
                             <br>
                             <div id="warning-list">
                                 <span class="icon">
                                     <i class="fa fa-exclamation-triangle"></i>
                                 </span>
-                                Found <strong id="warning-count"><%= config.data.master.warns.length %></strong> configuration warnings:
-                                <% config.data.master.warns.forEach(warn => { %>
-                                    <dd id="warning-<%= config.data.master.warns.indexOf(warn) %>">
-                                        <% if (serverData.accessShutdown) { %>
-                                            <button class="button is-small is-white" onclick="dismissWarning(`<%= warn %>`, <%= config.data.master.warns.indexOf(warn) %>); return false;" title="Dismiss warning">
+                                Found <strong id="warning-count"><%= configData.data.master.warns.length %></strong> configuration warnings:
+                                <% configData.data.master.warns.forEach(warn => { %>
+                                    <dd id="warning-<%= configData.data.master.warns.indexOf(warn) %>">
+                                        <% if (accessPrivileges.includes("shutdown")) { %>
+                                            <button class="button is-small is-white" onclick="dismissWarning(`<%= warn %>`, <%= configData.data.master.warns.indexOf(warn) %>); return false;" title="Dismiss warning">
                                                 <span class="icon is-small">
                                                     <i class="fa fa-times"></i>
                                                 </span>
@@ -169,7 +203,7 @@
                         </div>
                     </div>
                     <footer class="card-footer">
-                        <% if (serverData.accessShutdown) { %>
+                        <% if (accessPrivileges.includes("shutdown")) { %>
                         <a id="shutdown" class="card-footer-item card-footer-item-danger" href="javascript:shutdown()">
                             <span class="icon">
                                 <i class="fa fa-power-off"></i>
@@ -184,40 +218,40 @@
                         </a>
                         <% } else { %>
                         <div class="card-footer-item" style="opacity: 0.5; cursor: not-allowed; user-select: none;">
-                            You are not authorized to manage this shard.
+                            You are not authorized to manage the master.
                         </div>
                         <% } %>
                     </footer>
                 </div>
                 <br>
                 <div class="columns">
-                    <% for (let i = 0; i < config.shardTotal; i++) { %>
+                    <% for (let i = 0; i < configData.shardTotal; i++) { %>
                     <div class="column is-quarter">
                         <div class="card">
                             <header class="card-header">
-                                <p id="shard-header-<%= config.data.shards[i].ID %>" class="card-header-title">
-                                    Shard <%= config.data.shards[i].ID %><%= config.data.shards[i].ID === config.currentShard ? " (Current)" : "" %><%= config.data.shards[i].isFrozen ? " (Frozen)" : "" %>
+                                <p id="shard-header-<%= configData.data.shards[i].ID %>" class="card-header-title">
+                                    Shard <%= configData.data.shards[i].ID %><%= configData.data.shards[i].ID === pageData.currentShard ? " (Current)" : "" %><%= configData.data.shards[i].isFrozen ? " (Frozen)" : "" %>
                                 </p>
                             </header>
                             <div class="card-content">
-                                <% if (!config.data.shards[i].isFrozen) { %>
+                                <% if (!configData.data.shards[i].isFrozen) { %>
                                 <div class="level">
                                     <div class="level-item has-text-centered">
                                         <div>
                                             <p class="heading">Users</p>
-                                            <p class="title"><%= config.data.shards[i].users %></p>
+                                            <p class="title"><%= configData.data.shards[i].users %></p>
                                         </div>
                                     </div>
                                     <div class="level-item has-text-centered">
                                         <div>
                                             <p class="heading">Guilds</p>
-                                            <p class="title"><%= config.data.shards[i].guilds %></p>
+                                            <p class="title"><%= configData.data.shards[i].guilds %></p>
                                         </div>
                                     </div>
                                     <div class="level-item has-text-centered">
                                         <div>
                                             <p class="heading">Ping</p>
-                                            <p class="title"><%= config.data.shards[i].ping %></p>
+                                            <p class="title"><%= configData.data.shards[i].ping %></p>
                                         </div>
                                     </div>
                                 </div>
@@ -226,24 +260,38 @@
                                     <span class="icon">
                                         <i class="fa fa-server"></i>
                                     </span>
-                                    Using <strong><%= config.data.shards[i].rss %>MB</strong> of RAM
+                                    Using <strong><%= configData.data.shards[i].rss %>MB</strong> of RAM
                                     <br>
                                     <span class="icon">
                                         <i class="fa fa-clock-o"></i>
                                     </span>
-                                    Shard has been alive for <strong><%= config.data.shards[i].uptime %> hours</strong>
+                                    Shard has been alive for <strong><%= configData.data.shards[i].uptime %> hours</strong>
                                     <br>
                                     <span class="icon">
                                         <i class="fa fa-terminal"></i>
                                     </span>
-                                    Shard is running with PID <strong><%= config.data.shards[i].PID %></strong>
+                                    Shard is running with PID <strong><%= configData.data.shards[i].PID %></strong>
                                 </div>
                             </div>
                             <footer class="card-footer">
-                                <% if (serverData.accessShutdown) { %>
-                                <% if (!config.data.shards[i].isFrozen) { %><a id="freeze-<%= config.data.shards[i].ID %>" class="card-footer-item" href="javascript:freezeShard(<%= config.data.shards[i].ID %>)">Freeze</a><% } %>
-                                <% if (!config.data.shards[i].isFrozen) { %><a id="reset-<%= config.data.shards[i].ID %>" class="card-footer-item" href="javascript:resetShard(<%= config.data.shards[i].ID %>)">Reset</a><% } %>
-                                <a id="restart-<%= config.data.shards[i].ID %>" class="card-footer-item card-footer-item-danger" href="javascript:restartShard(<%= config.data.shards[i].ID %>)">Restart</a>
+                                <div class="card-footer-item">
+                                    <span class="has-text-<%= configData.data.shards[i].worker.status ? "success" : "danger" %>">
+                                        <span class="icon">
+                                            <i class="fa fa-circle-o"></i>
+                                        </span>
+                                        <% if (configData.data.shards[i].worker.status) { %>
+                                        Extension Worker Online with PID <%= configData.data.shards[i].worker.PID %>
+                                        <% } else { %>
+                                        Extension Worker Offline
+                                        <% } %>
+                                    </span>
+                                </div>
+                            </footer>
+                            <footer class="card-footer">
+                                <% if (accessPrivileges.includes("shutdown")) { %>
+                                <% if (!configData.data.shards[i].isFrozen) { %><a id="freeze-<%= configData.data.shards[i].ID %>" class="card-footer-item" href="javascript:freezeShard(<%= configData.data.shards[i].ID %>)">Freeze</a><% } %>
+                                <% if (!configData.data.shards[i].isFrozen) { %><a id="reset-<%= configData.data.shards[i].ID %>" class="card-footer-item" href="javascript:resetShard(<%= configData.data.shards[i].ID %>)">Reset</a><% } %>
+                                <a id="restart-<%= configData.data.shards[i].ID %>" class="card-footer-item card-footer-item-danger" href="javascript:restartShard(<%= configData.data.shards[i].ID %>)">Restart</a>
                                 <% } else { %>
                                 <div class="card-footer-item" style="opacity: 0.5; cursor: not-allowed; user-select: none;">
                                     You are not authorized to manage this shard.
@@ -252,7 +300,7 @@
                             </footer>
                         </div>
                     </div>
-                    <% if (i % 2 === 1 && i !== config.data.shards.length - 1 && i !== 0) { %>
+                    <% if (i % 2 === 1 && i !== configData.data.shards.length - 1 && i !== 0) { %>
                         </div>
                         <div class="columns">
                     <% } %>

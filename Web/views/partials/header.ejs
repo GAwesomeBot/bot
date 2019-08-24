@@ -7,14 +7,14 @@
                     GAwesomeBot
                 </a>
 
-                <button id="navbar-burger" class="navbar-burger button" onClick="$(this).toggleClass('is-active'); $('#navbar-menu').toggleClass('is-active');">
+                <button id="navbar-burger" class="navbar-burger button" onClick="$(this).toggleClass('is-active'); $('#navbar-menu').slideToggle('fast');">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
             </div>
 
-            <div id="navbar-menu" class=" navbar-menu">
+            <div id="navbar-menu" class="navbar-menu">
                 <div class="navbar-end">
                 <a class="navbar-item is-active" href="https://status.gawesomebot.com" title="Status">
                   <span class="icon is-small">
@@ -58,7 +58,7 @@
                     &nbsp;
                     <span>Blog</span>
                 </a>
-                <a id="nav-donate" class="navbar-item is-active modal-button" href="/donate">
+                <a id="nav-donate" class="navbar-item is-active" href="/donate">
                     <span class="icon is-small">
                         <i class="fa fa-gift"></i>
                     </span>
@@ -66,13 +66,13 @@
                     <span>Donate</span>
                 </a>
                 <script>
-                    if(localStorage.getItem("donate")=="hide") {
+                    if(localStorage.getItem("donate") === "hide") {
                         $("#nav-donate").toggle();
                     }
                 </script>
 
-                <% if(authUser) { %>
-                <a id="nav-dashboard" class="navbar-item is-active" href="/dashboard" title="Go to dashboard">
+                <% if (authUser) { %>
+                <a id="nav-dashboard" class="navbar-item is-active is-flex-centered" href="/dashboard" title="Go to dashboard">
                     <img class="image is-16x16" src="<%= authUser.avatar %>" style="border-radius: 100%;" alt="<%= authUser.id %>">
                     &nbsp;
                     <span><%= authUser.username %></span>
@@ -101,12 +101,5 @@
                 <% } %>
                 </div>
             </div>
-            <script>
-                var currentPage = window.location.pathname.split("/")[1];
-                var currentNavItem = $("#nav-" + currentPage);
-                if(currentNavItem) {
-                    currentNavItem.addClass("is-tab");
-                }
-            </script>
         </div>
     </nav>

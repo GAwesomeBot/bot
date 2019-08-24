@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>GAwesomeBot Dashboard</title>
 	<% include ../partials/head %>
@@ -27,7 +27,7 @@
 	</script>
 </head>
 <body onload="mediaStyle();">
-	<section id="header" class="hero is-primary is-fullheight is-bold" style="background: url('/header-image');background-size: cover;">
+	<section id="header" class="main-header-section hero is-primary is-fullheight is-bold">
 		<div class="hero-head">
 			<% include ../partials/header %>
 		</div>
@@ -38,7 +38,7 @@
 						Welcome, <strong><%= authUser.username %></strong>!
 					</h1>
 					<h3 class="subtitle is-3">
-						<% if(serverData.length>0) { %>
+						<% if (serverData.length > 0) { %>
 							Select a server to configure.
 						<% } else { %>
 							<span>You don&#39;t have any guilds</span>
@@ -51,23 +51,23 @@
 				<br><br><br>
 				<div class="columns">
 					<div class="column is-half is-offset-one-quarter">
-						<% for(var i=0; i<serverData.length; i++) { %>
-							<% if(!serverData[i].botJoined) { %>
-								<a class="media modal-button" data-target="#post-add-modal" target="_blank" href="<%= rawJoinLink + '&guild_id=' + serverData[i].id %>">
-							<% } else if(!serverData[i].isAdmin) { %>
-								<a class="media modal-button" data-target="#not-admin-modal">
+						<% serverData.forEach(server => { %>
+							<% if (!server.botJoined) { %>
+								<a class="media modal-button arrow-link" data-target="#post-add-modal" target="_blank" href="<%= pageData.rawJoinLink + '&guild_id=' + server.id %>">
+							<% } else if (!server.isAdmin) { %>
+								<a class="media modal-button arrow-link" data-target="#not-admin-modal">
 							<% } else { %>
-								<a class="media" href="/dashboard/overview?svrid=<%= serverData[i].id %>">
+								<a class="media arrow-link" href="/dashboard/<%= server.id %>/<%= server.id === "maintainer" ? "maintainer" : "overview"%>">
 							<% } %>
 								<figure class="media-left">
 									<p class="image server-icon is-48x48">
-										<img src="<%= serverData[i].icon %>" style="border-radius: 100%;" alt="<%= serverData[i].id %>">
+										<img src="<%= server.icon %>" style="border-radius: 100%;" alt="<%= server.id %>">
 									</p>
 								</figure>
 								<div class="media-content">
-									<h2 class="subtitle is-2 server-name"><%= serverData[i].name %></h2>
+									<h2 class="subtitle is-2 server-name"><%= server.name %></h2>
 								</div>
-								<% if(serverData[i].botJoined && serverData[i].isAdmin) { %>
+								<% if (server.botJoined && server.isAdmin) { %>
 									<div class="media-right">
 										<span class="icon server-arrow is-primary is-large">
 					                        <i class="fa fa-chevron-right fa-2x"></i>
@@ -75,7 +75,7 @@
 									</div>
 								<% } %>
 							</a>
-						<% } %>
+						<% }); %>
 					</div>
 				</div>
 			</div>
@@ -118,7 +118,7 @@
 				</div>
 			</div>
 		</div>
-		<button class="modal-close"></button>
+		<button class="modal-close is-large"></button>
 	</div>
 	<div id="post-add-modal" class="modal">
 		<div class="modal-background"></div>
@@ -131,7 +131,7 @@
 				</div>
 			</div>
 		</div>
-		<button class="modal-close"></button>
+		<button class="modal-close is-large"></button>
 	</div>
 
 	<% include ../partials/footer %>

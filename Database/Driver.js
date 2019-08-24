@@ -1,40 +1,18 @@
-const mongoose = require("mongoose");
-mongoose.Promise = global.Promise;
-const serverSchema = require("./Schemas/serverSchema");
-const userSchema = require("./Schemas/userSchema");
-userSchema.plugin(require("mongoose-findorcreate"));
-const modulesSchema = require("./Schemas/modulesSchema.js");
-modulesSchema.index({
-	name: "text",
-	description: "text",
-});
-const blogSchema = require("./Schemas/blogSchema.js");
-const wikiSchema = require("./Schemas/wikiSchema");
-const trafficSchema = require("./Schemas/trafficSchema");
+/* eslint node/exports-style: ["error", "exports"] */
+const { MongoClient } = require("mongodb");
 
+const Model = require("./Model");
 const { addToGlobal } = require("../Modules/Utils/GlobalDefines.js");
 
-exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
-	if (client) {
-		/* eslint-disable prefer-arrow-callback, no-invalid-this */
-		serverSchema.plugin(function hookIntoSchema (schema) {
-			winston.debug(`Hooking into the server schema...`);
-			schema.post("save", async function _ () {
-				if (global.ThatClientThatDoesCaching.cache) {
-					let cachedDocument = global.ThatClientThatDoesCaching.cache.getSync(this._id);
-					if (this.__v && cachedDocument && cachedDocument.__v && this.__v !== cachedDocument.__v) {
-						winston.info(`The document for ${this._id} has a new version! ${process.env.SHARD_ID} Updating...`, { old: cachedDocument.__v, new: this.__v, guild: this._id });
-						global.ThatClientThatDoesCaching.cache.update(this._id);
-					}
-				}
-			});
-		});
-	}
-	mongoose.connect(url, {
-		keepAlive: 120,
-		useMongoClient: true,
-		promiseLibrary: global.Promise,
-	});
+/**
+ * Prepares models, creates and connects a client to MongoDB
+ * @param {object} config A set of MongoDB config options
+ * @returns {Promise<Object>}
+ */
+exports.initialize = async config => {
+	const mongoClient = new MongoClient(config.URL, config.options);
+	await mongoClient.connect();
+	const db = mongoClient.db(config.db);
 	const [
 		Servers,
 		Users,
@@ -43,33 +21,30 @@ exports.initialize = (url, client = null) => new Promise((resolve, reject) => {
 		Wiki,
 		Traffic,
 	] = [
-		mongoose.model("servers", serverSchema),
-		mongoose.model("users", userSchema),
-		mongoose.model("gallery", modulesSchema),
-		mongoose.model("blog", blogSchema),
-		mongoose.model("wiki", wikiSchema),
-		mongoose.model("traffic", trafficSchema, "traffic"),
+		new Model(db, "servers", require("./Schemas/serverSchema")),
+		new Model(db, "users", require("./Schemas/userSchema")),
+		new Model(db, "gallery", require("./Schemas/gallerySchema")),
+		new Model(db, "blog", require("./Schemas/blogSchema")),
+		new Model(db, "wiki", require("./Schemas/wikiSchema")),
+		new Model(db, "traffic", require("./Schemas/trafficSchema")),
 	];
-	mongoose.connection
-		.on("error", err => reject(err))
-		.once("open", () => {
-			addToGlobal("Servers", Servers);
-			addToGlobal("Users", Users);
-			addToGlobal("Gallery", Gallery);
-			addToGlobal("Blob", Blog);
-			addToGlobal("Wiki", Wiki);
-			addToGlobal("Raw", mongoose.connection);
-			addToGlobal("Database", {
-				Servers, servers: Servers,
-				Users, users: Users,
-				Gallery, gallery: Gallery,
-				Blog, blog: Blog,
-				Wiki, wiki: Wiki,
-				Traffic, traffic: Traffic,
-				Raw: mongoose.connection,
-			});
-			resolve(global.Database);
-		});
-});
+	addToGlobal("Servers", Servers);
+	addToGlobal("Users", Users);
+	addToGlobal("Gallery", Gallery);
+	addToGlobal("Blog", Blog);
+	addToGlobal("Wiki", Wiki);
+	addToGlobal("Client", db);
+	addToGlobal("Database", {
+		Servers, servers: Servers,
+		Users, users: Users,
+		Gallery, gallery: Gallery,
+		Blog, blog: Blog,
+		Wiki, wiki: Wiki,
+		Traffic, traffic: Traffic,
+		client: db,
+		mongoClient,
+	});
+	return global.Database.client;
+};
 
 exports.get = exports.getConnection = () => global.Database;

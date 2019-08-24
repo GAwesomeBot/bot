@@ -1,47 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title><%= data.pageTitle %> - GAwesomeBot Activity</title>
+	<title><%= pageData.pageTitle %> - GAwesomeBot Activity</title>
 	<% include ../partials/head %>
 
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script async src="/static/js/auto-complete.min.js"></script>
-	<script>
-	var mq = window.matchMedia("screen and (max-width: 768px)");
-	mq.addListener(mediaStyle);
-
-	var searchInputAutocomplete;
-	function mediaStyle(mq) {
-		if(mq.matches) {
-			$(".header-search-box").removeClass("is-large");
-			document.getElementById("frame").style.paddingLeft = "15px";
-			document.getElementById("frame").style.paddingRight = "15px";
-			if(document.getElementById("search-select").value=="servers") {
-				switchLayout("list");
-			}
-		} else {
-			$(".header-search-box").addClass("is-large");
-			document.getElementById("frame").style.paddingLeft = "0px";
-			document.getElementById("frame").style.paddingRight = "0px";
-		}
-	}
-	</script>
 </head>
 <body>
-	<section id="header" class="hero is-primary is-small is-bold" style="background: url('/header-image');background-size: cover;">
+	<section id="header" class="main-header-section hero is-primary is-small is-bold">
 		<div class="hero-head">
 			<% include ../partials/header %>
 		</div>
 		<div class="hero-body">
 			<div class="container has-text-centered">
 				<h1 class="subtitle is-1">
-					<strong><%= totalMessageCount %></strong> message<%= totalMessageCount==1 ? "" : "s" %> today, <strong><%= numActiveServers %></strong> active server<%= numActiveServers==1 ? "" : "s" %>
+					<strong><%= pageData.totalMessageCount %></strong> message<%= pageData.totalMessageCount === 1 ? "" : "s" %> today, <strong><%= pageData.numActiveServers %></strong> active server<%= pageData.numActiveServers === 1 ? "" : "s" %>
 				</h1>
+				<%- include("../partials/adspace", { officialMode: typeof officialMode !== undefined ? officialMode : false, adsEnabled: true }) %>
 				<div class="columns">
 					<div class="column is-8 is-offset-2">
 						<div class="field has-addons has-addons-centered">
 							<div class="control is-expanded">
-								<input id="search-input" class="input header-search-box" type="text" placeholder="I'm looking for..." value="<%= activeSearchQuery %>">
+								<input id="search-input" class="input is-primary header-search-box is-large" type="text" placeholder="I'm looking for..." value="<%= pageData.activeSearchQuery %>">
 							</div>
 							<div class="control">
 								<a id="search-button" class="button is-primary is-large header-search-box">
@@ -60,32 +39,32 @@
 			<nav class="tabs is-boxed is-centered">
 				<div class="container">
 					<ul>
-						<li class="<%= mode=='servers' ? 'is-active' : '' %>">
+						<li class="<%= pageData.mode === 'servers' ? 'is-active' : '' %>">
 							<a href="/activity/servers">
 								<span class="icon">
 									<i class="fa fa-server"></i>
 								</span>
-								<% if(mode=="servers") { %>
+								<% if ( pageData.mode === "servers") { %>
 									Servers
 									&nbsp;
 									<span class="tag is-small is-primary">
-										<%= rawServerCount %>
+										<%= pageData.rawServerCount %>
 									</span>
 								<% } else { %>
 									<span>Servers</span>
 								<% } %>
 							</a>
 						</li>
-						<li class="<%= mode=='users' ? 'is-active' : '' %>">
+						<li class="<%= pageData.mode === 'users' ? 'is-active' : '' %>">
 							<a href="/activity/users">
 								<span class="icon">
 									<i class="fa fa-user"></i>
 								</span>
-								<% if(mode=="users") { %>
+								<% if (pageData.mode === "users") { %>
 									Users
 									&nbsp;
 									<span class="tag is-small is-primary">
-										<%= rawUserCount %>
+										<%= pageData.rawUserCount %>
 									</span>
 								<% } else { %>
 									<span>Users</span>
@@ -100,12 +79,8 @@
 
 	<section id="frame" class="section">
 		<div class="container">
-			<% if(mode=="servers") { %>
+			<% if (pageData.mode === "servers") { %>
 				<% include ../partials/servers-section %>
-				<script>
-				switchLayout();
-				showSelections();
-				</script>
 			<% } else { %>
 				<% include ../partials/users-section %>
 			<% } %>
@@ -116,9 +91,9 @@
 		<div class="hero-body">
 			<div class="container">
 				<div class="has-text-centered">
-					<% if(mode=="servers") { %>
+					<% if (pageData.mode === "servers") { %>
 						<p class="hero-buttons">
-							<% if(authUser) { %>
+							<% if (authUser) { %>
 								<a class="button is-primary is-outlined is-large" href="/dashboard">
 									<span class="icon">
 										<i class="fa fa-cog"></i>

@@ -16,68 +16,62 @@
 <link rel="shortcut icon" type="image/png" href="/static/img/icon.png">
 <meta name="theme-color" content="#009688">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turbolinks/5.0.3/turbolinks.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css">
+
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
 <link href="/static/fonts/icon-discord.css" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/bulma-6.css">
-<link rel="stylesheet" href="/static/css/custom.css">
+<link rel="stylesheet" href="/static/css/bulma-7.css">
+<link rel="stylesheet" href="/static/css/extensions.css">
+
+<link rel="stylesheet" href="/static/css/simplemde.min.css">
+<script src="/static/js/simplemde.min.js"></script>
+<script src="/static/js/showdown.min.js"></script>
+<script async src="/static/js/FileSaver.min.js"></script>
+<link rel="stylesheet" href="/static/css/auto-complete.css">
+<script src="/static/js/AutoComplete.min.js"></script>
 
 <script src="/static/js/jquery-2.2.0.min.js"></script>
-<script async src="/static/js/bulma.js"></script>
+<script src="/static/js/bulma.js"></script>
 
+<script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+<script src="/static/js/terminal.min.js"></script>
+
+<link rel="stylesheet" href="/static/css/codemirror.css">
+<link rel="stylesheet" href="/static/css/codemirror-monokai.css">
+
+<script src="/static/js/codemirror.min.js"></script>
+
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<script src="/static/js/socket.io-1.4.5.min.js"></script>
+
+<% if (typeof injection !== "undefined" && injection.headScript) { %>
 <script>
-function setUserAutocomplete(svrid) {
-	$.getJSON("/userlist" + (svrid ? ("?svrid=" + svrid) : ""), function(data) {
-		new autoComplete({
-			selector: ".user-autocomplete",
-			minChars: 2,
-			source: function(query, res) {
-				query = query.toLowerCase();
-				res(data.filter(function(a) {
-					return a.toLowerCase().indexOf(query)>-1;
-				}));
-			}
-		});
-	});
-}
-
-$(window).scroll(function() {
-	if($("#form-buttons") && $("#form-buttons").is(":visible")) {
-		$("#scroll-top-button-container").css("padding-bottom", "75px");
-	} else {
-		$("#scroll-top-button-container").css("padding-bottom", "25px");
-	}
-	if($(this).scrollTop()>200 && $(this).scrollTop()<$(document).height()-1200) {
-		$("#scroll-top-button-container").fadeIn(86);
-	} else {
-		$("#scroll-top-button-container").fadeOut(86);
-	}
-});
-
-var keys = [];
-var konami = "38,38,40,40,37,39,37,39,66,65";
-var dolphin = "68,69,76,73,71,72,84,69,68,32,68,79,76,80,72,73,78";
-window.addEventListener("keydown", function(e) {
-	if(e.keyCode!=16) {
-		keys.push(e.keyCode);
-	}
-	if(keys.toString().indexOf(konami)>-1) {
-		keys = [];
-		document.body.innerHTML = document.body.innerHTML.replace(/AwesomeBot/g,"TacoBot");
-		document.body.innerHTML = document.body.innerHTML.split("/static/img/icon.png").join("/static/img/tinytaco.png");
-		document.getElementById("header").style.backgroundImage = "url('/static/img/header-bg-taco.jpg')";
-	}
-	if(keys.toString().indexOf(dolphin)>-1) {
-		keys = [];
-		$('*').contents().filter(function() {
-		    return this.nodeType == Node.TEXT_NODE && this.nodeValue.trim() != '';
-		}).each(function() {
-			var info = "";
-			for(var i=0; i<this.nodeValue.length; i++) {
-				info += "🐬";
-			}
-		    this.nodeValue = info;
-		});
-	}
-}, true);
+	<%- injection.headScript %>
 </script>
+<% } %>
+<% if (typeof injection !== "undefined" && injection.pageScript) { %>
+<script>
+  	document.addEventListener("turbolinks:load", () => {
+	  	<%- injection.pageScript %>
+	});
+</script>
+<% } %>
+
+<% if (typeof officialMode !== "undefined" && officialMode) { %>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+	    (adsbygoogle = window.adsbygoogle || []).push({
+		    google_ad_client: "<%= adsense.ID %>",
+		    enable_page_level_ads: true
+	    });
+    </script>
+<% } %>
+
+<% include ./head-build.ejs %>

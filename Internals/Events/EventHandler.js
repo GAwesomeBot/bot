@@ -11,29 +11,29 @@ module.exports = class EventHandler {
 	}
 
 	async init () {
-		for (let [eventName, eventFiles] of Object.entries(events)) {
+		for (const [eventName, eventFiles] of Object.entries(events)) {
 			this._cache[eventName] = {};
-			for (let eventFile of eventFiles) {
-				let event = require(`./${eventName}/${eventFile}.js`);
+			for (const eventFile of eventFiles) {
+				const event = require(`./${eventName}/${eventFile}.js`);
 				this._cache[eventName][eventFile] = new event(this.client, this.configJS, this.configJSON);
 			}
 		}
 	}
 
-	async reloadEvent (eventName) {
+	reloadEvent (eventName) {
 		if (eventName === "*") {
 			for (const eventNameInCache in this._cache) {
-				for (let eventFileName in this._cache[eventNameInCache]) {
-					let event = reload(`./${eventNameInCache}/${eventFileName}.js`);
+				for (const eventFileName in this._cache[eventNameInCache]) {
+					const event = reload(`./${eventNameInCache}/${eventFileName}.js`);
 					this._cache[eventNameInCache][eventFileName] = new event(this.client, this.configJS, this.configJSON);
 				}
 			}
 			return;
 		}
-		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", eventName);
+		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", {}, eventName);
 		if (this._cache[eventName]) {
-			for (let eventFileName in this._cache[eventName]) {
-				let event = reload(`./${eventName}/${eventFileName}.js`);
+			for (const eventFileName in this._cache[eventName]) {
+				const event = reload(`./${eventName}/${eventFileName}.js`);
 				this._cache[eventName][eventFileName] = new event(this.client, this.configJS, this.configJSON);
 			}
 		}
@@ -45,10 +45,10 @@ module.exports = class EventHandler {
 	 * @param {*[]} args The arguments of the event, in the order that they were received
 	 */
 	async onEvent (eventName, ...args) {
-		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", eventName);
+		if (!this._cache[eventName]) throw new Error("UNKNOWN_EVENT", {}, eventName);
 		if (this._cache[eventName]) {
-			let promiseArray = [];
-			for (let eventFile in this._cache[eventName]) {
+			const promiseArray = [];
+			for (const eventFile in this._cache[eventName]) {
 				promiseArray.push(this._cache[eventName][eventFile]._handle(...args));
 			}
 			if (promiseArray.length) return Promise.all(promiseArray);

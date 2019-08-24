@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Homepage - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 
 	<script>
 	function updatePreview(html) {
@@ -11,7 +10,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState(); updatePreview(document.getElementById('message-html').value);">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -37,7 +36,7 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="columns">
 							<div class="column is-half">
 								<h4 class="subtitle is-4">
@@ -45,7 +44,7 @@
 								</h4>
 								<div class="field">
 									<div class="control">
-										<textarea id="message-html" name="homepageMessageHTML" class="textarea" placeholder="HTML for homepage message" onchange="updatePreview(this.value);" onkeyup="updatePreview(this.value);"><%- config.homepageMessageHTML %></textarea>
+										<textarea id="message-html" name="homepageMessageHTML" class="textarea is-primary" placeholder="HTML for homepage message" onchange="updatePreview(this.value);" onkeyup="updatePreview(this.value);"><%- configData.homepageMessageHTML %></textarea>
 									</div>
 								</div>
 							</div>
@@ -55,7 +54,7 @@
 								</h4>
 								<div class="box hero">
 									<div class="hero-body has-text-centered">
-										<h3 id="message-preview" class="title is-5"></h3>
+										<h3 id="message-preview" class="title is-5"><%-configData.homepageMessageHTML%></h3>
 									</div>
 								</div>
 							</div>
@@ -66,8 +65,8 @@
 						<div class="field">
 							<label class="label">Filename</label>
 							<div class="control">
-								<input name="header_image" class="input" type="text" value="<%= config.header_image %>">
-								<span class="help">File must be located in <code><%= dirname %>/public/static/img/</code></span>
+								<input name="header_image" class="input is-primary" type="text" value="<%= configData.headerImage %>">
+								<span class="help">File must be located in <code><%= pageData.dirname %></code></span>
 							</div>
 						</div>
 						<% var formButtonsUnsaved = false; %>

@@ -1,39 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Name Display - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
-		const username = "<%= exampleUsername%>";
-		const nickname = "<%= exampleNickname %>";
-		const discriminator = "<%= exampleDiscriminator %>";
-		$(document).on("ready", () => {
-			const example = $("#currentExample");
-			const useNickname = $("#name_display-use_nick");
-			const useDiscriminator = $("#name_display-show_discriminator");
-			useNickname.click(() => {
-				if (useNickname.is(":checked") && nickname !== "") {
-					example.text(nickname);
-				} else {
-					example.text(username);
-				}
-				if (useDiscriminator.is(":checked")) {
-					example.text(`${example.text().trim()}#${discriminator}`);
-				}
-			});
-			useDiscriminator.click(() => {
-			  	if (useDiscriminator.is(":checked")) {
-					example.text(example.text() + `#${discriminator}`);
-			  	} else {
-					example.text(example.text().trim().slice(0, -5));
-			  	}
-			});
-		});
+		GAwesomeData.username = "<%= pageData.exampleUsername %>";
+		GAwesomeData.nickname = "<%= pageData.exampleNickname %>";
+		GAwesomeData.discriminator = "<%= pageData.exampleDiscriminator %>";
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -54,33 +31,53 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="box hero is-small">
 							<div class="hero-body">
 								<div class="has-text-centered">
 									<h2 class="subtitle">
 										Example with current settings:
 									</h2>
-									<h1 class="title" id="currentExample"><%= currentExample %></h1>
+									<h1 class="title" id="currentExample"><%= pageData.currentExample %></h1>
 								</div>
 							</div>
 						</div>
-						<div class="field">
-							<div class="control">
-								<label class="checkbox">
-								<input id="name_display-use_nick" name="name_display-use_nick" type="checkbox" <%= configData.name_display.use_nick ? "checked" : "" %>>
-									Use member <strong>nickname</strong> if available
-								</label>
-								<span class="help">Nicknames are assigned per-server. Discord uses them in place of usernames in the member list.</span>
+						<div class="columns">
+							<div class="column">
+								<div class="box is-paddingless generic-feature">
+									<div class="generic-feature-box">
+										<div class="generic-feature-box-slider">
+											<div class="field">
+												<input id="name_display-use_nick" type="checkbox" name="name_display-use_nick" class="switch is-medium is-success is-rounded"<%= configData.name_display.use_nick ? " checked " : "" %>>
+												<label for="name_display-use_nick" style="padding-left: 3.75rem;"></label>
+											</div>
+										</div>
+										<div class="generic-feature-box-description">
+											<p>
+												Use member <strong>nickname</strong> if available
+												<span class="help">Nicknames are assigned per-server. Discord uses them in place of usernames in the member list.</span>
+											</p>
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div class="field">
-							<div class="control">
-								<label class="checkbox">
-								<input id="name_display-show_discriminator" name="name_display-show_discriminator" type="checkbox" <%= configData.name_display.show_discriminator ? "checked" : "" %>>
-									Show user <strong>discriminator</strong> after name
-								</label>
-								<span class="help">0-9999 number that distinguishes a user from the 10000 others that could have the same username.</span>
+							<div class="column">
+								<div class="box is-paddingless generic-feature">
+									<div class="generic-feature-box">
+										<div class="generic-feature-box-slider">
+											<div class="field">
+												<input id="name_display-show_discriminator" type="checkbox" name="name_display-show_discriminator" class="switch is-medium is-success is-rounded"<%= configData.name_display.show_discriminator ? " checked " : "" %>>
+												<label for="name_display-show_discriminator" style="padding-left: 3.75rem;"></label>
+											</div>
+										</div>
+										<div class="generic-feature-box-description">
+											<p>
+												Show user <strong>discriminator</strong> after name
+												<span class="help">0-9999 number that distinguishes a user from the 10000 others that could have the same username.</span>
+											</p>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 						<br>

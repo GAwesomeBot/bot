@@ -1,67 +1,62 @@
-<div class="field">
-	<label class="checkbox">
-	<input name="<%= commandData.name %>-isEnabled" type="checkbox" onclick="$('.<%= commandData.name %>-options').toggleClass('is-hidden');" <%= commandData.isEnabled ? "checked" : "" %>>
-		<strong><%= commandData.name %></strong> <span class="tag is-small"><%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) %></span> <%- commandData.description %>
-	</label>
-	<span class="<%= commandData.name %>-options <%= commandData.isEnabled ? '' : 'is-hidden' %>">
-		<a class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level==0 ? "E" : ("Admin level &ge;" + commandData.admin_level + ", e") %>nabled in <%= commandData.disabled_channel_ids.length==0 ? "all" : (channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((channelData.length - commandData.disabled_channel_ids.length)==1 && commandData.disabled_channel_ids.length>0) ? "" : "s" %></a>
-	</span>
-</div>
-
-<script>
-function toggleChannels(classname, value) {
-	var elements = document.getElementsByClassName(classname);
-	for(var i=0; i<elements.length; i++) {
-		elements[i].checked = value;
-	}
-}
-</script>
-
-<div id="command-<%= commandData.name %>-modal" class="modal">
-	<div class="modal-background"></div>
-	<div class="modal-container">
-		<div class="modal-content">
-			<div class="box">
-				<h4 class="subtitle is-4">
-					Options for <strong><%= commandData.name %></strong>
-				</h4>
-				<div class="field">
-					<label class="label">Permissions</label>
-					<div class="control">
-						<span class="select">
+<div class="box is-clearfix is-paddingless command-item-box">
+	<div class="is-pulled-left command-item-section command-item-section-slider">
+		<div class="field">
+			<input id="<%= commandData.name %>-isEnabled" type="checkbox" name="<%= commandData.name %>-isEnabled" class="switch is-medium is-success is-rounded<%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) === "NSFW" ? " nsfw-switch" : "" %>"<%= commandData.isEnabled ? " checked" : "" %>>
+			<label for="<%= commandData.name %>-isEnabled" style="padding-left: 3.75rem;" onclick="$('.<%= commandData.name %>-options').toggleClass('is-hidden');"></label>
+		</div>
+	</div>
+	<div class="is-pulled-left command-item-section command-item-section-description">
+		<strong><%= commandData.name %></strong> <span class="tag is-small<%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) === "NSFW" ? " is-danger" : "" %>"><%= commandData.category.substring(0, commandData.category.lastIndexOf(" ")) %></span> &bull; <%- commandData.description %>
+	</div>
+	<div class="is-pulled-right command-item-section command-item-section-options">
+		<a id="command-<%= commandData.name %>-settings" class="button is-small modal-button" data-target="#command-<%= commandData.name %>-modal"><%- commandData.admin_level === 0 ? (commandData.disabled_channel_ids.length === pageData.channelData.length ? "Dis" : "En") : ("Admin level &ge;" + commandData.admin_level + (commandData.disabled_channel_ids.length === pageData.channelData.length ? ", dis" : ", en")) %>abled in <%= commandData.disabled_channel_ids.length === 0 || commandData.disabled_channel_ids.length === pageData.channelData.length ? "all" : (pageData.channelData.length - commandData.disabled_channel_ids.length) %> channel<%= ((pageData.channelData.length - commandData.disabled_channel_ids.length) === 1 && commandData.disabled_channel_ids.length > 0) ? "" : "s" %></a>
+	</div>
+	<div id="command-<%= commandData.name %>-modal" class="modal command-item-modal" data-target="#command-<%= commandData.name%>-settings">
+		<div class="modal-background"></div>
+		<div class="modal-container">
+			<div class="modal-content">
+				<div class="box">
+					<h4 class="subtitle is-4">
+						Options for <strong><%= commandData.name %></strong>
+					</h4>
+					<div class="field">
+						<label class="label">Permissions</label>
+						<div class="control">
+						<span class="select is-primary">
 							<select name="<%= commandData.name %>-adminLevel">
-								<option value="0" <%= commandData.admin_level==0 ? "" : "selected" %>>@everyone</option>
-								<option value="1" <%= commandData.admin_level==1 ? "selected" : "" %>>Admin level &ge;1</option>
-								<option value="2" <%= commandData.admin_level==2 ? "selected" : "" %>>Admin level &ge;2</option>
-								<option value="3" <%= commandData.admin_level==3 ? "selected" : "" %>>Admin level &ge;3</option>
+								<option value="0" <%= commandData.admin_level === 0 ? "" : "selected" %>>@everyone</option>
+								<option value="1" <%= commandData.admin_level === 1 ? "selected" : "" %>>Admin level &ge;1</option>
+								<option value="2" <%= commandData.admin_level === 2 ? "selected" : "" %>>Admin level &ge;2</option>
+								<option value="3" <%= commandData.admin_level === 3 ? "selected" : "" %>>Admin level &ge;3</option>
 							</select>
 						</span>
+						</div>
+						<span class="help">The command will only respond to members that have the selected bot admin level (or higher).</span>
 					</div>
-					<span class="help">The command will only respond to members that have the selected bot admin level (or higher).</span>
-				</div>
-				<div class="field">
-					<label class="label">Channel(s)</label>
-					<% for(var i=0; i<channelData.length; i++) { %>
+					<div class="field">
+						<label class="label">Channel(s)</label>
+                        <% pageData.channelData.forEach(channel => { %>
 						<label class="checkbox">
-						<input name="<%= commandData.name %>-disabled_channel_ids-<%= channelData[i].id %>" class="<%= commandData.name %>-disabled_channel_ids" type="checkbox" <%= commandData.disabled_channel_ids.indexOf(channelData[i].id)==-1 ? "checked" : "" %>>
-							#<%= channelData[i].name %>
+							<input name="<%= commandData.name %>-disabled_channel_ids-<%= channel.id %>" class="<%= commandData.name %>-disabled_channel_ids" type="checkbox" <%= !commandData.disabled_channel_ids.includes(channel.id) ? "checked" : "" %>>
+							#<%= channel.name %>
 						</label>
 						<br>
-					<% } %>
-				</div>
-				<div class="field">
-					<div class="control has-addons">
-						<a class="button is-small" onclick="toggleChannels('<%= commandData.name %>-disabled_channel_ids', true);">
-							<span>Select All</span>
-						</a>
-						<a class="button is-small" onclick="toggleChannels('<%= commandData.name %>-disabled_channel_ids', false);">
-							<span>Deselect All</span>
-						</a>
+                        <% }); %>
 					</div>
-					<span class="help">The command will run only in these channels.</span>
+					<div class="field">
+						<div class="control has-addons">
+							<a class="button is-small" onclick="GAwesomeUtil.toggleChannels('<%= commandData.name %>-disabled_channel_ids', true);">
+								<span>Select All</span>
+							</a>
+							<a class="button is-small" onclick="GAwesomeUtil.toggleChannels('<%= commandData.name %>-disabled_channel_ids', false);">
+								<span>Deselect All</span>
+							</a>
+						</div>
+						<span class="help">The command will run only in these channels.</span>
+					</div>
 				</div>
 			</div>
 		</div>
+		<a class="modal-close"></a>
 	</div>
-	<a class="modal-close"></a>
 </div>

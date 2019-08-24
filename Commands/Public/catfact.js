@@ -1,5 +1,5 @@
 const { get } = require("snekfetch");
-const PaginatedMenu = require("../../Modules/MessageUtils/PaginatedEmbed");
+const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
 
 module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	let number = msg.suffix;
@@ -8,24 +8,26 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 	else if (isNaN(number)) number = serverDocument.config.command_fetch_properties.default_count;
 	else number = parseInt(number);
 
-	const { body, status, statusText } = await get(APIs.CATFACT()).query("limit", number);
-	if (status === 200 && body && body.data.length) {
-		const facts = [];
+	const { body, statusCode, statusText } = await get(APIs.CATFACT(number));
+	if (statusCode === 200 && body && body.data.length) {
+		const descriptions = [];
 		body.data.forEach(d => {
-			facts.push(d.fact);
+			descriptions.push(d.fact);
 		});
-		const menu = new PaginatedMenu(msg, facts, {
+		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
-			title: `Cat fact {current description} out of {total descriptions}`,
+			title: `Cat fact {currentPage} out of {totalPages}`,
 			footer: ``,
+		}, {
+			descriptions,
 		});
 		await menu.init();
 	} else {
-		winston.verbose(`Failed to fetch cat facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, status, err: statusText });
-		msg.channel.send({
+		logger.verbose(`Failed to fetch cat facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
+		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
-				title: Text.COMMAND_ERR(),
+				title: Text.ERROR_TITLE(),
 				description: `I was unable to fetch your purrfect cat facts...`,
 			},
 		});

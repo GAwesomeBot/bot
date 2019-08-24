@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Blocklist - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function newBlock() {
 		var newBlockUser = $("#new-block-user");
@@ -15,11 +12,11 @@
 			newBlockUser.addClass("is-danger");
 		}
 
-		if(newBlockUser.val()) {
-			hide_update_modal = true;
+		if (newBlockUser.val()) {
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=maintainer",
+				url: "<%= currentPage %>",
 				data: {
 					"new-user": newBlockUser.val()
 				},
@@ -31,7 +28,7 @@
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete();">
+<body>
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -52,9 +49,9 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" action="<%= currentPage %>?svrid=maintainer" method="post">
+					<form id="form" action="<%= currentPage %>" method="post">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(config.global_blocklist.length>0) { %>
+							<% if (configData.global_blocklist.length > 0) { %>
 							<table class="table is-fullwidth">
 								<thead>
 								<tr>
@@ -65,19 +62,19 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<config.global_blocklist.length; i++) { %>
+								<% configData.global_blocklist.forEach(user => { %>
 								<tr>
 									<td>
-										<img class="image is-24x24" src="<%= config.global_blocklist[i].avatar %>" alt="<%= config.global_blocklist[i].id %>">
+										<img class="image is-24x24" src="<%= user.avatar %>" alt="<%= user.id %>">
 									</td>
 									<td>
-										<%= config.global_blocklist[i].name %>
+										<%= user.name %>
 									</td>
 									<td>
-										<%= config.global_blocklist[i].id %>
+										<%= user.id %>
 									</td>
 									<td>
-										<button class="button is-small is-danger" name="block-<%= i %>-removed" onclick="hide_update_modal = true;">
+										<button class="button is-small is-danger" name="block-<%= user.id %>-removed" onclick="GAwesomeData.HUM = true;">
 											<span>Remove</span>
 											<span class="icon is-small">
 												<i class="fa fa-times"></i>
@@ -85,11 +82,11 @@
 										</button>
 									</td>
 								</tr>
-								<% } %>
+								<% }); %>
 								</tbody>
 							</table>
 							<% } else { %>
-							<article class="message" style="margin-bottom: 0px;">
+							<article class="message is-embedded-message">
 								<div class="message-header">
 									<p>
 										<span class="icon">
@@ -109,7 +106,7 @@
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-block-user" class="input user-autocomplete" type="text" placeholder="ID or Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-block-user" class="input user-autocomplete" type="text" placeholder="ID or Username" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<a class="button is-primary" onclick="newBlock();">
@@ -126,6 +123,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete();</script>
 	</section>
 
 	<% include ../partials/footer %>

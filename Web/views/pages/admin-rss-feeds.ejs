@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> RSS Feeds - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newRss() {
 		var newRssUrl = $("#new-rss-url");
@@ -22,17 +21,19 @@
 		}
 
 		if(newRssUrl.val() && newRssName.val()) {
-			$.ajax({
+		  GAwesomeData.HUM = true;
+		  $.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-url": newRssUrl.val(),
 					"new-name": newRssName.val().toLowerCase()
 				},
 				success: function() {
-					saveFormState();
-					$("#form").submit();
-					location.reload();
+				  GAwesomeUtil.SFS();
+				  GAwesomeData.HUM = true;
+				  $("#form").submit();
+				  Turbolinks.visit('');
 				}
 			});
 		}
@@ -55,7 +56,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -74,96 +75,81 @@
 							These <strong>RSS feeds can be accessed via the <code>rss</code> command</strong> by their unique name. For feeds that have streaming enabled, new articles will be posted in the channel you choose every 15 minutes or so. In general, RSS feeds can be used as a means to pull content from a variety of <strong>online services</strong> for which there is no built-in GAwesomeBot command.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
-						<% var commandData = configData.commands.rss;commandData.name = "rss";commandData.description = commandDescriptions.rss;commandData.category = commandCategories.rss; %>
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+						<div class="command-items">
+						<% const commandData = configData.commands.rss; commandData.name = "rss"; commandData.description = pageData.commandDescriptions.rss; commandData.category = pageData.commandCategories.rss; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.rss_feeds.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
+                                <%- include("../partials/no-results", { isHidden: configData.rss_feeds.length, isSearchQuery: false, description: "You haven't added any RSS feeds yet. Fill out the form below to get started." }) %>
+								<table class="table is-fullwidth<%= configData.rss_feeds.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>URL</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										<% configData.rss_feeds.forEach(feed => { %>
 											<tr>
-												<th>Name</th>
-												<th>URL</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.rss_feeds.length; i++) { %>
-												<tr>
-													<td>
-														<%= configData.rss_feeds[i]._id %>
-													</td>
-													<td>
-														<%= configData.rss_feeds[i].url %>
-													</td>
-													<td>
-														<a class="button modal-button is-small is-primary" data-target="#rss-<%= i %>-updates-modal">
-															<span class="icon is-small">
-																<i class="fa fa-refresh"></i>
-															</span>
-															<span>Updates</span>
-														</a>
-                                                        <input type="checkbox" id="rss-<%= i %>-removed" name="rss-<%= i %>-removed" style="display: none;">
-                                                        <button class="button is-small is-danger" name="rss-<%= i %>-removed" onclick="$('#rss-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-												<div id="rss-<%= i %>-updates-modal" class="modal">
-													<div class="modal-background"></div>
-													<div class="modal-container">
-														<div class="modal-content">
-															<div class="box">
-																<h4 class="subtitle is-4">
-																	RSS feed <strong><%= configData.rss_feeds[i]._id %></strong>
-																</h4>
-																<p class="control">
-																	<label class="checkbox">
-																	<input name="rss-<%= i %>-streaming-isEnabled" type="checkbox" onclick="$('#rss-<%= i %>-streaming-options').toggleClass('is-hidden');" <%= configData.rss_feeds[i].streaming.isEnabled ? "checked" : "" %>>
-																		Send <strong>streaming RSS updates</strong> in these channels:
-																	</label>
-																	<span id="rss-<%= i %>-streaming-options" class="<%= configData.rss_feeds[i].streaming.isEnabled ? '' : 'is-hidden' %>">
-																		<% for(var j=0; j<channelData.length; j++) { %>
+												<td>
+													<%= feed._id %>
+												</td>
+												<td>
+													<%= feed.url %>
+												</td>
+												<td>
+													<a class="button modal-button is-small is-primary" data-target="#rss-<%= feed._id.replace(/\s/g, "") %>-updates-modal">
+														<span class="icon is-small">
+															<i class="fa fa-refresh"></i>
+														</span>
+														<span>Updates</span>
+													</a>
+													<button class="button is-small is-danger" name="<%= feed._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
+														<span>Remove</span>
+														<span class="icon is-small">
+															<i class="fa fa-times"></i>
+														</span>
+													</button>
+													<div id="rss-<%= feed._id.replace(/\s/g, "") %>-updates-modal" class="modal">
+														<div class="modal-background"></div>
+														<div class="modal-container">
+															<div class="modal-content">
+																<div class="box">
+																	<h4 class="subtitle is-4">
+																		RSS feed <strong><%= feed._id %></strong>
+																	</h4>
+																	<p class="control">
+																		<label class="checkbox">
+																			<input name="rss-<%= feed._id %>-streaming-isEnabled" type="checkbox" onclick="$('#rss-<%= feed._id.replace(/\s/g, "") %>-streaming-options').toggleClass('is-hidden');" <%= feed.streaming.isEnabled ? "checked" : "" %>>
+																			Send <strong>streaming RSS updates</strong> in these channels:
+																		</label>
+																		<span id="rss-<%= feed._id.replace(/\s/g, "") %>-streaming-options" class="<%= feed.streaming.isEnabled ? '' : 'is-hidden' %>">
+                                                                            <% pageData.channelData.forEach(channel => { %>
 																			<br>
-																			&nbsp;&nbsp;&nbsp;
-																			<label class="checkbox">
-																			<input name="rss-<%= i %>-streaming-enabled_channel_ids-<%= channelData[j].id %>" type="checkbox" <%= configData.rss_feeds[i].streaming.enabled_channel_ids.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-																				#<%= channelData[j].name %>
-																			</label>
-																		<% } %>
-																	</span>
-																</p>
+																		&nbsp;&nbsp;&nbsp;
+																		<label class="checkbox">
+																			<input name="rss-<%= feed._id %>-streaming-enabled_channel_ids-<%= channel.id %>" type="checkbox" <%= feed.streaming.enabled_channel_ids.indexOf(channel.id)>-1 ? "checked" : "" %>>
+																			#<%= channel.name %>
+																		</label>
+                                                                            <% }); %>
+																		</span>
+																	</p>
+																</div>
 															</div>
 														</div>
+														<a class="modal-close"></a>
 													</div>
-													<a class="modal-close"></a>
-												</div>
-											<% } %>
+												</td>
+											</tr>
+											<% }); %>
 										</tbody>
 									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o fa-lg"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't added any RSS feeds yet. Fill out the form below to get started.
-										</div>
-									</article>
-									<br>
-								<% } %>
 							</div>
 							<div class="field is-grouped">
 								<div class="control is-expanded">
-									<input id="new-rss-url" class="input" type="url" placeholder="RSS URL" onkeypress="return event.keyCode != 13;">
+									<input id="new-rss-url" class="input is-primary" type="url" placeholder="RSS URL" onkeypress="return event.keyCode !== 13;">
 								</div>
 								<div class="field has-addons">
 									<div class="control">
@@ -196,7 +182,7 @@
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-rss-name" class="input" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode != 13;">
+											<input id="new-rss-name" class="input is-primary" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 										</div>
 										<div class="control">
 											<a class="button is-primary" onclick="newRss();">

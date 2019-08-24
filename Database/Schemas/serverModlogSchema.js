@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const Schema = require("../Schema");
 
-module.exports = {
+module.exports = new Schema({
 	isEnabled: {
 		type: Boolean,
 		default: false,
@@ -10,7 +10,7 @@ module.exports = {
 		type: Number,
 		default: 0,
 	},
-	entries: [new mongoose.Schema({
+	entries: [new Schema({
 		_id: {
 			// Based off current_id
 			type: Number,
@@ -36,13 +36,18 @@ module.exports = {
 				"Strike",
 				"Temp Ban",
 				"Temp Mute",
+				"Delete Role",
+				"Modify Role",
+				"Create Role",
 			],
 			required: true,
 		},
 		affected_user: {
 			// User Id of the affected user
 			type: String,
-			required: true,
+			// We're getting modlogs without affected_user (role deletion is an example)
+			// So, /shrug
+			// required: true,
 		},
 		creator: {
 			// User ID of the issuer
@@ -62,5 +67,9 @@ module.exports = {
 			type: Boolean,
 			default: true,
 		},
-	}, { usePushEach: true })],
-};
+		canEdit: {
+			type: Boolean,
+			default: true,
+		},
+	})],
+});

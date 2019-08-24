@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Bot User - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -26,13 +25,13 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="columns">
 							<div class="column is-one-third">
 								<div class="field">
-									<img src="<%= bot_user.avatar || 'http://placehold.it/400x400' %>" alt="<%= serverData.id %>" style="width: 100%;">
+									<img src="<%= configData.avatar || 'http://placehold.it/400x400' %>" alt="<%= serverData.id %>" style="width: 100%;">
 									<div class="control has-icons-left">
-										<input name="avatar" class="input" type="text" placeholder="New avatar URL">
+										<input name="avatar" class="input is-primary" type="text" placeholder="New avatar URL">
 										<span class="icon">
 											<i class="fa fa-file-image-o"></i>
 										</span>
@@ -44,7 +43,7 @@
 								<div class="field">
 									<label class="label">Username</label>
 									<div class="control has-icons-left">
-										<input name="username" class="input" type="text" value="<%= serverData.name %>" minlength="1">
+										<input name="username" class="input is-primary" type="text" value="<%= serverData.name %>" minlength="1">
 										<span class="icon">
 											<i class="fa fa-user"></i>
 										</span>
@@ -54,33 +53,61 @@
 								<div class="field">
 									<label class="label">Status</label>
 									<div class="control">
-										<span class="select">
+										<span class="select is-primary">
 											<select name="status">
-												<option value="online"<%= bot_user.status=="online" ? " selected" : "" %>>Online</option>
-												<option value="idle"<%= bot_user.status=="idle" ? " selected" : "" %>>Idle</option>
-												<option value="dnd"<%= bot_user.status=="dnd" ? " selected" : ""%>>Do Not Disturb</option>
-												<option value="offline"<%= bot_user.status=="offline" ? " selected" : "" %>>Invisible</option>
+												<option value="online"<%= configData.status=="online" ? " selected" : "" %>>Online</option>
+												<option value="idle"<%= configData.status=="idle" ? " selected" : "" %>>Idle</option>
+												<option value="dnd"<%= configData.status=="dnd" ? " selected" : ""%>>Do Not Disturb</option>
+												<option value="invisible"<%= configData.status=="invisible" ? " selected" : "" %>>Invisible</option>
 											</select>
 										</span>
 										<span class="help">The availability status of the bot, shown in the colored bubble next to the avatar.</span>
 									</div>
 								</div>
 								<div class="field">
-									<label class="label">Game</label>
-									<div class="field has-addons" style="margin-bottom: 0px;">
-										<div class="control has-icons-left is-expanded">
-											<input name="game" id="user-game" class="input" type="text" value="<%= bot_user.game === "default" ? "gawesomebot.com" : bot_user.game %>" style="width: 100%;">
-											<span class="icon"><i class="fa fa-gamepad"></i></span>
+									<div class="columns">
+										<div class="column is-one-third">
+											<label class="label">Type</label>
+											<div class="control">
+												<span class="select is-primary">
+													<select id="user-type" name="type" onchange="if(this.value==='STREAMING') $('#twitch-url-container').removeClass('is-hidden'); else $('#twitch-url-container').addClass('is-hidden');">
+														<option value="PLAYING"<%= configData.type=="PLAYING" ? " selected" : "" %>>Playing</option>
+														<option value="STREAMING"<%= configData.type=="STREAMING" ? " selected" : "" %>>Streaming</option>
+														<option value="LISTENING"<%= configData.type=="LISTENING" ? " selected" : ""%>>Listening to</option>
+														<option value="WATCHING"<%= configData.type=="WATCHING" ? " selected" : "" %>>Watching</option>
+													</select>
+												</span>
+												<span class="help">Appears in front of the game's name.</span>
+											</div>
 										</div>
-										<div class="control">
-                                        	<% if(!bot_user.game_default) { %>
-												<a name="game-default" class="button" onclick="$('#user-game').val('gawesomebot.com')">
-													Default
-												</a>
-											<% } %>
+	 									<div class="column">
+											<label class="label">Game</label>
+											<div class="field is-embedded-message<%= !configData.game_default ? " has-addons" : ""%>">
+												<div class="control has-icons-left is-expanded">
+													<input name="game" id="user-game" class="input is-primary" type="text" value="<%= configData.game === "default" ? "gawesomebot.com" : configData.game %>" style="width: 100%;">
+													<span class="icon"><i class="fa fa-gamepad"></i></span>
+												</div>
+												<div class="control">
+        		                                	<% if(!configData.game_default) { %>
+														<a name="game-default" class="button" onclick="$('#user-game').val('gawesomebot.com');$('#user-type').val('PLAYING')">
+															Default
+														</a>
+													<% } %>
+												</div>
+											</div>
+											<span class="help">The game the bot appears to be playing, shown under the username.</span>
 										</div>
 									</div>
-									<span class="help">The game the bot appears to be playing, shown under the username.</span>
+								</div>
+								<div id="twitch-url-container" class="field<%= configData.type!=="STREAMING" ? " is-hidden" : "" %>">
+									<label class="label">Twitch URL</label>
+									<div class="field is-embedded-message">
+										<div class="control has-icons-left is-expanded">
+											<input name="twitch" id="user-twitch" class="input is-primary" type="text" value="<%= configData.twitchURL %>" style="width: 100%;">
+											<span class="icon"><i class="fa fa-twitch"></i></span>
+										</div>
+									</div>
+									<span class="help">The URL to a twitch channel that will be linked on the bot's profile. Required to set the bot's status to "Streaming".</span>
 								</div>
 							</div>
 						</div>

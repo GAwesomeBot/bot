@@ -1,14 +1,15 @@
 const RegExpMaker = require("./RegExpMaker.js");
 const snekfetch = require("snekfetch");
+const { UserAgent } = require("../../Internals/Constants");
 const { discord, tokens } = require("../../Configurations/auth.js");
 const { gistKey } = tokens;
 
 module.exports = class GitHubGist {
-	constructor (bot) {
-		this.bot = bot;
+	constructor (client) {
+		this.client = client;
 		this.public = gistKey === "";
 		this.headers = {
-			"User-Agent": "GAwesomeBot (https://github.com/GilbertGobbels/GAwesomeBot)",
+			"User-Agent": UserAgent,
 			Accept: "application/json",
 			"Content-Type": "application/json",
 		};
@@ -45,7 +46,7 @@ module.exports = class GitHubGist {
 		let res;
 		try {
 			res = await snekfetch.post(this.apiURL).set(this.headers).send({
-				description: `GAwesomeBot (${this.bot.user.tag} | ${this.bot.user.id})${title ? ` | ${title}` : ""}`,
+				description: `GAwesomeBot (${this.client.user.tag} | ${this.client.user.id})${title ? ` | ${title}` : ""}`,
 				public: this.public,
 				files: {
 					[file]: {
@@ -59,6 +60,7 @@ module.exports = class GitHubGist {
 		return {
 			id: res.body.id,
 			url: res.body.html_url,
+			rawURL: res.body.files[file].raw_url,
 		};
 	}
 
@@ -69,6 +71,6 @@ module.exports = class GitHubGist {
 		} catch (err) {
 			throw err;
 		}
-		return res.status === 204;
+		return res.statusCode === 204;
 	}
 };

@@ -1,37 +1,9 @@
-<link rel="stylesheet" href="/static/css/simplemde.min.css">
-
-<script src="/static/js/form-change-listener.js"></script>
-<script src="/static/js/simplemde.min.js"></script>
-<script src="/static/js/showdown.min.js"></script>
-<script async src="/static/js/FileSaver.min.js"></script>
-<script>
-function uploadContent(uploads) {
-    if(uploads) {
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            editor.value(event.target.result);
-        };
-        reader.readAsText(uploads[0]);
-        document.getElementById("composer-content-upload").value = null;
-    }
-}
-
-function downloadContent() {
-	var blob = new Blob([document.getElementById("composer-content").value], {type: "text/markdown;charset=utf-8"});
-	saveAs(blob, (document.getElementById("composer-title").value || "Untitled") + ".md")
-}
-
-setTimeout(function() {
-    saveFormState();
-}, 0);
-</script>
-
-<form id="form" action="/wiki/edit?id=<%= data.title %>" method="post">
+<form id="form" action="/wiki/<%= pageData.title ? pageData.title : "new" %>/edit" method="post">
 	<div class="field">
     	<label class="label">Title</label>
 		<p class="control">
-			<input id="composer-title" name="title" class="input" type="text" value="<%= data.title %>" minlength="3" maxlength="100" required>
-			<span class="help">Name of the page. Make it short and avoid special characters.</span>
+			<input id="composer-title" name="title" class="input is-primary" type="text" value="<%= pageData.title %>" minlength="3" maxlength="100" required<%- pageData.title ? ` disabled` : ""%>>
+			<span class="help"><%- pageData.title ? "Wiki Articles can't be renamed. Download this Article's content, and upload it to a new Article if you wish to switch names." : "Name of the page. Make it short and avoid special characters."%></span>
 		</p>
 	</div>
 	<div class="field">
@@ -41,34 +13,13 @@ setTimeout(function() {
     	</label>
     	<span class="help" style="float: right;margin-right: 15px; margin-top: 10px;">Editor by <strong>SimpleMDE</strong></span>
     	<p class="control">
-			<textarea name="content" id="composer-content" class="textarea" placeholder="Post content, in markdown" required><%= data.content %></textarea>
-			<script>
-        	var converter = new showdown.Converter({
-        		tables: true,
-        		simplifiedAutoLink: true,
-        		strikethrough: true,
-        		tasklists: true,
-        		smoothLivePreview: true,
-        		smartIndentationFix: true
-			});
-        	var editor = new SimpleMDE({
-			  element: document.getElementById("composer-content"),
-			  forceSync: true,
-			  spellChecker: false,
-			  promptURLs: true,
-			  previewRender: function(text) {
-			  	$(".editor-preview").addClass("content");
-			  	$(".editor-preview-side").addClass("content");
-			  	return converter.makeHtml(text);
-			  }
-        	});
-			</script>
+			<textarea name="content" id="composer-content" class="textarea is-primary" placeholder="Post content, in markdown" required><%= pageData.content %></textarea>
     	</p>
 	</div>
 	<br>
 	<br>
 	<div class="field">
-		<a class="button is-small" onclick="downloadContent();">
+		<a class="button is-small" onclick="GAwesomeUtil.downloadContent();">
 			<span class="icon is-small">
 				<i class="fa fa-download"></i>
 			</span>
@@ -79,7 +30,7 @@ setTimeout(function() {
 				<i class="fa fa-upload"></i>
 			</span>
 			<span>Upload</span>
-			<input id="composer-content-upload" type="file" onchange="uploadContent(this.files);" style="display: none;">
+			<input id="composer-content-upload" type="file" onchange="GAwesomeUtil.uploadContent(this.files, 'wiki');" style="display: none;">
 		</label>
 	</div>
     <% var formButtonsUnsaved = false; %>

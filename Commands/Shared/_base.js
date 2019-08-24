@@ -13,13 +13,13 @@ module.exports = async (main, msg, commandData) => {
 	/**
 	 * @type {Object}
 	 * @param commandData Object containing the command name and usage.
-	 * Use `bot.getPMCommandMetadata(commandData.name)` for other things
+	 * Use `client.getPMCommandMetadata(commandData.name)` for other things
 	 */
 	/**
 	 * @type {Object}
 	 * @param main Object containing the most important things
 	 * Feel free to deconstruct it using { Value }
-	 * @property {Discord.Client} bot The bot object
+	 * @property {Discord.Client} client The client object
 	 * @property {Object} configJS The config js object
 	 * configJSON is in the global
 	 */

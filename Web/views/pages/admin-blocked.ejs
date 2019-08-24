@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Blocked - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
 	<script>
 	function newBlock() {
 		var newBlockMember = $("#new-block-member");
@@ -16,22 +13,22 @@
 		}
 
 		if(newBlockMember.val()) {
-			hide_update_modal = true;
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-member": newBlockMember.val()
 				},
 				success: function() {
-					location.reload();
+				  Turbolinks.visit('');
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="setUserAutocomplete('<%= serverData.id %>');">
+<body>
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -48,14 +45,14 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								These users will <strong>not</strong> be permitted to use the bot at all on this server, including PM commands that reference this server. Filters will <strong>still apply</strong> to blocked members, however. You can't block members that have an admin level of 1 or higher.
+								These users will <strong>not</strong> be permitted to use the bot at all on this server, including PM commands that reference this server. Filters will <strong>still apply</strong> to blocked members, however. <strong>It is impossible to block Bot Admins.</strong>
 							</div>
 						</div>
 					</article>
-					<form id="form" action="<%= currentPage %>?svrid=<%= serverData.id %>" method="post">
+					<form id="form" action="<%= currentPage %>" method="post" onsubmit="return false;">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(configData.blocked.length>0) { %>
-							<table class="table is-fullwidth">
+                            <%- include("../partials/no-results", { isHidden: configData.blocked.length, isSearchQuery: false, description: "There are no blocked members on this server. Type the name of a user below to add one." }) %>
+							<table class="table is-fullwidth<%= configData.blocked.length ? "" : " is-hidden" %>">
 								<thead>
 								<tr>
 									<th></th>
@@ -65,55 +62,39 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<configData.blocked.length; i++) { %>
-								<tr>
-									<td>
-										<img class="image is-24x24" src="<%= configData.blocked[i].avatar %>" alt="<%= configData.blocked[i].id %>">
-									</td>
-									<td>
-										<%= configData.blocked[i].name %>
-										<% if(configData.blocked[i].isGlobal) { %>
-										&nbsp;
-										<span class="tag">Global</span>
-										<% } %>
-									</td>
-									<td>
-										<%= configData.blocked[i].id %>
-									</td>
-									<td>
-										<button class="button is-small is-danger" name="block-<%= i %>-removed" onclick="hide_update_modal = true;">
-											<span>Remove</span>
-											<span class="icon is-small">
-												<i class="fa fa-times"></i>
-											</span>
-										</button>
-									</td>
-								</tr>
-								<% } %>
+								<% configData.blocked.forEach(blockDocument => { %>
+									<tr>
+										<td>
+											<img class="image is-24x24" src="<%= blockDocument.avatar %>" alt="<%= blockDocument.id %>">
+										</td>
+										<td>
+											<%= blockDocument.name %>
+											<% if (blockDocument.isGlobal) { %>
+												&nbsp;
+												<span class="tag">Global</span>
+											<% } %>
+										</td>
+										<td>
+											<%= blockDocument.id %>
+										</td>
+										<td>
+											<button class="button is-small is-danger" name="<%= blockDocument.id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
+												<span>Remove</span>
+												<span class="icon is-small">
+													<i class="fa fa-times"></i>
+												</span>
+											</button>
+										</td>
+									</tr>
+								<% }); %>
 								</tbody>
 							</table>
-							<% } else { %>
-							<article class="message">
-								<div class="message-header">
-									<p>
-										<span class="icon">
-											<i class="fa fa-meh-o"></i>
-										</span>
-										Nothing to see here
-									</p>
-								</div>
-								<div class="message-body">
-									There are no blocked members on this server. Type the name of a user below to add one.
-								</div>
-							</article>
-							<br>
-							<% } %>
 						</div>
 						<div class="field is-horizontal">
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-block-member" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-block-member" class="input is-primary user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<a class="button is-primary" onclick="newBlock();">
@@ -130,6 +111,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

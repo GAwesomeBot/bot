@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Trivia Sets - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTrivia() {
 		var newTriviaName = $("#new-trivia-name");
@@ -26,24 +25,24 @@
 	        reader.onload = function(event) {
 	            $.ajax({
 					type: "POST",
-					url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+					url: "<%= currentPage %>",
 					data: {
 						"new-name": newTriviaName.val(),
 						"new-items": event.target.result,
 					},
 					success: function() {
-						saveFormState();
+						GAwesomeUtil.SFS();
 						$("#form").submit();
-						location.reload();
+						Turbolinks.visit('');
 					}
-				}).fail(data => location.href = "/error?err=json")
+				}).fail(() => location.href = "/error?err=json")
             };
 	        reader.readAsText(newTriviaFile);
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -62,36 +61,35 @@
 							GAwesomeBot's built-in trivia set is great, but you might want to add a <strong>custom question bank</strong> specific to your server. Trivia sets can be accessed from the <code>trivia</code> command and are uploaded as <strong>JSON</strong> files.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.trivia_sets.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
-											<tr>
-												<th>Name</th>
-												<th>Questions</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.trivia_sets.length; i++) { %>
+                                <%- include("../partials/no-results", { isHidden: configData.trivia_sets.length, isSearchQuery: false, description: "You haven't uploaded any custom trivia sets yet. Select a file below to get started." }) %>
+								<table class="table is-fullwidth<%= configData.trivia_sets.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Questions</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+									<% configData.trivia_sets.forEach(triviaSet => { %>
                                             <tr>
 												<td>
-													<%= configData.trivia_sets[i]._id %>
+													<%= triviaSet._id %>
 												</td>
 												<td>
-													<%= configData.trivia_sets[i].items.length %>
+													<%= triviaSet.items.length %>
 												</td>
 												<td>
-													<a class="button is-small" href="<%= currentPage %>?svrid=<%= serverData.id %>&i=<%= i %>" target="_blank" download="<%= configData.trivia_sets[i]._id %>.json">
+													<a class="button is-small" href="<%= currentPage %>?i=<%= triviaSet._id %>" target="_blank" download="<%= triviaSet._id %>.json">
 														<span>Download</span>
 														<span class="icon is-small">
 															<i class="fa fa-download"></i>
 														</span>
 													</a>
 													&nbsp;
-                                                    <input type="checkbox" id="trivia_set-<%= i %>-removed" name="trivia_set-<%= i %>-removed" style="display: none;">
-                                                    <button class="button is-small is-danger" onclick="$('#trivia_set-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+                                                    <button class="button is-small is-danger" name="<%= triviaSet._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
 														<span>Remove</span>
 														<span class="icon is-small">
 															<i class="fa fa-times"></i>
@@ -99,31 +97,15 @@
 													</button>
 												</td>
                                             </tr>
-											<% } %>
+									<% }) %>
 										</tbody>
 									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't uploaded any custom trivia sets yet. Select a file below to get started.
-										</div>
-									</article>
-									<br>
-								<% } %>
 							</div>
 							<div class="field is-horizontal">
 								<div class="field-body">
 									<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-trivia-name" class="input" type="text" minlength="1" maxlength="50" placeholder="Name">
+										<input id="new-trivia-name" class="input is-primary" type="text" minlength="1" maxlength="50" placeholder="Name">
 									</div>
 									<div class="control">
 										<div class="file has-name">

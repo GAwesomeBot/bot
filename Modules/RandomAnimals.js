@@ -1,12 +1,12 @@
 const { Error } = require("../Internals/Errors/");
 const { get } = require("snekfetch");
 
-const CAT = `https://random.cat/meow`;
+const CAT = `https://aws.random.cat/meow`;
 const DOG = `https://random.dog/woof`;
 
 module.exports = class RandomAnimals {
 	constructor () {
-		throw new Error("STATIC_CLASS", this.constructor.name);
+		throw new Error("STATIC_CLASS", {}, this.constructor.name);
 	}
 
 	static async cat () {
@@ -26,10 +26,10 @@ module.exports = class RandomAnimals {
 		} catch (err) {
 			throw err;
 		}
-		if (res.text.includes(".mp4")) {
+		if (res.raw.toString().includes(".mp4")) {
 			return RandomAnimals.dog();
 		} else {
-			return `https://random.dog/${res.text}`;
+			return `https://random.dog/${res.raw.toString()}`;
 		}
 	}
 };

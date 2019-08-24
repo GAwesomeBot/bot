@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Logs - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
@@ -25,20 +25,19 @@
 						</div>
 					</article>
 					<form id="search-form" action="<%= currentPage %>" method="get">
-						<input name="svrid" type="hidden" value="<%= serverData.id %>">
 						<div class="field has-addons has-addons-centered">
 							<div class="control">
-								<span class="select">
+								<span class="select is-primary">
 									<select name="chid" onchange="$('#search-form').submit();">
 										<option value="">All Channels</option>
-										<% for(var i=0; i<channelData.length; i++) { %>
-											<option value="<%= channelData[i].id %>" <%= channelQuery==channelData[i].id ? "selected" : "" %>>#<%= channelData[i].name %></option>
-										<% } %>
+										<% pageData.channelData.forEach(channel => { %>
+											<option value="<%= channel.id %>"<%= pageData.channelQuery === channel.id ? " selected" : "" %>>#<%= channel.name %></option>
+										<% }); %>
 									</select>
 								</span>
 							</div>
 							<div class="control is-expanded">
-								<input name="q" class="input" type="text" placeholder="I'm looking for..." value="<%= searchQuery %>">
+								<input name="q" class="input is-primary" type="text" placeholder="I'm looking for..." value="<%= pageData.searchQuery %>">
 							</div>
 							<div class="control">
 								<button type="submit" class="button">
@@ -51,29 +50,29 @@
 						</div>
 					</form>
 					<br>
-					<% for(var i=0; i<logData.length; i++) { %>
+					<% pageData.logData.forEach(log => { %>
 						<article class="media">
 							<figure class="media-left">
-								<span class="icon is-large" style="color: <%= logData[i].levelColor %>;">
-									<i class="fa fa-<%= logData[i].level %> fa-2x"></i>
+								<span class="icon is-large" style="color: <%= log.levelColor %>;">
+									<i class="fa fa-<%= log.level %> fa-2x"></i>
 								</span>
 							</figure>
 							<div class="media-content">
 								<div class="content">
 									<p>
 										<strong>
-											<%- logData[i].ch ? ("<span title=" + logData[i].chid  + ">#" + logData[i].ch + "</span>") : "" %><%- (logData[i].ch && logData[i].usr) ? ", " : "" %><%- logData[i].usr ? ("<span title=" + logData[i].usrid + ">@" + logData[i].usr + "</span>") : "" %><% (!logData[i].ch && !logData[i].usr) ? "General" : "" %>
+											<%- log.ch ? ("<span title=" + log.chid  + ">#" + log.ch + "</span>") : "" %><%- (log.ch && log.usr) ? ", " : "" %><%- log.usr ? ("<span title=" + log.usrid + ">@" + log.usr + "</span>") : "" %><% (!log.ch && !log.usr) ? "General" : "" %>
 										</strong>
 										<small>
-											<%= logData[i].moment %>
+											<%= log.moment %>
 										</small>
 										<br>
-										<%= logData[i].content %>
+										<%= log.content %>
 									</p>
 								</div>
 							</div>
 						</article>
-					<% } %>
+					<% }); %>
 				</div>
 			</div>
 		</div>

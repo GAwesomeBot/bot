@@ -1,42 +1,34 @@
-const { StreamerUtils: isStreaming } = require("./");
+const isStreaming = require("./StreamerUtils");
+const { Templates: { StreamingTemplate }, LoggingLevels } = require("../../Internals/Constants");
 
 // Checks if a user is streaming on Twitch, YouTube Gaming, and posts message in server channel if necessary
-/* eslint-disable require-await*/
-module.exports = async (server, serverDocument, streamerDocument) => {
-	isStreaming(streamerDocument.type, streamerDocument._id).then(async data => {
-		let updated = false;
-		// Send status message if stream started
-		if (data && !streamerDocument.live_state) {
-			winston.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
-			streamerDocument.live_state = true;
-			updated = true;
+module.exports = async (client, server, serverDocument, streamerDocument) => {
+	try {
+		const streamerQueryDocument = serverDocument.query.id("config.streamers_data", streamerDocument._id);
 
-			const channel = streamerDocument.channel_id ? server.channels.get(streamerDocument.channel_id) : server.defaultChannel;
+		const data = await isStreaming(streamerDocument.type, streamerDocument._id);
+
+		if (data && !streamerDocument.live_state) {
+			logger.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
+			streamerQueryDocument.set("live_state", true);
+
+			const channel = streamerDocument.channel_id ? server.channels.get(streamerDocument.channel_id) : null;
 			if (channel) {
-				const channelDocument = serverDocument.channels.id(channel.id);
+				const channelDocument = serverDocument.channels[channel.id];
 				if (!channelDocument || channelDocument.bot_enabled) {
-					channel.send({
-						embed: {
-							color: 0x00FF00,
-							description: `**${data.name}** started streaming on ${data.type}: ${data.game}\nYou can go watch them by going [here](${data.url})`,
-							title: `A streamer started streaming!`,
-							url: data.url,
-						},
-					});
+					await channel.send(StreamingTemplate(data));
 				}
 			}
-		} else {
-			streamerDocument.live_state = false;
-			updated = true;
+		} else if (!data) {
+			streamerQueryDocument.set("live_state", false);
 		}
 
 		// Save serverDocument if necessary
-		if (updated) {
-			await serverDocument.save().catch(err => {
-				winston.warn(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
-			});
-		}
-	}).catch(err => {
-		winston.warn(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err);
-	});
+		await serverDocument.save().catch(err => {
+			logger.warn(`Failed to save data for streamer "${streamerDocument._id}"`, { svrid: server.id }, err);
+		});
+	} catch (err) {
+		logger.debug(`An error occurred while checking streamer status -_-`, { svrid: server.id, streamer: streamerDocument._id }, err);
+		client.logMessage(serverDocument, LoggingLevels.WARN, `Failed to fetch streamer ${streamerDocument._id}, they might not be configured correctly!`, streamerDocument.channel_id);
+	}
 };

@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Auto Translation - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTranslated() {
 		var newTranslatedMember = $("#new-translated-member");
@@ -26,23 +22,23 @@
 		if(newTranslatedMember.val() && newTranslatedLanguage.val() && Array.prototype.slice.call(document.getElementById("new-translated-enabled_channel_ids").querySelectorAll('input[type="checkbox"]')).some(x => x.checked)) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-member": newTranslatedMember.val(),
 					"new-source_language": newTranslatedLanguage.val(),
-					<% for(var i=0; i<channelData.length; i++) { %>
-						"new-enabled_channel_ids-<%= channelData[i].id %>": document.getElementById("new-translated-enabled_channel_ids-<%= channelData[i].id %>").checked,
-					<% } %>
+					<% pageData.channelData.forEach(channel => { %>
+						"new-enabled_channel_ids-<%= channel.id %>": document.getElementById("new-translated-enabled_channel_ids-<%= channel.id %>").checked,
+					<% }); %>
 				},
 				success: function() {
-					location.reload();
+				  Turbolinks.visit('');
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState(); setUserAutocomplete('<%= serverData.id %>');">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -61,96 +57,77 @@
 							GAwesomeBot's <code>translate</code> command can be set to automatically <strong>translate messages from certain members to English</strong>. This is useful for users that don't speak English. The bot will <strong>automatically and instantaneously</strong> post a translated version of each message in the channels you specify.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
-						<div class="field">
-							<div style="overflow-x: scroll;">
-								<% if(configData.translated_messages.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
-											<tr>
-												<th></th>
-												<th>Username</th>
-												<th>Language</th>
-												<th>Channels</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.translated_messages.length; i++) { %>
-												<tr>
-													<td>
-														<img class="image is-24x24" src="<%= configData.translated_messages[i].avatar %>" alt="<%= configData.translated_messages[i]._id %>">
-													</td>
-													<td>
-														<%= configData.translated_messages[i].username %>
-													</td>
-													<td>
-														<%= configData.translated_messages[i].source_language.toUpperCase() %>
-													</td>
-													<td>
-														<% for(var j=0; j<channelData.length; j++) { %>
-															<label class="checkbox">
-															<input name="translated_messages-<%= i %>-enabled_channel_ids-<%= channelData[j].id %>" type="checkbox" <%= configData.translated_messages[i].enabled_channel_ids.indexOf(channelData[j].id)>-1 ? "checked" : "" %>>
-																#<%= channelData[j].name %>
-															</label>
-															<br>
-														<% } %>
-													</td>
-													<td>
-														<input type="checkbox" id="translated_messages-<%= i %>-removed" name="translated_messages-<%= i %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="translated_messages-<%= i %>-removed" onclick="$('#translated_messages-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't set any members to translate messages for yet. Fill out the form below to get started.
-										</div>
-									</article>
-									<br>
-								<% } %>
-							</div>
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+						<div class="field" style="overflow-x: scroll;">
+                            <%- include("../partials/no-results", { isHidden: configData.translated_messages.length, isSearchQuery: false, description: "You haven't set any members to translate messages for yet. Fill out the form below to get started." }) %>
+							<table class="table is-fullwidth<%= configData.translated_messages.length ? "" : " is-hidden" %>">
+								<thead>
+									<tr>
+										<th></th>
+										<th>Username</th>
+										<th>Language</th>
+										<th>Channels</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									<% configData.translated_messages.forEach(autoTranslationDocument => { %>
+										<tr>
+											<td>
+												<img class="image is-24x24" src="<%= autoTranslationDocument.avatar %>" alt="<%= autoTranslationDocument._id %>">
+											</td>
+											<td>
+												<%= autoTranslationDocument.username %>
+											</td>
+											<td>
+												<%= autoTranslationDocument.source_language.toUpperCase() %>
+											</td>
+											<td>
+												<% pageData.channelData.forEach(channel => { %>
+													<label class="checkbox">
+														<input name="translated_messages-<%= autoTranslationDocument._id %>-enabled_channel_ids-<%= channel.id %>" type="checkbox"<%= autoTranslationDocument.enabled_channel_ids.includes(channel.id) ? " checked" : "" %>>
+														#<%= channel.name %>
+													</label>
+												<br>
+												<% }); %>
+											</td>
+											<td>
+												<button class="button is-small is-danger" name="<%= autoTranslationDocument._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
+													<span>Remove</span>
+													<span class="icon is-small">
+														<i class="fa fa-times"></i>
+													</span>
+												</button>
+											</td>
+										</tr>
+									<% }); %>
+								</tbody>
+							</table>
 						</div>
 						<br>
 						<div class="columns">
 							<div id="new-translated-enabled_channel_ids" class="column is-narrow">
 								<div class="field">
-									<% for(var i=0; i<channelData.length; i++) { %>
+									<% pageData.channelData.forEach(channel => { %>
 										<label class="checkbox">
-										<input id="new-translated-enabled_channel_ids-<%= channelData[i].id %>" type="checkbox">
-											#<%= channelData[i].name %>
+										<input id="new-translated-enabled_channel_ids-<%= channel.id %>" type="checkbox">
+											#<%= channel.name %>
 										</label>
 										<br>
-									<% } %>
+									<% }); %>
 								</div>
 							</div>
 							<div class="column">
 								<div class="field">
 									<div class="control is-expanded">
-										<input id="new-translated-member" class="input user-autocomplete" type="text" placeholder="Member Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-translated-member" class="input is-primary user-autocomplete" type="text" placeholder="Member Username" onkeypress="return event.keyCode !== 13;">
 									</div>
 								</div>
 								<div class="field is-horizontal">
 									<div class="field-body">
 										<div class="field is-grouped">
 											<div class="control is-expanded">
-												<input id="new-translated-language" class="input" type="text" minlength="2" maxlength="6" placeholder="Source language code" list="languages" onkeypress="return event.keyCode != 13;">
+												<input id="new-translated-language" class="input is-primary" type="text" minlength="2" maxlength="6" placeholder="Source language code" list="languages" onkeypress="return event.keyCode !== 13;">
 												<datalist id="languages">
 													<option value="af">Afrikaans</option>
 													<option value="ar">Arabic</option>
@@ -229,6 +206,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

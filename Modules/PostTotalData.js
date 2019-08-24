@@ -1,8 +1,8 @@
 const { tokens } = require("../Configurations/auth.js");
 const snekfetch = require("snekfetch");
 
-module.exports = async bot => {
-	const totalAmount = await bot.guilds.totalCount;
+module.exports = async client => {
+	const totalAmount = await client.guilds.totalCount;
 	if (tokens.discordList) {
 		let res;
 		try {
@@ -11,12 +11,12 @@ module.exports = async bot => {
 				servers: totalAmount,
 			});
 		} catch (err) {
-			winston.warn(`Failed to post to Discordlist.net >~<`, err);
+			logger.warn(`Failed to POST to Discordlist.net >~<`, {}, err);
 		}
-		if (res && res.status === 200) {
-			winston.info(`Succesfully POSTed to Discordlist.net`);
+		if (res && res.statusCode === 200) {
+			logger.info(`Succesfully POSTed to Discordlist.net`);
 		} else {
-			winston.warn(`Failed to POST to Discordlist.net`, { statusCode: res.status });
+			logger.warn(`Failed to POST to Discordlist.net`, { statusCode: res.statusCode });
 		}
 	}
 };

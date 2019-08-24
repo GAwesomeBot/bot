@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const Schema = require("../Schema");
 
 // User data (past names, profile fields, etc)
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	_id: {
 		type: String,
 		required: true,
@@ -12,7 +12,7 @@ module.exports = new mongoose.Schema({
 		default: 1,
 	},
 	afk_message: String,
-	server_nicks: [new mongoose.Schema({
+	server_nicks: [new Schema({
 		_id: {
 			type: String,
 			required: true,
@@ -22,8 +22,12 @@ module.exports = new mongoose.Schema({
 			type: String,
 			required: true,
 		},
-	}, { usePushEach: true })],
-	reminders: [new mongoose.Schema({
+	})],
+	reminders: [new Schema({
+		_id: {
+			type: String,
+			required: true,
+		},
 		name: {
 			type: String,
 			required: true,
@@ -32,11 +36,11 @@ module.exports = new mongoose.Schema({
 			type: Number,
 			required: true,
 		},
-	}, { usePushEach: true })],
+	})],
 	location: String,
 	weatherunit: String,
 	last_seen: Date,
-	profile_fields: mongoose.Schema.Types.Mixed,
+	profile_fields: Schema.Mixed,
 	profile_background_image: {
 		type: String,
 		default: `http://i.imgur.com/8UIlbtg.jpg`,
@@ -47,4 +51,4 @@ module.exports = new mongoose.Schema({
 	},
 	upvoted_gallery_extensions: [String],
 	username: String,
-}, { usePushEach: true });
+});

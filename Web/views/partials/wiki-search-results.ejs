@@ -1,19 +1,19 @@
-<% if(data.searchResults.length>0) { %>
+<% if (pageData.searchResults.length > 0) { %>
 	<div class="content">
-		<% for(var i=0; i<data.searchResults.length; i++) { %>
+		<% pageData.searchResults.forEach(searchResult => { %>
 			<div class="box">
-				<a class="title is-3" href="/wiki/<%= data.searchResults[i].title %>">
-					<%= data.searchResults[i].title %>
+				<a class="title is-3" href="/wiki/<%= searchResult.title %>">
+					<%= searchResult.title %>
 				</a>
 				<br><br>
 				<div class="content">
-					<%- data.searchResults[i].matchText %>
+					<%- searchResult.matchText %>
 				</div>
 			</div>
-		<% } %>
+		<% }); %>
 	</div>
 <% } else { %>
-	<% var resetUrl = "/wiki/Home"; %>
-	<% var activeSearchQuery = data.activeSearchQuery; %>
-	<% include ../partials/no-results %>
+	<% const resetUrl = "/wiki/Home"; %>
+	<% const activeSearchQuery = pageData.activeSearchQuery; %>
+	<%- include("../partials/no-results", { isSearchQuery: true, activeSearchQuery, resetUrl, mode: pageData.mode }) %>
 <% } %>

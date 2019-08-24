@@ -7,7 +7,7 @@ class BaseEvent {
 	 * @param {Object} configJS
 	 */
 	constructor (client, configJS) {
-		this.bot = this.client = client;
+		this.client = client;
 		this.configJS = configJS;
 		this.configJSON = configJSON;
 	}
@@ -17,7 +17,7 @@ class BaseEvent {
 	 * @param {?Object} [values] The values that the event emitted
 	 */
 	async handle () {
-		throw new Error("NO_HANDLE", this.constructor.name);
+		throw new Error("NO_HANDLE", {}, this.constructor.name);
 	}
 
 	/**

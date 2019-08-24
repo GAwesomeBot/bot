@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Strikes - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<link rel="stylesheet" href="/static/css/auto-complete.css">
-	<script src="/static/js/auto-complete.min.js"></script>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newStrike(member) {
 		var newStrikeMember = $("#new-strike-member");
@@ -28,14 +24,14 @@
 		if((member || newStrikeMember.val()) && newStrikeReason.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-member": member || newStrikeMember.val(),
 					"new-reason": newStrikeReason.val()
 				},
 				success: function() {
-					saveFormState();
-					location.reload();
+					GAwesomeUtil.SFS();
+				  Turbolinks.visit('');
 				}
 			});
 		}
@@ -50,11 +46,11 @@
 			const parts = strike.id.split("-");
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: send,
 				success: function() {
 					const docs = document.getElementsByClassName('strikes-' + parts[1]);
-					if(docs.length <= 1) window.location.reload();
+					if(docs.length <= 1) Turbolinks.visit("");
 					const remove = document.getElementById("removestrike-" + parts[1] + "-" + parts[2]).parentNode.parentNode;
 					document.getElementById("removestrike-" + parts[1] + "-" + parts[2]).parentNode.parentNode.parentNode.removeChild(remove);
 					for (i = 0; i < docs.length; i++) {
@@ -69,7 +65,7 @@
 	}
 	</script>
 </head>
-<body onload="saveFormState();setUserAutocomplete('<%= serverData.id %>');">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -86,13 +82,13 @@
 					<article class="message is-primary">
 						<div class="message-body">
 							<div class="content">
-								Strikes are the best way for moderators to <strong>keep track of rule violations</strong> by members on your server. You can add strikes when a user does something wrong, and strikes are automatically added for filter violations.
+								Strikes are the best way for moderators to <strong>keep track of rule violations</strong> by members on your server. You can add strikes when a user does something wrong, and strikes are automatically added for filter violations. <strong>It is impossible to strike Bot Admins.</strong>
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); Turbolinks.visit(''); return false;">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(strikes.length>0) { %>
+							<% if (configData.strikes.length > 0) { %>
 							<table class="table is-fullwidth">
 								<thead>
 								<tr>
@@ -103,21 +99,21 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<strikes.length; i++) { %>
+								<% configData.strikes.forEach(strike => { %>
 								<tr>
 									<td>
-										<img class="image is-24x24" src="<%= strikes[i].avatar %>" alt="<%= strikes[i].id %>">
+										<img class="image is-24x24" src="<%= strike.avatar %>" alt="<%= strike.id %>">
 									</td>
 									<td>
-										<%= strikes[i].name %>
+										<%= strike.name %>
 									</td>
 									<td>
-										<%= strikes[i].id %>
+										<%= strike.id %>
 									</td>
 									<td>
 										<div class="field is-grouped">
 											<div class="control">
-											<a class="button modal-button is-small" data-target="#strikes-<%= i %>-modal">
+											<a class="button modal-button is-small" data-target="#strikes-<%= strike.id %>-modal">
 												<span class="icon is-small">
 													<i class="fa fa-eye"></i>
 												</span>
@@ -125,7 +121,7 @@
 											</a>
 											</div>
 											<div class="control">
-											<a class="button modal-button is-small is-primary" data-target="#strikes-<%= i %>-add-modal">
+											<a class="button modal-button is-small is-primary" data-target="#strikes-<%= strike.id %>-add-modal">
 												<span class="icon is-small">
 													<i class="fa fa-plus"></i>
 												</span>
@@ -133,8 +129,8 @@
 											</a>
 											</div>
 											<div class="control">
-											<input type="checkbox" id="strikes-<%= strikes[i].id %>-removeall" name="strikes-<%= strikes[i].id %>-removeall" style="display: none;">
-											<button class="button is-small is-danger" name="strikes-<%= strikes[i].id %>-removeall" onclick="$('#strikes-<%= strikes[i].id %>-removeall').attr('checked', true); saveFormState(); location.reload();">
+											<input type="checkbox" id="strikes-<%= strike.id %>-removeall" name="strikes-<%= strike.id %>-removeall" style="display: none;">
+											<button class="button is-small is-danger" name="strikes-<%= strike.id %>-removeall" onclick="$('#strikes-<%= strike.id %>-removeall').attr('checked', true); GAwesomeUtil.SFS();">
 												<span>Remove All</span>
 												<span class="icon is-small">
 													<i class="fa fa-times"></i>
@@ -144,51 +140,51 @@
 										</div>
 									</td>
 								</tr>
-								<div id="strikes-<%= i %>-modal" class="modal">
+								<div id="strikes-<%= strike.id %>-modal" class="modal">
 									<div class="modal-background"></div>
 									<div class="modal-content">
 										<div class="box">
 												<h4 class="subtitle is-4">
-													Strikes for <strong>@<%= strikes[i].name %></strong>
+													Strikes for <strong>@<%= strike.name %></strong>
 												</h4>
-												<% for(var j=0; j<strikes[i].strikes.length; j++) { %>
+												<% strike.strikes.forEach(subStrike => { %>
 												<article class="media">
 													<div class="media-left">
-														<img class="image is-64x64" src="<%= strikes[i].strikes[j].creator.avatar %>" alt="<%= strikes[i].strikes[j].creator.id %>">
+														<img class="image is-64x64" src="<%= subStrike.creator.avatar %>" alt="<%= subStrike.creator.id %>">
 													</div>
 													<div class="media-content">
 														<div class="content">
-															<h5 class="title is-5" title="<%= strikes[i].strikes[j].rawDate %>"><%= strikes[i].strikes[j].relativeDate %></h5>
-															<h6 class="subtitle is-6" style="-webkit-margin-after: 0.5em;">Added by <strong>@<%= strikes[i].strikes[j].creator.name %></strong></h6>
-															<%- strikes[i].strikes[j].reason %>
+															<h5 class="title is-5" title="<%= subStrike.rawDate %>"><%= subStrike.relativeDate %></h5>
+															<h6 class="subtitle is-6" style="-webkit-margin-after: 0.5em;">Added by <strong>@<%= subStrike.creator.name %></strong></h6>
+															<%- subStrike.reason %>
 														</div>
 													</div>
 													<div class="media-right">
-														<span class="strikes-<%= strikes[i].id %>" id="removestrike-<%= strikes[i].id %>-<%= j %>">
+														<span class="strikes-<%= strike.id %>" id="removestrike-<%= strike.id %>-<%= subStrike.id %>">
 															<button class="delete is-medium" onclick="removeStrike(this.parentNode); return false"></button>
 														</span>
 													</div>
 												</article>
-												<% } %>
+												<% }); %>
 											</div>
 										</div>
 									<button class="modal-close is-large"></button>
 								</div>
-								<div id="strikes-<%= i %>-add-modal" class="modal">
+								<div id="strikes-<%= strike.id %>-add-modal" class="modal">
 									<div class="modal-background"></div>
 									<div class="modal-content">
 										<div class="box">
 											<h4 class="subtitle is-4">
-												Add a strike for <strong>@<%= strikes[i].name %></strong>
+												Add a strike for <strong>@<%= strike.name %></strong>
 											</h4>
 											<div class="field is-horizontal">
 												<div class="field-body">
 													<div class="field is-grouped">
 														<div class="control is-expanded">
-															<input id="<%= strikes[i].id %>-strike-reason" class="input" type="text" placeholder="Reason" minlength="1" maxlength="2000">
+															<input id="<%= strike.id %>-strike-reason" class="input is-primary" type="text" placeholder="Reason" minlength="1" maxlength="2000">
 														</div>
 														<div class="control">
-															<a class="button is-primary" onclick="newStrike('<%= strikes[i].id %>');">
+															<a class="button is-primary" onclick="newStrike('<%= strike.id %>');">
 																<span class="icon">
 																	<i class="fa fa-plus"></i>
 																</span>
@@ -202,11 +198,11 @@
 									</div>
 									<button class="modal-close is-large"></button>
 								</div>
-								<% } %>
+								<% }); %>
 								</tbody>
 							</table>
 							<% } else { %>
-							<article class="message" style="margin-bottom: 0px;">
+							<article class="message is-embedded-message">
 								<div class="message-header">
 									<p>
 										<span class="icon">
@@ -226,10 +222,10 @@
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control">
-										<input id="new-strike-member" class="input user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode != 13;">
+										<input id="new-strike-member" class="input is-primary user-autocomplete" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control is-expanded">
-										<input id="new-strike-reason" class="input" type="text" placeholder="Reason" onkeypress="return event.keyCode != 13;">
+										<input id="new-strike-reason" class="input is-primary" type="text" placeholder="Reason" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
 										<a class="button is-primary" onclick="newStrike();">
@@ -246,6 +242,7 @@
 				</div>
 			</div>
 		</div>
+		<script>GAwesomeUtil.setUserAutocomplete('<%= serverData.id %>');</script>
 	</section>
 
 	<% include ../partials/footer %>

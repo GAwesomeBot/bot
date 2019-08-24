@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Tags - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newTag() {
 		var newTagName = $("#new-tag-name");
@@ -23,25 +22,25 @@
 		}
 
 		if(newTagName.val() && newTagContent.val()) {
+			GAwesomeData.HUM = true;
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-name": newTagName.val(),
 					"new-type": newTagType.val(),
 					"new-content": newTagContent.val()
 				},
 				success: function() {
-					saveFormState();
-					$("#form").submit();
-					location.reload();
+					GAwesomeData.HUM = true;
+				  	Turbolinks.visit('');
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -60,55 +59,57 @@
 							GAwesomeBot comes with a <strong>robust tag system</strong> that allows you to save <strong>snippets of text</strong>, identified by a unique label. They're useful for links useful in your server, funny quotes, or temporary notes. You can designate some tags as commands, making them accessible as normal commands using the usual syntax. Locking a tag prevents the tag from being removed using the <code>tag</code> command, admins excluded.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<h4 class="subtitle is-4">
 							General
 						</h4>
-						<% var commandData = configData.commands.tag;commandData.name = "tag";commandData.description = commandDescriptions.tag;commandData.category = commandCategories.tag; %>
+						<div class="command-items">
+						<% const commandData = configData.commands.tag; commandData.name = "tag"; commandData.description = pageData.commandDescriptions.tag; commandData.category = pageData.commandCategories.tag; %>
 						<% include ../partials/admin-command-item %>
+						</div>
 							<div class="field tag-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
 								<div class="field">
 									List all tags:
-									<div class="select is-small">
+									<div class="select is-primary is-small">
 										<select name="listIsAdminOnly">
-											<option value="false" <%= configData.tags.listIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.listIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.listIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.listIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</div>
 								</div>
 								<div class="field">
 									Add tags:
-									<div class="select is-small">
+									<div class="select is-primary is-small">
 										<select name="addingIsAdminOnly">
-											<option value="false" <%= configData.tags.addingIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.addingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.addingIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.addingIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</div>
 								</div>
 								<div class="field">
 									Add tag commands:
-									<span class="select is-small">
+									<span class="select is-primary is-small">
 										<select name="addingCommandIsAdminOnly">
-											<option value="false" <%= configData.tags.addingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.addingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.addingCommandIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.addingCommandIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
 								<div class="field">
 									Remove tags:
-									<span class="select is-small">
+									<span class="select is-primary is-small">
 										<select name="removingIsAdminOnly">
-											<option value="false" <%= configData.tags.removingIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.removingIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.removingIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.removingIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
 								<div class="field">
 									Remove tag commands:
-									<span class="select is-small">
+									<span class="select is-primary is-small">
 										<select name="removingCommandIsAdminOnly">
-											<option value="false" <%= configData.tags.removingCommandIsAdminOnly ? "" : "selected" %>>@everyone</option>
-											<option value="true" <%= configData.tags.removingCommandIsAdminOnly ? "selected" : "" %>>Admin-only</option>
+											<option value="false"<%= configData.tags.removingCommandIsAdminOnly ? "" : " selected" %>>@everyone</option>
+											<option value="true"<%= configData.tags.removingCommandIsAdminOnly ? " selected" : "" %>>Admin-only</option>
 										</select>
 									</span>
 								</div>
@@ -118,81 +119,64 @@
 								Tag List
 							</h4>
 							<div class="field" style="overflow-x: scroll;">
-								<% if(configData.tags.list.length>0) { %>
-									<table class="table is-fullwidth">
-										<thead>
+								<%- include("../partials/no-results", { isHidden: configData.tags.list.length, isSearchQuery: false, description: "You haven't added any tags yet. Save a snippet by filling out the form below." }) %>
+								<table class="table is-fullwidth<%= configData.tags.list.length ? "" : " is-hidden" %>">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Text</th>
+											<th>Type</th>
+											<th>Locked?</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										<% configData.tags.list.forEach(tag => { %>
 											<tr>
-												<th>Name</th>
-												<th>Text</th>
-												<th>Type</th>
-												<th>Locked?</th>
-												<th></th>
+												<td>
+													<%= tag._id %>
+												</td>
+												<td>
+													<%- tag.content %>
+												</td>
+												<td>
+													<p class="control">
+														<span class="select is-primary is-small">
+															<select name="tag-<%= tag._id %>-isCommand">
+																<option value="text"<%= tag.isCommand ? "" : " selected" %>>Text</option>
+																<option value="command"<%= tag.isCommand ? " selected" : "" %>>Command</option>
+															</select>
+														</span>
+													</p>
+												</td>
+												<td>
+													<p class="control">
+														<label class="checkbox">
+															<input name="tag-<%= tag._id %>-isLocked" type="checkbox"<%= tag.isLocked ? " checked" : "" %>>
+														</label>
+													</p>
+												</td>
+												<td>
+													<button class="button is-small is-danger" name="<%= tag._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
+														<span>Remove</span>
+														<span class="icon is-small">
+															<i class="fa fa-times"></i>
+														</span>
+													</button>
+												</td>
 											</tr>
-										</thead>
-										<tbody>
-											<% for(var i=0; i<configData.tags.list.length; i++) { %>
-												<tr>
-													<td>
-														<%= configData.tags.list[i]._id %>
-													</td>
-													<td>
-														<%- configData.tags.list[i].content %>
-													</td>
-													<td>
-														<p class="control">
-															<span class="select is-small">
-																<select name="tag-<%= configData.tags.list[i].index %>-isCommand">
-																	<option value="text" <%= configData.tags.list[i].isCommand ? "" : "selected" %>>Text</option>
-																	<option value="command" <%= configData.tags.list[i].isCommand ? "selected" : "" %>>Command</option>
-																</select>
-															</span>
-														</p>
-													</td>
-													<td>
-														<p class="control">
-															<label class="checkbox">
-															<input name="tag-<%= configData.tags.list[i].index %>-isLocked" type="checkbox" <%= configData.tags.list[i].isLocked ? "checked" : "" %>>
-															</label>
-														</p>
-													</td>
-													<td>
-														<input type="checkbox" id="tag-<%= configData.tags.list[i].index %>-removed" name="tag-<%= configData.tags.list[i].index %>-removed" style="display: none;">
-														<button class="button is-small is-danger" name="tag-<%= configData.tags.list[i].index %>-removed" onclick="$('#tag-<%= configData.tags.list[i].index %>-removed').attr('checked', true); saveFormState(); location.reload();">
-															<span>Remove</span>
-															<span class="icon is-small">
-																<i class="fa fa-times"></i>
-															</span>
-														</button>
-													</td>
-												</tr>
-											<% } %>
-										</tbody>
-									</table>
-								<% } else { %>
-									<article class="message" style="margin-bottom: 0px;">
-										<div class="message-header">
-											<p>
-												<span class="icon">
-													<i class="fa fa-meh-o"></i>
-												</span>
-												Nothing to see here
-											</p>
-										</div>
-										<div class="message-body">
-											You haven't added any tags yet. Save a snippet by filling out the form below.
-										</div>
-									</article>
-									<br>
-								<% } %>
+										<% }); %>
+									</tbody>
+								</table>
 							</div>
 							<div class="field is-horizontal">
 								<div class="field-body">
 									<div class="field is-grouped">
 										<div class="control is-expanded">
-											<input id="new-tag-name" class="input" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+											<input id="new-tag-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 										</div>
 										<div class="control">
-											<span class="select">
+											<span class="select is-primary">
 												<select id="new-tag-type">
 													<option value="text">Text</option>
 													<option value="command">Command</option>
@@ -212,7 +196,7 @@
 							</div>
 						<div class="field">
 							<div class="control is-expanded">
-								<textarea id="new-tag-content" class="input" type="textarea" minlength="1" maxlength="1500" placeholder="Tag content" style="resize: vertical;"></textarea>
+								<textarea id="new-tag-content" class="input is-primary" type="textarea" minlength="1" maxlength="2000" placeholder="Tag content" style="resize: vertical;"></textarea>
 							</div>
 						</div>
 						<br>

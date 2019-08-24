@@ -1,4 +1,6 @@
-const getRSS = require("feed-read");
+const Parser = require("rss-parser");
+const parser = new Parser({ timeout: 2000 });
+
 
 /**
  * Fetch RSS entries
@@ -7,20 +9,8 @@ const getRSS = require("feed-read");
  * @returns {?array}
  */
 module.exports = (url, num) => new Promise((resolve, reject) => {
-	const handleError = err => {
-		winston.warn(`Failed to process RSS feed request.. :/\n`, err);
-		reject(err);
-	};
-
-	try {
-		getRSS(url, (err, articles) => {
-			if (err) {
-				throw err;
-			} else {
-				resolve(articles.slice(0, num));
-			}
-		});
-	} catch (err) {
-		handleError(err);
-	}
+	parser.parseURL(url).then(articles => resolve(articles && articles.items ? articles.items.slice(0, num) : [])).catch(err => {
+		logger.debug(`Feed at URL ${url} did not respond with valid RSS.`, { url }, err);
+		reject("invalid");
+	});
 });

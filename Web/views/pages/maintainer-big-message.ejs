@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>BigMessage - <%= serverData.name %> Maintainer Console</title>
 	<% include ../partials/head %>
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 
 	<section class="section is-white">
@@ -25,11 +24,11 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field">
 							<div class="control">
-								<textarea name="message" class="textarea" maxlength="2000" placeholder="Message to send, in markdown"></textarea>
-								<span class="help">This message will be sent to <strong>all <%= serverCount %> server<%= serverCount==1 ? "" : "s" %></strong>, so make sure it's important!</span>
+								<textarea name="message" class="textarea is-primary" maxlength="2000" placeholder="Message to send, in markdown"></textarea>
+								<span class="help">This message will be sent to <strong>all <%= pageData.serverCount %> server<%= pageData.serverCount === 1 ? "" : "s" %></strong>, so make sure it's important!</span>
 							</div>
 						</div>
 						<br>

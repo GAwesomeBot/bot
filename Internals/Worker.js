@@ -1,19 +1,22 @@
-/* eslint-disable callback-return, spaced-comment */
+/* eslint-disable callback-return */
 
 const process = require("process");
-global.winston = new (require("../Modules/Console"))(`Worker -- Shard ${Number(process.env.SHARD_ID)}`);
+global.logger = new (require("./Logger"))(`Shard ${Number(process.env.SHARDS)} Worker`);
+
+require("../Modules/Utils/ObjectDefines")();
 
 const { WorkerCommands: { MATHJS: MathJSCommands } } = require("./Constants");
-const { tokens: { openExchangeRatesKey } } = require("../Configurations/auth");
-
-const request = require("snekfetch");
-const fs = require("fs");
-const fsn = require("fs-nextra");
+const configJS = require("../Configurations/config.js");
+const auth = require("../Configurations/auth.js");
+const Emoji = require("../Modules/Emoji/Emoji");
+const ExtensionManager = require("./Extensions");
 
 const mathjs = require("mathjs");
 const safeEval = mathjs.eval;
 
-mathjs.import({
+const math = mathjs.create(mathjs.all);
+
+math.import({
 	import: () => { throw new Error(`Function "import" is disabled inside calculations!`); },
 	createUnit: () => { throw new Error(`Function "createUnit" is disabled inside calculations!`); },
 	eval: () => { throw new Error(`Function "eval" is disabled inside calculations!`); },
@@ -22,22 +25,23 @@ mathjs.import({
 	derivative: () => { throw new Error(`Function "derivative" is disabled inside calculations!`); },
 }, { override: true });
 
-const convertUnits = require("convert-units");
-const money = require("money");
-let moneyTimer = null;
-let canConvertMoney = false;
-
 const Process = require("process-as-promised");
 const p = new Process();
 
-//#region Math
+const extensionManager = new ExtensionManager({
+	database: configJS.database,
+	shards: parseInt(process.env.SHARDS),
+	totalShardCount: parseInt(process.env.SHARD_COUNT),
+});
+
+// #region Math
 p.on("runMathCommand", (data, callback) => {
-	winston.silly(`Received data from master shard for calculating...`, data);
-	let retData = { error: null, result: null };
+	logger.silly(`Received data from master shard for calculating...`, data);
+	const retData = { error: null, result: null };
 	switch (data.command) {
 		case MathJSCommands.EVAL: {
 			try {
-				let result = safeEval(data.info);
+				const result = safeEval(data.info);
 				retData.result = `${result}`;
 			} catch (err) {
 				retData.error = `${err}`;
@@ -47,7 +51,7 @@ p.on("runMathCommand", (data, callback) => {
 		}
 		case MathJSCommands.HELP: {
 			try {
-				let result = mathjs.help(data.info);
+				const result = math.help(data.info);
 				retData.result = `${result}`;
 			} catch (err) {
 				retData.error = err;
@@ -56,104 +60,49 @@ p.on("runMathCommand", (data, callback) => {
 			break;
 		}
 	}
-	winston.silly(`Processed math equation and returned the results!`);
+	logger.silly(`Processed math equation and returned the results!`);
 });
-//#endregion Math
+// #endregion Math
 
-//#region CurrencyConversion
-p.on("convertData", (d, callback) => {
-	winston.silly(`Received data from master for converting...`, d);
-	let retData = { error: null, result: null, type: null };
-	const { content, to: convertTo, from: convertFrom } = d;
-	try {
-		const converted = Math.round(convertUnits(content).from(convertFrom).to(convertTo) * 1000) / 1000;
-		retData.result = converted;
-		retData.type = "unit";
-	} catch (e1) {
-		if (canConvertMoney) {
-			try {
-				const converted2 = money(content).from(convertFrom.toUpperCase()).to(convertTo.toUpperCase());
-				retData.result = converted2;
-				retData.type = "money";
-			} catch (e2) {
-				retData.error = "FAILED_TO_CONVERT_CURRENCY_OR_UNITS";
-			}
-		} else {
-			retData.error = "FAILED_TO_CONVERT_UNITS";
-		}
-	}
-	winston.silly(`Processed conversion and returned the results!`, retData);
-	return callback(retData);
+// #region Emoji
+p.on("jumboEmoji", async ({ input }, callback) => {
+	const { buffer, animated } = await Emoji(input);
+	callback({ buffer: buffer.toString("base64"), animated });
 });
-//#endregion CurrencyConversion
+// #endregion Emoji
 
-if (openExchangeRatesKey) {
-	let f;
+// #region Extensions
+p.on("runExtension", async (data, callback) => {
+	if (!extensionManager.ready) return;
+
+	const guild = extensionManager.guilds.get(data.guild);
+	if (!guild) return callback(false);
+	const channel = guild.channels.get(data.ch);
+	if (!channel) return callback(false);
+	const msg = await channel.messages.fetch(data.msg);
+	if (!msg) return callback(false);
+	msg.suffix = data.suffix;
+
+	const serverDocument = await Servers.findOne(guild.id);
+	if (!serverDocument) return callback(false);
+	const extensionDocument = await Gallery.findOneByObjectID(data.ext);
+	if (!extensionDocument) return callback(false);
+	const versionDocument = await extensionDocument.versions.id(data.extv);
+	if (!versionDocument) return callback(false);
+
 	try {
-		f = fs.statSync("./Temp/currency.json");
-	} catch (_) {
-		f = null;
+		callback(await extensionManager.runExtension(extensionDocument, versionDocument, serverDocument, serverDocument.extensions.id(data.ext), { msg, guild }));
+	} catch (err) {
+		callback(false);
 	}
-	if (f) {
-		const res = JSON.parse(fs.readFileSync("./Temp/currency.json", "utf8"));
-		money.rates = res.rates;
-		money.base = res.base;
-		moneyTimer = setInterval(async () => {
-			try {
-				let newRes = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
-				if (newRes.body && newRes.body.rates && newRes.body.base) {
-					money.rates = res.body.rates;
-					money.base = res.body.base;
-					await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
-				} else {
-					clearInterval(moneyTimer);
-					moneyTimer = null;
-					canConvertMoney = false;
-				}
-			} catch (_) {
-				clearInterval(moneyTimer);
-				moneyTimer = null;
-				canConvertMoney = false;
-			}
-		}, 3600000);
-		canConvertMoney = true;
-	} else {
-		request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`)
-		.then(async res => {
-			if (res && res.body && res.body.rates && res.body.base) {
-				money.rates = res.body.rates;
-				money.base = res.body.base;
-				await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
-				moneyTimer = setInterval(async () => {
-					try {
-						let newRes = await request.get(`https://openexchangerates.org/api/latest.json?app_id=${openExchangeRatesKey}&prettyprint=false&show_alternative=false`);
-						if (newRes.body && newRes.body.rates && newRes.body.base) {
-							money.rates = res.body.rates;
-							money.base = res.body.base;
-							await fsn.writeJSON("./Temp/currency.json", { rates: res.body.rates, base: res.body.base });
-						} else {
-							clearInterval(moneyTimer);
-							moneyTimer = null;
-							canConvertMoney = false;
-						}
-					} catch (_) {
-						clearInterval(moneyTimer);
-						moneyTimer = null;
-						canConvertMoney = false;
-					}
-				}, 3600000);
-				canConvertMoney = true;
-			} else {
-				throw new Error();
-			}
-		})
-		.catch(() => {
-			moneyTimer = null;
-			canConvertMoney = false;
-		});
-	}
-}
+});
+
+process.on("unhandledRejection", err => {
+	logger.debug(`An extension failed to handle a Promise rejection`, {}, err);
+});
 
 (async () => {
-	await p.send("ready", { shard: process.env.SHARD_ID });
+	await extensionManager.initialize();
+	await extensionManager.login(auth.discord.clientToken);
+	await p.send("ready", { shard: process.env.SHARDS });
 })();

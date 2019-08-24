@@ -1,13 +1,24 @@
 language: node_js
 node_js:
-  - "8"
+  - "10"
 cache:
   directories:
-    - node_modules
-install: npm install
+    - "$HOME/.npm"
+install: npm ci
 jobs:
   include:
     - stage: test
       script: bash ./travis/test.sh
+    - stage: build
+      if: type = push
+      script: bash ./travis/build.sh
+after_success:
+  - wget https://raw.githubusercontent.com/KingDGrizzle/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh success $WEBHOOK_URL
+after_failure:
+  - wget https://raw.githubusercontent.com/KingDGrizzle/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh failure $WEBHOOK_URL
 dist: trusty
-sudo: false
+sudo: true

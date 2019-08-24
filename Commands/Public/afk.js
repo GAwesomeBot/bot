@@ -1,9 +1,8 @@
-module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) => {
-	const { memberDocument } = documents;
+module.exports = async ({ Constants: { Colors } }, { memberDocument, memberQueryDocument }, msg, commandData) => {
 	if (msg.suffix) {
 		if (msg.suffix === ".") {
-			memberDocument.afk_message = null;
-			msg.channel.send({
+			memberQueryDocument.set("afk_message", null);
+			msg.send({
 				embed: {
 					color: Colors.GREEN,
 					title: `Welcome back! 🎊`,
@@ -14,8 +13,8 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 				},
 			});
 		} else {
-			memberDocument.afk_message = msg.suffix;
-			msg.channel.send({
+			memberQueryDocument.set("afk_message", msg.suffix);
+			msg.send({
 				embed: {
 					color: Colors.GREEN,
 					description: `Alright, I will now show that message when you are mentioned in chat. 👌`,
@@ -26,7 +25,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			});
 		}
 	} else if (memberDocument.afk_message) {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.BLUE,
 				title: `Your current AFK message is:`,
@@ -37,7 +36,7 @@ module.exports = async ({ Constants: { Colors } }, documents, msg, commandData) 
 			},
 		});
 	} else {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.LIGHT_RED,
 				description: `You don't have an AFK message set right now! ⌨`,

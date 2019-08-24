@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Ranks - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newRank() {
 		var newRankName = $("#new-rank-name");
@@ -24,23 +23,23 @@
 		if(newRankName.val() && newRankScore.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-name": newRankName.val(),
 					"new-max_score": newRankScore.val(),
 					"new-role_id": $("#new-rank-role_id").val()
 				},
 				success: function() {
-					saveFormState();
+					GAwesomeUtil.SFS();
 					$("#form").submit();
-					location.reload();
+				    Turbolinks.visit('');
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -59,10 +58,10 @@
 							Ranks <strong>classify members by activity</strong> in both voice and text chat. Each rank you add will have a <strong>maximum activity score</strong> for members to have that rank before they receive the next-highest rank. Activity scores are calculated with this formula: <code>no. messages + minutes active on voice</code>. You can also set ranks to automatically assign a role on the server.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field" style="overflow-x: scroll;">
-							<% if(configData.ranks_list.length>0) { %>
-							<table class="table is-fullwidth">
+                            <%- include("../partials/no-results", { isHidden: configData.ranks_list.length, isSearchQuery: false, description: "All the default ranks are gone! Fill out the form below to add your own rank." }) %>
+							<table class="table is-fullwidth<%= configData.ranks_list.length ? "" : " is-hidden" %>">
 								<thead>
 								<tr>
 									<th>Name</th>
@@ -73,87 +72,69 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% for(var i=0; i<configData.ranks_list.length; i++) { %>
-								<tr>
-									<td>
-										<%= configData.ranks_list[i]._id %>
-									</td>
-									<td>
-										<p class="control is-narrow">
-											<input name="rank-<%= i %>-max_score" class="input is-small" type="number" value="<%= configData.ranks_list[i].max_score %>" min="1" placeholder="Max. activity score">
-										</p>
-									</td>
-									<td>
-										<p class="control">
-											<span class="select is-small">
-												<select name="rank-<%= i %>-role_id">
-													<option value="">None</option>
-													<% for(var j=0; j<roleData.length; j++) { %>
-													<option value="<%= roleData[j].id %>" <%= configData.ranks_list[i].role_id==roleData[j].id ? "selected" : "" %>><%= roleData[j].name %></option>
-													<% } %>
-												</select>
-											</span>
-										</p>
-									</td>
-									<td>
-										<%= configData.ranks_list[i].members %>
-									</td>
-									<td>
-										<input type="checkbox" id="rank-<%= i %>-removed" name="rank-<%= i %>-removed" style="display: none;">
-										<button class="button is-small is-danger" name="rank-<%= i %>-removed" onclick="$('#rank-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
-											<span>Remove</span>
-											<span class="icon is-small">
-												<i class="fa fa-times"></i>
-											</span>
-										</button>
-									</td>
-								</tr>
-								<% } %>
+								<% configData.ranks_list.forEach(rankDocument => { %>
+									<tr>
+										<td>
+											<%= rankDocument._id %>
+										</td>
+										<td>
+											<p class="control is-narrow">
+												<input name="rank-<%= rankDocument._id %>-max_score" class="input is-primary is-small" type="number" value="<%= rankDocument.max_score %>" min="1" placeholder="Max. activity score">
+											</p>
+										</td>
+										<td>
+											<p class="control">
+												<span class="select is-primary is-small">
+													<select name="rank-<%= rankDocument._id %>-role_id">
+														<option value="">None</option>
+														<% pageData.roleData.forEach( role => { %>
+															<option value="<%= role.id %>"<%= rankDocument.role_id === role.id ? " selected" : "" %>><%= role.name %></option>
+														<% }); %>
+													</select>
+												</span>
+											</p>
+										</td>
+										<td class="ranks-member-count">
+											<%= rankDocument.members %>
+										</td>
+										<td>
+											<button class="button is-small is-danger" name="<%= rankDocument._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
+												<span>Remove</span>
+												<span class="icon is-small">
+													<i class="fa fa-times"></i>
+												</span>
+											</button>
+										</td>
+									</tr>
+								<% }); %>
 								</tbody>
 							</table>
-							<input type="checkbox" id="ranks_list-reset" name="ranks_list-reset" style="display: none;">
-							<button class="button is-danger" name="ranks_list-reset" onclick="$('#ranks_list-reset').attr('checked', true); saveFormState(); location.reload();">
+							<button class="button is-danger" name="ranks_list-reset" onclick="GAwesomeUtil.isLoading(this); GAwesomeUtil.dashboard.post({ 'ranks_list-reset': true }).then(() => { GAwesomeUtil.isFinished(this); $('.ranks-member-count').html(0); }); return false;">
 								<span>Reset Everyone's Rank</span>
 								<span class="icon is-small">
 									<i class="fa fa-times"></i>
 								</span>
 							</button>
 							<br><br>
-							<% } else { %>
-							<article class="message" style="margin-bottom: 0px;">
-								<div class="message-header">
-									<p>
-										<span class="icon">
-											<i class="fa fa-meh-o"></i>
-										</span>
-										Nothing to see here
-									</p>
-								</div>
-								<div class="message-body">
-									All the default ranks are gone! Fill out the form below to add your own rank.
-								</div>
-							</article>
-							<br>
-							<% } %>
 						</div>
 						<div class="field">
 							<div class="control is-expanded">
-								<input id="new-rank-name" class="input" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode != 13;">
+								<input id="new-rank-name" class="input is-primary" type="text" minlength="1" maxlength="200" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 							</div>
 						</div>
 						<div class="field is-horizontal">
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-rank-max_score" class="input" type="number" min="1" placeholder="Max. activity score" onkeypress="return event.keyCode != 13;">
+										<input id="new-rank-max_score" class="input is-primary" type="number" min="1" placeholder="Max. activity score" onkeypress="return event.keyCode !== 13;">
 									</div>
 									<div class="control">
-										<span class="select">
+										<span class="select is-primary">
 											<select id="new-rank-role_id">
 												<option value="">No Role</option>
-												<% for(var i=0; i<roleData.length; i++) { %>
-													<option value="<%= roleData[i].id %>"><%= roleData[i].name %></option>
-												<% } %>
+												<% pageData.roleData.forEach( role => { %>
+													<option value="<%= role.id %>"><%= role.name %></option>
+												<% }); %>
 											</select>
 										</span>
 									</div>

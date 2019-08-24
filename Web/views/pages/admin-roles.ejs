@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Roles - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script src="/static/js/form-change-listener.js"></script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -27,28 +25,28 @@
 							</div>
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
-						<% var commandData = configData.commands.roleinfo;commandData.name = "roleinfo";commandData.description = commandDescriptions.roleinfo;commandData.category = commandCategories.roleinfo; %>
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
+						<div class="command-items">
+						<% var commandData = configData.commands.roleinfo; commandData.name = "roleinfo"; commandData.description = pageData.commandDescriptions.roleinfo; commandData.category = pageData.commandCategories.roleinfo; %>
 						<% include ../partials/admin-command-item %>
-						<% var commandData = configData.commands.role;commandData.name = "role";commandData.description = commandDescriptions.role;commandData.category = commandCategories.role; %>
+						<% commandData = configData.commands.role; commandData.name = "role"; commandData.description = pageData.commandDescriptions.role; commandData.category = pageData.commandCategories.role; %>
 						<% include ../partials/admin-command-item %>
-						<div class="role-options <%= commandData.isEnabled ? '' : 'is-hidden' %>">
+						</div>
+						<div class="role-options<%= commandData.isEnabled ? '' : ' is-hidden' %>">
 							<div class="field">
 								Allow users to join these roles with the <code>role</code> command:
 								<p class="control">
-									<% for(var i=0; i<roleData.length; i++) { %>
+									<% pageData.roleData.forEach(role => { %>
 										<label class="checkbox">
-										<input name="custom_roles-<%= roleData[i].id %>" type="checkbox"<%= configData.custom_roles.indexOf(roleData[i].id)>-1 ? " checked" : "" %>>
-											<span style="color: #<%= roleData[i].color %>;" title="<%= roleData[i].name %>"><%= roleData[i].name %></span>
+										<input name="custom_roles-<%= role.id %>" type="checkbox"<%= configData.custom_roles.includes(role.id) ? " checked" : "" %>>
+											<span style="color: #<%= role.color %>;" title="<%= role.name %>"><%= role.name %></span>
 										</label>
 										<br>
-									<% } %>
+									<% }); %>
 								</p>
 							</div>
 								<br>
 						</div>
-						<% var commandData = configData.commands.perms;commandData.name = "perms";commandData.description = commandDescriptions.perms;commandData.category = commandCategories.perms; %>
-						<% include ../partials/admin-command-item %>
 						<br>
 						<% var formButtonsUnsaved = false; %>
 						<% include ../partials/form-buttons %>

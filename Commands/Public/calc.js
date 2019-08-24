@@ -5,21 +5,21 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 			try {
 				args.shift();
 				args = args.join(" ");
-				let helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, data: args });
-				msg.channel.send({
+				const helpstr = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.HELP, data: args });
+				msg.send({
 					embed: {
 						color: Colors.INFO,
 						description: `\`\`\`css\n${helpstr}\`\`\``,
 					},
 				});
 			} catch (err) {
-				let description = [
+				const description = [
 					`Couldn't find any help message for \`${args}\`!`,
 					"",
 					"We use **[MathJS](http://mathjs.org/)** to calculate your equations.",
 					"Read more about what it can and can't do by clicking [here](http://mathjs.org/)",
 				].join("\n");
-				msg.channel.send({
+				msg.send({
 					embed: {
 						color: Colors.SOFT_ERR,
 						description,
@@ -30,7 +30,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				});
 			}
 		} else {
-			let m = await msg.channel.send({
+			await msg.send({
 				embed: {
 					color: Colors.INFO,
 					title: `⌛ Calculating...`,
@@ -38,24 +38,24 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 				},
 			});
 			try {
-				let res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, data: msg.suffix.trim() });
-				m.edit({
+				const res = await client.workerManager.getValueFromWorker(WorkerTypes.MATH, { command: MathJS.EVAL, data: msg.suffix.trim() });
+				msg.send({
 					embed: {
 						color: Colors.RESPONSE,
 						title: `Here is your result!`,
 						author: {
-							name: `Results provided by MathJS`,
+							name: `Results provided with MathJS`,
 							url: `http://mathjs.org/`,
 						},
 						description: `\`\`\`css\n${res}\`\`\``,
 					},
 				});
 			} catch (err) {
-				m.edit({
+				msg.send({
 					embed: {
 						color: Colors.ERR,
-						title: Text.COMMAND_ERR(),
-						description: `\`\`\`css\n${err}\`\`\``,
+						title: Text.ERROR_TITLE(),
+						description: Text.ERROR_BODY("calc", err),
 						footer: {
 							text: `I'm sorry :(`,
 						},
@@ -64,16 +64,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes, Worker
 			}
 		}
 	} else {
-		winston.verbose(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
-		msg.channel.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `What would you like to calculate today? 🤓`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-				footer: {
-					text: `I may be smart but I can't guess what you'd want to calculate!`,
-				},
-			},
-		});
+		logger.debug(`No mathematical equation provided for "${commandData.name}" command!`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
+		msg.sendInvalidUsage(commandData, "What would you like to calculate today? 🤓", "I may be smart but I can't guess what you'd want to calculate!");
 	}
 };

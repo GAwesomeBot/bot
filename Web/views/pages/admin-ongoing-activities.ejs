@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Ongoing Activities - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
@@ -12,7 +12,7 @@
 	  	$(`#endSession-${type}-${id}`).html("Ending Game...");
 		$.ajax({
 			type: "POST",
-			url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+			url: "<%= currentPage %>",
 			data: {
 				"end-type": type,
 				"end-id": id
@@ -48,53 +48,53 @@
 					<h4 class="subtitle is-4">
 						Trivia
 					</h4>
-					<% if(trivia.length > 0) { %>
+					<% if (pageData.trivia.length > 0) { %>
 						<div class="columns">
-							<% for (let i = 0; i < trivia.length; i++) { %>
+							<% pageData.trivia.forEach((trivia, i) => { %>
 								<div class="column is-half">
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												#<%= trivia[i].channel.name %>
+												#<%= trivia.channel.name %>
 											</p>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
-												<%= trivia[i].set === "default" ? "No Custom Set" : trivia[i].set.charAt(0).toUpperCase() + trivia[i].set.slice(1) %>
+												<%= trivia.set === "default" ? "No Custom Set" : trivia.set.charAt(0).toUpperCase() + trivia.set.slice(1) %>
 											</h3>
 											<div class="level is-mobile">
 												<div class="level-item has-text-centered">
 													<div>
 														<p class="heading">Questions</p>
-														<p class="title"><%= trivia[i].max_score %></p>
+														<p class="title"><%= trivia.max_score %></p>
 													</div>
 												</div>
 												<div class="level-item has-text-centered">
 													<div>
 														<p class="heading">Score</p>
-														<p class="title"><%= trivia[i].score %></p>
+														<p class="title"><%= trivia.score %></p>
 													</div>
 												</div>
 												<div class="level-item has-text-centered">
 													<div>
 														<p class="heading">Players</p>
-														<p class="title"><%= trivia[i].responders %></p>
+														<p class="title"><%= trivia.responders %></p>
 													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= trivia[i].channel.id %>', 'trivia');" id="endSession-trivia-<%= trivia[i].channel.id %>" class="card-footer-item">
+											<a onclick="endSession('<%= trivia.channel.id %>', 'trivia');" id="endSession-trivia-<%= trivia.channel.id %>" class="card-footer-item">
 												End Game
 											</a>
 										</footer>
 									</div>
 								</div>
-								<% if(i % 2 === 1 && i !== trivia.length - 1 && i !== 0) { %>
+								<% if (i % 2 === 1 && i !== pageData.trivia.length - 1 && i !== 0) { %>
 									</div>
 									<div class="columns">
 								<% } %>
-							<% } %>
+							<% }); %>
 							</div>
 					<% } else { %>
 						<article class="message">
@@ -107,57 +107,57 @@
 								</p>
 							</div>
 							<div class="message-body">
-								There aren't any ongoing trivia games on this server. Use <code><%= commandPrefix %>trivia start</code> to start one.
+								There aren't any ongoing trivia games on this server. Use <code><%= pageData.commandPrefix %>trivia start</code> to start one.
 							</div>
 						</article>
 					<% } %>
 					<h4 class="subtitle is-4">
 						Polls
 					</h4>
-					<% if(polls.length>0) { %>
+					<% if (pageData.polls.length > 0) { %>
 						<div class="columns">
-							<% for (let i = 0; i < polls.length; i++) { %>
+							<% pageData.polls.forEach((poll, i) => { %>
 								<div class="column is-half">
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												#<%= polls[i].channel.name %>
+												#<%= poll.channel.name %>
 											</p>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
-												<%= polls[i].title %>
+												<%= poll.title %>
 											</h3>
 											<h5 class="subtitle is-5 has-text-centered">
-												Created by <strong>@<%= polls[i].creator %></strong> <span title="<%= polls[i].rawCreated %>"><%= polls[i].relativeCreated %></span>
+												Created by <strong>@<%= poll.creator %></strong> <span title="<%= poll.rawCreated %>"><%= poll.relativeCreated %></span>
 											</h5>
 											<div class="level is-mobile">
 												<div class="level-item has-text-centered">
 													<div>
 														<p class="heading">Options</p>
-														<p class="title"><%= polls[i].options %></p>
+														<p class="title"><%= poll.options %></p>
 													</div>
 												</div>
 												<div class="level-item has-text-centered">
 													<div>
 														<p class="heading">Responses</p>
-														<p class="title"><%= polls[i].responses %></p>
+														<p class="title"><%= poll.responses %></p>
 													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= polls[i].channel.id %>', 'poll');" id="endSession-poll-<%= polls[i].channel.id %>" class="card-footer-item">
+											<a onclick="endSession('<%= poll.channel.id %>', 'poll');" id="endSession-poll-<%= poll.channel.id %>" class="card-footer-item">
 												End Poll
 											</a>
 										</footer>
 									</div>
 								</div>
-								<% if (i % 2 === 1 && i !== polls.length - 1 && i !== 0) { %>
+								<% if (i % 2 === 1 && i !== pageData.polls.length - 1 && i !== 0) { %>
 									</div>
 									<div class="columns">
 								<% } %>
-							<% } %>
+							<% }); %>
 						</div>
 					<% } else { %>
 						<article class="message">
@@ -177,50 +177,50 @@
 					<h4 class="subtitle is-4">
 						Giveaways
 					</h4>
-					<% if(giveaways.length>0) { %>
+					<% if (pageData.giveaways.length > 0) { %>
 						<div class="columns">
-							<% for (let i = 0; i < giveaways.length; i++) { %>
+							<% pageData.giveaways.forEach((giveaway, i) => { %>
 								<div class="column is-half">
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												#<%= giveaways[i].channel.name %>
+												#<%= giveaway.channel.name %>
 											</p>
 										</header>
 										<div class="card-content">
 											<h3 class="title is-3 has-text-centered">
-												<%= giveaways[i].title %>
+												<%= giveaway.title %>
 											</h3>
 											<h5 class="subtitle is-5 has-text-centered">
-												Started by <strong>@<%= giveaways[i].creator %></strong>
+												Started by <strong>@<%= giveaway.creator %></strong>
 											</h5>
 											<div class="level is-mobile">
-												<div class="level-item has-text-centered" title="<%= giveaways[i].rawExpiry %>">
+												<div class="level-item has-text-centered" title="<%= giveaway.rawExpiry %>">
 													<div>
 														<p class="heading">Ends In</p>
-														<p class="title"><%= giveaways[i].relativeExpiry %>h</p>
+														<p class="title"><%= giveaway.relativeExpiry %>h</p>
 													</div>
 												</div>
 												<div class="level-item has-text-centered">
 													<div>
 														<p class="heading">Participants</p>
-														<p class="title"><%= giveaways[i].participants %></p>
+														<p class="title"><%= giveaway.participants %></p>
 													</div>
 												</div>
 											</div>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= giveaways[i].channel.id %>', 'giveaway');" id="endSession-giveaway-<%= giveaways[i].channel.id %>" class="card-footer-item" title="Secret will still be given away">
+											<a onclick="endSession('<%= giveaway.channel.id %>', 'giveaway');" id="endSession-giveaway-<%= giveaway.channel.id %>" class="card-footer-item" title="Secret will still be given away">
 												End Giveaway
 											</a>
 										</footer>
 									</div>
 								</div>
-								<% if (i % 2 === 1 && i !== giveaways.length - 1 && i !== 0) { %>
+								<% if (i % 2 === 1 && i !== pageData.giveaways.length - 1 && i !== 0) { %>
 									</div>
 									<div class="columns">
 								<% } %>
-							<% } %>
+							<% }); %>
 						</div>
 					<% } else { %>
 						<article class="message">
@@ -240,36 +240,36 @@
 					<h4 class="subtitle is-4">
 						Lotteries
 					</h4>
-					<% if (lotteries.length>0) { %>
+					<% if (pageData.lotteries.length > 0) { %>
 						<div class="columns">
-							<% for (let i = 0; i < lotteries.length; i++) { %>
+							<% pageData.lotteries.forEach((lottery, i) => { %>
 								<div class="column is-one-third">
 									<div class="card is-fullwidth">
 										<header class="card-header">
 											<p class="card-header-title">
-												#<%= lotteries[i].channel.name %>
+												#<%= lottery.channel.name %>
 											</p>
 										</header>
 										<div class="card-content">
 											<h4 class="title is-4 has-text-centered">
-												<strong><%= lotteries[i].tickets %></strong> tickets sold so far
+												<strong><%= lottery.tickets %></strong> tickets sold so far
 											</h4>
 											<h5 class="subtitle is-5 has-text-centered">
-												Created by <strong><%= lotteries[i].creator %></strong>
+												Created by <strong><%= lottery.creator %></strong>
 											</h5>
 										</div>
 										<footer class="card-footer">
-											<a onclick="endSession('<%= lotteries[i].channel.id %>', 'lottery');" id="endSession-lottery-<%= lotteries[i].channel.id %>" class="card-footer-item" title="GAwesomePoints will still be given away">
+											<a onclick="endSession('<%= lottery.channel.id %>', 'lottery');" id="endSession-lottery-<%= lottery.channel.id %>" class="card-footer-item" title="GAwesomePoints will still be given away">
 												End Lottery
 											</a>
 										</footer>
 									</div>
 								</div>
-								<% if (i % 3 === 2 && i !== lotteries.length - 1 && i !== 0) { %>
+								<% if (i % 3 === 2 && i !== pageData.lotteries.length - 1 && i !== 0) { %>
 									</div>
 									<div class="columns">
 								<% } %>
-							<% } %>
+							<% }); %>
 						</div>
 					<% } else { %>
 						<article class="message">
@@ -282,7 +282,7 @@
 								</p>
 							</div>
 							<div class="message-body">
-								There aren't any open lotteries on this server. Start an GAwesomePoints lottery with <code><%= commandPrefix %>lottery start</code>.
+								There aren't any open lotteries on this server. Start an GAwesomePoints lottery with <code><%= pageData.commandPrefix %>lottery start</code>.
 							</div>
 						</article>
 					<% } %>

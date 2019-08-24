@@ -3,49 +3,41 @@ const auth = require("../../Configurations/auth.js");
 const snekfetch = require("snekfetch");
 
 const isStreamingTwitch = async username => {
-	let res;
-	try {
-		res = await snekfetch.get(`https://api.twitch.tv/kraken/streams/${username}`).set("Accept", "application/json").query("client_id", auth.tokens.twitchClientID);
-	} catch (err) {
-		throw err;
-	}
-	if (res.statusCode === 200 && res.body && res.body.stream) {
+	const { body: { stream }, statusCode } = await snekfetch.get(`https://api.twitch.tv/kraken/streams/${username}?client_id=${auth.tokens.twitchClientID}`);
+	if (statusCode === 200 && stream) {
 		return {
-			name: res.body.stream.channel.display_name,
+			name: stream.channel.display_name,
 			type: "Twitch",
-			game: res.body.stream.game,
-			url: res.body.stream.channel.url,
+			game: stream.game,
+			url: stream.channel.url,
+			streamerImage: stream.channel.logo,
+			preview: stream.preview.large,
 		};
 	}
 };
 
 const isStreamingYoutube = async channel => {
-	let res;
-	try {
-		res = await snekfetch.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.google_api_key}`).set("Accept", "application/json");
-	} catch (err) {
-		throw err;
-	}
-	if (res.statusCode === 200 && res.body && res.body.items.length > 0 && res.body.items[0].snippet.liveBroadcastContent === "live") {
+	const { body: { items }, statusCode } = await snekfetch.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel}&type=video&eventType=live&key=${auth.tokens.googleAPI}`);
+	const item = items[0];
+	if (statusCode === 200 && item && item.snippet.liveBroadcastContent === "live") {
 		return {
-			name: res.body.items[0].snippet.channelTitle,
+			name: item.snippet.channelTitle,
 			type: "YouTube",
-			game: res.body.items[0].snippet.title,
-			url: `https://www.youtube.com/watch?v=${res.body.items[0].id.videoId}`,
+			game: item.snippet.title,
+			url: `https://youtube.com/watch?v=${item.id.videoId}`,
+			preview: item.snippet.thumbnails.high.url,
 		};
 	}
 };
 
-module.exports = (type, username) => new Promise((resolve, reject) => {
+module.exports = async (type, username) => {
 	username = encodeURIComponent(username);
 	switch (type) {
 		case "twitch": {
-			isStreamingTwitch(username).then(data => resolve(data)).catch(err => reject(err));
-			break;
+			return isStreamingTwitch(username);
 		}
 		case "ytg": {
-			isStreamingYoutube(username).then(data => resolve(data)).catch(err => reject(err));
-			break;
+			return isStreamingYoutube(username);
 		}
 	}
-});
+};

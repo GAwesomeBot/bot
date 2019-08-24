@@ -1,19 +1,21 @@
 const defaultTags = require("../../Configurations/tags.json");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
+const Gist = require("../../Modules/Utils/GitHubGist");
 
 class TagCommand {
-	constructor ({ bot, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument }, msg, commandData) {
+	constructor ({ client, configJS, Constants: { Colors, Text, LoggingLevels } }, { serverDocument, serverQueryDocument }, msg, commandData) {
 		// Command Data
 		this.suffix = msg.suffix;
 		this.channel = msg.channel;
 		this.msg = msg;
 		this.commandData = commandData;
-		this.bot = bot;
+		this.client = client;
 		this.config = configJS;
 
 		// User/Server Data
 		this.serverDocument = serverDocument;
-		this.isAdmin = this.bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
+		this.serverQueryDocument = serverQueryDocument;
+		this.isAdmin = this.client.getUserBotAdmin(msg.guild, serverDocument, msg.member) > 1 || configJSON.maintainers.includes(msg.author.id);
 
 		// New Tag Data
 		this.isCommand = false;
@@ -30,7 +32,7 @@ class TagCommand {
 	// List all tags
 	async list () {
 		if (!this.checkPerms("list")) {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
 					description: `Only admins can list all tags. ✋`,
@@ -38,25 +40,39 @@ class TagCommand {
 			});
 			return;
 		}
-		const info = this.serverDocument.config.tags.list.map(tag => {
+		await this.client.api.channels(this.channel.id).typing.post();
+		const gistUploader = new Gist(this.client);
+		const info = this.serverDocument.config.tags.list.map(async tag => {
 			const content = tag.content.replace(/(https?:[^ ]+)/gi, "<$1>");
 			const useSpacing = tag.isLocked && tag.isCommand;
-			return `» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «\n\t${content}`;
+			let URL = null;
+			if (content.length > 300) {
+				const res = await gistUploader.upload({ text: `${content}`, title: `Tag Content for Tag "${tag._id}"` });
+				if (res && res.url) {
+					URL = res.rawURL;
+				}
+			}
+			return [
+				`» **${tag._id}**${!tag.isLocked && !tag.isCommand ? "" : ` (${tag.isLocked ? "🔒" : ""}${useSpacing ? "" : ""}${tag.isCommand ? "📄" : ""})`} «`,
+				`\t${URL ? `This tag's content was too large. Please go [here](${URL}) to view it.` : `${content}`}`,
+			].join("\n");
 		});
 		if (info.length) {
+			for (let i = 0; i < info.length; i++) info[i] = await info[i];
 			const chunks = info.chunk(10);
-			const description = [];
+			const descriptions = [];
 			for (const chunk of chunks) {
-				description.push(chunk.join("\n\n"));
+				descriptions.push(chunk.join("\n\n"));
 			}
-			const menu = new PaginatedEmbed(this.msg, description, {
+			const menu = new PaginatedEmbed(this.msg, {
 				title: `${this.msg.guild}'s tags:`,
 				color: this.Colors.RESPONSE,
-				footer: `Page {current description} out of {total descriptions}`,
+			}, {
+				descriptions,
 			});
 			await menu.init();
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
 					description: "This server doesn't have any tags yet! 📑",
@@ -67,18 +83,19 @@ class TagCommand {
 
 	// Parse command suffix
 	parse () {
-		const params = this.suffix.split("|");
+		const params = this.suffix.trim().split("|").trimAll();
+		if (params[0].trim() === "") params.splice(0, 1);
 
 		if (params.length >= 1) {
-			this.tag = params[0].trim().toLowerCase();
+			this.tag = params[0].toLowerCase();
 		}
 
 		if (params.length >= 2) {
-			this.value = params[1].trim();
+			[, this.value] = params;
 		}
 
 		if (params.length >= 3) {
-			const tagOpts = params[2].trim().toLowerCase().split(/\s*,\s*/);
+			const tagOpts = params[2].toLowerCase().split(/\s+/);
 			if (tagOpts.includes("command")) {
 				this.isCommand = true;
 			}
@@ -111,15 +128,15 @@ class TagCommand {
 	// Show a tag
 	async show (tag) {
 		const data = this.get(tag);
-		if (data) {
-			this.channel.send({
+		if (data.val) {
+			this.msg.send({
 				embed: {
 					color: this.Colors.RESPONSE,
-					description: data.content,
+					description: data.val.content,
 				},
 			});
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
 					description: `Tag \`${this.suffix}\` does not exist.`,
@@ -137,7 +154,7 @@ class TagCommand {
 			return;
 		}
 
-		await this.channel.send({
+		this.msg.send({
 			embed: {
 				color: this.Colors.PROMPT,
 				description: "Are you sure you want to clear **all** tags?",
@@ -155,9 +172,9 @@ class TagCommand {
 			}
 		}
 		if (response && this.confirmAction(response)) {
-			this.serverDocument.config.tags.list = [];
-			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
-			this.msg.channel.send({
+			this.serverQueryDocument.set("config.tags.list", []);
+			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, "All tags have been cleared.", this.channel.id, this.msg.author.id);
+			this.msg.send({
 				embed: {
 					color: this.Colors.SUCCESS,
 					description: "All tags have been cleared 🗑",
@@ -169,8 +186,8 @@ class TagCommand {
 	// Delete given tag
 	deleteTag () {
 		const data = this.get();
-		if (!data) {
-			return this.channel.send({
+		if (!data.val) {
+			return this.msg.send({
 				embed: {
 					color: this.Colors.SOFT_ERR,
 					description: `Tag \`${this.tag}\` does not exist 😞`,
@@ -178,17 +195,17 @@ class TagCommand {
 			});
 		}
 
-		if (this.checkPerms(data.isCommand ? "deleteCommand" : "delete")) {
+		if (this.checkPerms(data.val.isCommand ? "deleteCommand" : "delete")) {
 			data.remove();
-			this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
-			this.channel.send({
+			this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Tag ${this.tag} has been deleted.`, this.channel.id, this.msg.author.id);
+			this.msg.send({
 				embed: {
 					color: this.Colors.SUCCESS,
 					description: `Deleted tag \`${this.tag}\` (✖╭╮✖)`,
 				},
 			});
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
 					description: `Only admins can delete \`${this.tag}\` ✋`,
@@ -200,23 +217,23 @@ class TagCommand {
 	// Save tag data
 	async update () {
 		const data = this.get();
-		if (!data) {
+		if (!data.val) {
 			if (this.checkPerms(this.isCommand ? "createCommand" : "create")) {
-				this.serverDocument.config.tags.list.push({
+				this.serverQueryDocument.push("config.tags.list", {
 					_id: this.tag,
 					content: this.value,
 					isCommand: this.isCommand,
 					isLocked: this.isLocked,
 				});
-				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
-				this.channel.send({
+				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `New tag ${this.tag} has been created.`, this.channel.id, this.msg.author.id);
+				this.msg.send({
 					embed: {
 						color: this.Colors.SUCCESS,
 						description: `New ${this.isCommand ? "command " : ""}tag \`${this.tag}\` created 😃`,
 					},
 				});
 			} else {
-				this.channel.send({
+				this.msg.send({
 					embed: {
 						color: this.Colors.MISSING_PERMS,
 						description: `Only admins can create new${this.isCommand ? " command " : " "}tags ✋`,
@@ -224,7 +241,7 @@ class TagCommand {
 				});
 			}
 		} else if (this.checkPerms("update")) {
-			await this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.PROMPT,
 					description: `Tag \`${this.tag}\` already exists. Do you want to overwrite it?`,
@@ -242,11 +259,11 @@ class TagCommand {
 				}
 			}
 			if (response && this.confirmAction(response)) {
-				data.content = this.value;
-				data.isCommand = this.isCommand;
-				data.isLocked = this.isLocked;
-				this.bot.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
-				this.channel.send({
+				data.set("content", this.value)
+					.set("isCommand", this.isCommand)
+					.set("isLocked", this.isLocked);
+				this.client.logMessage(this.serverDocument, this.LogLevels.INFO, `Existing tag ${this.tag} has been updated.`, this.channel.id, this.msg.author.id);
+				this.msg.send({
 					embed: {
 						color: this.Colors.SUCCESS,
 						description: `Tag \`${this.tag}\` updated! ✏`,
@@ -254,7 +271,7 @@ class TagCommand {
 				});
 			}
 		} else {
-			this.channel.send({
+			this.msg.send({
 				embed: {
 					color: this.Colors.MISSING_PERMS,
 					description: `Only admins can update this tag. ✋`,
@@ -266,7 +283,7 @@ class TagCommand {
 	// Get tag data
 	get (tag) {
 		tag = tag || this.tag;
-		return this.serverDocument.config.tags.list.id(tag);
+		return this.serverQueryDocument.clone.id("config.tags.list", tag);
 	}
 
 	// Confirm a prompt response
@@ -282,22 +299,22 @@ class TagCommand {
 			case "list":
 				return this.isAdmin || !this.serverDocument.config.tags.listIsAdminOnly;
 			case "delete":
-				return this.isAdmin || (!this.serverDocument.config.tags.removingIsAdminOnly && !this.get().isLocked);
+				return this.isAdmin || (!this.serverDocument.config.tags.removingIsAdminOnly && !this.get().val.isLocked);
 			case "deleteCommand":
-				return this.isAdmin || (!this.serverDocument.config.tags.removingCommandIsAdminOnly && !this.get().isLocked);
+				return this.isAdmin || (!this.serverDocument.config.tags.removingCommandIsAdminOnly && !this.get().val.isLocked);
 			case "create":
 				return this.isAdmin || !this.serverDocument.config.tags.addingIsAdminOnly;
 			case "createCommand":
 				return this.isAdmin || !this.serverDocument.config.tags.addingCommandIsAdminOnly;
 			case "update":
-				return this.isAdmin || !this.get().isLocked;
+				return this.isAdmin || !this.get().val.isLocked;
 		}
 	}
 
 	// Load default tags
 	loadDefaults () {
-		this.serverDocument.config.tags.list = defaultTags;
-		this.channel.send({
+		this.serverQueryDocument.set("config.tags.list", defaultTags);
+		this.msg.send({
 			embed: {
 				color: this.Colors.SUCCESS,
 				description: "Loaded default tags! 📥",

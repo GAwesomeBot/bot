@@ -1,4 +1,5 @@
 const request = require("snekfetch");
+const { UserAgent } = require("../../Internals/Constants");
 
 const idKeys = [
 	"amgAlbumId",
@@ -32,7 +33,7 @@ module.exports = async params => {
 		res = await request.get(URL).query(params).set({
 			Accept: "application/json",
 			"Content-Type": "application/json",
-			"User-Agent": "GAwesomeBot",
+			"User-Agent": UserAgent,
 		});
 		res.body = JSON.parse(res.body);
 	} catch (err) {
@@ -45,7 +46,7 @@ module.exports = async params => {
 		if (!res.body.results.length) {
 			throw new Error(`No results!`);
 		} else if (firstRes) {
-			ret = res.body.results[0];
+			[ret] = res.body.results;
 		} else {
 			ret = res.body.results;
 		}

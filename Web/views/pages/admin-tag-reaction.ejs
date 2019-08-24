@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title><%= serverData.name %> Tag Reaction - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
 
-	<script src="/static/js/form-change-listener.js"></script>
 	<script>
 	function newReaction() {
 		var newReactionMessage = $("#new-reaction-message");
@@ -17,21 +16,21 @@
 		if(newReactionMessage.val()) {
 			$.ajax({
 				type: "POST",
-				url: "<%= currentPage %>?svrid=<%= serverData.id %>",
+				url: "<%= currentPage %>",
 				data: {
 					"new-message": newReactionMessage.val()
 				},
 				success: function() {
-					saveFormState();
+					GAwesomeUtil.SFS();
 					$("#form").submit();
-					location.reload();
+					Turbolinks.visit("");
 				}
 			});
 		}
 	}
 	</script>
 </head>
-<body onload="saveFormState();">
+<body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
 	<% include ../partials/dashboard-socket-updates %>
 
@@ -50,7 +49,7 @@
 							This is what happens when <strong>GAwesomeBot is @mentioned</strong> in chat. You can disable the response altogether or create a list of possible responses that will be chosen from randomly.
 						</div>
 					</article>
-					<form id="form" onsubmit="submitForm(); return false;">
+					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
 						<div class="field">
 							<p class="control">
 								<label class="checkbox">
@@ -59,24 +58,24 @@
 								</label>
 							</p>
 							<ul id="tag_reaction-options" class="<%= configData.tag_reaction.isEnabled ? '' : 'is-hidden' %>">
-								<% for(var i=0; i<configData.tag_reaction.messages.length; i++) { %>
+								<% configData.tag_reaction.messages.forEach((message, i) => { %>
 									<li>
                                         <input type="checkbox" id="tag_reaction-<%= i %>-removed" name="tag_reaction-<%= i %>-removed" style="display: none;">
-                                        <button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="$('#tag_reaction-<%= i %>-removed').attr('checked', true); saveFormState(); location.reload();">
+                                        <button class="button is-small is-white" name="tag_reaction-<%= i %>-removed" onclick="$('#tag_reaction-<%= i %>-removed').attr('checked', true); GAwesomeUtil.SFS(); Turbolinks.visit('');">
 											<span class="icon is-small" style="margin-left: -2px;">
 												<i class="fa fa-times"></i>
 											</span>
 										</button>
-										<%- configData.tag_reaction.messages[i].replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
+										<%- message.replace("@user", "<strong>@user</strong>").replace("@mention", "<strong>@mention</strong>") %>
 									</li>
-								<% } %>
+								<% }); %>
 							</ul>
 						</div>
 						<div class="field is-horizontal">
 							<div class="field-body">
 								<div class="field is-grouped">
 									<div class="control is-expanded">
-										<input id="new-reaction-message" class="input" type="text" maxlength="2000" placeholder="Response message" onkeypress="return event.keyCode != 13;">
+										<input id="new-reaction-message" class="input is-primary" type="text" maxlength="2000" placeholder="Response message" onkeypress="return event.keyCode !== 13;">
 										<span class="help"><code>@mention</code> to mention member. <code>@user</code> for username.</span>
 									</div>
 									<div class="control">

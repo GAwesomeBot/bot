@@ -1,15 +1,15 @@
-module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text } }, msg, commandData) => {
 	if (msg.suffix && msg.suffix.includes("|")) {
 		const params = msg.suffix.split("|");
 		const svrname = params[0].trim();
 		const chname = params[1].trim();
 		if (svrname && chname) {
-			const initMsg = await msg.channel.send({
+			const initMsg = await msg.send({
 				embed: {
 					color: 0x3669FA,
 					author: {
-						name: bot.user.username,
-						icon_url: bot.user.avatarURL(),
+						name: client.user.username,
+						icon_url: client.user.displayAvatarURL(),
 						url: "https://github.com/GilbertGobbels/GAwesomeBot",
 					},
 					description: "⌛ Fetching Data...",
@@ -18,7 +18,7 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) 
 					},
 				},
 			});
-			const relay = () => bot.relayCommand("say", { str: svrname, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname });
+			const relay = () => client.relayCommand("say", { str: svrname, usrid: msg.author.id }, { initMsg: initMsg.id, usrid: msg.author.id, svrname, chname });
 			setTimeout(async () => {
 				const relayRes = await relay();
 				let errMsg = "An unknown Error occurred";
@@ -28,8 +28,8 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) 
 					initMsg.edit({
 						embed: {
 							author: {
-								name: bot.user.username,
-								icon_url: bot.user.avatarURL(),
+								name: client.user.username,
+								icon_url: client.user.displayAvatarURL(),
 								url: "https://github.com/GilbertGobbels/GAwesomeBot",
 							},
 							description: "Something went wrong while fetching server data!",
@@ -44,11 +44,6 @@ module.exports = async ({ bot, Constants: { Colors, Text } }, msg, commandData) 
 			return;
 		}
 	}
-	winston.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
-	msg.channel.send({
-		embed: {
-			color: Colors.INVALID,
-			description: Text.INVALID_USAGE(commandData),
-		},
-	});
+	logger.silly(`Invalid parameters \`${msg.suffix}\` provided for ${commandData.name}`, { usrid: msg.author.id });
+	msg.sendInvalidUsage(commandData);
 };

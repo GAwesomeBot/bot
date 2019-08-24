@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const Schema = require("../Schema");
 
 // Server's game data (time played and game playing)
-module.exports = new mongoose.Schema({
+module.exports = new Schema({
 	_id: {
 		type: String,
 		required: true,
@@ -11,4 +11,4 @@ module.exports = new mongoose.Schema({
 		default: 0,
 		min: 0,
 	},
-}, { usePushEach: true });
+});

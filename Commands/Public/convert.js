@@ -1,32 +1,31 @@
-module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, documents, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text } }, documents, msg, commandData) => {
 	if (msg.suffix) {
-		const args = msg.suffix.split(/\s+/);
+		let args = msg.suffix.split(/\s+/);
 		if (args.length === 4 && args[2].toLowerCase().trim() === "to") args.splice(2, 1);
+		else if (args.length === 3 && args[1].toLowerCase().trim() === "to") args.splice(1, 1);
+		if (args.length === 2) {
+			const match = /(\d*)(\w*)/.exec(args[0]);
+			const newArgs = [match[1], match[2], args[1]];
+			args = newArgs;
+		}
 		if (args.length === 3 && !isNaN(args[0]) && args[1] && args[2]) {
-			let m = await msg.channel.send({
-				embed: {
-					color: Colors.INFO,
-					title: `⌛ Converting...`,
-					description: `This shouldn't take long!`,
-				},
-			});
 			try {
-				let res = await client.workerManager.getValueFromWorker(WorkerTypes.CONVERT, { data: { content: args[0], from: args[1], to: args[2] } });
-				if (res.result && res.type) {
-					switch (res.type) {
+				const { result, type } = await client.conversionHandler.convert({ content: args[0], from: args[1], to: args[2] });
+				if (result && type) {
+					switch (type) {
 						case "money": {
-							return m.edit({
+							return msg.send({
 								embed: {
 									color: Colors.RESPONSE,
-									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(res.result * 100) / 100}**${args[2].toUpperCase()}**`,
+									description: `${args[0]}**${args[1].toUpperCase()}** is ${Math.round(result * 100) / 100}**${args[2].toUpperCase()}**`,
 								},
 							});
 						}
 						case "unit": {
-							return m.edit({
+							return msg.send({
 								embed: {
 									color: Colors.RESPONSE,
-									description: `${args[0]}**${args[1]}** is ${res.result}**${args[2]}**`,
+									description: `${args[0]}**${args[1]}** is ${result}**${args[2]}**`,
 								},
 							});
 						}
@@ -35,7 +34,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 			} catch (e) {
 				switch (e) {
 					case "FAILED_TO_CONVERT_CURRENCY_OR_UNITS": {
-						return m.edit({
+						return msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
 								title: `I was unable to convert your currencies or units... 😔`,
@@ -44,7 +43,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 						});
 					}
 					case "FAILED_TO_CONVERT_UNITS": {
-						return m.edit({
+						return msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
 								title: `I was unable to convert your units... 😔`,
@@ -53,7 +52,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 						});
 					}
 					default: {
-						return m.edit({
+						return msg.send({
 							embed: {
 								color: Colors.ERR,
 								title: `An unknown error occured.. This scares me!`,
@@ -65,13 +64,7 @@ module.exports = async ({ client, Constants: { Colors, Text, WorkerTypes } }, do
 			}
 		}
 	} else {
-		winston.verbose(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
-		msg.channel.send({
-			embed: {
-				color: Colors.INVALID,
-				title: `I need something to convert! 🤓`,
-				description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-			},
-		});
+		logger.debug(`No suffix was provided for the "${commandData.name}" command`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id	});
+		msg.sendInvalidUsage(commandData, "I need something to convert! 🤓");
 	}
 };

@@ -1,8 +1,8 @@
 const GetValue = require("./GetValue.js");
 
 /* eslint-disable max-len */
-module.exports = bot => {
-	const properties = 9;
+module.exports = client => {
+	const properties = 10;
 	/**
 	 * Removes null objects from an array
 	 * @returns {Array} The array without the null objects
@@ -15,6 +15,13 @@ module.exports = bot => {
 					i--;
 				}
 			}
+			return this;
+		},
+	});
+
+	Object.assign(Array.prototype, {
+		id (id) {
+			return this.find(a => a._id === id || a.id === id);
 		},
 	});
 
@@ -26,6 +33,13 @@ module.exports = bot => {
 			const copy = [];
 			for (const elem of this) {
 				copy.push(typeof elem === "string" ? elem.trim() : elem);
+			}
+			return copy;
+		},
+		toLowerCaseAll () {
+			const copy = [];
+			for (const elem of this) {
+				copy.push(typeof elem === "string" ? elem.toLowerCase() : elem);
 			}
 			return copy;
 		},
@@ -120,26 +134,28 @@ module.exports = bot => {
 		let original = this.toString();
 		if (!arguments.length) return original;
 		// eslint-disable-next-line prefer-rest-params
-		let type = typeof arguments[0], options = type === "string" || type === "number" ? Array.prototype.slice.call(arguments) : arguments[0];
-		for (let text in options) original = original.replace(new RegExp(`\\{${text}\\}`, "gi"), options[text]);
+		const type = typeof arguments[0], options = type === "string" || type === "number" ? Array.prototype.slice.call(arguments) : arguments[0];
+		for (const text in options) original = original.replace(new RegExp(`\\{${text}\\}`, "gi"), options[text]);
 		return original;
 	};
 
-	/**
-	 * Total count of users or guilds across all shards.
-	 * @returns {Number}
-	 */
-	Object.defineProperty(bot.guilds, "totalCount", {
-		get: async function get () {
-			return GetValue(bot, "guilds.size", "int");
-		},
-	});
+	if (client) {
+		/**
+		 * Total count of users or guilds across all shards.
+		 * @returns {Number}
+		 */
+		Object.defineProperty(client.guilds, "totalCount", {
+			get: async function get () {
+				return GetValue(client, "guilds.size", "int");
+			},
+		});
 
-	Object.defineProperty(bot.users, "totalCount", {
-		get: async function get () {
-			return GetValue(bot, "users.size", "int");
-		},
-	});
+		Object.defineProperty(client.users, "totalCount", {
+			get: async function get () {
+				return GetValue(client, "users.size", "int");
+			},
+		});
+	}
 
-	winston.silly(`Loaded ${properties} Object.assigns`);
+	logger.silly(`Loaded ${properties} Object.assigns.`);
 };

@@ -1,4 +1,4 @@
-module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors } }, msg, commandData) => {
+module.exports = async ({ client, configJS, Utils: { IsURL }, Constants: { Colors } }, msg, commandData) => {
 	const handleQuit = () => {
 		msg.reply({
 			embed: {
@@ -11,7 +11,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 	if (msg.suffix === "setup") {
 		let m = await msg.reply({
 			embed: {
-				color: Colors.LIGHT_GREEN,
+				color: Colors.LIGHT_BLUE,
 				author: {
 					name: `Profile setup for ${msg.author.tag}`,
 				},
@@ -26,10 +26,10 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 				},
 			},
 		});
-		let changes = {};
+		const changes = {};
 		let message = null;
 		try {
-			message = await bot.awaitPMMessage(msg.channel, msg.author);
+			message = await client.awaitPMMessage(msg.channel, msg.author);
 		} catch (err) {
 			switch (err.code) {
 				case "AWAIT_QUIT": return handleQuit();
@@ -51,7 +51,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 
 		m = await msg.reply({
 			embed: {
-				color: Colors.LIGHT_GREEN,
+				color: Colors.LIGHT_BLUE,
 				title: `Next, here's your current backround.`,
 				image: {
 					url: IsURL(msg.author.userDocument.profile_background_image) ? msg.author.userDocument.profile_background_image : ``,
@@ -69,7 +69,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 			},
 		});
 		try {
-			message = await bot.awaitPMMessage(msg.channel, msg.author, 120000);
+			message = await client.awaitPMMessage(msg.channel, msg.author, 120000);
 		} catch (err) {
 			message = undefined;
 			switch (err.code) {
@@ -100,7 +100,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 
 		m = await msg.reply({
 			embed: {
-				color: Colors.LIGHT_GREEN,
+				color: Colors.LIGHT_BLUE,
 				title: `Done! That will be your new picture. 🏖`,
 				description: `Now, can you please tell us a little about yourself...? (max 2000 characters)`,
 				thumbnail: {
@@ -115,7 +115,7 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 			},
 		});
 		try {
-			message = await bot.awaitPMMessage(msg.channel, msg.author, 300000);
+			message = await client.awaitPMMessage(msg.channel, msg.author, 300000);
 		} catch (err) {
 			message = undefined;
 			switch (err.code) {
@@ -130,13 +130,13 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 							},
 						},
 					});
-					if (msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
+					if (msg.author.userDocument.profile_fields && msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
 				}
 			}
 		}
 		if (message && message.content) {
 			if (message.content.trim() === ".") {
-				if (msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
+				if (msg.author.userDocument.profile_fields && msg.author.userDocument.profile_fields.Bio) changes.Bio = msg.author.userDocument.profile_fields.Bio;
 				else changes.Bio = null;
 			} else if (message.content.toLowerCase().trim() === "none") {
 				changes.Bio = "delete";
@@ -144,17 +144,17 @@ module.exports = async ({ bot, configJS, Utils: { IsURL }, Constants: { Colors }
 				changes.Bio = message.content.trim();
 			}
 		}
-		msg.author.userDocument.isProfilePublic = changes.isProfilePublic;
-		msg.author.userDocument.profile_background_image = changes.profile_background_image;
-		if (!msg.author.userDocument.profile_fields) msg.author.userDocument.profile_fields = {};
+		const userQueryDocument = msg.author.userDocument.query;
+		userQueryDocument.set("isProfilePublic", changes.isProfilePublic)
+			.set("profile_background_image", changes.profile_background_image);
+		if (!msg.author.userDocument.profile_fields) userQueryDocument.set("profile_fields", {});
 		if (changes.Bio === "delete") {
-			delete msg.author.userDocument.profile_fields.Bio;
+			userQueryDocument.remove("profile_fields.Bio");
 		} else if (changes.Bio) {
-			msg.author.userDocument.profile_fields.Bio = changes.Bio;
+			userQueryDocument.set("profile_fields.Bio", changes.Bio);
 		}
-		msg.author.userDocument.markModified("profile_fields");
 		await msg.author.userDocument.save().catch(err => {
-			winston.warn(`Failed to save user data for profile setup`, err);
+			logger.warn(`Failed to save user data for profile setup.`, { usrid: msg.author.id }, err);
 		});
 		msg.reply({
 			embed: {

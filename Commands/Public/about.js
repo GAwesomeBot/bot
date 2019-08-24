@@ -1,8 +1,8 @@
-module.exports = async ({ bot, configJS, Constants: { Colors } }, documents, msg, commandData) => {
+module.exports = async ({ client, configJS, Constants: { Colors } }, documents, msg, commandData) => {
 	const description = [
-		`Hello! I'm **${bot.user.username}**, running **GAwesomeBot ${configJSON.version} on branch ${configJSON.branch}**, the best Discord Bot! 🐬`,
+		`Hello! I'm **${client.user.username}**, running **GAwesomeBot ${configJSON.version} on branch ${configJSON.branch}**, the best Discord Bot! 🐬`,
 		`Created by Gilbert and [the GAwesomeDevs](${configJS.hostingURL}#team)! ❤`,
-		`Built using [Node.JS](https://nodejs.org/en/) and [Discord.js](https://discord.js.org/#/)`,
+		`Built using [Node.js](https://nodejs.org/en/) and [Discord.js](https://discord.js.org/#/)`,
 	].join("\n");
 	const fields = [];
 	configJS.hostingURL && fields.push({
@@ -15,7 +15,7 @@ module.exports = async ({ bot, configJS, Constants: { Colors } }, documents, msg
 		value: `Join our [Discord Server](${configJS.discordLink})`,
 		inline: true,
 	});
-	msg.channel.send({
+	msg.send({
 		embed: {
 			color: Colors.LIGHT_GREEN,
 			fields: fields.length ? fields : [],

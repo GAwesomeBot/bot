@@ -4,7 +4,6 @@ const {
 	NewServer: getNewServerData,
 	PostShardedData,
 	Utils,
-	Cache,
 	Giveaways,
 } = require("../../../Modules/");
 const {
@@ -23,96 +22,98 @@ class Ready extends BaseEvent {
 		let leftGuilds = 0;
 		if (this.configJSON.guildBlocklist.length) {
 			this.configJSON.guildBlocklist.forEach(guildID => {
-				if (this.bot.guilds.get(guildID)) {
-					this.bot.guilds.get(guildID).leave();
+				const guild = this.client.guilds.get(guildID);
+				if (guild) {
+					guild.leave();
 					leftGuilds++;
 				}
 			});
 		}
-		leftGuilds > 0 && winston.info(`Left the blacklisted guilds that added the bot while I was asleep.`, { leftGuilds });
+		leftGuilds > 0 && logger.info(`Left the blacklisted guilds that added the bot while I was asleep.`, { leftGuilds });
 		await this.afterLeaving();
 	}
 
 	// Runs after leaving any blocklisted guilds (if any)
 	async afterLeaving () {
 		try {
-			this.ensureDocuments().then(async newServerDocuments => {
-				if (newServerDocuments && newServerDocuments.length > 0) {
-					winston.info(`Created documents for ${newServerDocuments.length} new servers!`);
-					await Servers.insertMany(newServerDocuments, { ordered: false }).catch(err => {
-						winston.warn(`Failed to insert new server documents..`, err);
-					}).then(async () => {
-						winston.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
-						await this.setBotActivity();
-					});
-					this.client.emit("allDocumentsIn");
-				} else {
-					this.client.emit("allDocumentsIn");
+			const newServerDocuments = await this.ensureDocuments();
+			if (newServerDocuments && newServerDocuments.length > 0) {
+				logger.info(`Created documents for ${newServerDocuments.length} new servers!`);
+				await Servers.insert(newServerDocuments, { ordered: false }).catch(err => {
+					logger.warn(`Failed to insert new server documents...`, {}, err);
+				}).then(async () => {
+					logger.info(`Successfully inserted ${newServerDocuments.length} new server documents into the database! \\o/`);
 					await this.setBotActivity();
-				}
-			});
+				});
+			} else {
+				await this.setBotActivity();
+			}
 		} catch (err) {
-			this.client.emit("allDocumentsIn");
 			await this.setBotActivity();
 		}
 	}
 
 	// Ensure that all servers have database documents
 	async ensureDocuments () {
-		winston.debug("Ensuring all guilds have a serverDocument.");
-		let newServerDocuments = [];
+		logger.debug("Ensuring all guilds have a serverDocument.");
+		const newServerDocuments = [];
+
 		const makeNewDocument = async guild => {
-			const serverDocument = await Servers.findOne({ _id: guild.id }).exec().catch(err => {
-				winston.debug(`Failed to find server data for server ${guild.id}!`, err);
+			const serverDocument = await Servers.findOne(guild.id).catch(err => {
+				logger.debug(`Failed to find server data for server ${guild.id}!`, { svrid: guild.id }, err);
 			});
 			if (serverDocument) {
-				const channelIDs = guild.channels.map(a => a.id);
-				for (let j = 0; j < serverDocument.channels.length; j++) {
-					if (!channelIDs.includes(serverDocument.channels[j]._id)) {
-						serverDocument.channels[j].remove();
-					}
+				try {
+					const channelIDs = [...guild.channels.keys()];
+					Object.values(serverDocument.channels).forEach(ch => {
+						if (!channelIDs.includes(ch._id)) serverDocument.query.id("channels", ch._id).remove();
+					});
+				} catch (err) {
+					logger.debug(`Failed to ensure channelDocuments for ${guild.id}.`, { svrid: guild.id }, err);
 				}
 			} else {
-				newServerDocuments.push(await getNewServerData(this.bot, guild, new Servers({ _id: guild.id })));
+				newServerDocuments.push(await getNewServerData(this.client, guild, Servers.new({ _id: guild.id })));
 			}
 		};
-		let promiseArray = [];
-		this.bot.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
+
+		const promiseArray = [];
+		this.client.guilds.forEach(guild => promiseArray.push(makeNewDocument(guild)));
 		await Promise.all(promiseArray);
 		return newServerDocuments;
 	}
 
 	// Delete data for old servers
 	async pruneServerData () {
-		winston.debug(`Deleting data for old servers...`);
-		Servers.find({
-			_id: {
-				$nin: await Utils.GetValue(this.bot, "guilds.keys()", "arr", "Array.from"),
-			},
-		}).remove()
-			.exec()
-			.catch(err => winston.warn(`Failed to prune old server documents -_-`, err))
-			.then(() => winston.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`));
+		if (this.client.shardID === "0") {
+			logger.debug(`Deleting data for old servers...`);
+			Servers.delete({
+				_id: {
+					$nin: await Utils.GetValue(this.client, "guilds.keys()", "arr", "Array.from"),
+				},
+			}).then(() => logger.debug(`Purged all serverDocuments that the bot doesn't know about anymore!`))
+				.catch(err => logger.warn(`Failed to prune old server documents -_-`, {}, err));
+		}
 		await this.setBotActivity();
 	}
 
 	// Set bot's "now playing" activity
 	async setBotActivity () {
-		winston.debug("Setting bots playing activity.");
+		logger.debug("Setting bots playing activity.");
 		let activity = {
-			name: this.configJSON.activity.name.format({ shard: this.bot.shardID, totalshards: this.bot.shard.count }),
-			url: this.configJSON.activity.twitchURL,
-			type: this.configJSON.activity.twitchURL ? "WATCHING" : "PLAYING",
+			name: configJSON.activity.name.format({ shard: this.client.shardID, totalShards: this.client.shard.count }),
+			type: configJSON.activity.type,
+			url: configJSON.activity.twitchURL || null,
 		};
-		if (this.configJSON.activity.name === "default") {
+		if (configJSON.activity.name === "default") {
 			activity = {
-				name: "https://gawesomebot.com | Shard {shard}".format({ shard: this.bot.shardID }),
+				name: "https://gawesomebot.com | Shard {shard}".format({ shard: this.client.shardID }),
 				type: "PLAYING",
+				url: null,
 			};
 		}
-		this.bot.user.setPresence({
+		await this.client.user.setPresence({
 			activity,
-			status: this.configJSON.status,
+			status: configJSON.status,
 		});
 		await this.startMessageCount();
 	}
@@ -122,32 +123,34 @@ class Ready extends BaseEvent {
 	 * And starts a chain of events cause why not?!
 	 */
 	async startMessageCount () {
-		winston.debug("Creating messages_today timers.");
-		await Servers.update({}, { messages_today: 0 }, { multi: true }).exec().catch(err => {
-			winston.warn(`Failed to start message counter.. >->`, err);
-		});
-		const clearMessageCount = () => {
-			Servers.update({}, { messages_today: 0 }, { multi: true }).exec();
-		};
-		this.bot.setInterval(clearMessageCount, 86400000);
+		logger.debug("Creating messages_today timers.");
+		if (this.client.shardID === "0") {
+			await Servers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
+				logger.warn(`Failed to start message counter...`, {}, err);
+			});
+			const clearMessageCount = () => {
+				logger.debug("Good new 24 hours! Clearing message counters.");
+				Servers.update({}, { $set: { messages_today: 0 } }, { multi: true }).catch(err => {
+					logger.warn(`Failed to reset message counter...`, {}, err);
+				});
+			};
+			this.client.setInterval(clearMessageCount, 86400000);
+		}
 		// TODO: Add to array this.startTimerExtensions()
-		await Promise.all([this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay(), this.sendGuilds()]);
-		await winston.debug("Posting stats data to Discord Bot listings.");
-		await PostShardedData(this.bot);
-		await winston.debug(`Reloading all commands.`);
-		this.bot.reloadAllCommands();
-		await Cache(this.client);
+		await Promise.all([this.resetVoiceStatsCollector(), this.statsCollector(), this.setReminders(), this.setCountdowns(), this.setGiveaways(), this.startStreamingRSS(), this.checkStreamers(), this.startMessageOfTheDay()]);
+		await logger.debug("Posting stats data to Discord Bot listings.");
+		await PostShardedData(this.client);
+		await logger.debug(`Reloading all commands.`);
+		this.client.reloadAllCommands();
 		this.showStartupMessage();
 	}
 
-	// Send over guild cache for master
-	async sendGuilds () {
-		try {
-			winston.debug("Sending list of guild IDs to Master.");
-			let guilds = Array.from(this.bot.guilds.keys());
-			this.bot.IPC.send("guilds", { latest: guilds, shard: this.bot.shardID });
-		} catch (err) {
-			throw err;
+	async resetVoiceStatsCollector () {
+		if (this.client.shardID === "0") {
+			logger.debug("Resetting voice_data for all guilds.");
+			await Servers.update({ "voice_data.started_timestamp": { $lt: new Date() } }, { $set: { voice_data: [] } }, { multi: true }).catch(err => {
+				logger.warn(`Failed to reset voice_data for all guilds...`, {}, err);
+			});
 		}
 	}
 
@@ -181,8 +184,8 @@ class Ready extends BaseEvent {
 			"be better than Auttaja in every way.",
 			"help people out!",
 		];
-		winston.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
-		this.bot.IPC.send("finished", { id: this.bot.shard.id });
+		logger.info(`Hey boss, we're ready to ${readyMsgs[Math.floor(Math.random() * readyMsgs.length)]}`);
+		this.client.IPC.send("finished", { id: this.client.shard.id });
 	}
 
 	/**
@@ -190,18 +193,21 @@ class Ready extends BaseEvent {
 	 */
 	async startMessageOfTheDay () {
 		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
 			"config.message_of_the_day.isEnabled": true,
 		}).exec().catch(err => {
-			winston.warn(`Failed to find server data for message of the day <.<\n`, err);
+			logger.warn(`Failed to find server data for message of the day <.<`, {}, err);
 		});
-		winston.debug("Starting MOTD timers for servers.");
+		logger.debug("Starting MOTD timers for servers.");
 		if (serverDocuments) {
 			const promiseArray = [];
 			for (let i = 0; i < serverDocuments.length; i++) {
-				const server = this.bot.guilds.get(serverDocuments[i]._id);
+				const server = this.client.guilds.get(serverDocuments[i]._id);
 				if (server) {
-					winston.verbose(`Starting MOTD timer for server ${server}`, { svrid: server.id });
-					promiseArray.push(createMessageOfTheDay(this.bot, server, serverDocuments[i].config.message_of_the_day));
+					logger.verbose(`Starting MOTD timer for server ${server}`, { svrid: server.id });
+					promiseArray.push(createMessageOfTheDay(this.client, server, serverDocuments[i].config.message_of_the_day, serverDocuments[i].query));
 				}
 			}
 			await Promise.all(promiseArray);
@@ -210,64 +216,52 @@ class Ready extends BaseEvent {
 
 	/**
 	 * Periodically check if people are streaming
-	 * Totally not stalking 👀 - Vlad
 	 */
 	async checkStreamers () {
-		const serverDocuments = await Servers.find({}).exec().catch(err => {
-			winston.warn(`Failed to get server documents for streamers (-_-*)`, err);
-		});
-		winston.debug("Checking for streamers in servers.");
-		if (serverDocuments) {
-			const checkStreamersForServer = async i => {
-				if (i < serverDocuments.length) {
-					const serverDocument = serverDocuments[i];
-					const server = this.bot.guilds.get(serverDocument._id);
-					if (server) {
-						winston.verbose(`Checking for streamers in server ${server}`, { svrid: server.id });
-						const checkIfStreaming = async j => {
-							if (j < serverDocument.config.streamers_data.length) {
-								sendStreamerMessage(server, serverDocument, serverDocument.config.streamers_data[j]).then(async () => {
-									await checkIfStreaming(++j);
-								}).catch(err => {
-									winston.debug(`Failed to send streaming message to server ;.;\n`, err);
-								});
-							} else {
-								await checkStreamersForServer(++i);
-							}
-						};
-						await checkIfStreaming(0);
+		logger.debug("Checking for streamers in servers.");
+		const serverDocuments = await Servers.find({ "config.streamers_data.0": { $exists: true } }).exec();
+		for (const serverDocument of serverDocuments) {
+			const guild = this.client.guilds.get(serverDocument._id);
+			if (guild) {
+				logger.verbose(`Checking for streamers in server ${guild}`, { svrid: guild.id });
+				if (serverDocument.config.streamers_data.length) {
+					for (const streamerData of serverDocument.config.streamers_data) {
+						try {
+							await sendStreamerMessage(this.client, guild, serverDocument, streamerData);
+						} catch (err) {
+							logger.warn(`Failed to send streaming message to server ;.;`, { svrid: guild.id }, err);
+						}
 					}
-				} else {
-					this.bot.setTimeout(async () => {
-						await this.checkStreamers();
-					}, 600000);
 				}
-			};
-			await checkStreamersForServer(0);
+			}
 		}
+		this.client.setTimeout(this.checkStreamers.bind(this), 600000);
 	}
 
 	/**
 	 * Start RSS streaming timers
 	 */
 	async startStreamingRSS () {
-		const serverDocuments = await Servers.find({}).exec().catch(err => {
-			winston.warn(`Failed to get servers from db (-_-*)`, err);
+		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
+		}).exec().catch(err => {
+			logger.warn(`Failed to get servers from db (-_-*)`, {}, err);
 		});
-		winston.debug("Starting streaming RSS timers for servers.");
 		if (serverDocuments) {
+			logger.debug("Starting streaming RSS timers for servers.");
 			const sendStreamingRSSToServer = async i => {
 				if (i < serverDocuments.length) {
 					const serverDocument = serverDocuments[i];
-					const server = this.bot.guilds.get(serverDocument._id);
+					const server = this.client.guilds.get(serverDocument._id);
 					if (server) {
-						winston.verbose(`Setting streaming RSS timers for server ${server}`, { svrid: server.id });
+						logger.verbose(`Setting streaming RSS timers for server ${server}.`, { svrid: server.id });
 						const sendStreamingRSSFeed = async j => {
 							if (j < serverDocument.config.rss_feeds.length) {
-								if (serverDocument.config.rss_feeds[j].streaming.isEnabled) {
-									sendStreamingRSSUpdates(this.bot, server, serverDocument, serverDocument.config.rss_feeds[j]).then(async () => {
-										await sendStreamingRSSFeed(++j);
-									});
+								if (serverDocument.config.rss_feeds[j].streaming && serverDocument.config.rss_feeds[j].streaming.isEnabled) {
+									await sendStreamingRSSUpdates(this.client, server, serverDocument, serverDocument.config.rss_feeds[j]);
+									await sendStreamingRSSFeed(++j);
 								} else {
 									await sendStreamingRSSFeed(++j);
 								}
@@ -278,7 +272,7 @@ class Ready extends BaseEvent {
 						await sendStreamingRSSFeed(0);
 					}
 				} else {
-					this.bot.setTimeout(async () => {
+					this.client.setTimeout(async () => {
 						await this.startStreamingRSS();
 					}, 600000);
 				}
@@ -293,25 +287,28 @@ class Ready extends BaseEvent {
 	async setGiveaways () {
 		const promiseArray = [];
 		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
 			channels: {
 				$elemMatch: {
 					"giveaway.isOngoing": true,
 				},
 			},
 		}).exec().catch(err => {
-			winston.warn("Failed to get giveaways from db (-_-*)", err);
+			logger.warn("Failed to get giveaways from db (-_-*)", {}, err);
 		});
-		winston.debug("Setting existing giveaways for servers.");
 		if (serverDocuments) {
+			logger.debug("Setting existing giveaways for servers.");
 			serverDocuments.forEach(serverDocument => {
-				const svr = this.bot.guilds.get(serverDocument._id);
+				const svr = this.client.guilds.get(serverDocument._id);
 				if (svr) {
-					winston.verbose(`Setting existing giveaways for server ${svr.id}.`, { svrid: svr.id });
-					serverDocument.channels.forEach(channelDocument => {
+					logger.verbose(`Setting existing giveaways for server ${svr.id}.`, { svrid: svr.id });
+					Object.values(serverDocument.channels).forEach(channelDocument => {
 						if (channelDocument.giveaway.isOngoing) {
 							const ch = svr.channels.get(channelDocument._id);
 							if (ch) {
-								promiseArray.push(Giveaways.endTimedGiveaway(this.bot, svr, ch, channelDocument.giveaway.expiry_timestamp));
+								promiseArray.push(Giveaways.endTimedGiveaway(this.client, svr, ch, channelDocument.giveaway.expiry_timestamp));
 							}
 						}
 					});
@@ -326,15 +323,24 @@ class Ready extends BaseEvent {
 	 */
 	async setCountdowns () {
 		const promiseArray = [];
-		const serverDocuments = await Servers.find({ "config.countdown_data": { $not: { $size: 0 } } }).exec().catch(err => {
-			winston.warn("Failed to get countdowns from db (-_-*)", err);
+		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
+			"config.countdown_data": {
+				$not: {
+					$size: 0,
+				},
+			},
+		}).exec().catch(err => {
+			logger.warn("Failed to get countdowns from db (-_-*)", {}, err);
 		});
-		winston.debug("Setting existing countdowns in servers.");
 		if (serverDocuments) {
+			logger.debug("Setting existing countdowns in servers.");
 			for (let i = 0; i < serverDocuments.length; i++) {
-				winston.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id });
+				logger.verbose(`Setting existing countdowns for server.`, { svrid: serverDocuments[i]._id });
 				for (let j = 0; j < serverDocuments[i].config.countdown_data.length; j++) {
-					promiseArray.push(setCountdown(this.bot, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
+					promiseArray.push(setCountdown(this.client, serverDocuments[i], serverDocuments[i].config.countdown_data[j]));
 				}
 			}
 		}
@@ -345,17 +351,17 @@ class Ready extends BaseEvent {
 	 * Set existing reminders to send message when they expire
 	 */
 	async setReminders () {
+		if (this.client.shardID !== "0") return;
 		const promiseArray = [];
-		if (this.bot.shardID !== "0") return;
 		const userDocuments = await Users.find({ reminders: { $not: { $size: 0 } } }).exec().catch(err => {
-			winston.warn(`Failed to get reminders from db (-_-*)`, err);
+			logger.warn(`Failed to get reminders from db (-_-*)`, {}, err);
 		});
 		if (userDocuments) {
-			winston.debug("Setting existing reminders for all users.");
+			logger.debug("Setting existing reminders for all users.");
 			for (let i = 0; i < userDocuments.length; i++) {
-				winston.silly("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
+				logger.silly("Setting existing reminders for user.", { usrid: userDocuments[i]._id });
 				for (let j = 0; j < userDocuments[i].reminders.length; j++) {
-					promiseArray.push(setReminder(this.bot, userDocuments[i], userDocuments[i].reminders[j]));
+					promiseArray.push(setReminder(this.client, userDocuments[i], userDocuments[i].reminders[j]));
 				}
 			}
 		}
@@ -363,62 +369,35 @@ class Ready extends BaseEvent {
 	}
 
 	/**
-	 * Count a server's stats (games, clearing, etc.);
+	 * Count a server's stats (autokick, clearing, etc.);
 	 */
 	async statsCollector () {
-		winston.debug("Collecting stats for servers.");
-		const promiseArray = [];
-		const countServerStats = async server => {
-			const serverDocument = await Servers.findOne({ _id: server.id }).exec().catch(err => {
-				winston.warn(`Failed to find server document for counting stats >.<`, { svrid: server.id }, err);
-			});
-			if (serverDocument) {
-				winston.verbose(`Collecting stats for server ${server}.`, { svrid: server.id });
-				// Clear stats for server if older than a week
-				if (Date.now() - serverDocument.stats_timestamp >= 604800000) {
-					await clearStats(this.bot, server, serverDocument);
-				} else {
-					// Iterate through all members
-					server.members.forEach(async member => {
-						if (member.id !== this.bot.user.id && !member.user.bot) {
-							await winston.silly(`Collecting member stats from guild ${server} member ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
-							const game = await this.bot.getGame(member);
-							if (game !== "" && member.presence.status === "online") {
-								await winston.silly(`Updating game data for ${member.user.tag}.`, { svrid: server.id, memberid: member.user.id });
-								let gameDocument = serverDocument.games.id(game);
-								if (!gameDocument) {
-									serverDocument.games.push({ _id: game });
-									gameDocument = serverDocument.games.id(game);
-								}
-								gameDocument.time_played++;
-							}
+		logger.debug("Collecting stats for servers.");
+		const clearStatsServerDocuments = await Servers.find({ stats_timestamp: { $lt: new Date(Date.now() - 604800000) } }).exec();
+		await Promise.all(clearStatsServerDocuments.map(serverDocument => clearStats(this.client, serverDocument)));
 
-							// Kick member if they're inactive and autokick is on
-							const memberDocument = serverDocument.members.id(member.id);
-							if (memberDocument && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.bot.getUserBotAdmin(server, serverDocument, member) === 0) {
-								try {
-									await member.kick(`Kicked for inactivity on server.`);
-									winston.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id });
-								} catch (err) {
-									memberDocument.cannotAutokick = true;
-									winston.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${server}"`, { svrid: server.id, usrid: member.user.id }, err);
-								}
-							}
-						}
-					});
+		const autokickServerDocuments = await Servers.find({
+			"config.moderation.isEnabled": true,
+			"config.moderation.autokick_members.isEnabled": true,
+		}).exec();
+		autokickServerDocuments.forEach(serverDocument => {
+			const guild = this.client.guilds.get(serverDocument._id);
+			if (!guild) return;
+			Object.values(serverDocument.members).forEach(async memberDocument => {
+				const member = guild.members.get(memberDocument._id);
+				if (memberDocument && member && serverDocument.config.moderation.isEnabled && serverDocument.config.moderation.autokick_members.isEnabled && Date.now() - memberDocument.last_active > serverDocument.config.moderation.autokick_members.max_inactivity && !memberDocument.cannotAutokick && this.client.getUserBotAdmin(guild, serverDocument, member) === 0 && member.kickable) {
 					try {
-						await serverDocument.save();
+						await member.kick(`Kicked for inactivity on server.`);
+						logger.verbose(`Kicked member "${member.user.tag}" due to inactivity on server "${guild}"`, { svrid: guild.id, usrid: member.user.id });
 					} catch (err) {
-						winston.warn(`Failed to save server data for stats.. <.>`, { svrid: server.id }, err);
+						serverDocument.query.id("members", memberDocument._id).set("cannotAutokick", true);
+						serverDocument.save();
+						logger.debug(`Failed to kick member "${member.user.tag}" due to inactivity on server "${guild}"`, { svrid: guild.id, usrid: member.user.id }, err);
 					}
 				}
-			}
-		};
-		this.bot.guilds.forEach(guild => {
-			promiseArray.push(countServerStats(guild));
+			});
 		});
-		await Promise.all(promiseArray);
-		this.bot.setTimeout(async () => {
+		this.client.setTimeout(async () => {
 			await this.statsCollector();
 		}, 900000);
 	}

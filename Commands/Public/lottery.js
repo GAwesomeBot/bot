@@ -9,9 +9,9 @@ const multipliers = {
 const { Lotteries } = require("../../Modules/");
 const moment = require("moment");
 
-module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, userDocument }, msg, commandData) => {
+module.exports = async ({ client, Constants: { Colors, Text, EmptySpace } }, { serverDocument, channelDocument, channelQueryDocument, userDocument, userQueryDocument }, msg, commandData) => {
 	const notOngoing = () => {
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
 				description: "There isn't a **GAwesomePoint** lottery going on right now.",
@@ -26,7 +26,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 			case "start": {
 				if (channelDocument.lottery.isOngoing) {
 					const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
-					msg.channel.send({
+					msg.send({
 						embed: {
 							color: Colors.SOFT_ERR,
 							title: "There's already a lottery going on in this channel 🕰",
@@ -118,7 +118,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 						default:
 							multiplier = 2;
 					}
-					if (userDocument.points < multiplier && (userDocument.points !== 0 || multiplier === 1)) {
+					if (userDocument.points < multiplier && (userDocument.points !== 0 || multiplier !== 1)) {
 						return msg.channel.send({
 							embed: {
 								color: Colors.SOFT_ERR,
@@ -129,8 +129,8 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 							},
 						});
 					}
-					Lotteries.start(bot, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, multiplier);
-					msg.channel.send({
+					Lotteries.start(client, msg.guild, serverDocument, msg.author, msg.channel, channelDocument, multiplier);
+					msg.send({
 						embed: {
 							color: Colors.SUCCESS,
 							title: "GAwesomePoint lottery started! 🌟",
@@ -151,16 +151,16 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 					if (userDocument.points >= ticketPrice) {
 						const userTicketCount = channelDocument.lottery.participant_ids.reduce((total, ticket) => total + (ticket === msg.author.id), 0);
 						if (userTicketCount === 5) {
-							msg.channel.send({
+							msg.send({
 								embed: {
 									color: Colors.SOFT_ERR,
 									description: "You can't buy more than 5 lottery tickets in the same lottery. 🎩",
 								},
 							});
 						} else {
-							userDocument.points -= ticketPrice;
-							channelDocument.lottery.participant_ids.push(msg.author.id);
-							msg.channel.send({
+							userQueryDocument.inc("points", -ticketPrice);
+							channelQueryDocument.push("lottery.participant_ids", msg.author.id);
+							msg.send({
 								embed: {
 									color: Colors.SUCCESS,
 									title: "Thank you for purchasing a GAwesomePoint lottery ticket 🎟",
@@ -172,7 +172,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 							});
 						}
 					} else {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								color: Colors.SOFT_ERR,
 								title: "You're not rich enough to buy a ticket! 😔",
@@ -191,10 +191,10 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 			case "end":
 			case ".": {
 				if (channelDocument.lottery.isOngoing) {
-					if (channelDocument.lottery.creator_id === msg.author.id || bot.getUserBotAdmin(msg.guild, serverDocument, msg.member) >= 1 || configJSON.maintainers.includes(msg.author.id)) {
-						const winner = await Lotteries.end(bot, msg.guild, serverDocument, msg.channel, channelDocument);
+					if (channelDocument.lottery.creator_id === msg.author.id || client.getUserBotAdmin(msg.guild, serverDocument, msg.member) >= 1 || configJSON.maintainers.includes(msg.author.id)) {
+						const winner = await Lotteries.end(client, msg.guild, serverDocument, msg.channel, channelDocument);
 						if (!winner) {
-							msg.channel.send({
+							msg.send({
 								embed: {
 									color: Colors.SOFT_ERR,
 									description: "The lottery ended with no winner 😥",
@@ -202,7 +202,7 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 							});
 						}
 					} else {
-						msg.channel.send({
+						msg.send({
 							embed: {
 								color: Colors.MISSING_PERMS,
 								description: Text.MISSING_PERMS(),
@@ -215,13 +215,8 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 				break;
 			}
 			default: {
-				winston.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
-				msg.channel.send({
-					embed: {
-						color: Colors.INVALID,
-						description: Text.INVALID_USAGE(commandData, msg.guild.commandPrefix),
-					},
-				});
+				logger.silly(`Invalid parameters "${msg.suffix}" provided for ${commandData.name}`, { usrid: msg.author.id, svrid: msg.guild.id, chid: msg.channel.id });
+				msg.sendInvalidUsage(commandData);
 				break;
 			}
 		}
@@ -229,12 +224,12 @@ module.exports = async ({ bot, Constants: { Colors, Text, EmptySpace } }, { serv
 		const creator = msg.guild.members.get(channelDocument.lottery.creator_id);
 		const participantTotal = channelDocument.lottery.participant_ids.filter((ticket, index, array) => index === array.indexOf(ticket)).length;
 		const ticketPrice = Math.floor(participantTotal * channelDocument.lottery.multiplier);
-		const multiplier = channelDocument.lottery.multiplier;
+		const { multiplier } = channelDocument.lottery;
 		const prize = Math.ceil(channelDocument.lottery.participant_ids.length * channelDocument.lottery.multiplier);
-		msg.channel.send({
+		msg.send({
 			embed: {
 				color: Colors.INFO,
-				title: `GAwesomePoint lottery started by "@__${creator ? bot.getName(msg.guild, serverDocument, creator) : "invalid-user"}__" 💸`,
+				title: `GAwesomePoint lottery started by "@__${creator ? client.getName(serverDocument, creator) : "invalid-user"}__" 💸`,
 				fields: [
 					{
 						name: "Current Ticket Price",
