@@ -251,34 +251,28 @@ class Ready extends BaseEvent {
 		});
 		if (serverDocuments) {
 			logger.debug("Starting streaming RSS timers for servers.");
-			const sendStreamingRSSToServer = async i => {
-				if (i < serverDocuments.length) {
-					const serverDocument = serverDocuments[i];
-					const server = this.client.guilds.get(serverDocument._id);
-					if (server) {
-						logger.verbose(`Setting streaming RSS timers for server ${server}.`, { svrid: server.id });
-						const sendStreamingRSSFeed = async j => {
-							if (j < serverDocument.config.rss_feeds.length) {
-								if (serverDocument.config.rss_feeds[j].streaming && serverDocument.config.rss_feeds[j].streaming.isEnabled) {
-									await sendStreamingRSSUpdates(this.client, server, serverDocument, serverDocument.config.rss_feeds[j]);
-									await sendStreamingRSSFeed(++j);
-								} else {
-									await sendStreamingRSSFeed(++j);
-								}
-							} else {
-								await sendStreamingRSSToServer(++i);
-							}
-						};
-						await sendStreamingRSSFeed(0);
-					}
-				} else {
-					this.client.setTimeout(async () => {
-						await this.startStreamingRSS();
-					}, 600000);
+			const promises = serverDocuments.map(async serverDocument => {
+				const server = this.client.guilds.get(serverDocument._id);
+				if (server) {
+					logger.verbose(`Setting streaming RSS timers for server ${server}.`, { svrid: server.id });
+					await Promise.all(serverDocument.config.rss_feeds.map(async feedDocument => {
+						if (feedDocument.streaming && feedDocument.streaming.isEnabled && feedDocument.streaming.isWorking) {
+							await sendStreamingRSSUpdates(this.client, server, serverDocument, feedDocument);
+						}
+					}));
 				}
-			};
-			await sendStreamingRSSToServer(0);
+			});
+			try {
+				await Promise.all(promises);
+			} catch (err) {
+				logger.warn("An error occurred while fetching RSS Feeds.", {}, err);
+			}
 		}
+		this.client.setTimeout(async () => {
+			await this.startStreamingRSS().catch(err => {
+				logger.error("An uncaught error occurred while fetching RSS Feeds.", {}, err);
+			});
+		}, 600000);
 	}
 
 	/**
