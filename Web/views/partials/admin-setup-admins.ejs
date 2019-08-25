@@ -25,7 +25,7 @@
 </article>
 <form id="form" action="<%= currentPage %>" method="post" onsubmit="return false;">
     <div class="field" style="overflow-x: scroll;">
-        <%- include("../partials/no-results", { isHidden: configData.admins.length, isSearchQuery: false, description: "There are no admin roles on this server, so only the server owner can access this admin console and use admin-only commands. Select a role below to add as an admin." }) %>
+        <%- include("../partials/no-results", { isHidden: configData.admins.length, isSearchQuery: false, description: "There are no admin roles on this server, so only the server owner can access this admin console and use admin-only commands." }) %>
         <table class="table is-fullwidth<%= configData.admins.length ? "" : " is-hidden" %>">
             <thead>
             <tr>
