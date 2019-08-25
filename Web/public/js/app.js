@@ -836,6 +836,7 @@ GAwesomeUtil.dashboard.setup.prevStep = btn => {
 	const { step } = GAwesomeData.dashboard.setup;
 	if (step < 2) return;
 
+	$(".setup-nav-button[data-nav='next']").html("Next");
 	const button = $(btn);
 	button.addClass("is-loading");
 
