@@ -498,6 +498,10 @@ module.exports = new Schema({
 			},
 			enabled_channel_ids: [String],
 			last_article_title: String,
+			isWorking: {
+				type: Boolean,
+				default: true,
+			},
 		}),
 	})],
 	streamers_data: [new Schema({

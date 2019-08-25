@@ -1,6 +1,6 @@
 const Parser = require("rss-parser");
-const parser = new Parser({ timeout: 2000 });
-
+const { UserAgent } = require("../../Internals/Constants");
+const parser = new Parser({ timeout: 2000, headers: { "User-Agent": UserAgent } });
 
 /**
  * Fetch RSS entries
