@@ -35,4 +35,9 @@ controllers.error = (req, res, next) => {
 	else return next();
 };
 
-controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.app.client.user.id }));
+controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL }));
+
+controllers.setup = (req, res) => {
+	if (req.query.guild_id && req.query.permissions && req.query.code) return res.redirect(`/dashboard/${req.query.guild_id}/setup?permissions=${req.query.permissions}`);
+	else return res.redirect("/dashboard");
+};

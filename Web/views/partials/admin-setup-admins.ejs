@@ -1,0 +1,60 @@
+<h1 class="title">
+    Bot Admins on <%= serverData.name %>
+</h1>
+<article class="message is-primary">
+    <div class="message-body">
+        <div class="content">
+            <strong>Admins</strong> are server members that belong to the roles you can set below. They can use admin commands, receive admin notifications, and login to this admin console. Every admin role has one of three <strong>permission levels</strong>:
+            <ol>
+                <li>
+                    Use commands and features marked admin-only
+                </li>
+                <li>
+                    Use commands and features marked admin-only<br>
+                    Receive admin alerts from users and about filter violations
+                </li>
+                <li>
+                    Use commands and features marked admin-only<br>
+                    Receive admin alerts from users and about filter violations<br>
+                    Login to and edit items in the admin console (you are here)
+                </li>
+            </ol>
+            The server owner bypasses all Admin levels.
+        </div>
+    </div>
+</article>
+<form id="form" action="<%= currentPage %>" method="post" onsubmit="return false;">
+    <div class="field" style="overflow-x: scroll;">
+        <%- include("../partials/no-results", { isHidden: configData.admins.length, isSearchQuery: false, description: "There are no admin roles on this server, so only the server owner can access this admin console and use admin-only commands. Select a role below to add as an admin." }) %>
+        <table class="table is-fullwidth<%= configData.admins.length ? "" : " is-hidden" %>">
+            <thead>
+            <tr>
+                <th>Role Name</th>
+                <th>Level</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <% configData.admins.forEach(admin => { %>
+                <tr>
+                    <td>
+                        <%= admin.name %>
+                    </td>
+                    <td>
+                        <%= admin.level %>
+                    </td>
+                    <td>
+                        <button class="button is-small is-danger" name="<%= admin._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this);">
+                            <span>Remove</span>
+                            <span class="icon is-small">
+                                <i class="fa fa-times"></i>
+                            </span>
+                        </button>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <span class="help">Remove any Bot Admins that don't look right to you. You'll be able to add other Bot Admins after the setup.</span>
+</form>

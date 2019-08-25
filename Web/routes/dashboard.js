@@ -14,6 +14,7 @@ module.exports = router => {
 	// Dashboard
 	setupPage(router, "/", [], controllers.dashboard.home);
 	setupDashboardPage(router, "/overview", [], controllers.dashboard.overview);
+	setupDashboardPage(router, "/setup", [], controllers.dashboard.setup, "admins");
 
 	// Commands
 	setupDashboardPage(router, "/commands/command-options", [], controllers.dashboard.commands.options);

@@ -1,5 +1,5 @@
 const { GetGuild } = require("../../../Modules").getGuild;
-const { canDo } = require("../../helpers");
+const { canDo, getRoleData, getChannelData, saveAdminConsoleOptions: save } = require("../../helpers");
 
 const controllers = module.exports;
 
@@ -58,7 +58,7 @@ controllers.home = async (req, { res }) => {
 			res.setServerData(serverData);
 			res.setPageData({
 				page: "dashboard.ejs",
-				rawJoinLink: `https://discordapp.com/oauth2/authorize?&client_id=${req.app.auth.discord.clientID}&scope=bot&permissions=470019135`,
+				rawJoinLink: configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL }),
 			});
 			res.render();
 		});
@@ -118,6 +118,105 @@ controllers.overview = async (req, { res }) => {
 		});
 
 		res.render();
+	}
+};
+
+controllers.setup = async (req, { res }) => {
+	const adminDocuments = req.svr.document.config.admins.filter(adminDocument => req.svr.roles.includes(adminDocument._id));
+	await req.svr.fetchCollection("roles");
+
+	res.setConfigData({
+		// Command Options
+		command_cooldown: req.svr.document.config.command_cooldown,
+		command_fetch_properties: req.svr.document.config.command_fetch_properties,
+		command_prefix: req.svr.document.config.command_prefix,
+		delete_command_messages: req.svr.document.config.delete_command_messages,
+
+		// Admins
+		admins: adminDocuments.map(adminDocument => {
+			adminDocument.name = req.svr.roles.find(role => role.id === adminDocument._id).name;
+			return adminDocument;
+		}),
+
+		// Moderation
+		moderation: {
+			isEnabled: req.svr.document.config.moderation.isEnabled,
+			autokick_members: req.svr.document.config.moderation.autokick_members,
+			new_member_roles: req.svr.document.config.moderation.new_member_roles,
+		},
+		modlog: {
+			isEnabled: req.svr.document.modlog.isEnabled,
+			channel_id: req.svr.document.modlog.channel_id,
+		},
+
+		// Public Data
+		public_data: req.svr.document.config.public_data,
+		isBanned: configJSON.activityBlocklist.includes(req.svr.id),
+	});
+	res.setPageData({
+		page: "admin-setup.ejs",
+
+		// Command Options
+		botName: req.svr.members[req.app.client.user.id].nickname || req.app.client.user.username,
+
+		// Admins
+		roleData: getRoleData(req.svr).filter(role => req.svr.document.config.admins.id(role.id) === undefined),
+
+		// Moderation
+		channelData: getChannelData(req.svr),
+
+		// Public Data
+		canUnban: configJSON.maintainers.includes(req.consolemember.user.id) || process.env.GAB_HOST === req.consolemember.user.id,
+	});
+	res.render();
+};
+controllers.setup.post = async (req, { res }) => {
+	// Command Options
+	if (req.body.command_prefix !== req.app.client.getCommandPrefix(req.svr, req.svr.document)) {
+		req.svr.queryDocument.set("config.command_prefix", req.body.command_prefix);
+	}
+
+	req.svr.queryDocument.set("config.delete_command_messages", req.body.delete_command_messages === "on")
+		.set("config.chatterbot.isEnabled", req.body["chatterbot-isEnabled"] === "on");
+
+	req.svr.queryDocument.set("config.command_cooldown", parseInt(req.body.command_cooldown) > 120000 || isNaN(parseInt(req.body.command_cooldown)) ? 0 : parseInt(req.body.command_cooldown));
+	const defaultCount = req.svr.document.config.command_fetch_properties.default_count;
+	req.svr.queryDocument.set("config.command_fetch_properties.default_count", isNaN(parseInt(req.body.default_count)) ? defaultCount : parseInt(req.body.default_count))
+		.set("config.command_fetch_properties.max_count", isNaN(parseInt(req.body.max_count)) ? req.svr.document.config.command_fetch_properties.max_count : parseInt(req.body.max_count));
+
+	// Moderation
+	const serverQueryDocument = req.svr.queryDocument;
+	await req.svr.fetchCollection("roles");
+
+	serverQueryDocument.set("config.moderation.isEnabled", req.body.isEnabled === "on")
+		.set("config.moderation.autokick_members.isEnabled", req.body["autokick_members-isEnabled"] === "on");
+	if (req.body["autokick_members-max_inactivity"]) serverQueryDocument.set("config.moderation.autokick_members.max_inactivity", parseInt(req.body["autokick_members-max_inactivity"]));
+	serverQueryDocument.set("config.moderation.new_member_roles", []);
+	req.svr.roles.forEach(role => {
+		if (role.name !== "@everyone" && role.name.indexOf("color-") !== 0) {
+			if (req.body[`new_member_roles-${role.id}`] === "on") {
+				serverQueryDocument.push("config.moderation.new_member_roles", role.id);
+			}
+		}
+	});
+	serverQueryDocument.set("modlog.isEnabled", req.body["modlog-isEnabled"] === "on");
+	if (req.body["modlog-channel_id"]) serverQueryDocument.set("modlog.channel_id", req.body["modlog-channel_id"] || null);
+
+	// Public Data
+	serverQueryDocument.set("config.public_data.isShown", req.body.isShown === "on");
+	let createInvite = false;
+	if (!req.svr.document.config.public_data.server_listing.isEnabled && req.body["server_listing-isEnabled"] === "on") {
+		createInvite = true;
+	}
+	serverQueryDocument.set("config.public_data.server_listing.isEnabled", req.body["server_listing-isEnabled"] === "on");
+	serverQueryDocument.set("config.public_data.server_listing.category", req.body["server_listing-category"]);
+	serverQueryDocument.set("config.public_data.server_listing.description", req.body["server_listing-description"]);
+
+	save(req, res, true);
+	if (createInvite) {
+		req.app.client.IPC.send("createPublicInviteLink", { guild: req.svr.id });
+	} else if (!req.body["server_listing-isEnabled"] && req.svr.document.config.public_data.server_listing.invite_link) {
+		req.app.client.IPC.send("deletePublicInviteLink", { guild: req.svr.id });
 	}
 };
 

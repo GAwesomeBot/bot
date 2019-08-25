@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><%= serverData.name %> Setup - GAwesomeBot Admin Console</title>
+    <% include ../partials/head %>
+</head>
+<body>
+<section id="header" class="main-header-section hero is-primary is-small is-bold">
+    <div class="hero-head">
+        <% include ../partials/header %>
+    </div>
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h1 id="dashboard-title" class="title is-1">
+                <img id="dashboard-icon" src="<%= serverData.icon %>"
+                     style="border-radius: 100%;width: 48px;vertical-align: bottom;" alt="<%= serverData.id %>">
+                <strong><%= serverData.name %></strong> GAwesomeBot Setup
+            </h1>
+        </div>
+    </div>
+    <div class="hero-foot">
+        <div class="container has-text-centered">
+            <a class="button is-small is-white is-outlined" target="_blank"
+               href="/wiki/Configuration#<%= serverData.isMaintainer ? 'maintainer' : 'admin' %>-console">
+	            <span class="icon is-small">
+	                <i class="fa fa-question-circle"></i>
+	            </span>
+                <span>Help</span>
+            </a>
+            <br><br>
+        </div>
+    </div>
+</section>
+
+<section class="section is-white">
+    <div class="container">
+        <div class="box setup">
+            <div class="setup-progress">
+                <div class="steps is-animated">
+                    <div class="step-item setup-step" data-step="1">
+                        <div class="step-marker"></div>
+                        <div class="step-details">
+                            <p class="step-title">Command Options</p>
+                        </div>
+                    </div>
+                    <div class="step-item setup-step" data-step="2">
+                        <div class="step-marker"></div>
+                        <div class="step-details">
+                            <p class="step-title">Bot Admins</p>
+                        </div>
+                    </div>
+                    <div class="step-item setup-step" data-step="3">
+                        <div class="step-marker"></div>
+                        <div class="step-details">
+                            <p class="step-title">Moderation</p>
+                        </div>
+                    </div>
+                    <div class="step-item setup-step" data-step="4">
+                        <div class="step-marker"></div>
+                        <div class="step-details">
+                            <p class="step-title">Public Data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-content" style="display: none;">
+                <div class="step-content setup-content-item" data-step="1">
+                    <% include ../partials/admin-setup-command-options.ejs %>
+                </div>
+                <div class="step-content setup-content-item" data-step="2">
+                    <% include ../partials/admin-setup-admins.ejs %>
+                </div>
+                <div class="step-content setup-content-item" data-step="3">
+                    <% include ../partials/admin-setup-moderation.ejs %>
+                </div>
+                <div class="step-content setup-content-item" data-step="4">
+                    <% include ../partials/admin-setup-public-data.ejs %>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-actions">
+            <div class="setup-action">
+                <a data-turbolinks="false" data-nav="prev"
+                   class="button is-light setup-nav-button" disabled>Previous</a>
+            </div>
+            <div class="setup-action">
+                <a data-turbolinks="false" data-nav="next"
+                   class="button is-light setup-nav-button">Next</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<% include ../partials/footer %>
+<% include ../partials/scroll-top-button %>
+</body>
+</html>

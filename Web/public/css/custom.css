@@ -366,6 +366,37 @@ html, body {
     background: hsl(0, 0%, 94%);
 }
 
+.box.setup {
+    background: #f9f9f9;
+    padding: 0;
+}
+.box.setup .setup-progress {
+    box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    -webkit-box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    border-radius: 5px;
+    padding: 1.5rem;
+}
+.box.setup .setup-content {
+    padding: 1.5rem;
+}
+.setup-content-item {
+    display: none;
+}
+.setup-content-item.is-active {
+    display: block;
+}
+.setup-actions {
+    display: flex;
+    align-items: stretch;
+    flex-basis: 100%;
+}
+.setup-actions .setup-action {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
 .box.scope-list {
     background-color: hsl(0, 0%, 93%);
     padding: 0.5rem;
