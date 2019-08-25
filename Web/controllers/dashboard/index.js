@@ -129,7 +129,7 @@ controllers.setup = async (req, { res }) => {
 	const standardPermissions = new discord.Permissions(configJS.permissions);
 
 	let missingPermissions = [];
-	if (permissions && permissions.bitfield) {
+	if (permissions && permissions.bitfield !== undefined) {
 		const permissionsArray = permissions.toArray(false);
 		missingPermissions = standardPermissions.toArray(false).filter(permission => !permissionsArray.includes(permission))
 			.map(permission => TitlecasePermissions(permission));
