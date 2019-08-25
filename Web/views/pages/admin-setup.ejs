@@ -34,6 +34,28 @@
 
 <section class="section is-white">
     <div class="container">
+        <% if (pageData.missingPermissions.length) { %>
+            <article class="message is-warning is-bold">
+                <div class="message-header">
+                    <span>
+                        <span class="icon">
+                            <i class="fa fa-exclamation"></i>
+                        </span>
+                        &nbsp;Missing recommended permissions.
+                    </span>
+                </div>
+                <div class="message-body">
+                    <div class="content">
+                        The GAwesomeBot app role was created without all recommended permissions. To ensure GAB operates correctly, consider granting the following permissions to the bot:
+                        <ul>
+                            <% pageData.missingPermissions.forEach(permission => { %>
+                                <li><strong><%= permission %></strong></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+        <% } %>
         <div class="box setup">
             <div class="setup-progress">
                 <div class="steps is-animated">

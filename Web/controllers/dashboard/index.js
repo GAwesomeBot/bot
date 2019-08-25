@@ -1,5 +1,8 @@
 const { GetGuild } = require("../../../Modules").getGuild;
+const { Utils: { TitlecasePermissions } } = require("../../../Modules");
 const { canDo, getRoleData, getChannelData, saveAdminConsoleOptions: save } = require("../../helpers");
+
+const discord = require("discord.js");
 
 const controllers = module.exports;
 
@@ -58,7 +61,7 @@ controllers.home = async (req, { res }) => {
 			res.setServerData(serverData);
 			res.setPageData({
 				page: "dashboard.ejs",
-				rawJoinLink: configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL }),
+				rawJoinLink: configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL, perms: configJS.permissions }),
 			});
 			res.render();
 		});
@@ -122,14 +125,26 @@ controllers.overview = async (req, { res }) => {
 };
 
 controllers.setup = async (req, { res }) => {
+	const permissions = req.query.permissions && new discord.Permissions(Number(req.query.permissions));
+	const standardPermissions = new discord.Permissions(configJS.permissions);
+
+	let missingPermissions = [];
+	if (permissions && permissions.bitfield) {
+		const permissionsArray = permissions.toArray(false);
+		missingPermissions = standardPermissions.toArray(false).filter(permission => !permissionsArray.includes(permission))
+			.map(permission => TitlecasePermissions(permission));
+	}
+
 	const adminDocuments = req.svr.document.config.admins.filter(adminDocument => req.svr.roles.includes(adminDocument._id));
 	await req.svr.fetchCollection("roles");
 
+	const botNick = req.svr.members[req.app.client.user.id].nickname;
+	const commandPrefix = req.svr.document.config.command_prefix;
 	res.setConfigData({
 		// Command Options
 		command_cooldown: req.svr.document.config.command_cooldown,
 		command_fetch_properties: req.svr.document.config.command_fetch_properties,
-		command_prefix: req.svr.document.config.command_prefix,
+		command_prefix: commandPrefix === "@mention" ? `@${botNick || req.app.client.user.username} ` : commandPrefix,
 		delete_command_messages: req.svr.document.config.delete_command_messages,
 
 		// Admins
@@ -154,10 +169,11 @@ controllers.setup = async (req, { res }) => {
 		isBanned: configJSON.activityBlocklist.includes(req.svr.id),
 	});
 	res.setPageData({
+		missingPermissions,
 		page: "admin-setup.ejs",
 
 		// Command Options
-		botName: req.svr.members[req.app.client.user.id].nickname || req.app.client.user.username,
+		botName: botNick || req.app.client.user.username,
 
 		// Admins
 		roleData: getRoleData(req.svr).filter(role => req.svr.document.config.admins.id(role.id) === undefined),

@@ -35,9 +35,14 @@ controllers.error = (req, res, next) => {
 	else return next();
 };
 
-controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL }));
+controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL, perms: configJS.permissions }));
 
 controllers.setup = (req, res) => {
-	if (req.query.guild_id && req.query.permissions && req.query.code) return res.redirect(`/dashboard/${req.query.guild_id}/setup?permissions=${req.query.permissions}`);
-	else return res.redirect("/dashboard");
+	const redirect = () => res.redirect(`/dashboard/${req.query.guild_id}/setup?permissions=${req.query.permissions}`);
+	if (req.query.guild_id && req.query.permissions && req.query.code) {
+		const serverDocument = Servers.findOne(req.query.guild_id);
+		if (serverDocument) return redirect();
+		else return setTimeout(redirect, 1000);
+	}
+	return res.redirect("/dashboard");
 };

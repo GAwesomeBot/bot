@@ -6,18 +6,20 @@ const controllers = module.exports;
 controllers.options = async (req, { res }) => {
 	await req.svr.fetchCollection("channels");
 
+	const botNick = req.svr.members[req.app.client.user.id].nickname;
+	const commandPrefix = req.svr.document.config.command_prefix;
 	res.setConfigData({
 		chatterbot: req.svr.document.config.chatterbot,
 		command_cooldown: req.svr.document.config.command_cooldown,
 		command_fetch_properties: req.svr.document.config.command_fetch_properties,
-		command_prefix: req.svr.document.config.command_prefix,
+		command_prefix: commandPrefix === "@mention" ? `@${botNick || req.app.client.user.username} ` : commandPrefix,
 		delete_command_messages: req.svr.document.config.delete_command_messages,
 		ban_gif: req.svr.document.config.ban_gif,
 	});
 	res.setPageData({
 		page: "admin-command-options.ejs",
 		channelData: getChannelData(req.svr),
-		botName: req.svr.members[req.app.client.user.id].nickname || req.app.client.user.username,
+		botName: botNick || req.app.client.user.username,
 	});
 	res.render();
 };

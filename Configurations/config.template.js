@@ -55,7 +55,8 @@ module.exports = {
 	 * Direct Discord link to invite your bot. You can replace the permissions, if you know what you are doing.
 	 * Otherwise: !! DO NOT TOUCH !!
 	 */
-	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot%20identify&permissions=470281471&redirect_uri={uri}setup&response_type=code",
+	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot%20identify&permissions={perms}&redirect_uri={uri}setup&response_type=code",
+	permissions: 470281471,
 	/*
 	 * Minimum log level the console should display. List of available levels:
 	 * error, warn, info, debug and verbose.
