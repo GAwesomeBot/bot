@@ -56,7 +56,7 @@ module.exports = {
 	 * Otherwise: !! DO NOT TOUCH !!
 	 */
 	oauthLink: "https://discordapp.com/oauth2/authorize?&client_id={id}&scope=bot%20identify&permissions={perms}&redirect_uri={uri}setup&response_type=code",
-	permissions: 1039527159,
+	permissions: 972418263,
 	/*
 	 * Minimum log level the console should display. List of available levels:
 	 * error, warn, info, debug and verbose.
