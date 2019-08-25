@@ -17,13 +17,12 @@ const generalRouting = router => {
 	// Special routes that should not be considered "pages"
 	router.routes.push(new Route(router, "/header-image", [middleware.checkUnavailableAPI], controllers.headerImage, "get", "static"));
 	router.routes.push(new Route(router, "/error", [middleware.checkUnavailable], controllers.error, "get", "special"));
-	router.routes.push(new Route(router, "/add", [middleware.checkUnavailable], controllers.add, "get", "special"));
+	router.routes.push(new Route(router, "/add", [middleware.checkUnavailable], controllers.buildAddController(router), "get", "special"));
 
 	// Special authentication routes
 	router.routes.push(new Route(router, "/logout", [middleware.checkUnavailableAPI], controllers.auth.logout, "get", "auth"));
 	router.routes.push(new Route(router, "/login", [middleware.checkUnavailableAPI], controllers.auth.buildLoginController(router), "get", "auth"));
 	router.routes.push(new Route(router, "/login/callback", [middleware.checkUnavailableAPI, middleware.buildAuthenticateMiddleware(router)], controllers.auth.authenticate, "get", "auth"));
-	router.routes.push(new Route(router, "/setup", [middleware.checkUnavailableAPI], controllers.setup, "get", "special"));
 };
 
 const activityRouting = router => {

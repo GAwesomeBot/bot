@@ -244,8 +244,8 @@ GAwesomeUtil.toggleChannels = (classname, value) => {
 	}
 };
 
-GAwesomeUtil.scrollToTop = () => {
-	$("html, body").animate({ scrollTop: 0 }, 172);
+GAwesomeUtil.scrollToTop = div => {
+	$("html, body").animate({ scrollTop: div ? div.offset().top : 0 }, 172);
 };
 
 GAwesomeUtil.switchActivityLayout = type => {
@@ -818,7 +818,7 @@ GAwesomeUtil.dashboard.setup.nextStep = btn => {
 	const currentStepContent = $(`.setup-content-item[data-step=${step}]`);
 	const nextStepContent = $(`.setup-content-item[data-step=${step + 1}]`);
 
-	GAwesomeUtil.scrollToTop();
+	GAwesomeUtil.scrollToTop($(".setup-progress"));
 	contentBox.slideUp(1000, () => {
 		currentStepContent.removeClass("is-active");
 		nextStepContent.addClass("is-active");
@@ -850,7 +850,7 @@ GAwesomeUtil.dashboard.setup.prevStep = btn => {
 	const currentStepContent = $(`.setup-content-item[data-step=${step}]`);
 	const prevStepContent = $(`.setup-content-item[data-step=${step - 1}]`);
 
-	GAwesomeUtil.scrollToTop();
+	GAwesomeUtil.scrollToTop($(".setup-progress"));
 	contentBox.slideUp(1000, () => {
 		currentStepContent.removeClass("is-active");
 		prevStepContent.addClass("is-active");
@@ -864,8 +864,8 @@ GAwesomeUtil.dashboard.setup.prevStep = btn => {
 };
 
 GAwesomeUtil.dashboard.setup.save = () => {
-	GAwesomeData.HUM = true;
 	const serialized = $("form").serialize();
+	GAwesomeUtil.SFS();
 	$.ajax({
 		method: "POST",
 		url: location.pathname + location.search,

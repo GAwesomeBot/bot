@@ -1,3 +1,4 @@
+const discordOAuthScopes = ["identify", "guilds", "email", "bot"];
 const { renderError } = require("../helpers");
 
 const controllers = module.exports;
@@ -35,14 +36,7 @@ controllers.error = (req, res, next) => {
 	else return next();
 };
 
-controllers.add = (req, res) => res.redirect(global.configJS.oauthLink.format({ id: req.app.client.user.id, uri: configJS.hostingURL, perms: configJS.permissions }));
-
-controllers.setup = (req, res) => {
-	const redirect = () => res.redirect(`/dashboard/${req.query.guild_id}/setup?permissions=${req.query.permissions}`);
-	if (req.query.guild_id && req.query.permissions && req.query.code) {
-		const serverDocument = Servers.findOne(req.query.guild_id);
-		if (serverDocument) return redirect();
-		else return setTimeout(redirect, 1000);
-	}
-	return res.redirect("/dashboard");
-};
+controllers.buildAddController = router => router.app.passport.authenticate("discord", {
+	scope: discordOAuthScopes,
+	permissions: configJS.permissions,
+});
