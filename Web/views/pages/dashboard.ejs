@@ -53,7 +53,7 @@
 					<div class="column is-half is-offset-one-quarter">
 						<% serverData.forEach(server => { %>
 							<% if (!server.botJoined) { %>
-								<a class="media modal-button arrow-link" data-target="#post-add-modal" target="_blank" href="<%= pageData.rawJoinLink + '&guild_id=' + server.id %>">
+								<a class="media modal-button arrow-link" data-target="#post-add-modal" target="_blank" href="<%= pageData.rawJoinLink + '?guild_id=' + server.id %>">
 							<% } else if (!server.isAdmin) { %>
 								<a class="media modal-button arrow-link" data-target="#not-admin-modal">
 							<% } else { %>
