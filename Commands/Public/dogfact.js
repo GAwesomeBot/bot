@@ -8,7 +8,7 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 	else if (isNaN(number)) number = serverDocument.config.command_fetch_properties.default_count;
 	else number = parseInt(number);
 
-	const dogfacts = factsJSON.dogs.sort(() => 0.5 - Math.random()).slice(0, number);
+	const dogfacts = factsJSON.dogs.sort(() => Math.random() > 0.5).slice(0, number);
 	if (dogfacts.length) {
 		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
