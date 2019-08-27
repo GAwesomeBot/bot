@@ -1,5 +1,5 @@
-const { get } = require("snekfetch");
 const PaginatedEmbed = require("../../Modules/MessageUtils/PaginatedEmbed");
+const factsJSON = require("../../Configurations/facts.json");
 
 module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument }, msg, commandData) => {
 	let number = msg.suffix;
@@ -8,19 +8,18 @@ module.exports = async ({ Constants: { Colors, Text, APIs } }, { serverDocument 
 	else if (isNaN(number)) number = serverDocument.config.command_fetch_properties.default_count;
 	else number = parseInt(number);
 
-	const { body, statusCode, statusText } = await get(APIs.DOGFACT(number));
-	if (statusCode === 200 && body && body.facts.length) {
-		const descriptions = body.facts;
+	const dogfacts = factsJSON.dogs.sort(() => 0.5 - Math.random()).slice(0, number);
+	if (dogfacts.length) {
 		const menu = new PaginatedEmbed(msg, {
 			color: Colors.RESPONSE,
 			title: `Dog fact {currentPage} out of {totalPages}`,
 			footer: ``,
 		}, {
-			descriptions,
+			descriptions: dogfacts,
 		});
 		await menu.init();
 	} else {
-		logger.verbose(`Failed to fetch dog facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id, statusCode, err: statusText });
+		logger.verbose(`Failed to fetch dog facts...`, { svrid: msg.guild.id, chid: msg.channel.id, usrid: msg.author.id });
 		msg.send({
 			embed: {
 				color: Colors.SOFT_ERR,
