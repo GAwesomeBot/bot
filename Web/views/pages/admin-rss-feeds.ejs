@@ -5,40 +5,6 @@
 	<% include ../partials/head %>
 
 	<script>
-	function newRss() {
-		var newRssUrl = $("#new-rss-url");
-		if(newRssUrl.val()) {
-			newRssUrl.removeClass("is-danger");
-		} else {
-			newRssUrl.addClass("is-danger");
-		}
-
-		var newRssName = $("#new-rss-name");
-		if(newRssName.val()) {
-			newRssName.removeClass("is-danger");
-		} else {
-			newRssName.addClass("is-danger");
-		}
-
-		if(newRssUrl.val() && newRssName.val()) {
-		  GAwesomeData.HUM = true;
-		  $.ajax({
-				type: "POST",
-				url: "<%= currentPage %>",
-				data: {
-					"new-url": newRssUrl.val(),
-					"new-name": newRssName.val().toLowerCase()
-				},
-				success: function() {
-				  GAwesomeUtil.SFS();
-				  GAwesomeData.HUM = true;
-				  $("#form").submit();
-				  Turbolinks.visit('');
-				}
-			});
-		}
-	}
-
 	function newRssUrl(site) {
 	    var url = "";
 	    switch(site) {
@@ -95,17 +61,33 @@
 											<tr>
 												<td>
 													<%= feed._id %>
+													<% if (!feed.streaming.isWorking) { %>
+														<span class="tag is-small is-danger">
+															Disabled
+														</span>
+													<% } %>
 												</td>
 												<td>
 													<%= feed.url %>
 												</td>
 												<td>
-													<a class="button modal-button is-small is-primary" data-target="#rss-<%= feed._id.replace(/\s/g, "") %>-updates-modal">
-														<span class="icon is-small">
-															<i class="fa fa-refresh"></i>
-														</span>
-														<span>Updates</span>
-													</a>
+													<% if (feed.streaming.isWorking) { %>
+														<a class="button is-small modal-button is-primary"
+														   data-target="#rss-<%= feed._id.replace(/\s/g, "") %>-updates-modal">
+															<span class="icon is-small">
+																<i class="fa fa-refresh"></i>
+															</span>
+															<span>Updates</span>
+														</a>
+													<% } else { %>
+														<a class="button is-small is-dark" onclick="GAwesomeUtil.dashboard.recheckRSSFeed('<%= feed._id %>');">
+															<span class="icon is-small">
+																<i class="fa fa-unlock-alt"></i>
+															</span>
+															<span>Re-check</span>
+														</a>
+													<% } %>
+
 													<button class="button is-small is-danger" name="<%= feed._id %>" onclick="GAwesomeUtil.dashboard.removeTableElement(this); return false;">
 														<span>Remove</span>
 														<span class="icon is-small">
@@ -143,9 +125,9 @@
 													</div>
 												</td>
 											</tr>
-											<% }); %>
-										</tbody>
-									</table>
+										<% }); %>
+									</tbody>
+								</table>
 							</div>
 							<div class="field is-grouped">
 								<div class="control is-expanded">
@@ -185,7 +167,7 @@
 											<input id="new-rss-name" class="input is-primary" type="text" minlength="5" maxlength="50" placeholder="Name" onkeypress="return event.keyCode !== 13;">
 										</div>
 										<div class="control">
-											<a class="button is-primary" onclick="newRss();">
+											<a class="button is-primary" onclick="GAwesomeUtil.dashboard.newRSSFeed();">
 												<span class="icon">
 										        	<i class="fa fa-plus"></i>
 										    	</span>

@@ -13,13 +13,13 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 
 	let articles;
 	try {
-		articles = await getRSS(feedDocument.url, 100);
+		articles = await getRSS(feedDocument.url, 20);
 	} catch (err) {
 		if (err === "invalid") {
 			// eslint-disable-next-line max-len
-			await client.logMessage(serverDocument, "warn", `Failed to fetch articles for RSS Feed ${feedDocument._id}. Please confirm this RSS Feed URL is working again in the RSS Feeds section to continue streaming updates.`);
+			await client.logMessage(serverDocument, "warn", `Failed to fetch articles for RSS Feed ${feedDocument._id}. Please re-check this RSS Feed URL in the RSS Feeds section to continue streaming updates.`);
 			feedQueryDocument.set("streaming.isWorking", false);
-			await serverDocument.save().catch(error => {
+			serverDocument.save().catch(error => {
 				logger.debug(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, error);
 			});
 		} else {
@@ -56,7 +56,7 @@ module.exports = async (client, server, serverDocument, feedDocument) => {
 
 		if (info.length > 0) {
 			feedQueryDocument.set("streaming.last_article_title", articles[0].link);
-			await serverDocument.save().catch(err => {
+			serverDocument.save().catch(err => {
 				logger.debug(`Failed to save server data for RSS feed "${feedDocument._id}"`, { svrid: server.id }, err);
 			});
 			logger.verbose(`${info.length} new in feed "${feedDocument._id}" on server "${server}"`, { svrid: server.id });

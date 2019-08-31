@@ -219,21 +219,32 @@ class Ready extends BaseEvent {
 	 */
 	async checkStreamers () {
 		logger.debug("Checking for streamers in servers.");
-		const serverDocuments = await Servers.find({ "config.streamers_data.0": { $exists: true } }).exec();
+		const serverDocuments = await Servers.find({
+			_id: {
+				$in: Array.from(this.client.guilds.keys()),
+			},
+			"config.streamers_data.0": { $exists: true },
+		}).exec().catch(err => {
+			logger.warn(`Failed to get streamers from db (-_-*)`, {}, err);
+		});
+		const promises = [];
 		for (const serverDocument of serverDocuments) {
 			const guild = this.client.guilds.get(serverDocument._id);
 			if (guild) {
 				logger.verbose(`Checking for streamers in server ${guild}`, { svrid: guild.id });
 				if (serverDocument.config.streamers_data.length) {
 					for (const streamerData of serverDocument.config.streamers_data) {
-						try {
-							await sendStreamerMessage(this.client, guild, serverDocument, streamerData);
-						} catch (err) {
+						promises.push(sendStreamerMessage(this.client, guild, serverDocument, streamerData).catch(err => {
 							logger.warn(`Failed to send streaming message to server ;.;`, { svrid: guild.id }, err);
-						}
+						}));
 					}
 				}
 			}
+		}
+		try {
+			await Promise.all(promises);
+		} catch (err) {
+			logger.error(`An uncaught error occurred while checking streamers.`, {}, err);
 		}
 		this.client.setTimeout(this.checkStreamers.bind(this), 600000);
 	}
@@ -246,6 +257,7 @@ class Ready extends BaseEvent {
 			_id: {
 				$in: Array.from(this.client.guilds.keys()),
 			},
+			"config.rss_feeds.0": { $exists: true },
 		}).exec().catch(err => {
 			logger.warn(`Failed to get servers from db (-_-*)`, {}, err);
 		});

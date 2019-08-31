@@ -1,5 +1,6 @@
 const { getChannelData, saveAdminConsoleOptions: save, renderError, findQueryUser } = require("../../helpers");
 const parsers = require("../../parsers");
+const getRSS = require("../../../Modules/Utils/RSS");
 
 const controllers = module.exports;
 
@@ -133,13 +134,21 @@ controllers.rss.post = async (req, res) => {
 	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-url"] && req.body["new-name"] && !serverDocument.config.rss_feeds.id(req.body["new-name"].replace(/\s/g, ""))) {
+		const feed = await getRSS(req.body["new-url"], 1).catch(err => err);
+		if (feed === "invalid") return res.sendStatus(400);
 		serverQueryDocument.push("config.rss_feeds", {
 			_id: req.body["new-name"],
 			url: req.body["new-url"],
 		});
+	} else if (req.body["recheck-name"]) {
+		const feedDocument = serverDocument.config.rss_feeds.id(req.body["recheck-name"].replace(/\s/g, ""));
+		const feed = await getRSS(feedDocument.url, 1).catch(err => err);
+		if (feed === "invalid") return res.sendStatus(400);
+		serverQueryDocument.clone.id("config.rss_feeds", feedDocument._id).set("streaming.isWorking", true);
 	} else {
 		parsers.commandOptions(req, "rss", req.body);
 		serverDocument.config.rss_feeds.forEach((feedDocument, i) => {
+			if (!serverDocument.config.rss_feeds[i].streaming.isWorking) return;
 			serverQueryDocument.set(`config.rss_feeds.${i}.streaming.isEnabled`, req.body[`rss-${feedDocument._id}-streaming-isEnabled`] === "on");
 			serverQueryDocument.set(`config.rss_feeds.${i}.streaming.enabled_channel_ids`, []);
 			req.svr.channels.forEach(ch => {

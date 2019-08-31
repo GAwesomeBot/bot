@@ -776,6 +776,74 @@ GAwesomeUtil.dashboard.updateCommandSettings = (modal, settingsBox) => {
 	settingsBox.html(overview);
 };
 
+GAwesomeUtil.dashboard.validateForm = () => GAwesomeUtil.dashboardWrapper(() => {
+	const form = $("#form")[0];
+	if (!form) return true;
+	return form.reportValidity();
+});
+
+GAwesomeUtil.dashboard.newRSSFeed = () => GAwesomeUtil.dashboardWrapper(() => {
+	if (!GAwesomeUtil.dashboard.validateForm()) return;
+	const newRssUrl = $("#new-rss-url").val();
+	const newRssName = $("#new-rss-name").val();
+	if (!newRssUrl || !newRssName) return;
+
+	swal("RSS Feed Checking", "Before an RSS Feed can be added, it must first be checked. GAwesomeBot will check the RSS Feed to confirm that it works as expected.", {
+		icon: "info",
+		buttons: {
+			cancel: true,
+			check: {
+				text: "Check",
+				closeModal: false,
+			},
+		},
+	}).then(val => {
+		if (val !== "check") return false;
+		GAwesomeUtil.SFS();
+		return GAwesomeUtil.dashboard.post({
+			"new-url": newRssUrl,
+			"new-name": newRssName.toLowerCase(),
+		});
+	})
+		.then(result => result && swal("RSS Feed successfully added.", "", "success"))
+		.then(result => {
+			if (!result) return;
+			$("#form").submit();
+			Turbolinks.visit("");
+		})
+		.catch(() => {
+			swal("RSS Feed Check Failed", "Your RSS Feed could not be verified while checking. Please confirm the URL you supplied is a valid RSS Feed and try again.", "error");
+		});
+});
+
+GAwesomeUtil.dashboard.recheckRSSFeed = name => GAwesomeUtil.dashboardWrapper(() => {
+	swal("RSS Feed Re-checking", "Your RSS Feed was disabled because it couldn't be fetched and parsed. You can re-enable Streaming Updates for this RSS Feed by re-checking it.", {
+		icon: "warning",
+		buttons: {
+			cancel: true,
+			check: {
+				text: "Re-check",
+				closeModal: false,
+			},
+		},
+	}).then(val => {
+		if (val !== "check") return false;
+		GAwesomeUtil.SFS();
+		return GAwesomeUtil.dashboard.post({
+			"recheck-name": name,
+		});
+	})
+		.then(result => result && swal("RSS Feed successfully re-enabled.", "", "success"))
+		.then(result => {
+			if (!result) return;
+			$("#form").submit();
+			Turbolinks.visit("");
+		})
+		.catch(() => {
+			swal("RSS Feed Re-check Failed", "Your RSS Feed could not be verified while checking. Please confirm the feed URL is valid and try again.", "error");
+		});
+});
+
 GAwesomeUtil.dashboard.post = payload => new Promise((resolve, reject) => {
 	$.ajax({
 		url: window.location.pathname,
