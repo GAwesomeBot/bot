@@ -1,6 +1,7 @@
 const { getChannelData, saveAdminConsoleOptions: save, renderError, findQueryUser } = require("../../helpers");
 const parsers = require("../../parsers");
 const getRSS = require("../../../Modules/Utils/RSS");
+const getStreamer = require("../../../Modules/Utils/StreamerUtils");
 
 const controllers = module.exports;
 
@@ -195,6 +196,9 @@ controllers.streamers.post = async (req, res) => {
 	const serverQueryDocument = req.svr.queryDocument;
 
 	if (req.body["new-name"] && req.body["new-type"] && !serverDocument.config.streamers_data.id(req.body["new-name"])) {
+		const stream = await getStreamer(req.body["new-type"], req.body["new-name"], true);
+		if (!stream || stream.invalid || stream.error) return res.sendStatus(400);
+
 		serverQueryDocument.push("config.streamers_data", {
 			_id: req.body["new-name"],
 			type: req.body["new-type"],

@@ -844,6 +844,42 @@ GAwesomeUtil.dashboard.recheckRSSFeed = name => GAwesomeUtil.dashboardWrapper(()
 		});
 });
 
+GAwesomeUtil.dashboard.newStreamer = () => GAwesomeUtil.dashboardWrapper(() => {
+	if (!GAwesomeUtil.dashboard.validateForm()) return;
+
+	const newStreamerName = $("#new-streamer-name").val();
+	const newStreamerType = $("#new-streamer-type").val();
+
+	if (!newStreamerName || !newStreamerType) return;
+
+	swal("Streamer Checking", "Before a new Streamer can be added, it must first be checked. GAwesomeBot will check the Streamer to confirm that they exist.", {
+		icon: "info",
+		buttons: {
+			cancel: true,
+			check: {
+				text: "Check",
+				closeModal: false,
+			},
+		},
+	}).then(val => {
+		if (val !== "check") return false;
+		GAwesomeUtil.SFS();
+		return GAwesomeUtil.dashboard.post({
+			"new-name": newStreamerName,
+			"new-type": newStreamerType,
+		});
+	})
+		.then(result => result && swal("Streamer successfully added.", "", "success"))
+		.then(result => {
+			if (!result) return;
+			$("#form").submit();
+			Turbolinks.visit("");
+		})
+		.catch(() => {
+			swal("Streamer Check Failed", "Your Streamer was not found. Please confirm the username or ID you supplied and try again.", "error");
+		});
+});
+
 GAwesomeUtil.dashboard.post = payload => new Promise((resolve, reject) => {
 	$.ajax({
 		url: window.location.pathname,

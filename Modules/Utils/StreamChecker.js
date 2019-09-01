@@ -8,7 +8,8 @@ module.exports = async (client, server, serverDocument, streamerDocument) => {
 
 		const data = await isStreaming(streamerDocument.type, streamerDocument._id);
 
-		if (data && !streamerDocument.live_state) {
+		if (data.error) throw data.error;
+		if (data && !data.invalid && data.streaming && !streamerDocument.live_state) {
 			logger.verbose(`Streamer "${streamerDocument._id}" started streaming`, { svrid: server.id });
 			streamerQueryDocument.set("live_state", true);
 

@@ -104,6 +104,7 @@ Constants.Colors = {
 
 	TWITCH: 0x6441A5,
 	YOUTUBE: 0xFF0000,
+	MIXER: 0x1EBAED,
 	TWITTER: 0x1da1f2,
 };
 
@@ -456,7 +457,7 @@ Constants.Templates = {
 		return {
 			embed: {
 				color,
-				description: `${data.name} started streaming \`${data.game}\` on **${data.type}**\nWatch them by clicking [**here**](${data.url})\n\nHere is a preview of the stream:`,
+				description: `${data.name} started streaming **${data.game}** on **${data.type}**.\nWatch them by clicking [**here**](${data.url}).`,
 				author: {
 					name: data.name,
 					iconURL: data.streamerImage,
@@ -477,22 +478,22 @@ Constants.Templates = {
 Constants.APIs = {
 	ANIME: filter => `https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(filter)}`,
 	BITLY: action => `https://api-ssl.bitly.com/v4/${action}`,
-	CATFACT: number => `https://catfact.ninja/facts?limit=${number}`,
-	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${number}`,
+	CATFACT: number => `https://catfact.ninja/facts?limit=${encodeURIComponent(number)}`,
+	DOGFACT: number => `https://dog-api.kinduff.com/api/facts?number=${encodeURIComponent(number)}`,
 	E621: query => `https://e621.net/post/index.json?tags=${encodeURIComponent(query)}&limit=256`,
-	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${category ? category : ""}`,
+	FORTUNE: (category = null) => `http://yerkee.com/api/fortune/${encodeURIComponent(category ? category : "")}`,
 	GIPHY: (token, query, nsfw) => `http://api.giphy.com/v1/gifs/random?api_key=${token}&rating=${nsfw}&format=json&limit=1&tag=${encodeURIComponent(query)}`,
 	JOKE: () => `https://icanhazdadjoke.com`,
-	NUMFACT: num => `http://numbersapi.com/${num}`,
-	REDDIT: subreddit => `https://www.reddit.com/r/${subreddit}.json`,
-	SAFEBOORU: (query, num) => `https://safebooru.donmai.us/posts.json?page=0&tags=${encodeURIComponent(query)}&limit=${num}`,
-	SPOOPYLINK: url => `https://spoopy.link/api/${url}`,
+	NUMFACT: num => `http://numbersapi.com/${encodeURIComponent(num)}`,
+	REDDIT: subreddit => `https://www.reddit.com/r/${encodeURIComponent(subreddit)}.json`,
+	SAFEBOORU: (query, num) => `https://safebooru.donmai.us/posts.json?page=0&tags=${encodeURIComponent(query)}&limit=${encodeURIComponent(num)}`,
+	SPOOPYLINK: url => `https://spoopy.link/api/${encodeURIComponent(url)}`,
 	TWITRSS: user => `http://twitrss.me/twitter_user_to_rss/?user=${encodeURIComponent(user)}`,
-	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${page}&term=${encodeURIComponent(term)}`}`,
+	URBAN: (term, page = 1) => `https://api.urbandictionary.com/v0/${!term ? "random" : `define?page=${encodeURIComponent(page)}&term=${encodeURIComponent(term)}`}`,
 	WEATHER: (key, query) => `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${key}&units=metric`,
-	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${query}&output=json`,
-	XKCD: num => `https://xkcd.com/${num ? `${num}/` : ""}info.0.json`,
-	YOUTUBE: (key, query, num) => `https://www.googleapis.com/youtube/v3/search?part=snippet&key=${key}&q=${encodeURIComponent(query)}&maxResults=${num}`,
+	WOLFRAM: (appid, query) => `https://api.wolframalpha.com/v2/query?appid=${appid}&input=${encodeURIComponent(query)}&output=json`,
+	XKCD: num => `https://xkcd.com/${num ? `${encodeURIComponent(num)}/` : ""}info.0.json`,
+	YOUTUBE: (key, query, num) => `https://www.googleapis.com/youtube/v3/search?part=snippet&key=${key}&q=${encodeURIComponent(query)}&maxResults=${encodeURIComponent(num)}`,
 };
 
 /**

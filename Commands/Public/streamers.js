@@ -10,12 +10,12 @@ module.exports = async ({ Constants: { Colors, Text }, client }, { serverDocumen
 		const colors = [];
 		await Promise.all(serverDocument.config.streamers_data.map(async streamer => {
 			const streamerData = await isStreaming(streamer.type, streamer._id);
-			if (!streamerData) return;
+			if (!streamerData || !streamerData.streaming) return;
 			descriptions.push(`**${streamerData.name}** is streaming **${streamerData.game}**, [watch their stream now](${streamerData.url})!`);
 			thumbnails.push(streamerData.preview);
 			titles.push(`${streamerData.name} is live!`);
 			footers.push(`${streamerData.type} Streamer • `);
-			colors.push(streamerData.type === "YouTube" ? Colors.YOUTUBE : Colors.TWITCH);
+			colors.push(Colors[streamerData.type.toUpperCase()]);
 		}));
 		if (descriptions.length) {
 			await new PaginatedEmbed(msg, {

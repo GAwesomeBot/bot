@@ -512,7 +512,7 @@ module.exports = new Schema({
 		type: {
 			type: String,
 			required: true,
-			enum: ["twitch", "ytg"],
+			enum: ["twitch", "ytg", "mixer"],
 		},
 		channel_id: String,
 		live_state: {

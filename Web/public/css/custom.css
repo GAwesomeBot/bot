@@ -483,6 +483,11 @@ html, body {
     background: #ff3860 !important;
 }
 
+.streamer-icon {
+    color: black;
+    vertical-align: middle;
+}
+
 /* Spinner by tobiasahlin.com/spinkit/ */
 .installspinner {
     margin: 100px auto;

@@ -3,37 +3,6 @@
 <head>
 	<title><%= serverData.name %> Streamers - GAwesomeBot Admin Console</title>
 	<% include ../partials/head %>
-
-	<script>
-	function newStreamer() {
-		var newStreamerName = $("#new-streamer-name");
-		if(newStreamerName.val()) {
-			newStreamerName.removeClass("is-danger");
-		} else {
-			newStreamerName.addClass("is-danger");
-		}
-
-		var newStreamerType = $("#new-streamer-type");
-
-		if(newStreamerName.val()) {
-		  GAwesomeData.HUM = true;
-		  $.ajax({
-				type: "POST",
-				url: "<%= currentPage %>",
-				data: {
-					"new-name": newStreamerName.val(),
-					"new-type": newStreamerType.val()
-				},
-				success: function() {
-				  GAwesomeUtil.SFS();
-				  $("#form").submit();
-				  GAwesomeData.HUM = true;
-				  Turbolinks.visit('');
-				}
-			});
-		}
-	}
-	</script>
 </head>
 <body onload="GAwesomeUtil.SFS();">
 	<% include ../partials/dashboard-header %>
@@ -51,7 +20,7 @@
 					</h1>
 					<article class="message is-primary">
 						<div class="message-body">
-							Discord is a gamer-focused platform, so a lot of Discord servers have corresponding stream accounts on <strong>Twitch</strong> and <strong>YouTube Gaming</strong>. GAwesomeBot supports checking for when streams go live (add them below) and has a corresponding <code>streamers</code> command to display information about the status of a stream.
+							Discord is a gamer-focused platform, so a lot of Discord servers have corresponding stream accounts on <strong>Twitch</strong> and <strong>YouTube</strong>. GAwesomeBot supports checking for when streams go live (add them below) and has a corresponding <code>streamers</code> command to display information about the status of a stream.
 						</div>
 					</article>
 					<form id="form" onsubmit="GAwesomeUtil.submitForm(); return false;">
@@ -65,7 +34,7 @@
 									<thead>
 										<tr>
 											<th></th>
-											<th>Username</th>
+											<th>Username/ID</th>
 											<th>Post updates in...</th>
 											<th>Status</th>
 											<th></th>
@@ -76,9 +45,11 @@
 										<tr>
 											<td class="is-icon">
 												<% if (streamer.type === "twitch") { %>
-													<i class="fa fa-twitch"></i>
+													<i class="fa fa-twitch streamer-icon"></i>
 												<% } else if (streamer.type === "ytg") { %>
-													<i class="fa fa-youtube"></i>
+													<i class="fa fa-youtube streamer-icon"></i>
+												<% } else if (streamer.type === "mixer") { %>
+													<i class="fa streamer-icon"><figure class="image is-16x16"><img src="https://raw.githubusercontent.com/mixer/branding-kit/master/png/MixerMerge_Black.png"></figure></i>
 												<% } %>
 											</td>
 											<td>
@@ -115,18 +86,19 @@
 									<div class="field is-grouped">
 										<div class="control is-expanded">
 											<input id="new-streamer-name" class="input is-primary" type="text" placeholder="Username" onkeypress="return event.keyCode !== 13;">
-											<span class="help">For YouTube Gaming streams, use <a href="http://johnnythetank.github.io/youtube-channel-name-converter">this website</a> to get the corresponding channel ID for a channel name or username.</span>
+											<span class="help">For YouTube streams, use the username or ID present in the channel's URL.</span>
 										</div>
 										<div class="control">
 											<span class="select is-primary">
 												<select id="new-streamer-type">
 													<option value="twitch">Twitch</option>
-													<option value="ytg">YouTube Gaming</option>
+													<option value="ytg">YouTube</option>
+													<option value="mixer">Mixer</option>
 												</select>
 											</span>
 										</div>
 										<div class="control">
-											<a class="button is-primary" onclick="newStreamer();">
+											<a class="button is-primary" onclick="GAwesomeUtil.dashboard.newStreamer();">
 												<span class="icon">
 										        	<i class="fa fa-plus"></i>
 										    	</span>
