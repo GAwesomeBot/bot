@@ -81,7 +81,7 @@
   "devDependencies": {
     "active-handles": "^1.1.0",
     "clean-css-cli": "^4.2.1",
-    "eslint": "^6.2.1",
+    "eslint": "^6.3.0",
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "uglify-es": "^3.3.9"
