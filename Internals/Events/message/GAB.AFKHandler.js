@@ -76,6 +76,7 @@ class AFKHandler extends BaseEvent {
 			serverDocument.query.id("members", msg.author.id).set("afk_message", null);
 		}
 		serverDocument.save();
+		if (userDocument) userDocument.save();
 		if (changed) {
 			msg.reply({
 				embed: {
