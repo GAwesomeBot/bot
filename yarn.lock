@@ -2248,9 +2248,9 @@ mute-stream@0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
 
-nan@^2.0.5, nan@^2.1.0, nan@^2.8.0, nan@^2.9.2:
-  version "2.12.1"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.12.1.tgz#7b1aa193e9aa86057e3c7bbd0ac448e770925552"
+nan@^2.0.5, nan@^2.1.0, nan@^2.14.0, nan@^2.9.2:
+  version "2.14.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -2814,6 +2814,12 @@ rimraf@^2.6.1:
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
   dependencies:
     glob "^7.0.5"
+
+rimraf@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-3.0.0.tgz#614176d4b3010b75e5c390eb0ee96f6dc0cebb9b"
+  dependencies:
+    glob "^7.1.3"
 
 rss-parser@^3.6.0:
   version "3.6.0"
@@ -3550,8 +3556,8 @@ yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
 
-zlib-sync@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/zlib-sync/-/zlib-sync-0.1.4.tgz#510db6ea89040d4ff6fa22cd3936f5c1a2ad0987"
+zlib-sync@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/zlib-sync/-/zlib-sync-0.1.6.tgz#9136ba8b66a75485fefe51aa68f9b49a5ae420eb"
   dependencies:
-    nan "^2.8.0"
+    nan "^2.14.0"
