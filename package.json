@@ -17,7 +17,7 @@
     "dev:update-latest": "npm i async-dl-github-repo@latest body-parser@latest kyranet/canvasConstructor canvas-prebuilt@next circular-json@latest compression@latest connect-mongo@latest convert-units@latest cookie-parser@latest dblposter@latest discordjs/discord.js ejs@latest discordapp/erlpack express@latest express-rate-limit@latest express-session@latest fast-levenshtein@latest feed-read@latest fs-nextra@latest gifwrap@latest jimp@latest mathjs@latest mongodb@latest moment@latest moment-timezone@latest money@latest mstranslator@latest object-sizeof@latest parse-duration@latest passport@latest passport-discord@latest passport.socketio@latest process-as-promised@latest remove-markdown@latest require-reload@latest showdown@latest snekfetch@latest socket.io@latest text-diff@latest toobusy-js@latest urban@latest uuid@latest vm2@latest wikijs@latest winston@latest winston-daily-rotate-file@latest wolfram-node@latest xml-parser@latest xss-filters@latest zlib-sync@latest && npm i -D active-handles@latest clean-css-cli@latest eslint@latest uglify-es@latest"
   },
   "dependencies": {
-    "@sentry/node": "^5.5.0",
+    "@sentry/node": "^5.12.5",
     "adm-zip": "^0.4.13",
     "async-dl-github-repo": "^2.0.0",
     "body-parser": "^1.18.3",
