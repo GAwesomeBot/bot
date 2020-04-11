@@ -65,7 +65,7 @@ module.exports = async (main, msg, commandData) => {
 			msg.send({
 				embed: {
 					color: 0xFF0000,
-					description: `\`\`\`js\n${err.stack}\`\`\``,
+					description: `\`\`\`js\n${err ? err.stack : err}\`\`\``,
 					footer: {
 						text: `Execution time: ${process.hrtime(hrstart)[0]}s ${Math.floor(process.hrtime(hrstart)[1] / 1000000)}ms`,
 					},
