@@ -1,4 +1,5 @@
 # GAwesomeBot
+[![Run on Repl.it](https://repl.it/badge/github/GAwesomeBot/bot)](https://repl.it/github/GAwesomeBot/bot)
 [![Travis Status](https://travis-ci.org/GilbertGobbels/GAwesomeBot.svg?branch=indev-4.0.2)](https://travis-ci.org/GilbertGobbels/GAwesomeBot)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f84f588e498f4447b68ba16b03989eb7)](https://www.codacy.com/app/GAwesomeBot/GAwesomeBot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GilbertGobbels/GAwesomeBot&amp;utm_campaign=Badge_Grade)
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://github.com/GilbertGobbels/GAwesomeBot/blob/indev-4.0.2/LICENSE)
