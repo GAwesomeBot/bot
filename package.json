@@ -60,7 +60,7 @@
     "require-reload": "^0.2.2",
     "rimraf": "^3.0.0",
     "rss-parser": "^3.6.0",
-    "showdown": "^1.9.0",
+    "showdown": "^1.9.1",
     "showdown-xss-filter": "^0.2.0",
     "snekfetch": "^4.0.4",
     "socket.io": "^2.2.0",
