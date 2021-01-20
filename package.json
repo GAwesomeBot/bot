@@ -63,7 +63,7 @@
     "showdown": "^1.9.0",
     "showdown-xss-filter": "^0.2.0",
     "snekfetch": "^4.0.4",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.1",
     "tail": "^2.0.2",
     "text-diff": "^1.0.1",
     "toobusy-js": "^0.5.1",
