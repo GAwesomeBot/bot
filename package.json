@@ -69,7 +69,7 @@
     "toobusy-js": "^0.5.1",
     "urban": "^0.3.2",
     "uuid": "^3.3.2",
-    "vm2": "^3.6.4",
+    "vm2": "^3.9.5",
     "wikijs": "^6.0.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.5.1",
