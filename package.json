@@ -44,7 +44,7 @@
     "gifwrap": "^0.7.5",
     "jimp": "^0.6.4",
     "mathjs": "^6.1.0",
-    "moment": "^2.23.0",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.23",
     "money": "^0.2.0",
     "mongodb": "^3.1.10",
